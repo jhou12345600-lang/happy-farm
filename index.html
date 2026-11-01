@@ -465,6 +465,7 @@ async function makeFirebase(cfg) {
   let regP = null;
   return {
     mode:'firebase',
+    onAuth(cb) { A.onAuthStateChanged(auth, u => cb(u ? {uid:u.uid} : null)); },
     async settle() { if (regP) await regP.catch(() => {}); },
     async register(name, pass) { regP = this._register(name, pass); try { await regP; } finally { regP = null; } },
     async _register(name, pass) {
