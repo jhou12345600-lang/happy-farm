@@ -11,12 +11,11 @@ button{font-family:inherit;cursor:pointer;border:none}
 [hidden]{display:none!important}
 
 /* ===== 登入畫面 ===== */
-#auth{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;
-  background:linear-gradient(#6ec6ff 0 45%,#9ad85f 45% 100%)}
+#auth{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:linear-gradient(#6ec6ff 0 45%,#9ad85f 45% 100%)}
 #auth::before{content:"";position:absolute;left:-10%;right:-10%;top:38%;height:18%;background:#7cc35a;border-radius:50% 50% 0 0}
 .card{position:relative;width:100%;max-width:360px;background:#fffaf0;border:4px solid #8d5a2b;border-radius:22px;padding:22px 22px 18px;box-shadow:0 10px 0 #6b3f1d,0 18px 40px rgba(0,0,0,.25)}
 .logo{text-align:center;margin-bottom:14px}
-.logo .big{font-size:44px;line-height:1}
+.logo .big{font-size:40px;line-height:1}
 .logo h1{font-size:26px;color:#e2553f;letter-spacing:2px;text-shadow:2px 2px 0 #ffe0a3;margin-top:6px}
 .logo p{font-size:13px;color:#8d6e63;margin-top:2px}
 .tabs{display:flex;gap:6px;margin-bottom:12px}
@@ -35,9 +34,10 @@ button{font-family:inherit;cursor:pointer;border:none}
 /* ===== 遊戲 ===== */
 #game{position:fixed;inset:0;display:flex;flex-direction:column}
 #top{display:flex;align-items:center;gap:10px;padding:8px 10px;background:linear-gradient(#a0703f,#7a4b24);color:#fff;border-bottom:3px solid #5a3518;flex-wrap:wrap;z-index:2}
-.me{display:flex;align-items:center;gap:8px;min-width:0}
+.me{display:flex;align-items:center;gap:8px;min-width:0;cursor:pointer;background:none;color:#fff;text-align:left}
 .av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#fff;border:3px solid #fff;flex:none;position:relative;background:#ff9800;text-shadow:0 1px 2px rgba(0,0,0,.3)}
-.nm{font-weight:900;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.nm{font-weight:900;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+.nm small{font-size:11px;opacity:.8;font-weight:400}
 .lvRow{display:flex;align-items:center;gap:5px;font-size:12px}
 .lv{background:#ffca28;color:#5d3a12;border-radius:8px;padding:0 6px;font-weight:900}
 .xp{width:80px;height:9px;background:rgba(0,0,0,.35);border-radius:6px;overflow:hidden}
@@ -56,6 +56,12 @@ button{font-family:inherit;cursor:pointer;border:none}
 #scene{width:100%;height:100%;display:block;overflow:visible;touch-action:manipulation}
 #tip{position:absolute;pointer-events:none;background:rgba(40,25,10,.88);color:#fff;font-size:13px;padding:7px 10px;border-radius:10px;line-height:1.5;display:none;z-index:3;white-space:nowrap}
 #tip b{color:#ffe082}
+#sceneTabs{position:absolute;left:8px;top:8px;display:flex;gap:4px;z-index:2;background:rgba(255,248,230,.9);padding:4px;border-radius:14px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+#sceneTabs button{padding:6px 12px;border-radius:10px;background:transparent;color:#6b3f1d;font-weight:900;font-size:14px}
+#sceneTabs button.on{background:#ffb74d;color:#5d3a12}
+#hereBox{position:absolute;right:8px;top:8px;z-index:2;background:rgba(255,248,230,.9);padding:5px 10px;border-radius:14px;font-size:12px;font-weight:700;color:#6b3f1d;box-shadow:0 2px 6px rgba(0,0,0,.15);max-width:45%}
+#chatBtn{position:absolute;right:10px;bottom:10px;z-index:2;width:52px;height:52px;border-radius:50%;background:linear-gradient(#ffcc80,#ffa726);font-size:24px;box-shadow:0 4px 0 #e68a00,0 4px 12px rgba(0,0,0,.2)}
+#chatBtn:active{transform:translateY(3px);box-shadow:0 1px 0 #e68a00}
 
 #friendStrip{display:flex;gap:6px;overflow-x:auto;padding:6px 8px;background:rgba(255,248,230,.95);border-top:3px solid #c9a46a;scrollbar-width:thin}
 .fr{flex:none;width:68px;background:none;display:flex;flex-direction:column;align-items:center;padding:3px;border-radius:12px;color:#5d3a12}
@@ -65,6 +71,7 @@ button{font-family:inherit;cursor:pointer;border:none}
 .fn{font-size:12px;font-weight:700;max-width:64px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .fl{font-size:11px;color:#8d6e63}
 .steal{position:absolute;bottom:-6px;right:-10px;font-style:normal;font-size:11px;background:#43a047;color:#fff;border-radius:8px;padding:0 4px;border:2px solid #fff;animation:pop 1.2s ease-in-out infinite}
+.dot{position:absolute;top:-2px;right:-2px;width:13px;height:13px;border-radius:50%;background:#4caf50;border:2px solid #fff}
 @keyframes pop{50%{transform:scale(1.15)}}
 
 #tools{display:flex;gap:6px;padding:7px 8px calc(7px + env(safe-area-inset-bottom));background:linear-gradient(#8d5a2b,#6b3f1d);overflow-x:auto}
@@ -73,14 +80,16 @@ button{font-family:inherit;cursor:pointer;border:none}
 .tool .ic{font-size:24px;line-height:1.1}
 .tool .tl{font-size:12px;font-weight:700;white-space:nowrap;max-width:58px;overflow:hidden;text-overflow:ellipsis}
 .tool.on{background:#ffca28;box-shadow:0 3px 0 #e69a2e,0 0 0 3px #fff}
+.tool.act{background:#c8e6c9}
 .tool em{position:absolute;top:-5px;right:-4px;font-style:normal;font-size:11px;background:#6d4c41;color:#fff;border-radius:8px;padding:0 5px}
 
 /* SVG */
-.tile{cursor:pointer}
+.tile,.ani,.poop,.trough{cursor:pointer}
 .tile .top{transition:filter .15s}
 .tile:hover .top{filter:brightness(1.12);stroke:#ffe14d;stroke-width:3}
 .tile.locked{cursor:default}
 .tile.locked:hover .top{filter:none;stroke:none}
+.ani:hover>g{filter:brightness(1.08) drop-shadow(0 0 4px #fff59d)}
 .buyTxt{font-size:15px;font-weight:900;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#2e7d32;stroke-width:4px}
 .cloud{animation:drift linear infinite}
 @keyframes drift{from{transform:translateX(-500px)}to{transform:translateX(1600px)}}
@@ -90,26 +99,34 @@ button{font-family:inherit;cursor:pointer;border:none}
 @keyframes wag{from{transform:rotate(-15deg)}to{transform:rotate(20deg)}}
 .bob{animation:bob 2.2s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-2px)}}
+.walk{animation:walk 3.4s ease-in-out infinite}
+@keyframes walk{0%,100%{transform:translateX(0)}50%{transform:translateX(-6px)}}
 .fx{font-size:20px;font-weight:900;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round;animation:fx 1.5s ease-out forwards;pointer-events:none}
 @keyframes fx{0%{opacity:0;transform:translateY(8px)}15%{opacity:1}100%{opacity:0;transform:translateY(-55px)}}
 .signT{font-size:17px;font-weight:900;fill:#fff8e1;text-anchor:middle}
+.pname{font-size:12px;font-weight:900;text-anchor:middle;fill:#fff;paint-order:stroke;stroke:#5d3a12;stroke-width:3.5px}
+.bubT{font-size:13px;font-weight:700;text-anchor:middle;fill:#3b2a14}
+.cnt{font-size:11px;font-weight:900;fill:#fff;text-anchor:middle}
 
 /* ===== 視窗 ===== */
 #modal{position:fixed;inset:0;background:rgba(30,20,5,.5);display:flex;align-items:center;justify-content:center;padding:12px;z-index:10}
-.box{width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;background:#fffaf0;border:4px solid #8d5a2b;border-radius:20px;box-shadow:0 8px 0 #6b3f1d;overflow:hidden}
+.box{width:100%;max-width:540px;max-height:88vh;display:flex;flex-direction:column;background:#fffaf0;border:4px solid #8d5a2b;border-radius:20px;box-shadow:0 8px 0 #6b3f1d;overflow:hidden}
 .mh{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:linear-gradient(#ffcc80,#ffb74d);font-weight:900;font-size:18px;color:#5d3a12}
 .mh button{background:#fff3d6;color:#8d5a2b;width:32px;height:32px;border-radius:50%;font-size:16px;font-weight:900}
 #mb{overflow-y:auto;padding:12px 14px 16px}
-.mtabs{display:flex;gap:6px;margin-bottom:10px}
-.mtabs button{flex:1;padding:8px;border-radius:10px;background:#f1e2c4;color:#8d5a2b;font-weight:700}
+.mtabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.mtabs button{flex:1;padding:8px;border-radius:10px;background:#f1e2c4;color:#8d5a2b;font-weight:700;white-space:nowrap}
 .mtabs button.on{background:#ffb74d;color:#5d3a12}
 .item{display:flex;align-items:center;gap:10px;padding:8px;border-radius:14px;background:#fff;border:2px solid #f1e2c4;margin-bottom:8px}
 .item.dim{opacity:.55}
-.item .pic{width:52px;height:52px;flex:none;display:flex;align-items:center;justify-content:center;background:#f6ecd6;border-radius:12px;font-size:30px}
+.item.done{border-color:#a5d6a7;background:#f1f8e9}
+.item .pic{width:52px;height:52px;flex:none;display:flex;align-items:center;justify-content:center;background:#f6ecd6;border-radius:12px;font-size:30px;overflow:hidden}
 .item .info{flex:1;min-width:0}
 .item .t{font-weight:900;font-size:15px}
 .item .d{font-size:12px;color:#8d6e63;line-height:1.5}
 .item .acts{display:flex;flex-direction:column;gap:4px;flex:none}
+.bar{height:8px;background:#eee;border-radius:5px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#8bc34a,#4caf50)}
 .b{background:linear-gradient(#7ed957,#4caf50);color:#fff;font-weight:700;font-size:13px;border-radius:10px;padding:6px 10px;box-shadow:0 2px 0 #2e7d32;white-space:nowrap}
 .b.o{background:linear-gradient(#ffcc80,#ffa726);box-shadow:0 2px 0 #e68a00;color:#5d3a12}
 .b.r{background:linear-gradient(#ef9a9a,#e57373);box-shadow:0 2px 0 #c62828}
@@ -119,18 +136,28 @@ button{font-family:inherit;cursor:pointer;border:none}
 .row input{flex:1;padding:9px 11px;border-radius:12px;border:2px solid #e0c99d;font-size:15px;font-family:inherit;outline:none;min-width:0}
 .sec{font-weight:900;color:#8d5a2b;margin:12px 0 6px;font-size:14px}
 .empty{text-align:center;color:#a1887f;padding:14px;font-size:14px}
-.log{padding:7px 4px;border-bottom:1px dashed #e0c99d;font-size:14px;display:flex;gap:8px}
+.log{padding:7px 4px;border-bottom:1px dashed #e0c99d;font-size:14px;display:flex;gap:8px;align-items:center}
 .log time{color:#a1887f;font-size:12px;flex:none;width:70px}
 .log.new{background:#fff3cd}
 .help p{font-size:14px;line-height:1.7;margin-bottom:8px}
 .help b{color:#e2553f}
+.phr{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.phr button{background:#fff3d6;border:2px solid #e0c99d;border-radius:14px;padding:6px 10px;font-size:14px;color:#5d3a12;font-weight:700}
+.wheelWrap{position:relative;width:240px;height:240px;margin:6px auto 10px}
+.wheelWrap svg{width:100%;height:100%;transition:transform 3.2s cubic-bezier(.17,.67,.2,1)}
+.wheelPin{position:absolute;left:50%;top:-6px;transform:translateX(-50%);width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;border-top:24px solid #e53935;filter:drop-shadow(0 2px 1px rgba(0,0,0,.3));z-index:1}
+.prof{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.prof .av{width:64px;height:64px;font-size:28px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
+.stats div{background:#fff;border:2px solid #f1e2c4;border-radius:12px;padding:8px;text-align:center;font-size:12px;color:#8d6e63}
+.stats b{display:block;font-size:17px;color:#5d3a12}
 #toast{position:fixed;left:50%;top:76px;transform:translateX(-50%);z-index:20;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
 #toast div{background:rgba(40,25,10,.9);color:#fff;padding:9px 16px;border-radius:14px;font-size:15px;font-weight:700;animation:tin .25s ease-out;max-width:90vw;text-align:center}
 @keyframes tin{from{opacity:0;transform:translateY(-8px)}}
 
 @media (max-width:640px){
   .btns button span{display:none}
-  .btns button{padding:6px 8px;font-size:17px}
+  .btns button{padding:6px 7px;font-size:16px}
   .xp{width:56px}
   .xpt{display:none}
   #top{gap:6px}
@@ -140,6 +167,8 @@ button{font-family:inherit;cursor:pointer;border:none}
   #tools{gap:4px;padding-left:4px;padding-right:4px}
   .fr{width:58px}
   .fr .av{width:36px;height:36px;font-size:15px}
+  #sceneTabs button{padding:5px 9px;font-size:13px}
+  #chatBtn{width:46px;height:46px;font-size:21px}
 }
 </style>
 </head>
@@ -148,7 +177,7 @@ button{font-family:inherit;cursor:pointer;border:none}
 <!-- 登入 / 註冊 -->
 <div id="auth">
   <div class="card">
-    <div class="logo"><div class="big">🥕🌽🍅</div><h1>歡樂偷菜農場</h1><p>種菜、收成、半夜去好友家偷菜！</p></div>
+    <div class="logo"><div class="big">🥕🐔🌽🐷🍅</div><h1>歡樂偷菜農場</h1><p>種菜、養動物、半夜去好友家偷菜！</p></div>
     <div class="tabs"><button class="on" data-act="authTab" data-t="login">登入</button><button data-act="authTab" data-t="reg">註冊新帳號</button></div>
     <form id="authForm" autocomplete="on">
       <div class="field"><label>帳號（2～10 個字，可用中文）</label><input id="aName" autocomplete="username" maxlength="10" required></div>
@@ -164,10 +193,11 @@ button{font-family:inherit;cursor:pointer;border:none}
 <!-- 遊戲 -->
 <div id="game" hidden>
   <header id="top">
-    <div class="me"><div class="av" id="myAv"></div><div><div class="nm" id="myName"></div>
-      <div class="lvRow"><span class="lv" id="myLv"></span><div class="xp"><i id="myXp"></i></div><span class="xpt" id="myXpT"></span></div></div></div>
+    <button class="me" data-act="profile"><div class="av" id="myAv"></div><div><div class="nm" id="myName"></div>
+      <div class="lvRow"><span class="lv" id="myLv"></span><div class="xp"><i id="myXp"></i></div><span class="xpt" id="myXpT"></span></div></div></button>
     <div class="coins">💰 <b id="myCoins">0</b></div>
     <div class="btns">
+      <button data-act="tasks">📋<span>任務</span><em class="badge" id="bdT"></em></button>
       <button data-act="shop">🏪<span>商店</span></button>
       <button data-act="wh">📦<span>倉庫</span></button>
       <button data-act="friends">👥<span>好友</span><em class="badge" id="bdF"></em></button>
@@ -176,11 +206,14 @@ button{font-family:inherit;cursor:pointer;border:none}
       <button data-act="logout">🚪<span>登出</span></button>
     </div>
   </header>
-  <div id="visitBar" hidden><span>你正在 <b id="visitName"></b> 的農場 👀</span><button data-act="home">🏠 回我的農場</button></div>
+  <div id="visitBar" hidden><span>你正在 <b id="visitName"></b> 的家 👀</span><button data-act="home">🏠 回家</button></div>
   <div id="stage">
     <svg id="scene" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet">
-      <g id="bgG"></g><g id="decoG"></g><g id="plotsG"></g><g id="fxG"></g>
+      <g id="bgG"></g><g id="decoG"></g><g id="plotsG"></g><g id="peopleG"></g><g id="fxG"></g>
     </svg>
+    <div id="sceneTabs"><button data-act="scene" data-s="farm" class="on">🌾 農場</button><button data-act="scene" data-s="ranch">🐮 牧場</button></div>
+    <div id="hereBox" hidden></div>
+    <button id="chatBtn" data-act="chat" title="說話">💬</button>
     <div id="tip"></div>
   </div>
   <div id="friendStrip"></div>
@@ -192,8 +225,7 @@ button{font-family:inherit;cursor:pointer;border:none}
 
 <script type="module">
 /* =========================================================
-   Firebase 設定：把 Firebase 主控台給你的 firebaseConfig 貼在這裡。
-   維持 null 就是「單機測試模式」（帳號只存在這台裝置）。
+   Firebase 設定（null = 單機測試模式）
    ========================================================= */
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDgZdhzbW9G-SLdI03ANndCLJHhCgUovgI",
@@ -204,9 +236,12 @@ const FIREBASE_CONFIG = {
   appId: "1:147466948562:web:64731e0bf2e422893c020b"
 };
 const FB_VER = '10.12.2';
+const LOCAL = new URLSearchParams(location.search).has('local');   // ?local 強制單機測試
+const USE_FB = FIREBASE_CONFIG && !LOCAL;
 
 /* ===================== 遊戲資料 ===================== */
 const CROPS = {
+  grass:     {n:'牧草',   cost:5,   t:300,   y:10, sell:1,  exp:1,  lv:1},
   radish:    {n:'白蘿蔔', cost:10,  t:120,   y:10, sell:2,  exp:2,  lv:1},
   carrot:    {n:'紅蘿蔔', cost:20,  t:600,   y:12, sell:3,  exp:4,  lv:1},
   corn:      {n:'玉米',   cost:40,  t:1800,  y:14, sell:5,  exp:8,  lv:2},
@@ -216,13 +251,51 @@ const CROPS = {
   pumpkin:   {n:'南瓜',   cost:220, t:28800, y:22, sell:17, exp:40, lv:8},
   watermelon:{n:'西瓜',   cost:320, t:43200, y:24, sell:23, exp:60, lv:10},
 };
-const MAXP = 18, START_P = 6;
-const FERT_PRICE = 30, DOG_PRICE = 1500, DOG_LV = 3, DOG_BITE = 0.3;
-const plotPrice = n => 500 + (n - 7) * 400;   // 第 n 塊地的價格
-const plotLv = n => n - 5;                     // 第 n 塊地需要的等級
+const PROD = {
+  egg:{n:'雞蛋', sell:15}, duckegg:{n:'鴨蛋', sell:28}, fur:{n:'兔毛', sell:50},
+  truffle:{n:'松露', sell:85}, wool:{n:'羊毛', sell:120}, milk:{n:'牛奶', sell:200},
+};
+const ANIMALS = {
+  chicken:{n:'雞',   price:100,  iv:1800,  prod:'egg',     exp:3,  lv:1, eat:1},
+  duck:   {n:'鴨子', price:180,  iv:3600,  prod:'duckegg', exp:5,  lv:2, eat:1},
+  rabbit: {n:'兔子', price:300,  iv:7200,  prod:'fur',     exp:8,  lv:3, eat:2},
+  pig:    {n:'小豬', price:500,  iv:10800, prod:'truffle', exp:12, lv:4, eat:3},
+  sheep:  {n:'綿羊', price:800,  iv:14400, prod:'wool',    exp:18, lv:5, eat:3},
+  cow:    {n:'乳牛', price:1200, iv:21600, prod:'milk',    exp:25, lv:7, eat:4},
+};
+const PETS = {
+  dog:  {n:'小黃狗', price:1500, lv:3, bite:.30, d:'看門：30% 機率咬走小偷'},
+  cat:  {n:'小橘貓', price:2500, lv:4, bite:0,   d:'抓蟲專家：農場少長 60% 的蟲'},
+  shiba:{n:'柴犬',   price:3000, lv:5, bite:.38, d:'看門：38% 機率咬走小偷'},
+  husky:{n:'哈士奇', price:6000, lv:8, bite:.48, d:'看門：48% 機率咬走小偷'},
+};
+const TASKS = {
+  plant:  {n:'播種 5 次',               need:5, c:50, e:5},
+  harvest:{n:'收成 3 塊地',             need:3, c:60, e:10},
+  steal:  {n:'去好友家偷 2 次',          need:2, c:80, e:5},
+  help:   {n:'幫好友澆水/除草/除蟲 3 次', need:3, c:50, e:10},
+  feed:   {n:'餵動物 2 次',             need:2, c:40, e:5},
+  collect:{n:'收集 3 個動物產品',        need:3, c:60, e:10},
+  sell:   {n:'在倉庫賣東西 1 次',        need:1, c:30, e:5},
+  clean:  {n:'清便便 2 次',             need:2, c:40, e:5},
+  visit:  {n:'拜訪 2 位好友',           need:2, c:30, e:5},
+  chat:   {n:'在農場說一句話',           need:1, c:20, e:3},
+};
+const WHEEL = [
+  {t:'50金幣', c:50, w:20, col:'#ffcc80'}, {t:'化肥×2', fert:2, w:14, col:'#ce93d8'},
+  {t:'100金幣', c:100, w:15, col:'#a5d6a7'}, {t:'飼料×10', feed:10, w:14, col:'#ffe082'},
+  {t:'30經驗', e:30, w:12, col:'#90caf9'}, {t:'200金幣', c:200, w:10, col:'#ef9a9a'},
+  {t:'種子包', seed:3, w:10, col:'#c5e1a5'}, {t:'500金幣', c:500, w:5, col:'#ffd54f'},
+];
+const MAXP = 18, START_P = 6, MAX_STOCK = 3, MAX_POOP = 6;
+const FERT_PRICE = 30, FEED_PRICE = 5;
+const plotPrice = n => 500 + (n - 7) * 400;
+const plotLv = n => n - 5;
+const ranchCap = L => Math.min(12, 2 + Math.ceil(L / 2));
 const DAILY_HELP_EXP = 60, DAILY_PRANK = 10, SIGN_COINS = 100;
-const KEEP_RATIO = 0.6;                        // 被偷到剩 60% 就不能再偷
-const SPEED = (() => { const s = +new URLSearchParams(location.search).get('speed'); return s > 0 && !FIREBASE_CONFIG ? s : 1; })();
+const KEEP_RATIO = 0.6;
+const SPEED = (() => { const s = +new URLSearchParams(location.search).get('speed'); return s > 0 && !USE_FB ? s : 1; })();
+const PHRASES = ['嗨～大家好 👋', '我來偷菜囉 😈', '謝謝你幫忙！🙏', '你的菜好漂亮 🥬', '快來我家玩！🏡', '哈哈哈 😂', '晚安 🌙', '加油 💪'];
 
 /* ===================== 小工具 ===================== */
 const $ = s => document.querySelector(s);
@@ -233,6 +306,7 @@ const today = () => new Date().toLocaleDateString('sv');
 const clone = o => JSON.parse(JSON.stringify(o));
 const nameKey = n => n.trim().toLowerCase();
 const hex = s => Array.from(new TextEncoder().encode(s)).map(b => b.toString(16).padStart(2, '0')).join('');
+const hashStr = s => { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return h; };
 const store = (() => { const mem = {}; try { localStorage.setItem('_t', '1'); localStorage.removeItem('_t'); return localStorage; }
   catch { return {getItem:k => k in mem ? mem[k] : null, setItem:(k, v) => { mem[k] = String(v); }, removeItem:k => { delete mem[k]; }}; } })();
 async function sha(s) {
@@ -245,12 +319,23 @@ function fmtDur(ms) {
 }
 function fmtTime(t) { const d = new Date(t); const p = n => String(n).padStart(2, '0'); return `${d.getMonth()+1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`; }
 function colorOf(s) { let h = 0; for (const c of String(s)) h = (h * 37 + c.charCodeAt(0)) % 360; return `hsl(${h} 65% 52%)`; }
+const dn = f => (f && (f.nick || f.username)) || '？';
+const itemInfo = id => CROPS[id] || PROD[id] || {n:id, sell:0};
+const isOnline = p => p && p.t && now() - p.t < 90000;
 
 function levelOf(exp) { let L = 1, need = 100, e = exp || 0; while (e >= need) { e -= need; L++; need = 100 + (L - 1) * 80; } return {L, cur:e, need}; }
 function gainExp(f, n) { const b = levelOf(f.exp).L; f.exp = (f.exp || 0) + n; const a = levelOf(f.exp).L; return a > b ? a : 0; }
-function daily(f) { if (!f.daily || f.daily.day !== today()) f.daily = {day:today(), help:0, prank:0}; return f.daily; }
+function daily(f) { if (!f.daily || f.daily.day !== today()) f.daily = {day:today(), help:0, prank:0, t:{}, cl:[], bonus:false, spin:false, vis:[]}; f.daily.t ??= {}; f.daily.cl ??= []; f.daily.vis ??= []; return f.daily; }
+const dailyView = f => f && f.daily && f.daily.day === today() ? {t:{}, cl:[], vis:[], ...f.daily} : {t:{}, cl:[], vis:[], help:0, prank:0, bonus:false, spin:false};
+function bump(f, k, n = 1) { const d = daily(f); d.t[k] = (d.t[k] || 0) + n; }
 function addLog(f, m) { f.log = f.log || []; f.log.push({t:now(), m}); if (f.log.length > 40) f.log = f.log.slice(-40); }
+function todayTasks(uid) {
+  const pool = Object.keys(TASKS); let h = hashStr(today() + uid); const out = [];
+  while (out.length < 5) { h = (Math.imul(h, 1103515245) + 12345) >>> 0; out.push(pool.splice(h % pool.length, 1)[0]); }
+  return out;
+}
 
+/* ----- 農作物 ----- */
 const growMs = c => CROPS[c].t * 1000 / SPEED;
 const totalMs = p => growMs(p.c) - (p.f || 0);
 const matureAt = p => p.p + totalMs(p);
@@ -264,15 +349,42 @@ function stealInfo(p, uid) {
 }
 function harvestAmt(p) { return Math.max(1, Math.floor((CROPS[p.c].y - (p.st || 0)) * (1 - 0.1 * probs(p)))); }
 
-function newFarm(username) {
-  return {username, exp:0, coins:300, plotCount:START_P, plots:Array.from({length:MAXP}, () => ({s:'empty'})),
-    seeds:{radish:4, carrot:2}, wh:{}, fert:2, dog:false, friends:[], log:[], logSeen:0,
-    daily:{day:'', help:0, prank:0}, lastSign:'', created:now()};
+/* ----- 動物 ----- */
+const ivMs = k => ANIMALS[k].iv * 1000 / SPEED;
+function settleA(a, t = now()) {
+  const iv = ivMs(a.k), end = Math.min(t, a.fu);
+  if ((a.s || 0) >= MAX_STOCK) { a.p = Math.max(a.p, end); return a; }
+  if (end > a.p) {
+    const n = Math.floor((end - a.p) / iv);
+    if (n > 0) { const add = Math.min(n, MAX_STOCK - (a.s || 0)); a.s = (a.s || 0) + add; a.p = add < n ? end : a.p + n * iv; }
+  }
+  return a;
 }
+const aView = a => settleA(clone(a));
+const isBaby = a => now() < a.b + ivMs(a.k) * 0.5;
+const isHungry = a => a.fu <= now();
+const needFeed = a => a.fu - now() < ivMs(a.k) * 1.5;
+function aStealable(a, uid) { const v = aView(a); return v.s >= 2 && !(a.th || []).includes(uid); }
 
-/* 雜草、蟲、乾旱：作物成長期間每 1/4 時間有機會出現（農場主人上線時補算） */
-function spawnProblems(f) {
-  let ch = false; const t = now();
+function newFarm(username) {
+  return {username, nick:'', exp:0, coins:300, plotCount:START_P, plots:Array.from({length:MAXP}, () => ({s:'empty'})),
+    seeds:{radish:4, carrot:2, grass:2}, wh:{}, fert:2, feed:5, pets:[], pet:'', ranch:{animals:[], poop:0, pt:0}, friends:[], log:[], logSeen:0,
+    daily:{day:'', help:0, prank:0, t:{}, cl:[], bonus:false, spin:false, vis:[]}, lastSign:'', created:now()};
+}
+/* 舊存檔補上新欄位 */
+function normalize(f) {
+  if (!f) return f;
+  f.nick ??= ''; f.feed ??= 0; f.pets ??= []; f.pet ??= '';
+  if (f.dog && !f.pets.includes('dog')) { f.pets.push('dog'); if (!f.pet) f.pet = 'dog'; }
+  f.ranch ??= {animals:[], poop:0, pt:0}; f.ranch.animals ??= []; f.ranch.poop ??= 0;
+  f.seeds ??= {}; f.wh ??= {}; f.friends ??= []; f.log ??= [];
+  return f;
+}
+const petOf = f => f && f.pet && PETS[f.pet] ? f.pet : '';
+
+/* 雜草、蟲、乾旱、便便：主人上線時補算 */
+function tickOwn(f) {
+  let ch = false; const t = now(); const cat = petOf(f) === 'cat';
   for (let i = 0; i < f.plotCount; i++) {
     const p = f.plots[i]; if (p.s !== 'grow') continue;
     const g = totalMs(p), iv = Math.max(15000 / SPEED, g / 4), end = Math.min(t, p.p + g);
@@ -281,23 +393,31 @@ function spawnProblems(f) {
       for (let j = done; j < k; j++) {
         if (Math.random() < 0.35 && probs(p) < 3) {
           const opts = p.d ? ['w', 'b'] : ['d', 'w', 'b']; const o = opts[Math.floor(Math.random() * opts.length)];
+          if (o === 'b' && cat && Math.random() < 0.6) continue;
           if (o === 'd') p.d = true; else p[o] = (p[o] || 0) + 1;
         }
       }
       p.k = k; ch = true;
     }
   }
+  const r = f.ranch;
+  if (r && r.animals.length && t - (r.pt || 0) > 15 * 60000 / SPEED) {
+    r.pt = t; ch = true;
+    if (r.poop < MAX_POOP && Math.random() < 0.3 + 0.06 * r.animals.length) r.poop++;
+  }
   return ch;
 }
 
 /* ===================== 後台：單機測試版 ===================== */
 function makeLocal() {
-  const K = 'hf_local_db', SK = 'hf_local_sess';
+  const K = 'hf_local_db', SK = 'hf_local_sess', PK = 'hf_local_pres';
   const load = () => { let d; try { d = JSON.parse(store.getItem(K)) || {}; } catch { d = {}; } d.users ??= {}; d.names ??= {}; d.farms ??= {}; d.req ??= {}; return d; };
-  let db = load(); const watchers = new Set(); let authCb = null;
+  const loadP = () => { try { return JSON.parse(store.getItem(PK)) || {}; } catch { return {}; } };
+  let db = load(); const watchers = new Set(), pw = new Set(); let authCb = null;
   const save = () => { store.setItem(K, JSON.stringify(db)); notify(); };
   function notify() { for (const w of watchers) { const s = JSON.stringify(db.farms[w.uid] ?? null); if (s !== w.last) { w.last = s; w.cb(JSON.parse(s)); } } }
-  addEventListener('storage', e => { if (e.key === K) { db = load(); notify(); } });
+  function notifyP() { const p = loadP(); for (const w of pw) w.cb(Object.entries(p).filter(([, v]) => v.at === w.at).map(([uid, v]) => ({uid, ...v}))); }
+  addEventListener('storage', e => { if (e.key === K) { db = load(); notify(); } if (e.key === PK) notifyP(); });
   return {
     mode:'local',
     onAuth(cb) { authCb = cb; const u = store.getItem(SK); cb(u && db.users[u] ? {uid:u} : null); },
@@ -317,11 +437,15 @@ function makeLocal() {
     watch(uid, cb) { const w = {uid, cb, last:undefined}; watchers.add(w); setTimeout(notify, 0); return () => watchers.delete(w); },
     async tx(uid, fn) {
       db = load(); const f = db.farms[uid]; if (!f) throw new Error('找不到農場');
-      const c = clone(f); const r = fn(c) || {}; if (r.abort) return r; db.farms[uid] = c; save(); return r;
+      const c = normalize(clone(f)); const r = fn(c) || {}; if (r.abort) return r; db.farms[uid] = c; save(); return r;
     },
     async sendReq(from, fromName, to) { db = load(); db.req[to + '_' + from] = {from, fromName, to, t:now()}; save(); },
     async listReq(uid) { db = load(); return Object.entries(db.req).filter(([, r]) => r.to === uid).map(([id, r]) => ({id, ...r})); },
     async delReq(id) { db = load(); delete db.req[id]; save(); },
+    async setPresence(uid, d) { const p = loadP(); p[uid] = {...(p[uid] || {}), ...d}; store.setItem(PK, JSON.stringify(p)); notifyP(); },
+    watchHere(at, cb) { const w = {at, cb}; pw.add(w); setTimeout(notifyP, 0); return () => pw.delete(w); },
+    async listRecent() { return Object.entries(loadP()).map(([uid, v]) => ({uid, ...v})).sort((a, b) => b.t - a.t).slice(0, 40); },
+    async getPresence(uid) { return loadP()[uid] || null; },
   };
 }
 
@@ -342,7 +466,6 @@ async function makeFirebase(cfg) {
   return {
     mode:'firebase',
     async settle() { if (regP) await regP.catch(() => {}); },
-    onAuth(cb) { A.onAuthStateChanged(auth, u => cb(u ? {uid:u.uid} : null)); },
     async register(name, pass) { regP = this._register(name, pass); try { await regP; } finally { regP = null; } },
     async _register(name, pass) {
       try {
@@ -363,8 +486,8 @@ async function makeFirebase(cfg) {
       try {
         return await F.runTransaction(db, async t => {
           const s = await t.get(fref(uid)); if (!s.exists()) throw new Error('找不到農場');
-          const cur = s.data(), c = clone(cur); const r = fn(c) || {}; if (r.abort) return r;
-          const ch = {}; for (const k of Object.keys(c)) if (JSON.stringify(c[k]) !== JSON.stringify(cur[k])) ch[k] = c[k];
+          const base = normalize(clone(s.data())), c = clone(base); const r = fn(c) || {}; if (r.abort) return r;
+          const ch = {}; for (const k of Object.keys(c)) if (JSON.stringify(c[k]) !== JSON.stringify(base[k])) ch[k] = c[k];
           if (Object.keys(ch).length) t.update(fref(uid), ch); return r;
         });
       } catch (e) { throw e.code ? wrap(e) : e; }
@@ -372,6 +495,10 @@ async function makeFirebase(cfg) {
     async sendReq(from, fromName, to) { await F.setDoc(F.doc(db, 'requests', to + '_' + from), {from, fromName, to, t:now()}); },
     async listReq(uid) { const q = await F.getDocs(F.query(F.collection(db, 'requests'), F.where('to', '==', uid))); return q.docs.map(d => ({id:d.id, ...d.data()})); },
     async delReq(id) { await F.deleteDoc(F.doc(db, 'requests', id)); },
+    async setPresence(uid, d) { await F.setDoc(F.doc(db, 'presence', uid), d, {merge:true}).catch(e => console.warn(e)); },
+    watchHere(at, cb) { return F.onSnapshot(F.query(F.collection(db, 'presence'), F.where('at', '==', at)), s => cb(s.docs.map(d => ({uid:d.id, ...d.data()}))), e => console.warn(e)); },
+    async listRecent() { const q = await F.getDocs(F.query(F.collection(db, 'presence'), F.orderBy('t', 'desc'), F.limit(40))); return q.docs.map(d => ({uid:d.id, ...d.data()})); },
+    async getPresence(uid) { const s = await F.getDoc(F.doc(db, 'presence', uid)); return s.exists() ? s.data() : null; },
   };
 }
 
@@ -382,6 +509,7 @@ const LN = (x, y, a, s, c) => `<path transform="translate(${x} ${y}) rotate(${a}
 const mound = (c = '#6b3f1d') => `<ellipse rx="13" ry="5" fill="${c}"/>`;
 const bush = (c1, c2, h = 1) => [L(0,-2,-75,1*h,c2), L(0,-2,75,1*h,c2), L(-3,-6,-40,1.15*h,c1), L(3,-6,40,1.15*h,c1), L(0,-8,0,1.3*h,c1), L(-6,-18,-25,.95*h,c2), L(6,-20,28,.95*h,c2), L(0,-24,-5,.8*h,c1)].join('');
 const PLANT = {
+  grass(r) { const s = r ? 1.15 : .8; return mound() + [-50,-30,-12,0,14,32,52].map((a, k) => LN((k - 3) * 3, -1, a, s * (k % 2 ? 1 : .85), k % 2 ? '#8bc34a' : '#689f38')).join('') + (r ? `<path d="M-8 -30l-2 -6M8 -28l2 -6M0 -34v-6" stroke="#c0ca33" stroke-width="2.5" stroke-linecap="round"/>` : ''); },
   radish(r) { return mound() + [L(-2,-10,-45,1,G1), L(0,-11,-12,1.2,G3), L(2,-10,22,1.1,G1), L(3,-9,58,.9,G2)].join('') +
     (r ? `<ellipse cx="0" cy="-6" rx="11" ry="12" fill="#fbfbf5" stroke="#d6d6c8" stroke-width="1.5"/><path d="M-7 -13Q0 -19 7 -13" stroke="#b9db7c" stroke-width="4" fill="none"/><path d="M-4 -2Q0 1 3 -3" stroke="#e3e3d6" fill="none"/>` : ''); },
   carrot(r) { return mound() + [LN(-2,-4,-38,1,G2), LN(0,-4,-14,1.15,G1), LN(1,-4,10,1.2,G3), LN(2,-4,34,1,G1), LN(3,-4,58,.85,G2)].join('') +
@@ -418,11 +546,83 @@ function plantSVG(p) {
 }
 const cropIcon = (id, size = 50) => `<svg viewBox="-34 -72 68 82" width="${size}" height="${size}">${PLANT[id](true)}</svg>`;
 
+/* ===================== 畫圖：動物、產品、寵物 ===================== */
+const ANI_SVG = {
+  chicken: () => `<path d="M-3 -2v-7M3 -2v-7" stroke="#f9a825" stroke-width="2.2"/><path d="M-6 -1h5M0 -1h6" stroke="#f9a825" stroke-width="2"/>
+    <path d="M11 -19q12 -8 9 5q-4 -3 -9 1z" fill="#eeeeee"/><ellipse cx="2" cy="-15" rx="13" ry="10" fill="#fff" stroke="#ddd" stroke-width="1.2"/>
+    <path d="M-1 -17q7 6 12 0" stroke="#ddd" stroke-width="2" fill="none"/><circle cx="-9" cy="-25" r="7.5" fill="#fff" stroke="#ddd" stroke-width="1.2"/>
+    <path d="M-13 -32q2 -6 4 -1q2 -5 4 0q3 -4 2 2z" fill="#e53935"/><path d="M-16 -26l-6 2l6 2z" fill="#ffb300"/>
+    <circle cx="-11" cy="-26" r="1.4" fill="#222"/><path d="M-11 -20q-3 5 1 5q2 -3 -1 -5z" fill="#e53935"/>`,
+  duck: () => `<path d="M-2 -2v-6M4 -2v-6" stroke="#fb8c00" stroke-width="2.4"/><path d="M-6 -1h6M0 -1h7" stroke="#fb8c00" stroke-width="2.5"/>
+    <path d="M13 -16l8 -6l-2 8z" fill="#fdd835"/><ellipse cx="3" cy="-13" rx="14" ry="9" fill="#ffee58" stroke="#f9a825" stroke-width="1.2"/>
+    <path d="M0 -15q8 5 13 -1" stroke="#f9a825" stroke-width="2" fill="none"/><circle cx="-9" cy="-24" r="7.5" fill="#ffee58" stroke="#f9a825" stroke-width="1.2"/>
+    <path d="M-15 -24q-7 0 -8 2q4 3 9 1z" fill="#fb8c00"/><circle cx="-10" cy="-26" r="1.4" fill="#222"/><circle cx="-6" cy="-22" r="1.8" fill="#ffab91" opacity=".7"/>`,
+  rabbit: () => `<circle cx="15" cy="-9" r="4" fill="#fff"/><ellipse cx="3" cy="-9" rx="13" ry="9" fill="#f5f5f5" stroke="#ddd" stroke-width="1.2"/>
+    <ellipse cx="-4" cy="-2" rx="5" ry="3" fill="#f5f5f5" stroke="#ddd"/><ellipse cx="9" cy="-2" rx="5" ry="3" fill="#f5f5f5" stroke="#ddd"/>
+    <ellipse cx="-12" cy="-30" rx="3.5" ry="10" fill="#f5f5f5" stroke="#ddd" transform="rotate(-12 -12 -30)"/><ellipse cx="-12" cy="-30" rx="1.6" ry="7" fill="#f8bbd0" transform="rotate(-12 -12 -30)"/>
+    <ellipse cx="-5" cy="-31" rx="3.5" ry="10" fill="#f5f5f5" stroke="#ddd" transform="rotate(10 -5 -31)"/><ellipse cx="-5" cy="-31" rx="1.6" ry="7" fill="#f8bbd0" transform="rotate(10 -5 -31)"/>
+    <circle cx="-9" cy="-16" r="8" fill="#f5f5f5" stroke="#ddd" stroke-width="1.2"/><circle cx="-11" cy="-17" r="1.5" fill="#222"/><circle cx="-16" cy="-14" r="1.6" fill="#f48fb1"/><circle cx="-7" cy="-13" r="1.8" fill="#f8bbd0" opacity=".7"/>`,
+  pig: () => `<path d="M-10 -4v-6M-3 -4v-6M7 -4v-6M14 -4v-6" stroke="#f48fb1" stroke-width="5" stroke-linecap="round"/>
+    <path d="M20 -18q8 -2 4 -7q-4 -2 -2 3" stroke="#f48fb1" stroke-width="2" fill="none"/><ellipse cx="3" cy="-16" rx="18" ry="12" fill="#f8bbd0" stroke="#f48fb1" stroke-width="1.2"/>
+    <circle cx="-14" cy="-21" r="10" fill="#f8bbd0" stroke="#f48fb1" stroke-width="1.2"/><path d="M-19 -30l-4 -7l7 3zM-10 -30l2 -8l3 7z" fill="#f48fb1"/>
+    <ellipse cx="-22" cy="-19" rx="5" ry="4" fill="#f48fb1"/><circle cx="-23.5" cy="-19" r="1" fill="#ad1457"/><circle cx="-20.5" cy="-19" r="1" fill="#ad1457"/>
+    <circle cx="-15" cy="-24" r="1.5" fill="#222"/><circle cx="-11" cy="-17" r="2" fill="#f06292" opacity=".5"/>`,
+  sheep: () => `<path d="M-9 -4v-8M-3 -4v-8M7 -4v-8M13 -4v-8" stroke="#424242" stroke-width="3.5" stroke-linecap="round"/>
+    <g fill="#fafafa" stroke="#e0e0e0" stroke-width="1.2"><circle cx="-6" cy="-18" r="8"/><circle cx="4" cy="-22" r="9"/><circle cx="14" cy="-17" r="8"/><circle cx="2" cy="-12" r="9"/><circle cx="12" cy="-10" r="7"/><circle cx="-6" cy="-10" r="7"/></g>
+    <ellipse cx="-15" cy="-20" rx="6.5" ry="8" fill="#424242"/><ellipse cx="-20" cy="-23" rx="4" ry="2" fill="#424242" transform="rotate(-20 -20 -23)"/><ellipse cx="-10" cy="-24" rx="4" ry="2" fill="#424242" transform="rotate(20 -10 -24)"/>
+    <circle cx="-13" cy="-28" r="4" fill="#fafafa"/><circle cx="-17" cy="-21" r="1.4" fill="#fff"/><circle cx="-13" cy="-21" r="1.4" fill="#fff"/>`,
+  cow: () => `<path d="M-14 -4v-10M-7 -4v-10M10 -4v-10M17 -4v-10" stroke="#fafafa" stroke-width="5" stroke-linecap="round"/><path d="M-14 -3h0M-7 -3h0M10 -3h0M17 -3h0" stroke="#5d4037" stroke-width="5" stroke-linecap="round"/>
+    <path d="M25 -26q6 4 3 14" stroke="#9e9e9e" stroke-width="2" fill="none"/><rect x="-18" y="-34" width="44" height="24" rx="11" fill="#fafafa" stroke="#bdbdbd" stroke-width="1.2"/>
+    <path d="M-4 -34q8 4 4 12q-8 0 -10 -6q0 -5 6 -6zM12 -27q7 -2 9 4q-3 6 -9 3q-3 -4 0 -7z" fill="#424242"/><ellipse cx="6" cy="-10" rx="5" ry="3" fill="#f8bbd0"/>
+    <path d="M-28 -42q-2 -6 2 -5M-18 -42q2 -6 -2 -5" stroke="#fff3e0" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <ellipse cx="-23" cy="-30" rx="9" ry="10" fill="#fafafa" stroke="#bdbdbd" stroke-width="1.2"/><ellipse cx="-33" cy="-34" rx="5" ry="2.5" fill="#fafafa" stroke="#bdbdbd" transform="rotate(-20 -33 -34)"/><ellipse cx="-13" cy="-35" rx="5" ry="2.5" fill="#fafafa" stroke="#bdbdbd" transform="rotate(20 -13 -35)"/>
+    <ellipse cx="-24" cy="-23" rx="8" ry="5.5" fill="#f8bbd0"/><circle cx="-26.5" cy="-23" r="1.2" fill="#ad1457"/><circle cx="-21.5" cy="-23" r="1.2" fill="#ad1457"/>
+    <circle cx="-27" cy="-32" r="1.6" fill="#222"/><circle cx="-19" cy="-32" r="1.6" fill="#222"/><path d="M-20 -40q6 -2 4 6" fill="#424242"/>`,
+};
+const PROD_SVG = {
+  egg: `<ellipse rx="8" ry="10" fill="#fffdf6" stroke="#d7ccc8" stroke-width="1.5"/><ellipse cx="-3" cy="-4" rx="2" ry="3" fill="#fff"/>`,
+  duckegg: `<ellipse rx="8" ry="10" fill="#d4ecf7" stroke="#90caf9" stroke-width="1.5"/><circle cx="2" cy="2" r="1.2" fill="#90caf9"/><circle cx="-3" cy="-3" r="1" fill="#90caf9"/>`,
+  fur: `<g fill="#fff" stroke="#e0e0e0" stroke-width="1.2"><circle cx="-5" cy="2" r="6"/><circle cx="5" cy="2" r="6"/><circle cx="0" cy="-4" r="7"/></g>`,
+  truffle: `<path d="M-9 2q-2 -9 5 -11q6 -4 10 2q6 3 2 10q-4 6 -10 4q-6 1 -7 -5z" fill="#5d4037" stroke="#3e2723" stroke-width="1.2"/><circle cx="-2" cy="-2" r="1.3" fill="#8d6e63"/><circle cx="4" cy="2" r="1.1" fill="#8d6e63"/><circle cx="1" cy="-6" r="1" fill="#8d6e63"/>`,
+  wool: `<circle r="9.5" fill="#fff3e0" stroke="#d7ccc8" stroke-width="1.5"/><path d="M-8 -4q8 4 16 -1M-9 2q9 5 17 0M-4 -9q3 9 0 18M3 -9q4 9 1 18" stroke="#d7ccc8" stroke-width="1.3" fill="none"/>`,
+  milk: `<path d="M-6 -6l2 -4h8l2 4v14q0 2 -2 2h-8q-2 0 -2 -2z" fill="#fff" stroke="#bdbdbd" stroke-width="1.3"/><rect x="-4" y="-13" width="8" height="4" rx="1" fill="#42a5f5"/><rect x="-6" y="0" width="12" height="5" fill="#bbdefb"/>`,
+};
+const prodIcon = (id, size = 46) => `<svg viewBox="-14 -14 28 28" width="${size}" height="${size}">${PROD_SVG[id]}</svg>`;
+const aniIcon = (k, size = 50) => `<svg viewBox="-36 -48 72 54" width="${size}" height="${size}">${ANI_SVG[k]()}</svg>`;
+const itemIcon = (id, size) => CROPS[id] ? cropIcon(id, size) : PROD_SVG[id] ? prodIcon(id, size) : '📦';
+
+const DOGPAL = {dog:{b:'#e8a65a', h:'#f0b46c', e:'#a0612a', m:'#fff3e0', eye:'#3e2723'}, shiba:{b:'#e3893a', h:'#ec9a4c', e:'#c4692a', m:'#ffffff', eye:'#3e2723'}, husky:{b:'#8f99a8', h:'#a8b2c0', e:'#59616d', m:'#ffffff', eye:'#1e88e5'}};
+function petSVG(k) {
+  if (k === 'cat') return `<ellipse cy="3" rx="22" ry="5" fill="rgba(0,0,0,.15)"/>
+    <path class="tail" d="M12 -6q16 -2 12 -22" stroke="#f0a04b" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <ellipse cx="4" cy="-9" rx="14" ry="10" fill="#f6b15f"/><path d="M-2 -16q4 4 0 10M6 -18q4 5 0 12" stroke="#d9822b" stroke-width="2" fill="none"/>
+    <g class="bob"><circle cx="-10" cy="-24" r="12" fill="#f6b15f"/><path d="M-21 -30l2 -12l8 7zM-1 -30l-2 -12l-8 7z" fill="#f6b15f"/><path d="M-19 -32l1 -6l4 4zM-3 -32l-1 -6l-4 4z" fill="#ffccbc"/>
+    <path d="M-14 -26q2 -2 4 0M-8 -26q2 -2 4 0" stroke="#3e2723" stroke-width="1.6" fill="none"/><path d="M-11 -21l2 2l2 -2" stroke="#3e2723" stroke-width="1.2" fill="#f48fb1"/>
+    <path d="M-16 -21h-8M-16 -19l-7 2M-4 -21h8M-4 -19l7 2" stroke="#795548" stroke-width=".8"/></g>`;
+  const c = DOGPAL[k] || DOGPAL.dog;
+  return `<ellipse cy="3" rx="22" ry="5" fill="rgba(0,0,0,.15)"/>
+    <path class="tail" d="M14 -10q12 -6 12 -18" stroke="${c.b}" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <ellipse cx="4" cy="-10" rx="16" ry="12" fill="${c.b}"/><ellipse cx="-4" cy="-2" rx="5" ry="4" fill="${c.b}"/><ellipse cx="10" cy="-1" rx="5" ry="4" fill="${c.b}"/>
+    <g class="bob"><circle cx="-10" cy="-26" r="13" fill="${c.h}"/>
+    ${k === 'dog' ? `<ellipse cx="-21" cy="-28" rx="5" ry="9" fill="${c.e}" transform="rotate(20 -21 -28)"/><ellipse cx="1" cy="-30" rx="5" ry="9" fill="${c.e}" transform="rotate(-20 1 -30)"/>`
+      : `<path d="M-22 -32l1 -14l9 8zM2 -32l-1 -14l-9 8z" fill="${c.e}"/><path d="M-20 -34l1 -7l4 4zM0 -34l-1 -7l-4 4z" fill="#fff"/>`}
+    ${k === 'husky' ? `<path d="M-10 -38q-6 8 -10 14q10 6 20 0q-4 -6 -10 -14z" fill="#fff"/>` : ''}
+    ${k === 'shiba' ? `<ellipse cx="-17" cy="-20" rx="5" ry="4" fill="#fff"/><ellipse cx="-3" cy="-20" rx="5" ry="4" fill="#fff"/>` : ''}
+    <ellipse cx="-10" cy="-20" rx="6" ry="4.5" fill="${c.m}"/><circle cx="-10" cy="-22" r="2.4" fill="#3e2723"/>
+    <circle cx="-15" cy="-28" r="1.9" fill="${c.eye}"/><circle cx="-5" cy="-28" r="1.9" fill="${c.eye}"/>
+    <path d="M-10 -14q2 3 4 0" stroke="#e57373" stroke-width="2" fill="#e57373"/></g>
+    <path d="M-14 -16h8" stroke="#e53935" stroke-width="3"/>`;
+}
+const petIcon = (k, size = 50) => `<svg viewBox="-30 -46 60 52" width="${size}" height="${size}">${petSVG(k)}</svg>`;
+
 /* ===================== 畫圖：場景 ===================== */
 const TW = 110, TH = 56, HW = TW / 2, HH = TH / 2, DZ = 9, OX = 418, OY = 262;
 const rc = i => ({r:Math.floor(i / 6), c:i % 6});
 const tilePos = i => { const {r, c} = rc(i); return {x:OX + (c - r) * HW, y:OY + (c + r) * HH}; };
 const ORDER = [...Array(MAXP).keys()].sort((a, b) => { const A = rc(a), B = rc(b); return (A.r + A.c) - (B.r + B.c) || A.c - B.c; });
+const aniPos = i => { const r = Math.floor(i / 4), c = i % 4; return {x:500 + (c - 1.5 - (r - 1)) * 62, y:386 + (c - 1.5 + r - 1) * 32}; };
+const POOP_POS = [[402,340],[598,372],[470,428],[380,396],[560,450],[652,414]];
+const SLOTS = [[300,392],[362,442],[436,492],[664,484],[726,452],[262,352],[774,420],[520,520],[226,410],[812,470]];
 const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
 function diamond(fill, furrow) {
   let s = `<polygon points="${-HW},0 0,${HH} 0,${HH+DZ} ${-HW},${DZ}" fill="#7a4b24"/><polygon points="${HW},0 0,${HH} 0,${HH+DZ} ${HW},${DZ}" fill="#5e3a1b"/>
@@ -432,7 +632,8 @@ function diamond(fill, furrow) {
 }
 const weedSVG = (x, y) => `<path transform="translate(${x} ${y})" d="M0 0l-5 -12M0 0l0 -15M0 0l6 -11M0 0l-9 -6M0 0l9 -5" stroke="#3a7d1e" stroke-width="2.6" stroke-linecap="round" fill="none"/>`;
 const bugSVG = (x, y) => `<g transform="translate(${x} ${y})"><path d="M-6 -1l-3 -3M-6 2l-4 1M6 -1l3 -3M6 2l4 1" stroke="#222" stroke-width="1.3"/><ellipse rx="6" ry="4.5" fill="#c62828"/><path d="M0 -4.5V4.5" stroke="#222" stroke-width="1"/><circle cx="-2.5" cy="-1" r="1.2" fill="#222"/><circle cx="2.5" cy="1.5" r="1.2" fill="#222"/><circle cx="0" cy="-5.5" r="2.5" fill="#222"/></g>`;
-const dryBubble = `<g transform="translate(34 -40) scale(.8)" class="bob"><circle r="11" fill="#fff" stroke="#90caf9" stroke-width="2"/><path d="M0 -6C3 -2 5 1 5 3A5 5 0 0 1 -5 3C-5 1 -3 -2 0 -6Z" fill="#42a5f5"/><circle cx="-8" cy="13" r="3" fill="#fff" stroke="#90caf9" stroke-width="1.5"/></g>`;
+const bubble = (x, y, inner, stroke = '#90caf9') => `<g transform="translate(${x} ${y})" class="bob"><circle r="13" fill="#fff" stroke="${stroke}" stroke-width="2"/>${inner}<circle cx="-9" cy="15" r="3" fill="#fff" stroke="${stroke}" stroke-width="1.5"/></g>`;
+const dropIcon = `<path d="M0 -6C3 -2 5 1 5 3A5 5 0 0 1 -5 3C-5 1 -3 -2 0 -6Z" fill="#42a5f5"/>`;
 
 function tileSVG(i, f, own) {
   const {x, y} = tilePos(i);
@@ -450,7 +651,7 @@ function tileSVG(i, f, own) {
       const W = [[-32,4],[28,0],[8,16]], Bg = [[-12,-26],[13,-36],[0,-14]];
       for (let k = 0; k < (p.w || 0); k++) s += weedSVG(...W[k % 3]);
       for (let k = 0; k < (p.b || 0); k++) s += bugSVG(...Bg[k % 3]);
-      if (p.d) s += dryBubble;
+      if (p.d) s += `<g transform="scale(.8)">${bubble(42, -50, dropIcon)}</g>`;
       if (isMature(p)) s += `<path class="tw" transform="translate(-24 -44)" d="M0 -7L2 -2L7 0L2 2L0 7L-2 2L-7 0L-2 -2Z" fill="#fff59d"/><path class="tw" style="animation-delay:.8s" transform="translate(22 -30) scale(.7)" d="M0 -7L2 -2L7 0L2 2L0 7L-2 2L-7 0L-2 -2Z" fill="#fff59d"/>`;
     }
   }
@@ -461,8 +662,7 @@ function bgSVG() {
   const T = [418, 218], Lc = [237, 318], R = [764, 402], Bt = [583, 502];
   let fence = '';
   for (const [a, b] of [[Lc, T], [T, R]]) {
-    const n = 12;
-    const pts = Array.from({length:n + 1}, (_, k) => lerp(a, b, k / n));
+    const n = 12; const pts = Array.from({length:n + 1}, (_, k) => lerp(a, b, k / n));
     fence += `<path d="M${pts.map(p => `${p[0]} ${p[1] - 10}`).join('L')}M${pts.map(p => `${p[0]} ${p[1] - 21}`).join('L')}" stroke="#b07a43" stroke-width="4" fill="none"/>`;
     fence += pts.map(p => `<rect x="${p[0] - 3}" y="${p[1] - 28}" width="6" height="28" rx="2" fill="#c8915a" stroke="#8d5a2b" stroke-width="1"/>`).join('');
   }
@@ -493,98 +693,163 @@ function bgSVG() {
     <g fill="#bbdefb" stroke="#8d5a2b" stroke-width="3"><rect x="-62" y="-78" width="30" height="26"/><rect x="32" y="-78" width="30" height="26"/></g>
     <path d="M-47 -78v26M-62 -65h30M47 -78v26M32 -65h30" stroke="#8d5a2b" stroke-width="2"/>
   </g>
-  <polygon points="${T[0]},${T[1]} ${R[0]},${R[1]} ${Bt[0]},${Bt[1]} ${Lc[0]},${Lc[1]}" fill="#6db544" stroke="#5aa236" stroke-width="4" stroke-linejoin="round"/>
+  <polygon id="fieldBase" points="${T[0]},${T[1]} ${R[0]},${R[1]} ${Bt[0]},${Bt[1]} ${Lc[0]},${Lc[1]}" fill="#6db544" stroke="#5aa236" stroke-width="4" stroke-linejoin="round"/>
   ${fence}${flowers}`;
 }
 
-function decoSVG(f, own) {
-  const lv = levelOf(f.exp).L;
-  const title = own ? '我的農場' : `${f.username} 的農場`;
-  let s = `<g transform="translate(418 196)"><rect x="-4" y="-6" width="8" height="34" fill="#8d5a2b"/>
-    <rect x="-${Math.max(70, title.length * 9 + 22)}" y="-46" width="${Math.max(140, title.length * 18 + 44)}" height="44" rx="10" fill="#a0703f" stroke="#6b3f1d" stroke-width="3"/>
-    <text class="signT" y="-28">${esc(title)}</text><text class="signT" y="-9" style="font-size:13px;fill:#ffe082">Lv.${lv}${f.dog ? ' · 有狗看門 🐾' : ''}</text></g>`;
-  if (f.dog) s += `<g transform="translate(690 300)">
-      <ellipse cy="4" rx="40" ry="8" fill="rgba(0,0,0,.15)"/>
-      <polygon points="-34,-36 0,-64 34,-36" fill="#c0392b" stroke="#8e2a1f" stroke-width="2" stroke-linejoin="round"/>
-      <rect x="-29" y="-37" width="58" height="40" fill="#d7a35b" stroke="#a0703f" stroke-width="2"/>
-      <path d="M-12 3v-20a12 12 0 0 1 24 0v20z" fill="#4e342e"/></g>
-    <g transform="translate(640 312)">
-      <ellipse cy="3" rx="22" ry="5" fill="rgba(0,0,0,.15)"/>
-      <path class="tail" d="M14 -10q12 -6 12 -18" stroke="#d68a3c" stroke-width="5" stroke-linecap="round" fill="none"/>
-      <ellipse cx="4" cy="-10" rx="16" ry="12" fill="#e8a65a"/>
-      <ellipse cx="-4" cy="-2" rx="5" ry="4" fill="#e8a65a"/><ellipse cx="10" cy="-1" rx="5" ry="4" fill="#e8a65a"/>
-      <g class="bob"><circle cx="-10" cy="-26" r="13" fill="#f0b46c"/>
-      <ellipse cx="-21" cy="-28" rx="5" ry="9" fill="#a0612a" transform="rotate(20 -21 -28)"/><ellipse cx="1" cy="-30" rx="5" ry="9" fill="#a0612a" transform="rotate(-20 1 -30)"/>
-      <ellipse cx="-12" cy="-20" rx="6" ry="4.5" fill="#fff3e0"/><circle cx="-12" cy="-22" r="2.4" fill="#3e2723"/>
-      <circle cx="-15" cy="-28" r="1.8" fill="#3e2723"/><circle cx="-6" cy="-28" r="1.8" fill="#3e2723"/>
-      <path d="M-12 -14q2 3 4 0" stroke="#e57373" stroke-width="2" fill="#e57373"/></g>
-      <path d="M-14 -16h8" stroke="#e53935" stroke-width="3"/></g>`;
+function signSVG(title, sub) {
+  const w = Math.max(140, [...title].length * 18 + 44);
+  return `<g transform="translate(418 196)"><rect x="-4" y="-6" width="8" height="34" fill="#8d5a2b"/>
+    <rect x="${-w / 2}" y="-46" width="${w}" height="44" rx="10" fill="#a0703f" stroke="#6b3f1d" stroke-width="3"/>
+    <text class="signT" y="-28">${esc(title)}</text><text class="signT" y="-9" style="font-size:13px;fill:#ffe082">${esc(sub)}</text></g>`;
+}
+function farmDeco(f, own) {
+  const pk = petOf(f);
+  let s = signSVG(own ? '我的農場' : `${dn(f)} 的農場`, `Lv.${levelOf(f.exp).L}${pk ? ` · ${PETS[pk].n}顧家` : ''}`);
+  if (pk) {
+    s += pk === 'cat'
+      ? `<g transform="translate(690 300)"><ellipse cy="2" rx="30" ry="8" fill="#8d6e63"/><ellipse cy="-2" rx="26" ry="6" fill="#ef9a9a"/></g>`
+      : `<g transform="translate(690 300)"><ellipse cy="4" rx="40" ry="8" fill="rgba(0,0,0,.15)"/><polygon points="-34,-36 0,-64 34,-36" fill="#c0392b" stroke="#8e2a1f" stroke-width="2" stroke-linejoin="round"/><rect x="-29" y="-37" width="58" height="40" fill="#d7a35b" stroke="#a0703f" stroke-width="2"/><path d="M-12 3v-20a12 12 0 0 1 24 0v20z" fill="#4e342e"/></g>`;
+    s += `<g transform="translate(640 314)">${petSVG(pk)}</g>`;
+  }
   return s;
+}
+function ranchDeco(f, own) {
+  const r = f.ranch, me = S.uid;
+  let s = signSVG(own ? '我的牧場' : `${dn(f)} 的牧場`, `動物 ${r.animals.length}/${ranchCap(levelOf(f.exp).L)}`);
+  s += `<g transform="translate(305 254)"><ellipse cy="3" rx="62" ry="9" fill="rgba(0,0,0,.15)"/><rect x="-50" y="-70" width="100" height="70" fill="#c0392b" stroke="#7b1f16" stroke-width="3"/>
+    <polygon points="-58,-68 0,-104 58,-68" fill="#8e2a1f" stroke="#5e1a12" stroke-width="3" stroke-linejoin="round"/><rect x="-20" y="-46" width="40" height="46" fill="#fff3d6"/>
+    <path d="M-20 -46L20 0M20 -46L-20 0" stroke="#c0392b" stroke-width="4"/><rect x="-12" y="-64" width="24" height="12" fill="#fff3d6"/><path d="M0 -64v12" stroke="#c0392b" stroke-width="2"/></g>`;
+  const hay = (f.wh.grass || 0) + (f.feed || 0);
+  s += `<g class="trough" transform="translate(690 300)"><ellipse cy="4" rx="44" ry="8" fill="rgba(0,0,0,.15)"/><path d="M-38 -22h76l-8 22h-60z" fill="#a0703f" stroke="#6b3f1d" stroke-width="2.5"/>
+    ${hay ? `<path d="M-34 -22q8 -10 16 -2q8 -10 16 -1q8 -9 16 0q8 -8 18 3z" fill="#e6c34a" stroke="#c9a227" stroke-width="1.5"/>` : ''}
+    <rect x="-40" y="-2" width="8" height="10" fill="#6b3f1d"/><rect x="32" y="-2" width="8" height="10" fill="#6b3f1d"/>
+    <text class="pname" y="24">${own ? `🌾 飼料槽（${hay}）` : '飼料槽'}</text></g>`;
+  for (let k = 0; k < 9; k++) { const [x, y] = [[380,300],[620,330],[450,470],[540,300],[690,420],[330,350],[520,380],[600,470],[420,380]][k]; s += `<path transform="translate(${x} ${y})" d="M0 0l-4 -8M0 0l0 -10M0 0l4 -8" stroke="#4e9a2c" stroke-width="2" stroke-linecap="round"/>`; }
+  for (let k = 0; k < Math.min(r.poop || 0, MAX_POOP); k++) {
+    const [x, y] = POOP_POS[k];
+    s += `<g class="poop" data-p="${k}" transform="translate(${x} ${y})"><ellipse cy="1" rx="10" ry="3" fill="rgba(0,0,0,.12)"/><path d="M-9 0q0 -5 5 -5q-2 -6 4 -7q-1 -5 3 -6q4 2 1 6q6 1 4 7q5 0 5 5z" fill="#795548" stroke="#4e342e" stroke-width="1.2"/><path d="M-12 -14q2 -4 0 -8M0 -24q2 -4 0 -8M12 -14q2 -4 0 -8" stroke="#9e9e9e" stroke-width="1.3" fill="none" class="tw"/></g>`;
+  }
+  const list = r.animals.map((a, i) => ({a, i, ...aniPos(i)})).sort((p, q) => p.y - q.y);
+  for (const {a, i, x, y} of list) {
+    const v = aView(a), baby = isBaby(a), sc = (baby ? .65 : 1) * ({chicken:1.25, duck:1.25, rabbit:1.25, pig:1.1, sheep:1.1, cow:1}[a.k]);
+    let extra = '';
+    if (v.s > 0) {
+      const steal = !own && aStealable(a, me);
+      extra += bubble(14, -58, `<g transform="scale(.75)">${PROD_SVG[ANIMALS[a.k].prod]}</g>`, own ? '#ffb74d' : steal ? '#66bb6a' : '#bdbdbd') + `<g transform="translate(26 -70)"><circle r="8" fill="#e53935"/><text class="cnt" y="4">${v.s}</text></g>`;
+    } else if (isHungry(a)) extra += bubble(14, -58, `<text y="5" text-anchor="middle" font-size="13">🍽️</text>`, '#ef9a9a');
+    s += `<g class="ani" data-a="${i}" transform="translate(${x} ${y})"><g class="walk" style="animation-delay:-${(i * 0.7) % 3}s"><g transform="scale(${sc * 1.25})">${ANI_SVG[a.k]()}</g></g>${extra}</g>`;
+  }
+  if (!r.animals.length) s += `<text class="pname" x="500" y="380" style="font-size:16px">${own ? '牧場空空的～去商店「動物」買小雞吧！🐣' : '這裡還沒有動物'}</text>`;
+  return s;
+}
+
+function personSVG(p, k) {
+  const [x, y] = SLOTS[k % SLOTS.length]; const c = colorOf(p.n || p.uid), hair = ['#3e2723','#5d4037','#212121','#8d6e63','#f9a825'][hashStr(p.uid) % 5];
+  const me = p.uid === S.uid, say = p.say && now() - p.say.t < 9000 ? p.say.m : '';
+  let s = `<g transform="translate(${x} ${y})"><g class="bob" style="animation-delay:-${k * .4}s"><ellipse cy="2" rx="12" ry="4" fill="rgba(0,0,0,.18)"/>
+    <path d="M-5 0v-10M5 0v-10" stroke="#5d4037" stroke-width="4" stroke-linecap="round"/><rect x="-11" y="-30" width="22" height="22" rx="8" fill="${c}"/>
+    <path d="M-11 -24l-6 9M11 -24l6 9" stroke="${c}" stroke-width="5" stroke-linecap="round"/>
+    <circle cy="-41" r="11" fill="#ffd7b0"/><path d="M-11 -43a11 11 0 0 1 22 0q-6 -5 -11 -4q-5 -1 -11 4z" fill="${hair}"/>
+    <circle cx="-4" cy="-41" r="1.6" fill="#333"/><circle cx="4" cy="-41" r="1.6" fill="#333"/><path d="M-3 -36q3 2 6 0" stroke="#c62828" fill="none" stroke-width="1.4"/>
+    <circle cx="-7" cy="-37" r="2" fill="#ff8a80" opacity=".5"/><circle cx="7" cy="-37" r="2" fill="#ff8a80" opacity=".5"/></g>
+    <text class="pname" y="16">${esc(p.n)}${me ? '（我）' : ''}</text>`;
+  if (say) { const w = Math.min(220, [...say].length * 14 + 20); s += `<g transform="translate(0 -66)"><rect x="${-w / 2}" y="-22" width="${w}" height="28" rx="12" fill="#fff" stroke="#8d6e63" stroke-width="2"/><path d="M-6 5l6 8l6 -8z" fill="#fff" stroke="#8d6e63" stroke-width="2" stroke-linejoin="round"/><rect x="-7" y="2" width="14" height="4" fill="#fff"/><text class="bubT" y="-3">${esc(say)}</text></g>`; }
+  return s + '</g>';
 }
 
 /* ===================== 狀態 ===================== */
 let B = null;
-const S = {uid:null, my:null, viewUid:null, view:null, tool:'hand', seed:null, friends:[], reqs:[], unsubMy:null, unsubView:null, busy:false, hover:-1, lastFriendKey:''};
+const S = {uid:null, my:null, viewUid:null, view:null, scene:'farm', tool:'hand', seed:null, friends:[], reqs:[], pres:{}, here:[], hereIds:new Set(),
+  unsubMy:null, unsubView:null, unsubHere:null, busy:false, hover:null, lastFriendKey:'', modal:null};
 const isOwn = () => S.viewUid === S.uid;
+const myName = () => dn(S.my);
 
 /* ===================== 提示 ===================== */
 function toast(m) { const d = document.createElement('div'); d.textContent = m; $('#toast').appendChild(d); setTimeout(() => d.remove(), 2600); while ($('#toast').children.length > 3) $('#toast').firstChild.remove(); }
 let fxN = 0;
-function float(i, text, color = '#2e7d32', dy = 0) {
-  const {x, y} = tilePos(i); const off = (fxN++ % 3) * 14;
+function floatAt(x, y, text, color = '#2e7d32', dy = 0) {
+  const off = (fxN++ % 3) * 14;
   const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   t.setAttribute('class', 'fx'); t.setAttribute('x', x); t.setAttribute('y', y - 40 - off + dy); t.setAttribute('fill', color); t.textContent = text;
   $('#fxG').appendChild(t); setTimeout(() => t.remove(), 1500);
 }
-function lvToast(up) { if (up) { toast(`🎉 升級了！現在是 Lv.${up}`); const nx = Object.values(CROPS).filter(c => c.lv === up); if (nx.length) toast(`🌱 解鎖新作物：${nx.map(c => c.n).join('、')}`); } }
+const float = (i, text, color, dy) => { const {x, y} = tilePos(i); floatAt(x, y, text, color, dy); };
+const floatA = (i, text, color, dy) => { const {x, y} = aniPos(i); floatAt(x, y - 20, text, color, dy); };
+function lvToast(up) { if (up) { toast(`🎉 升級了！現在是 Lv.${up}`); const nx = Object.values(CROPS).filter(c => c.lv === up).map(c => c.n).concat(Object.values(ANIMALS).filter(a => a.lv === up).map(a => a.n)); if (nx.length) toast(`🔓 解鎖：${nx.join('、')}`); } }
 
 /* ===================== 畫面更新 ===================== */
+function taskClaimable(f) {
+  const d = dailyView(f); let n = 0;
+  for (const k of todayTasks(S.uid)) if ((d.t[k] || 0) >= TASKS[k].need && !d.cl.includes(k)) n++;
+  if (!d.spin) n++;
+  if (d.cl.length >= 5 && !d.bonus) n++;
+  return n;
+}
 function renderTop() {
   const f = S.my; if (!f) return;
   const lv = levelOf(f.exp);
-  $('#myAv').textContent = f.username[0]; $('#myAv').style.background = colorOf(f.username);
-  $('#myName').textContent = f.username; $('#myLv').textContent = 'Lv.' + lv.L;
+  $('#myAv').textContent = [...dn(f)][0]; $('#myAv').style.background = colorOf(f.username);
+  $('#myName').innerHTML = esc(dn(f)) + (f.nick ? ` <small>@${esc(f.username)}</small>` : ' <small>✏️</small>');
+  $('#myLv').textContent = 'Lv.' + lv.L;
   $('#myXp').style.width = (lv.cur / lv.need * 100) + '%'; $('#myXpT').textContent = `${lv.cur}/${lv.need}`;
   $('#myCoins').textContent = f.coins.toLocaleString();
   const unread = (f.log || []).filter(l => l.t > (f.logSeen || 0)).length;
   $('#bdM').textContent = unread; $('#bdM').classList.toggle('on', unread > 0);
   $('#bdF').textContent = S.reqs.length; $('#bdF').classList.toggle('on', S.reqs.length > 0);
+  const tc = taskClaimable(f); $('#bdT').textContent = tc; $('#bdT').classList.toggle('on', tc > 0);
 }
 function renderTools() {
   const own = isOwn(); const f = S.my;
-  const T = own ? [['hand','✋','手'], ['plant','🌱', S.seed ? CROPS[S.seed].n : '播種'], ['water','💧','澆水'], ['weed','🌿','除草'], ['bug','🐞','除蟲'], ['fert','🧪','施肥'], ['plow','⛏️','翻地']]
-                : [['hand','✋','偷菜'], ['water','💧','幫澆水'], ['weed','🌿','幫除草'], ['bug','🐞','幫除蟲'], ['pbug','🐛','放蟲'], ['pweed','🌾','種草']];
-  if (!T.some(t => t[0] === S.tool)) S.tool = 'hand';
-  $('#tools').innerHTML = T.map(([id, ic, tl]) => {
+  let T;
+  if (S.scene === 'ranch') T = own ? [['hand','✋','收集'], ['feedAll','🌾','餵食', 1], ['buyAni','🛒','買動物', 1], ['sellProducts','💰','賣產品', 1]] : [['hand','✋','偷產品'], ['cleanTip','🧹','幫清便便', 1]];
+  else T = own ? [['hand','✋','手'], ['plant','🌱', S.seed ? CROPS[S.seed].n : '播種'], ['water','💧','澆水'], ['weed','🌿','除草'], ['bug','🐞','除蟲'], ['fert','🧪','施肥'], ['plow','⛏️','翻地']]
+               : [['hand','✋','偷菜'], ['water','💧','幫澆水'], ['weed','🌿','幫除草'], ['bug','🐞','幫除蟲'], ['pbug','🐛','放蟲'], ['pweed','🌾','種草']];
+  if (!T.some(t => t[0] === S.tool && !t[3])) S.tool = 'hand';
+  $('#tools').innerHTML = T.map(([id, ic, tl, instant]) => {
     let em = '';
     if (id === 'fert' && f) em = `<em>${f.fert || 0}</em>`;
     if (id === 'plant' && S.seed && f) em = `<em>${f.seeds[S.seed] || 0}</em>`;
-    if ((id === 'pbug' || id === 'pweed') && f) { const d = f.daily && f.daily.day === today() ? f.daily.prank : 0; em = `<em>${DAILY_PRANK - d}</em>`; }
-    return `<button class="tool ${S.tool === id ? 'on' : ''}" data-act="tool" data-t="${id}"><span class="ic">${ic}</span><span class="tl">${esc(tl)}</span>${em}</button>`;
+    if (id === 'feedAll' && f) em = `<em>${(f.wh.grass || 0) + (f.feed || 0)}</em>`;
+    if ((id === 'pbug' || id === 'pweed') && f) em = `<em>${DAILY_PRANK - dailyView(f).prank}</em>`;
+    return `<button class="tool ${instant ? 'act' : S.tool === id ? 'on' : ''}" data-act="${instant ? id : 'tool'}" data-t="${id}"><span class="ic">${ic}</span><span class="tl">${esc(tl)}</span>${em}</button>`;
   }).join('');
 }
 function renderScene() {
   const f = S.view, own = isOwn();
-  $('#plotsG').innerHTML = f ? ORDER.map(i => tileSVG(i, f, own)).join('') : '';
-  $('#decoG').innerHTML = f ? decoSVG(f, own) : '';
-  $('#visitBar').hidden = own; if (!own && f) $('#visitName').textContent = f.username;
-  if (S.hover >= 0) showTip(S.hover);
+  if (!f) { $('#plotsG').innerHTML = $('#decoG').innerHTML = ''; return; }
+  if (S.scene === 'farm') { $('#decoG').innerHTML = farmDeco(f, own); $('#plotsG').innerHTML = ORDER.map(i => tileSVG(i, f, own)).join(''); }
+  else { $('#decoG').innerHTML = ''; $('#plotsG').innerHTML = ranchDeco(f, own); }
+  document.querySelectorAll('#sceneTabs button').forEach(b => b.classList.toggle('on', b.dataset.s === S.scene));
+  $('#visitBar').hidden = own; if (!own) $('#visitName').textContent = dn(f);
+  renderPeople();
+  if (S.hover) showTip(S.hover);
+}
+function hereList() { return S.here.filter(p => p.t && now() - p.t < 75000).sort((a, b) => a.uid < b.uid ? -1 : 1); }
+function renderPeople() {
+  const list = hereList();
+  $('#peopleG').innerHTML = list.map((p, k) => personSVG(p, k)).join('');
+  const others = list.filter(p => p.uid !== S.uid);
+  $('#hereBox').hidden = !others.length;
+  $('#hereBox').textContent = others.length ? `👀 現在在這裡：${others.map(p => p.n).join('、')}` : '';
 }
 function renderStrip() {
   if (!S.my) return;
-  const list = [{uid:S.uid, farm:S.my, me:true}, ...[...S.friends].sort((a, b) => b.farm.exp - a.farm.exp)];
+  const list = [{uid:S.uid, farm:S.my, me:true}, ...[...S.friends].sort((a, b) => (isOnline(S.pres[b.uid]) - isOnline(S.pres[a.uid])) || b.farm.exp - a.farm.exp)];
   $('#friendStrip').innerHTML = list.map(x => {
-    const n = x.me ? 0 : x.farm.plots.slice(0, x.farm.plotCount).filter(p => { const s = stealInfo(p, S.uid); return s && s.can; }).length;
+    let n = 0;
+    if (!x.me) { n = x.farm.plots.slice(0, x.farm.plotCount).filter(p => { const s = stealInfo(p, S.uid); return s && s.can; }).length + (x.farm.ranch?.animals || []).filter(a => aStealable(a, S.uid)).length; }
+    const on = !x.me && isOnline(S.pres[x.uid]);
     return `<button class="fr ${S.viewUid === x.uid ? 'on' : ''}" data-act="${x.me ? 'home' : 'visit'}" data-uid="${x.uid}">
-      <div class="av" style="background:${colorOf(x.farm.username)}">${esc(x.farm.username[0])}${n ? `<em class="steal">🥬${n}</em>` : ''}</div>
-      <div class="fn">${x.me ? '我的農場' : esc(x.farm.username)}</div><div class="fl">Lv.${levelOf(x.farm.exp).L}</div></button>`;
+      <div class="av" style="background:${colorOf(x.farm.username)}">${esc([...dn(x.farm)][0])}${on ? '<i class="dot"></i>' : ''}${n ? `<em class="steal">🥬${n}</em>` : ''}</div>
+      <div class="fn">${x.me ? '我的家' : esc(dn(x.farm))}</div><div class="fl">${on && S.pres[x.uid].at === S.uid ? '🏠在你家' : `Lv.${levelOf(x.farm.exp).L}`}</div></button>`;
   }).join('') + `<button class="fr add" data-act="friends"><div class="av">＋</div><div class="fn">加好友</div><div class="fl">&nbsp;</div></button>`;
 }
 function renderAll() { renderTop(); renderTools(); renderScene(); renderStrip(); }
 
 function fitView() {
   const st = $('#stage'); const r = st.clientWidth / Math.max(1, st.clientHeight);
-  $('#scene').setAttribute('viewBox', r < 1.15 ? '236 176 540 340' : r < 1.5 ? '120 120 780 420' : '0 60 1000 520');
+  $('#scene').setAttribute('viewBox', r < 1.15 ? '220 150 570 390' : r < 1.5 ? '120 120 780 420' : '0 60 1000 520');
 }
 addEventListener('resize', fitView);
 
@@ -605,50 +870,85 @@ function plotText(i) {
   if (pr.length) t += `<br>${pr.join(' ')}（每個問題減產 10%）`;
   return t;
 }
-function showTip(i) { const tip = $('#tip'); tip.innerHTML = plotText(i); tip.style.display = 'block'; }
+function aniText(i) {
+  const f = S.view; const a = f?.ranch?.animals[i]; if (!a) return '';
+  const A = ANIMALS[a.k], v = aView(a); let t = `<b>${A.n}</b>${isBaby(a) ? '（寶寶）' : ''}<br>`;
+  if (v.s) t += `有 ${v.s} 個${PROD[A.prod].n}可以${isOwn() ? '收' : aStealable(a, S.uid) ? '偷 🥷' : '看（偷過了或剩太少）'}<br>`;
+  if (isHungry(a)) t += '🍽️ 肚子餓了，不會生產';
+  else if (v.s >= MAX_STOCK) t += '產品滿了，快收走';
+  else t += `下一個${PROD[A.prod].n}：${fmtDur(v.p + ivMs(a.k) - now())}<br>飽足還有 ${fmtDur(a.fu - now())}`;
+  return t;
+}
+function tipFor(h) {
+  if (h.type === 'tile') return plotText(h.i);
+  if (h.type === 'ani') return aniText(h.i);
+  if (h.type === 'poop') return '💩 便便！點一下清掉' + (isOwn() ? '（+1 經驗）' : '（幫忙 +2 經驗）');
+  if (h.type === 'trough') return isOwn() ? `<b>飼料槽</b><br>牧草 ${S.my.wh.grass || 0}、飼料 ${S.my.feed || 0}<br>點一下幫肚子快餓的動物餵食` : '飼料槽';
+  return '';
+}
+function hitOf(t) {
+  let e;
+  if ((e = t.closest('.tile'))) return {type:'tile', i:+e.dataset.i};
+  if ((e = t.closest('.ani'))) return {type:'ani', i:+e.dataset.a};
+  if ((e = t.closest('.poop'))) return {type:'poop', i:+e.dataset.p};
+  if (t.closest('.trough')) return {type:'trough'};
+  return null;
+}
+function showTip(h) { const tip = $('#tip'); tip.innerHTML = tipFor(h); tip.style.display = tip.innerHTML ? 'block' : 'none'; }
 $('#scene').addEventListener('pointermove', e => {
   if (e.pointerType !== 'mouse') return;
-  const t = e.target.closest('.tile'); const tip = $('#tip');
-  if (!t) { S.hover = -1; tip.style.display = 'none'; return; }
-  S.hover = +t.dataset.i; showTip(S.hover);
+  const h = hitOf(e.target); const tip = $('#tip');
+  if (!h) { S.hover = null; tip.style.display = 'none'; return; }
+  S.hover = h; showTip(h);
   const r = $('#stage').getBoundingClientRect(); let x = e.clientX - r.left + 14, y = e.clientY - r.top + 14;
   if (x + tip.offsetWidth > r.width - 6) x = e.clientX - r.left - tip.offsetWidth - 10;
   if (y + tip.offsetHeight > r.height - 6) y = e.clientY - r.top - tip.offsetHeight - 10;
   tip.style.left = x + 'px'; tip.style.top = y + 'px';
 });
-$('#scene').addEventListener('pointerleave', () => { S.hover = -1; $('#tip').style.display = 'none'; });
-$('#scene').addEventListener('click', e => { const t = e.target.closest('.tile'); if (t) clickPlot(+t.dataset.i); });
+$('#scene').addEventListener('pointerleave', () => { S.hover = null; $('#tip').style.display = 'none'; });
+$('#scene').addEventListener('click', e => { const h = hitOf(e.target); if (h) clickHit(h); });
 
-/* ===================== 點田地 ===================== */
+/* ===================== 點擊 ===================== */
+const plain = h => tipFor(h).replace(/<br>/g, '，').replace(/<[^>]+>/g, '');
+async function run(fn) {
+  if (S.busy) return; S.busy = true;
+  try { await fn(); } catch (e) { console.error(e); toast('出錯了：' + e.message); } finally { S.busy = false; }
+}
+function clickHit(h) {
+  if (!S.view) return;
+  if (h.type === 'tile') return clickPlot(h.i);
+  if (h.type === 'ani') return run(() => clickAnimal(h.i));
+  if (h.type === 'poop') return run(() => cleanPoop(h.i));
+  if (h.type === 'trough') return isOwn() ? run(feedAll) : toast('這是好友的飼料槽');
+}
 function smartTool(p, own) {
-  if (own) {
-    if (p.s === 'dead') return 'plow';
-    if (p.s === 'empty') return 'plant';
-    if (isMature(p)) return 'harvest';
-  } else if (isMature(p)) { const si = stealInfo(p, S.uid); if (si.can) return 'steal'; }
+  if (own) { if (p.s === 'dead') return 'plow'; if (p.s === 'empty') return 'plant'; if (isMature(p)) return 'harvest'; }
+  else if (isMature(p)) { const si = stealInfo(p, S.uid); if (si.can) return 'steal'; }
   if (p.s === 'grow') { if (p.d) return 'water'; if (p.w) return 'weed'; if (p.b) return 'bug'; }
   return null;
 }
-async function clickPlot(i) {
-  const f = S.view; if (!f || S.busy) return;
-  const own = isOwn();
-  if (i >= f.plotCount) { if (own && i === f.plotCount) buyPlot(); return; }
+function clickPlot(i) {
+  const f = S.view, own = isOwn();
+  if (i >= f.plotCount) { if (own && i === f.plotCount) run(buyPlot); return; }
   let tool = S.tool; if (tool === 'hand') tool = smartTool(f.plots[i], own);
-  if (!tool) { const t = plotText(i).replace(/<br>/g, '，').replace(/<[^>]+>/g, ''); return toast(t); }
-  S.busy = true;
-  try { await ACT_PLOT[tool](i); } catch (e) { console.error(e); toast('出錯了：' + e.message); }
-  finally { S.busy = false; }
+  if (!tool) return toast(plain({type:'tile', i}));
+  run(() => ACT_PLOT[tool](i));
 }
 const txMe = fn => B.tx(S.uid, fn);
 const txView = fn => B.tx(S.viewUid, fn);
 const ab = msg => ({abort:1, msg});
+function biteCheck(f, nm) { const pk = petOf(f); if (pk && PETS[pk].bite && Math.random() < PETS[pk].bite) { addLog(f, `🐶 你的${PETS[pk].n}咬了來偷東西的 ${nm}！`); return 30 + Math.floor(Math.random() * 51); } return 0; }
+async function bitten(x, y, fine, pk) {
+  const g = await txMe(f => { const lost = Math.min(f.coins, fine); f.coins -= lost; return {lost}; });
+  floatAt(x, y, '🐶 汪汪！', '#d32f2f'); toast(`被${pk || '看門狗'}咬了！掉了 ${g.lost} 金幣 😭`);
+}
 
 const ACT_PLOT = {
   async harvest(i) {
     const r = await txMe(f => {
       const p = f.plots[i]; if (!isMature(p)) return ab('還沒成熟');
       const c = CROPS[p.c], amt = harvestAmt(p);
-      f.wh[p.c] = (f.wh[p.c] || 0) + amt; const up = gainExp(f, c.exp); f.plots[i] = {s:'dead', c:p.c};
+      f.wh[p.c] = (f.wh[p.c] || 0) + amt; const up = gainExp(f, c.exp); f.plots[i] = {s:'dead', c:p.c}; bump(f, 'harvest');
       return {amt, c:p.c, exp:c.exp, up};
     });
     if (r.abort) return toast(r.msg);
@@ -671,7 +971,7 @@ const ACT_PLOT = {
       if (levelOf(f.exp).L < c.lv) return ab(`Lv.${c.lv} 才能種${c.n}`);
       let bought = false;
       if ((f.seeds[id] || 0) > 0) f.seeds[id]--; else if (f.coins >= c.cost) { f.coins -= c.cost; bought = true; } else return ab(`金幣不夠買${c.n}種子`);
-      f.plots[i] = {s:'grow', c:id, p:now(), w:0, b:0, d:false, st:0, th:[], k:0, f:0};
+      f.plots[i] = {s:'grow', c:id, p:now(), w:0, b:0, d:false, st:0, th:[], k:0, f:0}; bump(f, 'plant');
       return {bought};
     });
     if (r.abort) return toast(r.msg);
@@ -689,28 +989,29 @@ const ACT_PLOT = {
   water(i) { return fix(i, 'd'); }, weed(i) { return fix(i, 'w'); }, bug(i) { return fix(i, 'b'); },
   pbug(i) { return prank(i, 'b'); }, pweed(i) { return prank(i, 'w'); },
   async steal(i) {
-    const me = S.uid, nm = S.my.username;
+    const me = S.uid, nm = myName();
     const r = await txView(f => {
       const p = f.plots[i], si = stealInfo(p, me);
       if (!si) return ab('還沒成熟，不能偷');
       if (!si.can) return ab(si.mine ? '這塊你已經偷過了' : '剩下的不能再偷了，留一點給人家吧');
       p.th = [...(p.th || []), me];
-      if (f.dog && Math.random() < DOG_BITE) { addLog(f, `🐶 你的狗咬了來偷菜的 ${nm}！`); return {bitten:30 + Math.floor(Math.random() * 51)}; }
+      const bite = biteCheck(f, nm); if (bite) return {bitten:bite, pk:PETS[petOf(f)].n};
       const n = Math.min(si.avail, 1 + Math.floor(Math.random() * 3)); p.st = (p.st || 0) + n;
       addLog(f, `🥷 ${nm} 偷走了你 ${n} 個${CROPS[p.c].n}`); return {n, c:p.c};
     });
     if (r.abort) return toast(r.msg);
-    if (r.bitten) {
-      const g = await txMe(f => { const lost = Math.min(f.coins, r.bitten); f.coins -= lost; return {lost}; });
-      float(i, '🐶 汪汪！', '#d32f2f'); toast(`被看門狗咬了！掉了 ${g.lost} 金幣 😭`); return;
-    }
-    await txMe(f => { f.wh[r.c] = (f.wh[r.c] || 0) + r.n; return {}; });
+    const {x, y} = tilePos(i);
+    if (r.bitten) return bitten(x, y, r.bitten, r.pk);
+    await txMe(f => { f.wh[r.c] = (f.wh[r.c] || 0) + r.n; bump(f, 'steal'); return {}; });
     float(i, `🥷 +${r.n} ${CROPS[r.c].n}`);
   },
 };
 const FIX = {d:['澆水', '不用澆水'], w:['除草', '沒有雜草'], b:['除蟲', '沒有蟲']};
+async function helpReward() {
+  return txMe(f => { const d = daily(f); const e = d.help < DAILY_HELP_EXP ? 2 : 0; d.help += e; f.coins += 1; bump(f, 'help'); return {e, up:e ? gainExp(f, e) : 0}; });
+}
 async function fix(i, key) {
-  const [label, none] = FIX[key], nm = S.my.username;
+  const [label, none] = FIX[key], nm = myName();
   const doFix = p => { if (!p || p.s !== 'grow' || !p[key]) return false; if (key === 'd') p.d = false; else p[key]--; return true; };
   if (isOwn()) {
     const r = await txMe(f => doFix(f.plots[i]) ? {up:gainExp(f, 1)} : ab(none));
@@ -718,13 +1019,12 @@ async function fix(i, key) {
   }
   const r = await txView(f => { if (!doFix(f.plots[i])) return ab(none); addLog(f, `🤝 ${nm} 幫你${label}`); return {}; });
   if (r.abort) return toast(r.msg);
-  const g = await txMe(f => { const d = daily(f); const e = d.help < DAILY_HELP_EXP ? 2 : 0; d.help += e; f.coins += 1; return {e, up:e ? gainExp(f, e) : 0}; });
+  const g = await helpReward();
   float(i, g.e ? `幫忙${label} +2 經驗` : `幫忙${label} +1💰`, '#0277bd'); lvToast(g.up);
 }
 async function prank(i, key) {
-  const used = S.my.daily && S.my.daily.day === today() ? S.my.daily.prank : 0;
-  if (used >= DAILY_PRANK) return toast('今天的惡作劇次數用完了，明天再來 😈');
-  const nm = S.my.username;
+  if (dailyView(S.my).prank >= DAILY_PRANK) return toast('今天的惡作劇次數用完了，明天再來 😈');
+  const nm = myName();
   const r = await txView(f => {
     const p = f.plots[i]; if (!p || p.s !== 'grow') return ab('這塊地沒有作物');
     if (isMature(p)) return ab('已經成熟了，放了也沒用'); if (probs(p) >= 3) return ab('這塊地已經夠慘了，放過它吧');
@@ -735,16 +1035,76 @@ async function prank(i, key) {
   float(i, key === 'b' ? '🐛 嘿嘿' : '🌾 嘿嘿', '#6a1b9a');
 }
 
-/* ===================== 商店 / 倉庫 ===================== */
+/* ----- 牧場動作 ----- */
+async function clickAnimal(i) {
+  const a = S.view.ranch.animals[i]; if (!a) return;
+  if (isOwn()) {
+    const v = aView(a);
+    if (!v.s) { if (isHungry(a) || needFeed(a)) return feedAll(); return toast(plain({type:'ani', i})); }
+    const r = await txMe(f => {
+      const x = f.ranch.animals[i]; if (!x) return ab('找不到這隻動物'); settleA(x); if (!x.s) return ab('還沒有產品');
+      const A = ANIMALS[x.k], n = x.s; f.wh[A.prod] = (f.wh[A.prod] || 0) + n; x.s = 0; x.th = [];
+      const up = gainExp(f, A.exp * n); bump(f, 'collect', n); return {n, prod:A.prod, e:A.exp * n, up};
+    });
+    if (r.abort) return toast(r.msg);
+    floatA(i, `+${r.n} ${PROD[r.prod].n}`); floatA(i, `+${r.e} 經驗`, '#f57c00', 22); lvToast(r.up); return;
+  }
+  if (!aStealable(a, S.uid)) return toast(plain({type:'ani', i}));
+  const me = S.uid, nm = myName();
+  const r = await txView(f => {
+    const x = f.ranch.animals[i]; if (!x) return ab('找不到這隻動物'); settleA(x);
+    if ((x.th || []).includes(me)) return ab('這隻你已經偷過了'); if (x.s < 2) return ab('剩太少了，留一點給人家吧');
+    x.th = [...(x.th || []), me];
+    const bite = biteCheck(f, nm); if (bite) return {bitten:bite, pk:PETS[petOf(f)].n};
+    x.s--; const A = ANIMALS[x.k]; addLog(f, `🥷 ${nm} 偷走了你的${A.n}生的 1 個${PROD[A.prod].n}`); return {prod:A.prod};
+  });
+  if (r.abort) return toast(r.msg);
+  const {x, y} = aniPos(i);
+  if (r.bitten) return bitten(x, y, r.bitten, r.pk);
+  await txMe(f => { f.wh[r.prod] = (f.wh[r.prod] || 0) + 1; bump(f, 'steal'); return {}; });
+  floatA(i, `🥷 +1 ${PROD[r.prod].n}`);
+}
+async function feedAll() {
+  if (!isOwn()) return toast('只能餵自己的動物');
+  const r = await txMe(f => {
+    const list = f.ranch.animals; if (!list.length) return ab('還沒有動物，去商店買吧');
+    let fed = 0, used = 0; const t = now();
+    for (const a of list) {
+      if (!needFeed(a)) continue;
+      const eat = ANIMALS[a.k].eat;
+      if ((f.wh.grass || 0) + (f.feed || 0) < eat) { if (!fed) return ab(`飼料不夠了（${ANIMALS[a.k].n}要吃 ${eat} 份）。種牧草或去商店買飼料吧`); break; }
+      for (let k = 0; k < eat; k++) { if (f.wh.grass > 0) f.wh.grass--; else f.feed--; }
+      settleA(a, t); if (a.fu < t) { const part = Math.max(0, a.fu - a.p); a.p = t - part; a.fu = t; }
+      a.fu += ivMs(a.k) * 2; fed++; used += eat;
+    }
+    if (!fed) return ab('大家都吃很飽，晚點再餵 😋');
+    bump(f, 'feed'); const up = gainExp(f, fed); return {fed, used, up};
+  });
+  if (r.abort) return toast(r.msg);
+  floatAt(690, 300, `🌾 餵了 ${r.fed} 隻（用掉 ${r.used} 份）`, '#8d6e63'); lvToast(r.up);
+}
+async function cleanPoop(k) {
+  if (isOwn()) {
+    const r = await txMe(f => { if (!(f.ranch.poop > 0)) return ab('已經很乾淨了'); f.ranch.poop--; f.coins += 1; bump(f, 'clean'); return {up:gainExp(f, 1)}; });
+    if (r.abort) return toast(r.msg); floatAt(...POOP_POS[k], '🧹 +1 經驗', '#6d4c41'); lvToast(r.up); return;
+  }
+  const nm = myName();
+  const r = await txView(f => { if (!(f.ranch.poop > 0)) return ab('已經很乾淨了'); f.ranch.poop--; addLog(f, `🧹 ${nm} 幫你清了便便`); return {}; });
+  if (r.abort) return toast(r.msg);
+  const g = await helpReward(); await txMe(f => { bump(f, 'clean'); return {}; });
+  floatAt(...POOP_POS[k], g.e ? '🧹 幫忙 +2 經驗' : '🧹 幫忙 +1💰', '#6d4c41'); lvToast(g.up);
+}
+
+/* ===================== 視窗 ===================== */
 function openModal(title, html) { $('#mt').textContent = title; $('#mb').innerHTML = html; $('#modal').hidden = false; }
 function closeModal() { $('#modal').hidden = true; S.modal = null; }
-function rerenderModal() { if (!$('#modal').hidden && S.modal) S.modal(); }
+function rerenderModal() { if (!$('#modal').hidden && S.modal) { const y = $('#mb').scrollTop; S.modal(); $('#mb').scrollTop = y; } }
 
 function seedRows(mode) {
-  const f = S.my, L = levelOf(f.exp).L;
+  const f = S.my, Lv = levelOf(f.exp).L;
   return Object.entries(CROPS).map(([id, c]) => {
-    const lock = L < c.lv, have = f.seeds[id] || 0;
-    const desc = `成熟 ${fmtDur(c.t * 1000 / SPEED)} · 產量 ${c.y} · 每個賣 ${c.sell}💰 · +${c.exp} 經驗`;
+    const lock = Lv < c.lv, have = f.seeds[id] || 0;
+    const desc = `成熟 ${fmtDur(c.t * 1000 / SPEED)} · 產量 ${c.y} · 每個賣 ${c.sell}💰 · +${c.exp} 經驗${id === 'grass' ? '<br>🐄 收成後可以當動物飼料' : ''}`;
     const acts = lock ? `<button class="b g" disabled>Lv.${c.lv} 解鎖</button>`
       : mode === 'pick' ? `<button class="b" data-act="pickSeed" data-id="${id}">${have ? `種這個（有 ${have}）` : `種這個（${c.cost}💰）`}</button>`
       : `<button class="b o" data-act="buySeed" data-id="${id}" data-n="1">買 1 包 ${c.cost}💰</button><button class="b o" data-act="buySeed" data-id="${id}" data-n="5">買 5 包 ${c.cost * 5}💰</button>`;
@@ -758,16 +1118,31 @@ function openSeedPicker(i) {
 }
 function openShop(tab = 'seed') {
   S.modal = () => {
-    const f = S.my, L = levelOf(f.exp).L, n = f.plotCount + 1;
-    let body = `<div class="mtabs"><button class="${tab === 'seed' ? 'on' : ''}" data-act="shopTab" data-t="seed">🌱 種子</button><button class="${tab === 'item' ? 'on' : ''}" data-act="shopTab" data-t="item">🧰 道具</button></div>`;
+    const f = S.my, Lv = levelOf(f.exp).L, n = f.plotCount + 1, cap = ranchCap(Lv), cnt = f.ranch.animals.length;
+    let body = `<div class="mtabs">${[['seed','🌱 種子'],['ani','🐔 動物'],['pet','🐶 寵物'],['item','🧰 道具']].map(([k, t]) => `<button class="${tab === k ? 'on' : ''}" data-act="shopTab" data-t="${k}">${t}</button>`).join('')}</div>`;
     if (tab === 'seed') body += seedRows('shop');
-    else body += `
+    else if (tab === 'ani') {
+      body += `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">牧場空位：${cnt}/${cap}（升級可以養更多）。動物要吃牧草或飼料，吃飽才會生產；產品放著好友也能來偷！</p>`;
+      body += Object.entries(ANIMALS).map(([k, A]) => {
+        const lock = Lv < A.lv;
+        return `<div class="item ${lock ? 'dim' : ''}"><div class="pic">${aniIcon(k)}</div><div class="info"><div class="t">${A.n}</div><div class="d">每 ${fmtDur(A.iv * 1000 / SPEED)} 生 1 個${PROD[A.prod].n}（賣 ${PROD[A.prod].sell}💰）<br>每次吃 ${A.eat} 份飼料 · +${A.exp} 經驗/個</div></div>
+          <div class="acts">${lock ? `<button class="b g" disabled>Lv.${A.lv} 解鎖</button>` : cnt >= cap ? '<button class="b g" disabled>牧場滿了</button>' : `<button class="b o" data-act="buyAnimal" data-k="${k}">買 ${A.price}💰</button>`}</div></div>`;
+      }).join('');
+      if (cnt) body += `<div class="sec">🐾 我的動物（賣掉可拿回一半的錢）</div>` + f.ranch.animals.map((a, i) => `<div class="item"><div class="pic">${aniIcon(a.k, 44)}</div><div class="info"><div class="t">${ANIMALS[a.k].n} #${i + 1}</div><div class="d">${isHungry(a) ? '🍽️ 餓了' : `飽足 ${fmtDur(a.fu - now())}`} · 產品 ${aView(a).s}</div></div><div class="acts"><button class="b g" data-act="sellAnimal" data-i="${i}">賣掉 ${Math.floor(ANIMALS[a.k].price / 2)}💰</button></div></div>`).join('');
+    } else if (tab === 'pet') {
+      body += `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">寵物會待在你的農場。可以養很多隻，但一次只會有一隻出來顧家（到「個人資料」切換）。</p>`;
+      body += Object.entries(PETS).map(([k, P]) => {
+        const has = f.pets.includes(k), lock = Lv < P.lv;
+        return `<div class="item ${lock && !has ? 'dim' : ''}"><div class="pic">${petIcon(k)}</div><div class="info"><div class="t">${P.n}${f.pet === k ? ' <small style="color:#43a047">（顧家中）</small>' : ''}</div><div class="d">${P.d}</div></div>
+          <div class="acts">${has ? (f.pet === k ? '<button class="b g" disabled>顧家中</button>' : `<button class="b" data-act="setPet" data-k="${k}">派出來顧家</button>`) : lock ? `<button class="b g" disabled>Lv.${P.lv} 解鎖</button>` : `<button class="b o" data-act="buyPet" data-k="${k}">買 ${P.price}💰</button>`}</div></div>`;
+      }).join('');
+    } else body += `
+      <div class="item"><div class="pic">🌾</div><div class="info"><div class="t">動物飼料 <small style="color:#8d6e63">（有 ${f.feed || 0}）</small></div><div class="d">牧草不夠時用來餵動物（自己種牧草比較省）</div></div>
+        <div class="acts"><button class="b o" data-act="buyFeed" data-n="10">買 10 份 ${FEED_PRICE * 10}💰</button><button class="b o" data-act="buyFeed" data-n="50">買 50 份 ${FEED_PRICE * 50}💰</button></div></div>
       <div class="item"><div class="pic">🧪</div><div class="info"><div class="t">化肥 <small style="color:#8d6e63">（有 ${f.fert || 0}）</small></div><div class="d">讓一塊地的作物提早成熟（減少 30% 時間），每季限用一次</div></div>
         <div class="acts"><button class="b o" data-act="buyFert" data-n="1">買 1 包 ${FERT_PRICE}💰</button><button class="b o" data-act="buyFert" data-n="5">買 5 包 ${FERT_PRICE * 5}💰</button></div></div>
-      <div class="item ${f.dog ? '' : L < DOG_LV ? 'dim' : ''}"><div class="pic">🐶</div><div class="info"><div class="t">看門狗</div><div class="d">有 ${DOG_BITE * 100}% 機率咬走來偷菜的人，讓他掉 30～80 金幣</div></div>
-        <div class="acts">${f.dog ? '<button class="b g" disabled>已擁有</button>' : L < DOG_LV ? `<button class="b g" disabled>Lv.${DOG_LV} 解鎖</button>` : `<button class="b o" data-act="buyDog">買狗 ${DOG_PRICE}💰</button>`}</div></div>
-      <div class="item ${f.plotCount >= MAXP ? '' : L < plotLv(n) ? 'dim' : ''}"><div class="pic">🟫</div><div class="info"><div class="t">擴建土地（目前 ${f.plotCount}/${MAXP} 塊）</div><div class="d">${f.plotCount >= MAXP ? '土地已經全部開墾完了' : `第 ${n} 塊地：需要 Lv.${plotLv(n)}`}</div></div>
-        <div class="acts">${f.plotCount >= MAXP ? '<button class="b g" disabled>已滿</button>' : L < plotLv(n) ? `<button class="b g" disabled>Lv.${plotLv(n)} 解鎖</button>` : `<button class="b o" data-act="buyPlot">擴建 ${plotPrice(n)}💰</button>`}</div></div>`;
+      <div class="item ${f.plotCount >= MAXP ? '' : Lv < plotLv(n) ? 'dim' : ''}"><div class="pic">🟫</div><div class="info"><div class="t">擴建土地（目前 ${f.plotCount}/${MAXP} 塊）</div><div class="d">${f.plotCount >= MAXP ? '土地已經全部開墾完了' : `第 ${n} 塊地：需要 Lv.${plotLv(n)}`}</div></div>
+        <div class="acts">${f.plotCount >= MAXP ? '<button class="b g" disabled>已滿</button>' : Lv < plotLv(n) ? `<button class="b g" disabled>Lv.${plotLv(n)} 解鎖</button>` : `<button class="b o" data-act="buyPlot">擴建 ${plotPrice(n)}💰</button>`}</div></div>`;
     openModal('🏪 商店', body);
   };
   S.modal();
@@ -775,13 +1150,13 @@ function openShop(tab = 'seed') {
 function openWh() {
   S.modal = () => {
     const f = S.my; const items = Object.entries(f.wh || {}).filter(([, n]) => n > 0);
-    const total = items.reduce((s, [id, n]) => s + n * CROPS[id].sell, 0);
-    let body = `<div class="sec">🧺 收成的作物</div>`;
-    body += items.length ? items.map(([id, n]) => `<div class="item"><div class="pic">${cropIcon(id)}</div><div class="info"><div class="t">${CROPS[id].n} × ${n}</div><div class="d">每個 ${CROPS[id].sell}💰，全部可賣 ${n * CROPS[id].sell}💰</div></div><div class="acts"><button class="b o" data-act="sell" data-id="${id}">全部賣出</button></div></div>`).join('')
-      + `<button class="b" style="width:100%;padding:10px;font-size:15px" data-act="sellAll">💰 一鍵全部賣出（${total}💰）</button>`
+    const total = items.reduce((s, [id, n]) => s + n * itemInfo(id).sell, 0);
+    let body = `<div class="sec">🧺 收成與動物產品</div>`;
+    body += items.length ? items.map(([id, n]) => `<div class="item"><div class="pic">${itemIcon(id, 46)}</div><div class="info"><div class="t">${itemInfo(id).n} × ${n}</div><div class="d">每個 ${itemInfo(id).sell}💰，全部可賣 ${n * itemInfo(id).sell}💰${id === 'grass' ? '<br>（留著可以餵動物）' : ''}</div></div><div class="acts"><button class="b o" data-act="sell" data-id="${id}">全部賣出</button></div></div>`).join('')
+      + `<button class="b" style="width:100%;padding:10px;font-size:15px" data-act="sellAll">💰 一鍵全部賣出（牧草除外）</button>`
       : `<div class="empty">倉庫是空的，快去收成或偷菜吧！</div>`;
     const seeds = Object.entries(f.seeds || {}).filter(([, n]) => n > 0);
-    body += `<div class="sec">🌱 種子與道具</div>` + (seeds.length || f.fert ? `<div class="d" style="font-size:14px;line-height:1.8">${seeds.map(([id, n]) => `${CROPS[id].n}種子 × ${n}`).join('、')}${f.fert ? `${seeds.length ? '、' : ''}化肥 × ${f.fert}` : ''}</div>` : `<div class="empty">沒有種子，去商店買吧</div>`);
+    body += `<div class="sec">🌱 種子與道具</div><div class="d" style="font-size:14px;line-height:1.8">${[...seeds.map(([id, n]) => `${CROPS[id].n}種子 × ${n}`), `化肥 × ${f.fert || 0}`, `飼料 × ${f.feed || 0}`].join('、')}</div>`;
     openModal('📦 倉庫', body);
   };
   S.modal();
@@ -796,42 +1171,103 @@ async function buyPlot() {
   if (r.abort) return toast(r.msg); toast(`🎉 第 ${n} 塊地開墾完成！`);
 }
 
-/* ===================== 好友 / 消息 ===================== */
-async function refreshFriends() {
-  if (!S.my) return;
-  const ids = [...(S.my.friends || [])];
-  const arr = await Promise.all(ids.map(async uid => ({uid, farm:await B.getFarm(uid).catch(() => null)})));
-  S.friends = arr.filter(x => x.farm);
-  try { S.reqs = await B.listReq(S.uid); } catch { S.reqs = []; }
-  renderStrip(); renderTop(); rerenderModal();
+/* ----- 任務、轉盤 ----- */
+function wheelSVG() {
+  const R = 100; let s = '';
+  WHEEL.forEach((w, i) => {
+    const a0 = (i * 45 - 90) * Math.PI / 180, a1 = ((i + 1) * 45 - 90) * Math.PI / 180, am = (i * 45 + 22.5 - 90);
+    s += `<path d="M0 0L${R * Math.cos(a0)} ${R * Math.sin(a0)}A${R} ${R} 0 0 1 ${R * Math.cos(a1)} ${R * Math.sin(a1)}Z" fill="${w.col}" stroke="#fff" stroke-width="2"/>`;
+    s += `<text transform="rotate(${am}) translate(64 0) rotate(90)" text-anchor="middle" font-size="12" font-weight="900" fill="#5d3a12" dy="4">${w.t}</text>`;
+  });
+  return `<svg id="wheel" viewBox="-105 -105 210 210"><circle r="104" fill="#8d5a2b"/>${s}<circle r="16" fill="#fff3d6" stroke="#8d5a2b" stroke-width="3"/><text text-anchor="middle" dy="5" font-size="13">🎁</text></svg>`;
 }
-function openFriends() {
+function openTasks() {
   S.modal = () => {
-    const rank = [{uid:S.uid, farm:S.my}, ...S.friends].sort((a, b) => b.farm.exp - a.farm.exp);
-    let body = `<div class="row"><input id="fName" placeholder="輸入好友的帳號" maxlength="10"><button class="b" data-act="addFriend">加好友</button></div>`;
-    if (S.reqs.length) body += `<div class="sec">📩 好友邀請</div>` + S.reqs.map(r => `<div class="item"><div class="pic" style="background:${colorOf(r.fromName)};color:#fff;font-weight:900">${esc(r.fromName[0])}</div><div class="info"><div class="t">${esc(r.fromName)}</div><div class="d">想加你為好友</div></div><div class="acts"><button class="b" data-act="accept" data-id="${esc(r.id)}">接受</button><button class="b r" data-act="reject" data-id="${esc(r.id)}">拒絕</button></div></div>`).join('');
-    body += `<div class="sec">👥 我的好友（${S.friends.length}）</div>`;
-    body += S.friends.length ? S.friends.map(x => {
-      const n = x.farm.plots.slice(0, x.farm.plotCount).filter(p => { const s = stealInfo(p, S.uid); return s && s.can; }).length;
-      return `<div class="item"><div class="pic" style="background:${colorOf(x.farm.username)};color:#fff;font-weight:900">${esc(x.farm.username[0])}</div><div class="info"><div class="t">${esc(x.farm.username)} <small style="color:#8d6e63">Lv.${levelOf(x.farm.exp).L}</small></div><div class="d">${n ? `🥬 有 ${n} 塊菜可以偷！` : '目前沒菜可偷'}${x.farm.dog ? ' · 🐶 有狗' : ''}</div></div><div class="acts"><button class="b" data-act="visit" data-uid="${x.uid}">去他家</button><button class="b g" data-act="unfriend" data-uid="${x.uid}">刪除</button></div></div>`;
-    }).join('') : `<div class="empty">還沒有好友～把你的帳號「${esc(S.my.username)}」告訴朋友，或在上面輸入朋友的帳號！</div>`;
-    body += `<div class="sec">🏆 好友排行榜</div>` + rank.map((x, k) => `<div class="log"><time>${['🥇', '🥈', '🥉'][k] || `#${k + 1}`}</time><span style="flex:1">${esc(x.farm.username)}${x.uid === S.uid ? '（我）' : ''}</span><b>Lv.${levelOf(x.farm.exp).L}</b><span style="color:#8d6e63;width:80px;text-align:right">💰${x.farm.coins}</span></div>`).join('');
-    openModal('👥 好友', body);
+    const f = S.my, d = dailyView(f), keys = todayTasks(S.uid);
+    let body = `<div class="sec" style="margin-top:0">🎡 每日幸運轉盤</div><div class="wheelWrap"><div class="wheelPin"></div>${wheelSVG()}</div>
+      <div style="text-align:center;margin-bottom:8px">${d.spin ? '<button class="b g" disabled>今天轉過了，明天再來</button>' : '<button class="b o" style="font-size:16px;padding:8px 22px" data-act="spin">免費轉一次！</button>'}</div>`;
+    body += `<div class="sec">📋 今日任務（每天更新）</div>`;
+    body += keys.map(k => {
+      const T = TASKS[k], prog = Math.min(T.need, d.t[k] || 0), done = prog >= T.need, cl = d.cl.includes(k);
+      return `<div class="item ${cl ? 'done' : ''}"><div class="info"><div class="t">${T.n}</div><div class="d">獎勵 ${T.c}💰 + ${T.e} 經驗 · 進度 ${prog}/${T.need}</div><div class="bar"><i style="width:${prog / T.need * 100}%"></i></div></div>
+        <div class="acts">${cl ? '<button class="b g" disabled>已領取</button>' : done ? `<button class="b o" data-act="claim" data-k="${k}">領取</button>` : '<button class="b g" disabled>進行中</button>'}</div></div>`;
+    }).join('');
+    body += `<div class="item ${d.bonus ? 'done' : ''}"><div class="pic">🎁</div><div class="info"><div class="t">全部完成大獎</div><div class="d">完成並領取 5 個任務：100💰 + 化肥×2 + 飼料×10</div></div>
+      <div class="acts">${d.bonus ? '<button class="b g" disabled>已領取</button>' : d.cl.length >= 5 ? '<button class="b o" data-act="claimBonus">領大獎</button>' : `<button class="b g" disabled>${d.cl.length}/5</button>`}</div></div>`;
+    openModal('📋 每日任務', body);
   };
   S.modal();
 }
-async function addFriend() {
-  const name = ($('#fName')?.value || '').trim(); if (!name) return toast('請輸入好友的帳號');
-  const uid = await B.findUid(name); if (!uid) return toast('找不到這個帳號');
+async function doSpin() {
+  const r = await txMe(f => {
+    const d = daily(f); if (d.spin) return ab('今天轉過了');
+    d.spin = true; let x = Math.random() * WHEEL.reduce((s, w) => s + w.w, 0), idx = 0;
+    while (x >= WHEEL[idx].w) { x -= WHEEL[idx].w; idx++; }
+    const w = WHEEL[idx]; let up = 0, msg = w.t;
+    if (w.c) f.coins += w.c; if (w.fert) f.fert = (f.fert || 0) + w.fert; if (w.feed) f.feed = (f.feed || 0) + w.feed; if (w.e) up = gainExp(f, w.e);
+    if (w.seed) { const ok = Object.keys(CROPS).filter(k => CROPS[k].lv <= levelOf(f.exp).L); const k = ok[Math.floor(Math.random() * ok.length)]; f.seeds[k] = (f.seeds[k] || 0) + w.seed; msg = `${CROPS[k].n}種子 ×${w.seed}`; }
+    return {idx, msg, up};
+  });
+  if (r.abort) return toast(r.msg);
+  const wheel = $('#wheel'); if (wheel) wheel.style.transform = `rotate(${360 * 6 - (r.idx * 45 + 22.5)}deg)`;
+  const keep = S.modal; S.modal = null;
+  await sleep(3300); toast(`🎉 轉到了：${r.msg}！`); lvToast(r.up); S.modal = keep; rerenderModal();
+}
+
+/* ----- 好友、找玩家 ----- */
+async function refreshFriends() {
+  if (!S.my) return;
+  const ids = [...(S.my.friends || [])];
+  const arr = await Promise.all(ids.map(async uid => ({uid, farm:normalize(await B.getFarm(uid).catch(() => null)), pres:await B.getPresence(uid).catch(() => null)})));
+  S.friends = arr.filter(x => x.farm); for (const x of arr) if (x.pres) S.pres[x.uid] = x.pres;
+  try { S.reqs = await B.listReq(S.uid); } catch { S.reqs = []; }
+  renderStrip(); renderTop(); rerenderModal();
+}
+function openFriends(tab = 'list') {
+  S.friendTab = tab;
+  S.modal = () => {
+    const tabs = `<div class="mtabs">${[['list','👥 我的好友'],['find','🔍 找玩家'],['rank','🏆 排行榜']].map(([k, t]) => `<button class="${tab === k ? 'on' : ''}" data-act="friendTab" data-t="${k}">${t}${k === 'list' && S.reqs.length ? ` (${S.reqs.length})` : ''}</button>`).join('')}</div>`;
+    let body = tabs;
+    if (tab === 'list') {
+      body += `<div class="row"><input id="fName" placeholder="輸入好友的「帳號」" maxlength="10"><button class="b" data-act="addFriend">加好友</button></div>
+        <div class="d" style="font-size:12px;color:#8d6e63;margin:-4px 0 8px">你的帳號是 <b>${esc(S.my.username)}</b>，告訴朋友讓他加你！</div>`;
+      if (S.reqs.length) body += `<div class="sec">📩 好友邀請</div>` + S.reqs.map(r => `<div class="item"><div class="pic" style="background:${colorOf(r.fromName)};color:#fff;font-weight:900">${esc([...r.fromName][0])}</div><div class="info"><div class="t">${esc(r.fromName)}</div><div class="d">想加你為好友</div></div><div class="acts"><button class="b" data-act="accept" data-id="${esc(r.id)}">接受</button><button class="b r" data-act="reject" data-id="${esc(r.id)}">拒絕</button></div></div>`).join('');
+      body += `<div class="sec">👥 我的好友（${S.friends.length}）</div>`;
+      const fl = [...S.friends].sort((a, b) => isOnline(S.pres[b.uid]) - isOnline(S.pres[a.uid]));
+      body += fl.length ? fl.map(x => {
+        const n = x.farm.plots.slice(0, x.farm.plotCount).filter(p => { const s = stealInfo(p, S.uid); return s && s.can; }).length + x.farm.ranch.animals.filter(a => aStealable(a, S.uid)).length;
+        const on = isOnline(S.pres[x.uid]);
+        return `<div class="item"><div class="pic" style="background:${colorOf(x.farm.username)};color:#fff;font-weight:900;position:relative">${esc([...dn(x.farm)][0])}${on ? '<i class="dot"></i>' : ''}</div><div class="info"><div class="t">${esc(dn(x.farm))} <small style="color:#8d6e63">Lv.${levelOf(x.farm.exp).L}</small></div><div class="d">${on ? '🟢 線上' : '⚪ 離線'}${n ? ` · 🥬 有 ${n} 樣可以偷！` : ''}${petOf(x.farm) ? ` · 🐾${PETS[petOf(x.farm)].n}` : ''}</div></div><div class="acts"><button class="b" data-act="visit" data-uid="${x.uid}">去他家</button><button class="b g" data-act="unfriend" data-uid="${x.uid}">刪除</button></div></div>`;
+      }).join('') : `<div class="empty">還沒有好友～到「找玩家」看看誰在線上，或在上面輸入朋友的帳號！</div>`;
+    } else if (tab === 'find') {
+      const list = (S.recent || []).filter(p => p.uid !== S.uid && p.n);
+      body += `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">最近上線的玩家，看到喜歡的就加好友，一起偷菜！</p>`;
+      body += list.length ? list.map(p => { const fr = S.my.friends.includes(p.uid); return `<div class="item"><div class="pic" style="background:${colorOf(p.n)};color:#fff;font-weight:900;position:relative">${esc([...p.n][0])}${isOnline(p) ? '<i class="dot"></i>' : ''}</div><div class="info"><div class="t">${esc(p.n)} <small style="color:#8d6e63">${p.lv ? 'Lv.' + p.lv : ''}</small></div><div class="d">${isOnline(p) ? '🟢 線上' : `⚪ ${fmtTime(p.t)} 來過`}</div></div><div class="acts">${fr ? `<button class="b" data-act="visit" data-uid="${p.uid}">去他家</button>` : `<button class="b o" data-act="addUid" data-uid="${p.uid}" data-n="${esc(p.n)}">加好友</button>`}</div></div>`; }).join('')
+        : '<div class="empty">讀取中…或目前還沒有其他玩家</div>';
+    } else {
+      const rank = [{uid:S.uid, farm:S.my}, ...S.friends].sort((a, b) => b.farm.exp - a.farm.exp);
+      body += rank.map((x, k) => `<div class="log"><time>${['🥇', '🥈', '🥉'][k] || `#${k + 1}`}</time><span style="flex:1">${esc(dn(x.farm))}${x.uid === S.uid ? '（我）' : ''}</span><b>Lv.${levelOf(x.farm.exp).L}</b><span style="color:#8d6e63;width:90px;text-align:right">💰${x.farm.coins}</span></div>`).join('');
+    }
+    openModal('👥 好友', body);
+  };
+  S.modal();
+  if (tab === 'find') B.listRecent().then(l => { S.recent = l; if (S.friendTab === 'find') rerenderModal(); }).catch(() => {});
+}
+async function sendFriendReq(uid, name) {
   if (uid === S.uid) return toast('不能加自己啦 😆');
   if ((S.my.friends || []).includes(uid)) return toast('你們已經是好友了');
   const reqs = await B.listReq(S.uid); const back = reqs.find(r => r.from === uid);
   if (back) return acceptReq(back);
-  await B.sendReq(S.uid, S.my.username, uid); toast(`已送出好友邀請給 ${name}，等對方接受`); $('#fName').value = '';
+  await B.sendReq(S.uid, myName(), uid); toast(`已送出好友邀請給 ${name}，等對方接受`);
+}
+async function addFriend() {
+  const name = ($('#fName')?.value || '').trim(); if (!name) return toast('請輸入好友的帳號');
+  const uid = await B.findUid(name); if (!uid) return toast('找不到這個帳號（要輸入登入用的帳號喔）');
+  await sendFriendReq(uid, name); if ($('#fName')) $('#fName').value = '';
 }
 async function acceptReq(r) {
-  await txMe(f => { f.friends = f.friends || []; if (!f.friends.includes(r.from)) f.friends.push(r.from); return {}; });
-  await B.tx(r.from, f => { f.friends = f.friends || []; if (!f.friends.includes(S.uid)) f.friends.push(S.uid); return {}; });
+  await txMe(f => { if (!f.friends.includes(r.from)) f.friends.push(r.from); return {}; });
+  await B.tx(r.from, f => { if (!f.friends.includes(S.uid)) f.friends.push(S.uid); return {}; });
   await B.delReq(r.id); toast(`🎉 你和 ${r.fromName} 成為好友了！`); await refreshFriends();
 }
 function openMsgs() {
@@ -839,76 +1275,159 @@ function openMsgs() {
   S.modal = () => openModal('📜 農場消息', logs.length ? logs.map(l => `<div class="log ${l.t > seen ? 'new' : ''}"><time>${fmtTime(l.t)}</time><span>${esc(l.m)}</span></div>`).join('') : '<div class="empty">目前沒有消息</div>');
   S.modal(); txMe(f => { f.logSeen = now(); return {}; }).catch(() => {});
 }
+function openProfile() {
+  S.modal = () => {
+    const f = S.my, lv = levelOf(f.exp);
+    openModal('👤 個人資料', `<div class="prof"><div class="av" style="background:${colorOf(f.username)}">${esc([...dn(f)][0])}</div><div><div class="t" style="font-size:20px;font-weight:900">${esc(dn(f))}</div><div class="d" style="color:#8d6e63;font-size:13px">登入帳號：${esc(f.username)}（好友用這個加你）</div></div></div>
+      <div class="sec">✏️ 改名字（顯示給大家看的暱稱）</div>
+      <div class="row"><input id="nickIn" maxlength="10" placeholder="1～10 個字" value="${esc(f.nick || '')}"><button class="b" data-act="saveNick">儲存</button></div>
+      <div class="d" style="font-size:12px;color:#8d6e63;margin:-4px 0 6px">改名不會影響登入帳號，留空就是用帳號當名字。</div>
+      <div class="stats"><div><b>Lv.${lv.L}</b>等級</div><div><b>${f.coins.toLocaleString()}</b>金幣</div><div><b>${(f.friends || []).length}</b>好友</div><div><b>${f.plotCount}</b>塊田</div><div><b>${f.ranch.animals.length}</b>隻動物</div><div><b>${f.pets.length}</b>隻寵物</div></div>
+      <div class="sec">🐾 我的寵物</div>${f.pets.length ? f.pets.map(k => `<div class="item"><div class="pic">${petIcon(k)}</div><div class="info"><div class="t">${PETS[k].n}</div><div class="d">${PETS[k].d}</div></div><div class="acts">${f.pet === k ? '<button class="b g" disabled>顧家中</button>' : `<button class="b" data-act="setPet" data-k="${k}">派出來顧家</button>`}</div></div>`).join('') : '<div class="empty">還沒有寵物，去商店「寵物」看看吧</div>'}`);
+  };
+  S.modal();
+}
+function openChat() {
+  S.modal = null;
+  openModal('💬 說點什麼', `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">你說的話會出現在你頭上，現在在${isOwn() ? '你家' : ` ${esc(dn(S.view))} 家`}的人都看得到！</p>
+    <div class="phr">${PHRASES.map(p => `<button data-act="say" data-m="${esc(p)}">${esc(p)}</button>`).join('')}</div>
+    <div class="row"><input id="sayIn" maxlength="24" placeholder="自己打字（最多 24 字）"><button class="b" data-act="sayIn">送出</button></div>`);
+  setTimeout(() => $('#sayIn')?.focus(), 50);
+}
+async function say(m) {
+  m = String(m || '').trim().slice(0, 24); if (!m) return;
+  closeModal(); const t = now();
+  await B.setPresence(S.uid, {say:{m, t}, at:S.viewUid, t, n:myName(), lv:levelOf(S.my.exp).L});
+  if (!(dailyView(S.my).t.chat >= 1)) txMe(f => { bump(f, 'chat'); return {}; }).catch(() => {});
+}
 function openHelp() {
   S.modal = null;
   openModal('❓ 玩法說明', `<div class="help">
-    <p>🌱 <b>種菜</b>：選「播種」工具挑種子，點空地就能種。作物會從種子→發芽→長大→成熟。</p>
-    <p>✋ <b>手</b>：最好用的工具，會自動判斷要收成、翻地、播種，還是澆水除草除蟲。</p>
-    <p>💧🌿🐞 <b>照顧作物</b>：作物成長中會缺水、長草、長蟲，每個問題收成時減產 10%，記得處理！</p>
-    <p>⛏️ <b>翻地</b>：收成後土地會留下枯枝，翻地之後才能再種。</p>
-    <p>🥷 <b>偷菜</b>：到好友家，成熟的菜可以偷 1～3 個。每塊地只能偷一次，被偷到剩 60% 就不能再偷了。</p>
-    <p>🐶 <b>看門狗</b>：Lv.${DOG_LV} 可以買，有機會咬走小偷，讓他掉金幣。</p>
-    <p>😈 <b>惡作劇</b>：可以在好友還沒成熟的田裡放蟲、種草，每天 ${DAILY_PRANK} 次。幫好友澆水除草除蟲則能拿經驗。</p>
-    <p>💰 每天第一次上線送 ${SIGN_COINS} 金幣。升級會解鎖新作物和更多土地！</p></div>`);
+    <p>🌱 <b>種菜</b>：選「播種」挑種子，點空地就能種。✋「手」會自動判斷要收成、翻地、播種或照顧作物。</p>
+    <p>💧🌿🐞 <b>照顧</b>：作物會缺水、長草、長蟲，每個問題收成減產 10%。🧪化肥能讓作物長快一點。</p>
+    <p>🐮 <b>牧場</b>：上方切到「牧場」，在商店買雞、鴨、兔子、小豬、綿羊、乳牛。動物要吃<b>牧草</b>（自己種）或<b>飼料</b>（商店買），吃飽才會生蛋、產毛、擠牛奶。牧場偶爾會有💩，清掉可以拿經驗。</p>
+    <p>🥷 <b>偷東西</b>：到好友家可以偷成熟的菜（每塊 1～3 個）和動物產品（每隻 1 個），被偷到剩一點就不能再偷了。</p>
+    <p>🐶 <b>寵物</b>：小黃狗、柴犬、哈士奇會咬小偷；小橘貓會幫你抓蟲。買了之後在「個人資料」切換顧家的寵物。</p>
+    <p>😈 <b>惡作劇</b>：在好友還沒熟的田裡放蟲、種草（每天 ${DAILY_PRANK} 次）。幫好友澆水、除草、除蟲、清便便則能拿經驗。</p>
+    <p>👥 <b>多人連線</b>：好友頭像有🟢就是在線上。走到誰家，大家都看得到你站在那裡；按右下角💬可以說話打招呼。「找玩家」能看到最近上線的人。</p>
+    <p>📋 <b>每日任務</b>：每天 5 個任務＋免費幸運轉盤，全部完成還有大獎！每天第一次上線也會送 ${SIGN_COINS} 金幣。</p>
+    <p>✏️ 點左上角自己的名字可以<b>改名字</b>。</p></div>`);
 }
 
 /* ===================== 按鈕 ===================== */
 let authMode = 'login';
 const ACT = {
   authTab(d) { authMode = d.t; document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === d.t)); $('#aPass2Wrap').hidden = d.t !== 'reg'; $('#aGo').textContent = d.t === 'reg' ? '註冊並開始' : '開始種田'; $('#aPass').autocomplete = d.t === 'reg' ? 'new-password' : 'current-password'; $('#authErr').textContent = ''; },
-  tool(d) { if (d.t === 'plant') { if (!S.seed || S.tool === 'plant') { S.tool = 'plant'; renderTools(); return openSeedPicker(-1); } } S.tool = d.t; renderTools(); },
+  tool(d) { if (d.t === 'plant' && (!S.seed || S.tool === 'plant')) { S.tool = 'plant'; renderTools(); return openSeedPicker(-1); } S.tool = d.t; renderTools(); },
+  scene(d) { S.scene = d.s; S.tool = 'hand'; S.hover = null; $('#tip').style.display = 'none'; renderTools(); renderScene(); },
+  feedAll() { return run(feedAll); },
+  buyAni() { openShop('ani'); },
+  cleanTip() { toast('點牧場上的 💩 就能幫好友清掉，拿經驗！'); },
   close: closeModal,
-  shop() { openShop('seed'); }, shopTab(d) { openShop(d.t); }, wh: openWh, friends() { openFriends(); refreshFriends(); }, msgs: openMsgs, help: openHelp,
-  async logout() { if (confirm('確定要登出嗎？')) await B.logout(); },
+  shop() { openShop('seed'); }, shopTab(d) { openShop(d.t); }, wh: openWh,
+  friends() { openFriends('list'); refreshFriends(); }, friendTab(d) { openFriends(d.t); },
+  msgs: openMsgs, help: openHelp, tasks: openTasks, profile: openProfile, chat: openChat,
+  spin() { return run(doSpin); },
+  async claim(d) {
+    const T = TASKS[d.k];
+    const r = await txMe(f => { const dd = daily(f); if (dd.cl.includes(d.k)) return ab('已經領過了'); if ((dd.t[d.k] || 0) < T.need) return ab('還沒完成'); dd.cl.push(d.k); f.coins += T.c; return {up:gainExp(f, T.e)}; });
+    if (r.abort) return toast(r.msg); toast(`✅ 領取任務獎勵：${T.c} 金幣 + ${T.e} 經驗`); lvToast(r.up);
+  },
+  async claimBonus() {
+    const r = await txMe(f => { const dd = daily(f); if (dd.bonus) return ab('已經領過了'); if (dd.cl.length < 5) return ab('還有任務沒完成'); dd.bonus = true; f.coins += 100; f.fert = (f.fert || 0) + 2; f.feed = (f.feed || 0) + 10; return {}; });
+    toast(r.abort ? r.msg : '🎁 大獎到手：100 金幣、化肥×2、飼料×10！');
+  },
+  async saveNick() {
+    const v = ($('#nickIn')?.value || '').trim();
+    if ([...v].length > 10) return toast('名字最多 10 個字');
+    if (/[<>]/.test(v)) return toast('名字不能有 < 或 >');
+    await txMe(f => { f.nick = v; return {}; });
+    beat(); toast(v ? `名字改成「${v}」了！` : '已改回用帳號當名字');
+  },
+  async logout() { if (!confirm('確定要登出嗎？')) return; await B.setPresence(S.uid, {t:0, at:''}); await B.logout(); },
   home() { closeModal(); goHome(); },
   visit(d) { closeModal(); visit(d.uid); },
   async pickSeed(d) {
     const c = CROPS[d.id]; if (!(S.my.seeds[d.id] > 0) && S.my.coins < c.cost) return toast(`金幣不夠買${c.n}種子`);
     S.seed = d.id; S.tool = 'plant'; closeModal(); renderTools();
     const i = S.pendingPlot; S.pendingPlot = -1;
-    if (i >= 0 && isOwn()) await clickPlot(i); else toast(`已選擇${c.n}，點空地播種`);
+    if (i >= 0 && isOwn() && S.scene === 'farm') clickPlot(i); else toast(`已選擇${c.n}，點空地播種`);
   },
   async buySeed(d) {
     const c = CROPS[d.id], n = +d.n;
     const r = await txMe(f => { if (f.coins < c.cost * n) return ab('金幣不夠'); f.coins -= c.cost * n; f.seeds[d.id] = (f.seeds[d.id] || 0) + n; return {}; });
     toast(r.abort ? r.msg : `買了 ${n} 包${c.n}種子`);
   },
-  async buyFert(d) {
-    const n = +d.n; const r = await txMe(f => { if (f.coins < FERT_PRICE * n) return ab('金幣不夠'); f.coins -= FERT_PRICE * n; f.fert = (f.fert || 0) + n; return {}; });
-    toast(r.abort ? r.msg : `買了 ${n} 包化肥`);
+  async buyFert(d) { const n = +d.n; const r = await txMe(f => { if (f.coins < FERT_PRICE * n) return ab('金幣不夠'); f.coins -= FERT_PRICE * n; f.fert = (f.fert || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 包化肥`); },
+  async buyFeed(d) { const n = +d.n; const r = await txMe(f => { if (f.coins < FEED_PRICE * n) return ab('金幣不夠'); f.coins -= FEED_PRICE * n; f.feed = (f.feed || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 份飼料`); },
+  async buyAnimal(d) {
+    const A = ANIMALS[d.k];
+    const r = await txMe(f => {
+      const Lv = levelOf(f.exp).L; if (Lv < A.lv) return ab(`Lv.${A.lv} 才能養${A.n}`);
+      if (f.ranch.animals.length >= ranchCap(Lv)) return ab('牧場滿了，升級可以養更多');
+      if (f.coins < A.price) return ab('金幣不夠');
+      const t = now(); f.coins -= A.price; f.ranch.animals.push({k:d.k, b:t, p:t, fu:t + ivMs(d.k) * 2, s:0, th:[]}); return {};
+    });
+    if (r.abort) return toast(r.msg);
+    toast(`🐣 ${A.n}來到你的牧場了！記得餵牠吃東西`); closeModal();
+    if (!isOwn()) goHome();
+    S.scene = 'ranch'; renderAll();
   },
-  async buyDog() {
-    if (!confirm(`花 ${DOG_PRICE} 金幣買一隻看門狗？`)) return;
-    const r = await txMe(f => { if (f.dog) return ab('已經有狗了'); if (levelOf(f.exp).L < DOG_LV) return ab(`Lv.${DOG_LV} 才能買`); if (f.coins < DOG_PRICE) return ab('金幣不夠'); f.coins -= DOG_PRICE; f.dog = true; return {}; });
-    toast(r.abort ? r.msg : '🐶 看門狗到家了！小偷要小心囉');
+  async sellAnimal(d) {
+    const i = +d.i, a = S.my.ranch.animals[i]; if (!a) return;
+    if (!confirm(`確定要賣掉${ANIMALS[a.k].n}嗎？（拿回 ${Math.floor(ANIMALS[a.k].price / 2)} 金幣，牠身上的產品會一起收進倉庫）`)) return;
+    const r = await txMe(f => {
+      const x = f.ranch.animals[i]; if (!x || x.k !== a.k || x.b !== a.b) return ab('動物清單變了，請再試一次');
+      settleA(x); const A = ANIMALS[x.k]; if (x.s) f.wh[A.prod] = (f.wh[A.prod] || 0) + x.s;
+      f.ranch.animals.splice(i, 1); f.coins += Math.floor(A.price / 2); return {};
+    });
+    toast(r.abort ? r.msg : '已賣掉，掰掰 👋');
   },
-  async buyPlot() { await buyPlot(); },
+  async buyPet(d) {
+    const P = PETS[d.k];
+    if (!confirm(`花 ${P.price} 金幣買一隻${P.n}？`)) return;
+    const r = await txMe(f => { if (f.pets.includes(d.k)) return ab('已經有了'); if (levelOf(f.exp).L < P.lv) return ab(`Lv.${P.lv} 才能買`); if (f.coins < P.price) return ab('金幣不夠'); f.coins -= P.price; f.pets.push(d.k); f.pet = d.k; return {}; });
+    toast(r.abort ? r.msg : `🐾 ${P.n}來到你家了，已經在顧家囉！`);
+  },
+  async setPet(d) { await txMe(f => { if (!f.pets.includes(d.k)) return ab('還沒有這隻寵物'); f.pet = d.k; return {}; }); toast(`${PETS[d.k].n}出來顧家了！`); },
+  buyPlot() { return run(buyPlot); },
   async sell(d) {
-    const r = await txMe(f => { const n = f.wh[d.id] || 0; if (!n) return ab('沒有可以賣的'); const g = n * CROPS[d.id].sell; f.coins += g; f.wh[d.id] = 0; return {n, g}; });
-    toast(r.abort ? r.msg : `賣出 ${r.n} 個${CROPS[d.id].n}，賺了 ${r.g} 金幣 💰`);
+    const r = await txMe(f => { const n = f.wh[d.id] || 0; if (!n) return ab('沒有可以賣的'); const g = n * itemInfo(d.id).sell; f.coins += g; f.wh[d.id] = 0; bump(f, 'sell'); return {n, g}; });
+    toast(r.abort ? r.msg : `賣出 ${r.n} 個${itemInfo(d.id).n}，賺了 ${r.g} 金幣 💰`);
   },
   async sellAll() {
-    const r = await txMe(f => { let g = 0; for (const [id, n] of Object.entries(f.wh || {})) { g += n * CROPS[id].sell; f.wh[id] = 0; } return g ? {g} : ab('沒有可以賣的'); });
+    const r = await txMe(f => { let g = 0; for (const [id, n] of Object.entries(f.wh || {})) { if (id === 'grass' || !n) continue; g += n * itemInfo(id).sell; f.wh[id] = 0; } if (!g) return ab('沒有可以賣的'); bump(f, 'sell'); return {g}; });
     toast(r.abort ? r.msg : `全部賣出，賺了 ${r.g} 金幣 💰`);
   },
+  async sellProducts() {
+    const r = await txMe(f => { let g = 0; for (const id of Object.keys(PROD)) { const n = f.wh[id] || 0; if (n) { g += n * PROD[id].sell; f.wh[id] = 0; } } if (!g) return ab('倉庫裡沒有動物產品'); bump(f, 'sell'); return {g}; });
+    toast(r.abort ? r.msg : `動物產品全部賣出，賺了 ${r.g} 金幣 💰`);
+  },
   addFriend,
+  async addUid(d) { await sendFriendReq(d.uid, d.n); },
   async accept(d) { const r = S.reqs.find(x => x.id === d.id); if (r) await acceptReq(r); },
   async reject(d) { await B.delReq(d.id); toast('已拒絕'); await refreshFriends(); },
   async unfriend(d) {
-    const x = S.friends.find(y => y.uid === d.uid); if (!confirm(`確定要刪除好友 ${x ? x.farm.username : ''}？`)) return;
+    const x = S.friends.find(y => y.uid === d.uid); if (!confirm(`確定要刪除好友 ${x ? dn(x.farm) : ''}？`)) return;
     await txMe(f => { f.friends = (f.friends || []).filter(u => u !== d.uid); return {}; });
     await B.tx(d.uid, f => { f.friends = (f.friends || []).filter(u => u !== S.uid); return {}; }).catch(() => {});
     if (S.viewUid === d.uid) goHome(); toast('已刪除好友'); await refreshFriends();
   },
+  say(d) { return say(d.m); },
+  sayIn() { return say($('#sayIn')?.value); },
 };
 document.addEventListener('click', async e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
-  const fn = ACT[el.dataset.act]; if (!fn) return;
-  if (el.disabled) return;
+  const fn = ACT[el.dataset.act]; if (!fn || el.disabled) return;
   try { await fn(el.dataset, el); } catch (err) { console.error(err); toast('出錯了：' + err.message); }
 });
 $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'fName') addFriend(); if (e.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.id === 'fName') addFriend();
+  if (e.key === 'Enter' && e.target.id === 'sayIn') say(e.target.value);
+  if (e.key === 'Enter' && e.target.id === 'nickIn') ACT.saveNick();
+  if (e.key === 'Escape') closeModal();
+});
 
 /* ===================== 登入流程 ===================== */
 $('#authForm').addEventListener('submit', async e => {
@@ -924,7 +1443,18 @@ $('#authForm').addEventListener('submit', async e => {
   finally { $('#aGo').disabled = false; }
 });
 
-function cleanup() { S.unsubMy && S.unsubMy(); S.unsubView && S.unsubView(); S.unsubMy = S.unsubView = null; }
+function beat() { if (S.my && S.uid) B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, at:S.viewUid || S.uid, t:now()}); }
+function watchHere() {
+  S.unsubHere && S.unsubHere(); S.here = []; S.hereIds = new Set(); S.hereInit = false; const at = S.viewUid;
+  S.unsubHere = B.watchHere(at, list => {
+    if (S.viewUid !== at) return;
+    const fresh = list.filter(p => p.t && now() - p.t < 75000);
+    if (at === S.uid) for (const p of fresh) if (p.uid !== S.uid && !S.hereIds.has(p.uid) && S.hereInit) toast(`👋 ${p.n} 來你家玩了！`);
+    S.hereIds = new Set(fresh.map(p => p.uid)); S.hereInit = true;
+    S.here = list; renderPeople();
+  });
+}
+function cleanup() { for (const k of ['unsubMy', 'unsubView', 'unsubHere']) { S[k] && S[k](); S[k] = null; } }
 async function onAuth(u) {
   cleanup(); closeModal();
   if (!u) { S.uid = S.my = S.view = S.viewUid = null; S.friends = []; S.reqs = []; $('#game').hidden = true; $('#auth').hidden = false; $('#aPass').value = ''; $('#aPass2').value = ''; return; }
@@ -932,47 +1462,52 @@ async function onAuth(u) {
   await sleep(0); if (B.settle) await B.settle();
   let f = null; for (let k = 0; k < 20 && !(f = await B.getFarm(u.uid).catch(() => null)); k++) await sleep(400);
   if (!f) { $('#authErr').textContent = '讀取農場失敗，請再試一次'; await B.logout(); return; }
-  S.my = f; S.seed = null; S.tool = 'hand';
+  S.my = normalize(f); S.seed = null; S.tool = 'hand'; S.scene = 'farm';
   $('#auth').hidden = true; $('#game').hidden = false; fitView();
   S.unsubMy = B.watch(S.uid, nf => {
-    if (!nf) return; S.my = nf; if (isOwn()) S.view = nf;
+    if (!nf) return; S.my = normalize(nf); if (isOwn()) S.view = S.my;
     const key = (nf.friends || []).join(','); if (key !== S.lastFriendKey) { S.lastFriendKey = key; refreshFriends(); }
     renderAll(); rerenderModal();
   });
   goHome();
-  if (f.lastSign !== today()) {
-    const r = await txMe(f => { if (f.lastSign === today()) return ab(''); f.lastSign = today(); f.coins += SIGN_COINS; daily(f); return {}; });
-    if (!r.abort) toast(f.lastSign ? `☀️ 每日簽到 +${SIGN_COINS} 金幣` : `🎉 歡迎來到農場！送你 300 金幣和一些種子，先種白蘿蔔試試看`);
-  }
+  const isNew = !f.lastSign;
+  const r = await txMe(g => {
+    let ch = false;
+    if (g.lastSign !== today()) { g.lastSign = today(); g.coins += SIGN_COINS; daily(g); ch = true; }
+    return ch ? {signed:true} : ab('');
+  }).catch(() => ({abort:1}));
+  if (!r.abort) toast(isNew ? '🎉 歡迎來到農場！先種白蘿蔔和牧草試試看，左上角可以改名字' : `☀️ 每日簽到 +${SIGN_COINS} 金幣，記得看看今天的任務 📋`);
   refreshFriends();
 }
 function goHome() {
   S.unsubView && S.unsubView(); S.unsubView = null;
-  S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; renderAll();
+  S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; renderAll(); beat(); watchHere();
 }
 function visit(uid) {
   if (uid === S.uid) return goHome();
   S.unsubView && S.unsubView();
-  S.viewUid = uid; S.view = (S.friends.find(x => x.uid === uid) || {}).farm || null; S.tool = 'hand'; renderAll();
-  S.unsubView = B.watch(uid, nf => { if (S.viewUid !== uid) return; S.view = nf; if (!nf) { toast('找不到這個農場'); return goHome(); } renderScene(); });
+  S.viewUid = uid; const fr = S.friends.find(x => x.uid === uid); S.view = fr ? fr.farm : null; S.tool = 'hand'; renderAll(); beat(); watchHere();
+  S.unsubView = B.watch(uid, nf => { if (S.viewUid !== uid) return; S.view = normalize(nf); if (!nf) { toast('找不到這個農場'); return goHome(); } renderScene(); renderTools(); });
+  if (!dailyView(S.my).vis.includes(uid)) txMe(f => { const d = daily(f); if (d.vis.includes(uid)) return ab(''); d.vis.push(uid); bump(f, 'visit'); return {}; }).catch(() => {});
 }
 
-/* 定時更新：作物成長、出現問題、好友列表 */
+/* 定時更新 */
 setInterval(() => { if (S.view) renderScene(); }, 1000);
 setInterval(async () => {
   if (!S.my || S.busy) return;
-  const test = clone(S.my);
-  if (spawnProblems(test)) { try { await txMe(f => spawnProblems(f) ? {} : ab('')); } catch {} }
+  if (tickOwn(normalize(clone(S.my)))) { try { await txMe(f => tickOwn(f) ? {} : ab('')); } catch {} }
 }, 5000);
+setInterval(() => { if (S.my) beat(); }, 25000);
 setInterval(() => { if (S.my) refreshFriends(); }, 20000);
-setInterval(() => { if (S.my) renderStrip(); }, 10000);
+setInterval(() => { if (S.my) { renderStrip(); renderTop(); } }, 10000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.my) beat(); });
 
 /* ===================== 啟動 ===================== */
 $('#bgG').innerHTML = bgSVG();
 (async () => {
-  try { B = FIREBASE_CONFIG ? await makeFirebase(FIREBASE_CONFIG) : makeLocal(); }
-  catch (e) { $('#authErr').textContent = '無法連上 Firebase：' + e.message; return; }
-  $('#modeNote').innerHTML = B.mode === 'local' ? '⚠️ 目前是<b>單機測試模式</b>：帳號只存在這台裝置。<br>接上 Firebase 之後，朋友就能用自己的手機登入互相偷菜。' : '🌐 連線模式：朋友可以用自己的手機登入';
+  try { B = USE_FB ? await makeFirebase(FIREBASE_CONFIG) : makeLocal(); }
+  catch (e) { $('#authErr').textContent = '無法連上伺服器：' + e.message; return; }
+  $('#modeNote').innerHTML = B.mode === 'local' ? '⚠️ 目前是<b>單機測試模式</b>：帳號只存在這台裝置。' : '🌐 連線模式：朋友可以用自己的手機登入一起玩';
   B.onAuth(u => onAuth(u).catch(e => { console.error(e); toast('出錯了：' + e.message); }));
 })();
 </script>
