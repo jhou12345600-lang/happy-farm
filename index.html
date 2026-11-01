@@ -321,7 +321,7 @@ function fmtTime(t) { const d = new Date(t); const p = n => String(n).padStart(2
 function colorOf(s) { let h = 0; for (const c of String(s)) h = (h * 37 + c.charCodeAt(0)) % 360; return `hsl(${h} 65% 52%)`; }
 const dn = f => (f && (f.nick || f.username)) || '？';
 const itemInfo = id => CROPS[id] || PROD[id] || {n:id, sell:0};
-const isOnline = p => p && p.t && now() - p.t < 90000;
+const isOnline = p => p && !p.off && p.t && now() - p.t < 90000;
 
 function levelOf(exp) { let L = 1, need = 100, e = exp || 0; while (e >= need) { e -= need; L++; need = 100 + (L - 1) * 80; } return {L, cur:e, need}; }
 function gainExp(f, n) { const b = levelOf(f.exp).L; f.exp = (f.exp || 0) + n; const a = levelOf(f.exp).L; return a > b ? a : 0; }
@@ -826,7 +826,7 @@ function renderScene() {
   renderPeople();
   if (S.hover) showTip(S.hover);
 }
-function hereList() { return S.here.filter(p => p.t && now() - p.t < 75000).sort((a, b) => a.uid < b.uid ? -1 : 1); }
+function hereList() { return S.here.filter(p => !p.off && p.t && now() - p.t < 75000).sort((a, b) => a.uid < b.uid ? -1 : 1); }
 function renderPeople() {
   const list = hereList();
   $('#peopleG').innerHTML = list.map((p, k) => personSVG(p, k)).join('');
@@ -1243,7 +1243,7 @@ function openFriends(tab = 'list') {
     } else if (tab === 'find') {
       const list = (S.recent || []).filter(p => p.uid !== S.uid && p.n);
       body += `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">最近上線的玩家，看到喜歡的就加好友，一起偷菜！</p>`;
-      body += list.length ? list.map(p => { const fr = S.my.friends.includes(p.uid); return `<div class="item"><div class="pic" style="background:${colorOf(p.n)};color:#fff;font-weight:900;position:relative">${esc([...p.n][0])}${isOnline(p) ? '<i class="dot"></i>' : ''}</div><div class="info"><div class="t">${esc(p.n)} <small style="color:#8d6e63">${p.lv ? 'Lv.' + p.lv : ''}</small></div><div class="d">${isOnline(p) ? '🟢 線上' : `⚪ ${fmtTime(p.t)} 來過`}</div></div><div class="acts">${fr ? `<button class="b" data-act="visit" data-uid="${p.uid}">去他家</button>` : `<button class="b o" data-act="addUid" data-uid="${p.uid}" data-n="${esc(p.n)}">加好友</button>`}</div></div>`; }).join('')
+      body += list.length ? list.map(p => { const fr = S.my.friends.includes(p.uid); return `<div class="item"><div class="pic" style="background:${colorOf(p.n)};color:#fff;font-weight:900;position:relative">${esc([...p.n][0])}${isOnline(p) ? '<i class="dot"></i>' : ''}</div><div class="info"><div class="t">${esc(p.n)} <small style="color:#8d6e63">${p.lv ? 'Lv.' + p.lv : ''}</small></div><div class="d">${isOnline(p) ? '🟢 線上' : p.t ? `⚪ ${fmtTime(p.t)} 來過` : '⚪ 離線'}</div></div><div class="acts">${fr ? `<button class="b" data-act="visit" data-uid="${p.uid}">去他家</button>` : `<button class="b o" data-act="addUid" data-uid="${p.uid}" data-n="${esc(p.n)}">加好友</button>`}</div></div>`; }).join('')
         : '<div class="empty">讀取中…或目前還沒有其他玩家</div>';
     } else {
       const rank = [{uid:S.uid, farm:S.my}, ...S.friends].sort((a, b) => b.farm.exp - a.farm.exp);
@@ -1298,7 +1298,7 @@ function openChat() {
 async function say(m) {
   m = String(m || '').trim().slice(0, 24); if (!m) return;
   closeModal(); const t = now();
-  await B.setPresence(S.uid, {say:{m, t}, at:S.viewUid, t, n:myName(), lv:levelOf(S.my.exp).L});
+  await B.setPresence(S.uid, {say:{m, t}, at:S.viewUid, t, n:myName(), lv:levelOf(S.my.exp).L, off:false});
   if (!(dailyView(S.my).t.chat >= 1)) txMe(f => { bump(f, 'chat'); return {}; }).catch(() => {});
 }
 function openHelp() {
@@ -1345,7 +1345,7 @@ const ACT = {
     await txMe(f => { f.nick = v; return {}; });
     beat(); toast(v ? `名字改成「${v}」了！` : '已改回用帳號當名字');
   },
-  async logout() { if (!confirm('確定要登出嗎？')) return; await B.setPresence(S.uid, {t:0, at:''}); await B.logout(); },
+  async logout() { if (!confirm('確定要登出嗎？')) return; await B.setPresence(S.uid, {at:'', off:true, t:now()}); await B.logout(); },
   home() { closeModal(); goHome(); },
   visit(d) { closeModal(); visit(d.uid); },
   async pickSeed(d) {
@@ -1444,12 +1444,12 @@ $('#authForm').addEventListener('submit', async e => {
   finally { $('#aGo').disabled = false; }
 });
 
-function beat() { if (S.my && S.uid) B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, at:S.viewUid || S.uid, t:now()}); }
+function beat() { if (S.my && S.uid) B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, at:S.viewUid || S.uid, t:now(), off:false}); }
 function watchHere() {
   S.unsubHere && S.unsubHere(); S.here = []; S.hereIds = new Set(); S.hereInit = false; const at = S.viewUid;
   S.unsubHere = B.watchHere(at, list => {
     if (S.viewUid !== at) return;
-    const fresh = list.filter(p => p.t && now() - p.t < 75000);
+    const fresh = list.filter(p => !p.off && p.t && now() - p.t < 75000);
     if (at === S.uid) for (const p of fresh) if (p.uid !== S.uid && !S.hereIds.has(p.uid) && S.hereInit) toast(`👋 ${p.n} 來你家玩了！`);
     S.hereIds = new Set(fresh.map(p => p.uid)); S.hereInit = true;
     S.here = list; renderPeople();
