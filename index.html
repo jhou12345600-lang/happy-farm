@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>歡樂偷菜農場</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;background:#79c24f;color:#3b2a14}
+button{font-family:inherit;cursor:pointer;border:none}
+[hidden]{display:none!important}
+
+/* ===== 登入畫面 ===== */
+#auth{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;
+  background:linear-gradient(#6ec6ff 0 45%,#9ad85f 45% 100%)}
+#auth::before{content:"";position:absolute;left:-10%;right:-10%;top:38%;height:18%;background:#7cc35a;border-radius:50% 50% 0 0}
+.card{position:relative;width:100%;max-width:360px;background:#fffaf0;border:4px solid #8d5a2b;border-radius:22px;padding:22px 22px 18px;box-shadow:0 10px 0 #6b3f1d,0 18px 40px rgba(0,0,0,.25)}
+.logo{text-align:center;margin-bottom:14px}
+.logo .big{font-size:44px;line-height:1}
+.logo h1{font-size:26px;color:#e2553f;letter-spacing:2px;text-shadow:2px 2px 0 #ffe0a3;margin-top:6px}
+.logo p{font-size:13px;color:#8d6e63;margin-top:2px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button{flex:1;padding:9px;border-radius:12px;background:#f1e2c4;color:#8d5a2b;font-weight:700;font-size:15px}
+.tabs button.on{background:#ffb74d;color:#5d3a12;box-shadow:inset 0 -3px 0 #e69a2e}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:13px;font-weight:700;color:#8d5a2b;margin-bottom:4px}
+.field input{width:100%;padding:11px 12px;border-radius:12px;border:2px solid #e0c99d;background:#fff;font-size:16px;font-family:inherit;outline:none}
+.field input:focus{border-color:#ffb74d}
+.go{width:100%;padding:12px;border-radius:14px;background:linear-gradient(#7ed957,#4caf50);color:#fff;font-size:18px;font-weight:900;letter-spacing:2px;box-shadow:0 4px 0 #2e7d32;margin-top:4px}
+.go:active{transform:translateY(3px);box-shadow:0 1px 0 #2e7d32}
+.go:disabled{opacity:.6}
+#authErr{color:#d32f2f;font-size:14px;min-height:20px;text-align:center;margin-top:8px;font-weight:700}
+#modeNote{font-size:12px;color:#8d6e63;text-align:center;margin-top:6px;line-height:1.5}
+
+/* ===== 遊戲 ===== */
+#game{position:fixed;inset:0;display:flex;flex-direction:column}
+#top{display:flex;align-items:center;gap:10px;padding:8px 10px;background:linear-gradient(#a0703f,#7a4b24);color:#fff;border-bottom:3px solid #5a3518;flex-wrap:wrap;z-index:2}
+.me{display:flex;align-items:center;gap:8px;min-width:0}
+.av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#fff;border:3px solid #fff;flex:none;position:relative;background:#ff9800;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.nm{font-weight:900;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.lvRow{display:flex;align-items:center;gap:5px;font-size:12px}
+.lv{background:#ffca28;color:#5d3a12;border-radius:8px;padding:0 6px;font-weight:900}
+.xp{width:80px;height:9px;background:rgba(0,0,0,.35);border-radius:6px;overflow:hidden}
+.xp i{display:block;height:100%;background:linear-gradient(90deg,#8bc34a,#cddc39);width:0}
+.xpt{opacity:.85}
+.coins{background:rgba(0,0,0,.25);border-radius:14px;padding:4px 10px;font-size:15px;white-space:nowrap}
+.coins b{color:#ffe082}
+.btns{display:flex;gap:5px;margin-left:auto;flex-wrap:wrap}
+.btns button{position:relative;background:#fff3d6;color:#6b3f1d;border-radius:12px;padding:6px 9px;font-size:14px;font-weight:700;box-shadow:0 3px 0 #c9a46a;display:flex;align-items:center;gap:3px}
+.btns button:active{transform:translateY(2px);box-shadow:0 1px 0 #c9a46a}
+.badge{position:absolute;top:-6px;right:-6px;background:#e53935;color:#fff;font-style:normal;font-size:11px;min-width:18px;height:18px;border-radius:9px;display:none;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff}
+.badge.on{display:flex}
+#visitBar{background:#fff3cd;color:#7a4b24;text-align:center;padding:6px;font-size:14px;font-weight:700;border-bottom:2px solid #e0c99d;display:flex;align-items:center;justify-content:center;gap:10px}
+#visitBar button{background:#4caf50;color:#fff;border-radius:10px;padding:4px 12px;font-weight:700;box-shadow:0 2px 0 #2e7d32}
+#stage{flex:1;position:relative;min-height:0;overflow:hidden;background:#79c24f}
+#scene{width:100%;height:100%;display:block;overflow:visible;touch-action:manipulation}
+#tip{position:absolute;pointer-events:none;background:rgba(40,25,10,.88);color:#fff;font-size:13px;padding:7px 10px;border-radius:10px;line-height:1.5;display:none;z-index:3;white-space:nowrap}
+#tip b{color:#ffe082}
+
+#friendStrip{display:flex;gap:6px;overflow-x:auto;padding:6px 8px;background:rgba(255,248,230,.95);border-top:3px solid #c9a46a;scrollbar-width:thin}
+.fr{flex:none;width:68px;background:none;display:flex;flex-direction:column;align-items:center;padding:3px;border-radius:12px;color:#5d3a12}
+.fr.on{background:#ffe0a3}
+.fr .av{width:42px;height:42px;border-color:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2)}
+.fr.add .av{background:#bdbdbd}
+.fn{font-size:12px;font-weight:700;max-width:64px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.fl{font-size:11px;color:#8d6e63}
+.steal{position:absolute;bottom:-6px;right:-10px;font-style:normal;font-size:11px;background:#43a047;color:#fff;border-radius:8px;padding:0 4px;border:2px solid #fff;animation:pop 1.2s ease-in-out infinite}
+@keyframes pop{50%{transform:scale(1.15)}}
+
+#tools{display:flex;gap:6px;padding:7px 8px calc(7px + env(safe-area-inset-bottom));background:linear-gradient(#8d5a2b,#6b3f1d);overflow-x:auto}
+.tool:first-child{margin-left:auto}.tool:last-child{margin-right:auto}
+.tool{flex:none;width:62px;padding:5px 2px;border-radius:14px;background:#fff3d6;color:#6b3f1d;display:flex;flex-direction:column;align-items:center;box-shadow:0 3px 0 #c9a46a;position:relative}
+.tool .ic{font-size:24px;line-height:1.1}
+.tool .tl{font-size:12px;font-weight:700;white-space:nowrap;max-width:58px;overflow:hidden;text-overflow:ellipsis}
+.tool.on{background:#ffca28;box-shadow:0 3px 0 #e69a2e,0 0 0 3px #fff}
+.tool em{position:absolute;top:-5px;right:-4px;font-style:normal;font-size:11px;background:#6d4c41;color:#fff;border-radius:8px;padding:0 5px}
+
+/* SVG */
+.tile{cursor:pointer}
+.tile .top{transition:filter .15s}
+.tile:hover .top{filter:brightness(1.12);stroke:#ffe14d;stroke-width:3}
+.tile.locked{cursor:default}
+.tile.locked:hover .top{filter:none;stroke:none}
+.buyTxt{font-size:15px;font-weight:900;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#2e7d32;stroke-width:4px}
+.cloud{animation:drift linear infinite}
+@keyframes drift{from{transform:translateX(-500px)}to{transform:translateX(1600px)}}
+.tw{animation:tw 1.6s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.2}50%{opacity:1}}
+.tail{transform-box:fill-box;transform-origin:0% 100%;animation:wag .5s ease-in-out infinite alternate}
+@keyframes wag{from{transform:rotate(-15deg)}to{transform:rotate(20deg)}}
+.bob{animation:bob 2.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-2px)}}
+.fx{font-size:20px;font-weight:900;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round;animation:fx 1.5s ease-out forwards;pointer-events:none}
+@keyframes fx{0%{opacity:0;transform:translateY(8px)}15%{opacity:1}100%{opacity:0;transform:translateY(-55px)}}
+.signT{font-size:17px;font-weight:900;fill:#fff8e1;text-anchor:middle}
+
+/* ===== 視窗 ===== */
+#modal{position:fixed;inset:0;background:rgba(30,20,5,.5);display:flex;align-items:center;justify-content:center;padding:12px;z-index:10}
+.box{width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;background:#fffaf0;border:4px solid #8d5a2b;border-radius:20px;box-shadow:0 8px 0 #6b3f1d;overflow:hidden}
+.mh{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:linear-gradient(#ffcc80,#ffb74d);font-weight:900;font-size:18px;color:#5d3a12}
+.mh button{background:#fff3d6;color:#8d5a2b;width:32px;height:32px;border-radius:50%;font-size:16px;font-weight:900}
+#mb{overflow-y:auto;padding:12px 14px 16px}
+.mtabs{display:flex;gap:6px;margin-bottom:10px}
+.mtabs button{flex:1;padding:8px;border-radius:10px;background:#f1e2c4;color:#8d5a2b;font-weight:700}
+.mtabs button.on{background:#ffb74d;color:#5d3a12}
+.item{display:flex;align-items:center;gap:10px;padding:8px;border-radius:14px;background:#fff;border:2px solid #f1e2c4;margin-bottom:8px}
+.item.dim{opacity:.55}
+.item .pic{width:52px;height:52px;flex:none;display:flex;align-items:center;justify-content:center;background:#f6ecd6;border-radius:12px;font-size:30px}
+.item .info{flex:1;min-width:0}
+.item .t{font-weight:900;font-size:15px}
+.item .d{font-size:12px;color:#8d6e63;line-height:1.5}
+.item .acts{display:flex;flex-direction:column;gap:4px;flex:none}
+.b{background:linear-gradient(#7ed957,#4caf50);color:#fff;font-weight:700;font-size:13px;border-radius:10px;padding:6px 10px;box-shadow:0 2px 0 #2e7d32;white-space:nowrap}
+.b.o{background:linear-gradient(#ffcc80,#ffa726);box-shadow:0 2px 0 #e68a00;color:#5d3a12}
+.b.r{background:linear-gradient(#ef9a9a,#e57373);box-shadow:0 2px 0 #c62828}
+.b.g{background:#e0e0e0;color:#757575;box-shadow:0 2px 0 #bdbdbd}
+.b:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px;margin-bottom:10px}
+.row input{flex:1;padding:9px 11px;border-radius:12px;border:2px solid #e0c99d;font-size:15px;font-family:inherit;outline:none;min-width:0}
+.sec{font-weight:900;color:#8d5a2b;margin:12px 0 6px;font-size:14px}
+.empty{text-align:center;color:#a1887f;padding:14px;font-size:14px}
+.log{padding:7px 4px;border-bottom:1px dashed #e0c99d;font-size:14px;display:flex;gap:8px}
+.log time{color:#a1887f;font-size:12px;flex:none;width:70px}
+.log.new{background:#fff3cd}
+.help p{font-size:14px;line-height:1.7;margin-bottom:8px}
+.help b{color:#e2553f}
+#toast{position:fixed;left:50%;top:76px;transform:translateX(-50%);z-index:20;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
+#toast div{background:rgba(40,25,10,.9);color:#fff;padding:9px 16px;border-radius:14px;font-size:15px;font-weight:700;animation:tin .25s ease-out;max-width:90vw;text-align:center}
+@keyframes tin{from{opacity:0;transform:translateY(-8px)}}
+
+@media (max-width:640px){
+  .btns button span{display:none}
+  .btns button{padding:6px 8px;font-size:17px}
+  .xp{width:56px}
+  .xpt{display:none}
+  #top{gap:6px}
+  .tool{width:49px}
+  .tool .ic{font-size:20px}
+  .tool .tl{font-size:11px}
+  #tools{gap:4px;padding-left:4px;padding-right:4px}
+  .fr{width:58px}
+  .fr .av{width:36px;height:36px;font-size:15px}
+}
+</style>
+</head>
+<body>
+
+<!-- 登入 / 註冊 -->
+<div id="auth">
+  <div class="card">
+    <div class="logo"><div class="big">🥕🌽🍅</div><h1>歡樂偷菜農場</h1><p>種菜、收成、半夜去好友家偷菜！</p></div>
+    <div class="tabs"><button class="on" data-act="authTab" data-t="login">登入</button><button data-act="authTab" data-t="reg">註冊新帳號</button></div>
+    <form id="authForm" autocomplete="on">
+      <div class="field"><label>帳號（2～10 個字，可用中文）</label><input id="aName" autocomplete="username" maxlength="10" required></div>
+      <div class="field"><label>密碼（至少 6 個字）</label><input id="aPass" type="password" autocomplete="current-password" required></div>
+      <div class="field" id="aPass2Wrap" hidden><label>再輸入一次密碼</label><input id="aPass2" type="password" autocomplete="new-password"></div>
+      <button class="go" id="aGo" type="submit">開始種田</button>
+    </form>
+    <div id="authErr"></div>
+    <div id="modeNote"></div>
+  </div>
+</div>
+
+<!-- 遊戲 -->
+<div id="game" hidden>
+  <header id="top">
+    <div class="me"><div class="av" id="myAv"></div><div><div class="nm" id="myName"></div>
+      <div class="lvRow"><span class="lv" id="myLv"></span><div class="xp"><i id="myXp"></i></div><span class="xpt" id="myXpT"></span></div></div></div>
+    <div class="coins">💰 <b id="myCoins">0</b></div>
+    <div class="btns">
+      <button data-act="shop">🏪<span>商店</span></button>
+      <button data-act="wh">📦<span>倉庫</span></button>
+      <button data-act="friends">👥<span>好友</span><em class="badge" id="bdF"></em></button>
+      <button data-act="msgs">📜<span>消息</span><em class="badge" id="bdM"></em></button>
+      <button data-act="help">❓<span>玩法</span></button>
+      <button data-act="logout">🚪<span>登出</span></button>
+    </div>
+  </header>
+  <div id="visitBar" hidden><span>你正在 <b id="visitName"></b> 的農場 👀</span><button data-act="home">🏠 回我的農場</button></div>
+  <div id="stage">
+    <svg id="scene" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet">
+      <g id="bgG"></g><g id="decoG"></g><g id="plotsG"></g><g id="fxG"></g>
+    </svg>
+    <div id="tip"></div>
+  </div>
+  <div id="friendStrip"></div>
+  <nav id="tools"></nav>
+</div>
+
+<div id="modal" hidden><div class="box"><div class="mh"><span id="mt"></span><button data-act="close">✕</button></div><div id="mb"></div></div></div>
+<div id="toast"></div>
+
+<script type="module">
+/* =========================================================
+   Firebase 設定：把 Firebase 主控台給你的 firebaseConfig 貼在這裡。
+   維持 null 就是「單機測試模式」（帳號只存在這台裝置）。
+   ========================================================= */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDgZdhzbW9G-SLdI03ANndCLJHhCgUovgI",
+  authDomain: "happy-farm-a5ff9.firebaseapp.com",
+  projectId: "happy-farm-a5ff9",
+  storageBucket: "happy-farm-a5ff9.firebasestorage.app",
+  messagingSenderId: "147466948562",
+  appId: "1:147466948562:web:64731e0bf2e422893c020b"
+};
+const FB_VER = '10.12.2';
+
+/* ===================== 遊戲資料 ===================== */
+const CROPS = {
+  radish:    {n:'白蘿蔔', cost:10,  t:120,   y:10, sell:2,  exp:2,  lv:1},
+  carrot:    {n:'紅蘿蔔', cost:20,  t:600,   y:12, sell:3,  exp:4,  lv:1},
+  corn:      {n:'玉米',   cost:40,  t:1800,  y:14, sell:5,  exp:8,  lv:2},
+  tomato:    {n:'番茄',   cost:60,  t:3600,  y:16, sell:7,  exp:12, lv:3},
+  eggplant:  {n:'茄子',   cost:90,  t:7200,  y:18, sell:9,  exp:18, lv:4},
+  strawberry:{n:'草莓',   cost:150, t:14400, y:20, sell:13, exp:28, lv:6},
+  pumpkin:   {n:'南瓜',   cost:220, t:28800, y:22, sell:17, exp:40, lv:8},
+  watermelon:{n:'西瓜',   cost:320, t:43200, y:24, sell:23, exp:60, lv:10},
+};
+const MAXP = 18, START_P = 6;
+const FERT_PRICE = 30, DOG_PRICE = 1500, DOG_LV = 3, DOG_BITE = 0.3;
+const plotPrice = n => 500 + (n - 7) * 400;   // 第 n 塊地的價格
+const plotLv = n => n - 5;                     // 第 n 塊地需要的等級
+const DAILY_HELP_EXP = 60, DAILY_PRANK = 10, SIGN_COINS = 100;
+const KEEP_RATIO = 0.6;                        // 被偷到剩 60% 就不能再偷
+const SPEED = (() => { const s = +new URLSearchParams(location.search).get('speed'); return s > 0 && !FIREBASE_CONFIG ? s : 1; })();
+
+/* ===================== 小工具 ===================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const now = () => Date.now();
+const today = () => new Date().toLocaleDateString('sv');
+const clone = o => JSON.parse(JSON.stringify(o));
+const nameKey = n => n.trim().toLowerCase();
+const hex = s => Array.from(new TextEncoder().encode(s)).map(b => b.toString(16).padStart(2, '0')).join('');
+const store = (() => { const mem = {}; try { localStorage.setItem('_t', '1'); localStorage.removeItem('_t'); return localStorage; }
+  catch { return {getItem:k => k in mem ? mem[k] : null, setItem:(k, v) => { mem[k] = String(v); }, removeItem:k => { delete mem[k]; }}; } })();
+async function sha(s) {
+  try { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('hfarm:' + s)); return hex(String.fromCharCode(...new Uint8Array(b))); }
+  catch { let h = 0; for (const c of 'hfarm:' + s) h = (h * 31 + c.charCodeAt(0)) | 0; return 'x' + h; }
+}
+function fmtDur(ms) {
+  const s = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
+  return h ? `${h}小時${m}分` : m ? `${m}分${sec}秒` : `${sec}秒`;
+}
+function fmtTime(t) { const d = new Date(t); const p = n => String(n).padStart(2, '0'); return `${d.getMonth()+1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+function colorOf(s) { let h = 0; for (const c of String(s)) h = (h * 37 + c.charCodeAt(0)) % 360; return `hsl(${h} 65% 52%)`; }
+
+function levelOf(exp) { let L = 1, need = 100, e = exp || 0; while (e >= need) { e -= need; L++; need = 100 + (L - 1) * 80; } return {L, cur:e, need}; }
+function gainExp(f, n) { const b = levelOf(f.exp).L; f.exp = (f.exp || 0) + n; const a = levelOf(f.exp).L; return a > b ? a : 0; }
+function daily(f) { if (!f.daily || f.daily.day !== today()) f.daily = {day:today(), help:0, prank:0}; return f.daily; }
+function addLog(f, m) { f.log = f.log || []; f.log.push({t:now(), m}); if (f.log.length > 40) f.log = f.log.slice(-40); }
+
+const growMs = c => CROPS[c].t * 1000 / SPEED;
+const totalMs = p => growMs(p.c) - (p.f || 0);
+const matureAt = p => p.p + totalMs(p);
+const isMature = p => p && p.s === 'grow' && now() >= matureAt(p);
+const probs = p => (p.w || 0) + (p.b || 0) + (p.d ? 1 : 0);
+function stageOf(p) { if (p.s !== 'grow') return -1; const pr = (now() - p.p) / totalMs(p); return pr >= 1 ? 3 : pr < 0.15 ? 0 : pr < 0.45 ? 1 : 2; }
+function stealInfo(p, uid) {
+  if (!isMature(p)) return null;
+  const base = CROPS[p.c].y, min = Math.ceil(base * KEEP_RATIO), remain = base - (p.st || 0);
+  return {can: remain > min && !(p.th || []).includes(uid), avail: remain - min, mine: (p.th || []).includes(uid)};
+}
+function harvestAmt(p) { return Math.max(1, Math.floor((CROPS[p.c].y - (p.st || 0)) * (1 - 0.1 * probs(p)))); }
+
+function newFarm(username) {
+  return {username, exp:0, coins:300, plotCount:START_P, plots:Array.from({length:MAXP}, () => ({s:'empty'})),
+    seeds:{radish:4, carrot:2}, wh:{}, fert:2, dog:false, friends:[], log:[], logSeen:0,
+    daily:{day:'', help:0, prank:0}, lastSign:'', created:now()};
+}
+
+/* 雜草、蟲、乾旱：作物成長期間每 1/4 時間有機會出現（農場主人上線時補算） */
+function spawnProblems(f) {
+  let ch = false; const t = now();
+  for (let i = 0; i < f.plotCount; i++) {
+    const p = f.plots[i]; if (p.s !== 'grow') continue;
+    const g = totalMs(p), iv = Math.max(15000 / SPEED, g / 4), end = Math.min(t, p.p + g);
+    const k = Math.floor((end - p.p) / iv), done = p.k || 0;
+    if (k > done) {
+      for (let j = done; j < k; j++) {
+        if (Math.random() < 0.35 && probs(p) < 3) {
+          const opts = p.d ? ['w', 'b'] : ['d', 'w', 'b']; const o = opts[Math.floor(Math.random() * opts.length)];
+          if (o === 'd') p.d = true; else p[o] = (p[o] || 0) + 1;
+        }
+      }
+      p.k = k; ch = true;
+    }
+  }
+  return ch;
+}
+
+/* ===================== 後台：單機測試版 ===================== */
+function makeLocal() {
+  const K = 'hf_local_db', SK = 'hf_local_sess';
+  const load = () => { let d; try { d = JSON.parse(store.getItem(K)) || {}; } catch { d = {}; } d.users ??= {}; d.names ??= {}; d.farms ??= {}; d.req ??= {}; return d; };
+  let db = load(); const watchers = new Set(); let authCb = null;
+  const save = () => { store.setItem(K, JSON.stringify(db)); notify(); };
+  function notify() { for (const w of watchers) { const s = JSON.stringify(db.farms[w.uid] ?? null); if (s !== w.last) { w.last = s; w.cb(JSON.parse(s)); } } }
+  addEventListener('storage', e => { if (e.key === K) { db = load(); notify(); } });
+  return {
+    mode:'local',
+    onAuth(cb) { authCb = cb; const u = store.getItem(SK); cb(u && db.users[u] ? {uid:u} : null); },
+    async register(name, pass) {
+      db = load(); const k = nameKey(name); if (db.names[k]) throw new Error('這個帳號已經有人用了');
+      const uid = 'u' + Math.random().toString(36).slice(2, 10);
+      db.users[uid] = {pass:await sha(pass)}; db.names[k] = uid; db.farms[uid] = newFarm(name.trim()); save();
+      store.setItem(SK, uid); authCb({uid});
+    },
+    async login(name, pass) {
+      db = load(); const uid = db.names[nameKey(name)]; if (!uid) throw new Error('帳號不存在');
+      if (db.users[uid].pass !== await sha(pass)) throw new Error('密碼錯誤'); store.setItem(SK, uid); authCb({uid});
+    },
+    async logout() { store.removeItem(SK); authCb(null); },
+    async findUid(name) { db = load(); return db.names[nameKey(name)] || null; },
+    async getFarm(uid) { db = load(); return db.farms[uid] ? clone(db.farms[uid]) : null; },
+    watch(uid, cb) { const w = {uid, cb, last:undefined}; watchers.add(w); setTimeout(notify, 0); return () => watchers.delete(w); },
+    async tx(uid, fn) {
+      db = load(); const f = db.farms[uid]; if (!f) throw new Error('找不到農場');
+      const c = clone(f); const r = fn(c) || {}; if (r.abort) return r; db.farms[uid] = c; save(); return r;
+    },
+    async sendReq(from, fromName, to) { db = load(); db.req[to + '_' + from] = {from, fromName, to, t:now()}; save(); },
+    async listReq(uid) { db = load(); return Object.entries(db.req).filter(([, r]) => r.to === uid).map(([id, r]) => ({id, ...r})); },
+    async delReq(id) { db = load(); delete db.req[id]; save(); },
+  };
+}
+
+/* ===================== 後台：Firebase 連線版 ===================== */
+async function makeFirebase(cfg) {
+  const base = `https://www.gstatic.com/firebasejs/${FB_VER}/`;
+  const [{initializeApp}, A, F] = await Promise.all([import(base + 'firebase-app.js'), import(base + 'firebase-auth.js'), import(base + 'firebase-firestore.js')]);
+  const app = initializeApp(cfg); const auth = A.getAuth(app);
+  const db = F.initializeFirestore(app, {ignoreUndefinedProperties:true, ...(new URLSearchParams(location.search).has('lp') ? {experimentalForceLongPolling:true} : {})});
+  const email = name => 'u' + hex(nameKey(name)) + '@hfarm.game';
+  const fref = uid => F.doc(db, 'farms', uid);
+  const MSG = {'auth/invalid-credential':'帳號或密碼錯誤', 'auth/wrong-password':'帳號或密碼錯誤', 'auth/user-not-found':'帳號不存在',
+    'auth/invalid-login-credentials':'帳號或密碼錯誤', 'auth/email-already-in-use':'這個帳號已經有人用了', 'auth/weak-password':'密碼至少要 6 個字',
+    'auth/too-many-requests':'嘗試太多次，請稍後再試', 'auth/network-request-failed':'網路連線失敗',
+    'auth/operation-not-allowed':'Firebase 還沒開啟「電子郵件/密碼」登入', 'permission-denied':'資料庫拒絕存取（請檢查 Firestore 規則）'};
+  const wrap = e => new Error(MSG[e.code] || e.message);
+  return {
+    mode:'firebase',
+    onAuth(cb) { A.onAuthStateChanged(auth, u => cb(u ? {uid:u.uid} : null)); },
+    async register(name, pass) {
+      try {
+        const k = nameKey(name);
+        if ((await F.getDoc(F.doc(db, 'usernames', k))).exists()) throw new Error('這個帳號已經有人用了');
+        const cred = await A.createUserWithEmailAndPassword(auth, email(name), pass);
+        try { await F.setDoc(F.doc(db, 'usernames', k), {uid:cred.user.uid}); }
+        catch (e) { await cred.user.delete().catch(() => {}); throw new Error('這個帳號已經有人用了'); }
+        await F.setDoc(fref(cred.user.uid), newFarm(name.trim()));
+      } catch (e) { throw e.code ? wrap(e) : e; }
+    },
+    async login(name, pass) { try { await A.signInWithEmailAndPassword(auth, email(name), pass); } catch (e) { throw wrap(e); } },
+    async logout() { await A.signOut(auth); },
+    async findUid(name) { const s = await F.getDoc(F.doc(db, 'usernames', nameKey(name))); return s.exists() ? s.data().uid : null; },
+    async getFarm(uid) { const s = await F.getDoc(fref(uid)); return s.exists() ? s.data() : null; },
+    watch(uid, cb) { return F.onSnapshot(fref(uid), s => cb(s.exists() ? s.data() : null), e => console.warn(e)); },
+    async tx(uid, fn) {
+      try {
+        return await F.runTransaction(db, async t => {
+          const s = await t.get(fref(uid)); if (!s.exists()) throw new Error('找不到農場');
+          const cur = s.data(), c = clone(cur); const r = fn(c) || {}; if (r.abort) return r;
+          const ch = {}; for (const k of Object.keys(c)) if (JSON.stringify(c[k]) !== JSON.stringify(cur[k])) ch[k] = c[k];
+          if (Object.keys(ch).length) t.update(fref(uid), ch); return r;
+        });
+      } catch (e) { throw e.code ? wrap(e) : e; }
+    },
+    async sendReq(from, fromName, to) { await F.setDoc(F.doc(db, 'requests', to + '_' + from), {from, fromName, to, t:now()}); },
+    async listReq(uid) { const q = await F.getDocs(F.query(F.collection(db, 'requests'), F.where('to', '==', uid))); return q.docs.map(d => ({id:d.id, ...d.data()})); },
+    async delReq(id) { await F.deleteDoc(F.doc(db, 'requests', id)); },
+  };
+}
+
+/* ===================== 畫圖：作物 ===================== */
+const G1 = '#4caf50', G2 = '#2e7d32', G3 = '#7cc242';
+const L = (x, y, a, s, c) => `<path transform="translate(${x} ${y}) rotate(${a}) scale(${s})" d="M0 0C-7-6-8-18-1-26C3-17 5-8 0 0Z" fill="${c}"/>`;
+const LN = (x, y, a, s, c) => `<path transform="translate(${x} ${y}) rotate(${a}) scale(${s})" d="M0 0C-3-7-4-20-1-30C2-20 3-8 0 0Z" fill="${c}"/>`;
+const mound = (c = '#6b3f1d') => `<ellipse rx="13" ry="5" fill="${c}"/>`;
+const bush = (c1, c2, h = 1) => [L(0,-2,-75,1*h,c2), L(0,-2,75,1*h,c2), L(-3,-6,-40,1.15*h,c1), L(3,-6,40,1.15*h,c1), L(0,-8,0,1.3*h,c1), L(-6,-18,-25,.95*h,c2), L(6,-20,28,.95*h,c2), L(0,-24,-5,.8*h,c1)].join('');
+const PLANT = {
+  radish(r) { return mound() + [L(-2,-10,-45,1,G1), L(0,-11,-12,1.2,G3), L(2,-10,22,1.1,G1), L(3,-9,58,.9,G2)].join('') +
+    (r ? `<ellipse cx="0" cy="-6" rx="11" ry="12" fill="#fbfbf5" stroke="#d6d6c8" stroke-width="1.5"/><path d="M-7 -13Q0 -19 7 -13" stroke="#b9db7c" stroke-width="4" fill="none"/><path d="M-4 -2Q0 1 3 -3" stroke="#e3e3d6" fill="none"/>` : ''); },
+  carrot(r) { return mound() + [LN(-2,-4,-38,1,G2), LN(0,-4,-14,1.15,G1), LN(1,-4,10,1.2,G3), LN(2,-4,34,1,G1), LN(3,-4,58,.85,G2)].join('') +
+    (r ? `<ellipse cx="0" cy="-2" rx="10" ry="6" fill="#ff8f1f" stroke="#e66a00" stroke-width="1.5"/><path d="M-5 -2h3M2 0h3" stroke="#e66a00" stroke-width="1.5"/>` : ''); },
+  corn(r) { return mound() + `<path d="M0 0V-64" stroke="#5a9e2f" stroke-width="5" stroke-linecap="round"/>
+    <path d="M0 -14Q-22 -22 -30 -6M0 -26Q20 -36 30 -20M0 -40Q-20 -50 -26 -36M0 -50Q16 -62 22 -52" stroke="${G1}" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M0 -64l-5 -10M0 -64l0 -12M0 -64l5 -10" stroke="#b58a3c" stroke-width="2" stroke-linecap="round"/>` +
+    (r ? `<g transform="translate(8 -38) rotate(18)"><ellipse rx="7" ry="16" fill="#f8cf3a" stroke="#d9a915" stroke-width="1.5"/><path d="M-4 -9h8M-5 -3h10M-5 3h10M-4 9h8M0 -14v28" stroke="#d9a915" stroke-width="1"/><path d="M-7 4Q-10 -8 -3 -18M7 4Q10 -8 3 -18" stroke="${G2}" stroke-width="3" fill="none"/></g>`
+       : `<ellipse cx="7" cy="-36" rx="3.5" ry="9" fill="#9ccc65" transform="rotate(18 7 -36)"/>`); },
+  tomato(r) { const fr = r ? '#e53935' : '#9ccc65', rr = r ? 6.5 : 3.6; return mound() + bush(G1, G2, 1.1) +
+    [[-11,-20],[10,-27],[3,-13],[-4,-35],[13,-12]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="${rr}" fill="${fr}"/>` + (r ? `<path d="M${x-2} ${y-rr+1}l2 2l2 -2" stroke="${G2}" stroke-width="1.6" fill="none"/><circle cx="${x-2}" cy="${y-2}" r="1.5" fill="#fff" opacity=".6"/>` : '')).join(''); },
+  eggplant(r) { const fr = r ? '#6a1b9a' : '#ab8bd0', s = r ? 1 : .55; return mound() + bush(G1, G2, 1.1) +
+    [[-11,-14,20],[10,-20,-18],[0,-26,5]].map(([x,y,a]) => `<g transform="translate(${x} ${y}) rotate(${a}) scale(${s})"><ellipse cy="9" rx="5.5" ry="11" fill="${fr}"/><path d="M-4 0h8l-4 -4z" fill="${G2}"/>${r ? '<ellipse cx="-2" cy="6" rx="1.4" ry="4" fill="#fff" opacity=".35"/>' : ''}</g>`).join(''); },
+  strawberry(r) { return mound() + [[-11,-7],[11,-8],[0,-14],[-5,-3],[6,-2]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="8" fill="${G1}" stroke="${G2}" stroke-width="1.2"/>`).join('') +
+    [[-9,-1],[9,-3],[0,-8]].map(([x,y]) => r
+      ? `<g transform="translate(${x} ${y})"><path d="M0 9C-8 2 -8 -5 0 -5C8 -5 8 2 0 9Z" fill="#e53935"/><path d="M-4 -5l4 3l4 -3l-4 -2z" fill="${G2}"/><circle cx="-2" cy="0" r=".9" fill="#ffeb3b"/><circle cx="2" cy="2" r=".9" fill="#ffeb3b"/><circle cx="0" cy="-2" r=".9" fill="#ffeb3b"/></g>`
+      : `<circle cx="${x}" cy="${y}" r="2.8" fill="#fff"/><circle cx="${x}" cy="${y}" r="1.2" fill="#ffeb3b"/>`).join(''); },
+  pumpkin(r) { return mound() + [L(-14,-2,-70,1.2,G2), L(14,-2,70,1.2,G2), L(-8,-6,-30,1.1,G1), L(8,-6,30,1.1,G1)].join('') +
+    `<path d="M-24 -2q10 -10 22 -4" stroke="${G2}" stroke-width="2" fill="none"/>` +
+    (r ? `<g transform="translate(0 -12)"><ellipse rx="21" ry="14" fill="#f57c00"/><ellipse rx="9" ry="14" fill="none" stroke="#e65100" stroke-width="2"/><ellipse rx="16" ry="14" fill="none" stroke="#e65100" stroke-width="1.5"/><rect x="-2.5" y="-20" width="5" height="8" rx="2" fill="#6d4c41"/><ellipse cx="-9" cy="-5" rx="3" ry="5" fill="#fff" opacity=".25"/></g>`
+       : `<g transform="translate(0 -9)"><ellipse rx="9" ry="7" fill="#c5d65a"/><ellipse rx="4" ry="7" fill="none" stroke="#9fb33a"/></g>`); },
+  watermelon(r) { return mound() + [L(-15,-2,-72,1.2,G2), L(15,-2,72,1.2,G2), L(-7,-5,-28,1.05,G1), L(7,-5,28,1.05,G1)].join('') +
+    (r ? `<g transform="translate(0 -11)"><ellipse rx="23" ry="14" fill="#2e7d32"/><path d="M-16 -9Q-20 0 -16 9M-6 -13Q-10 0 -6 13M6 -13Q10 0 6 13M16 -9Q20 0 16 9" stroke="#1b4d1e" stroke-width="3.5" fill="none"/><ellipse cx="-9" cy="-6" rx="6" ry="3" fill="#fff" opacity=".2"/></g>`
+       : `<g transform="translate(0 -8)"><ellipse rx="9" ry="6" fill="#66bb6a"/><path d="M-4 -5Q-6 0 -4 5M3 -5Q5 0 3 5" stroke="#2e7d32" stroke-width="1.5" fill="none"/></g>`); },
+};
+const seedSVG = () => mound() + `<circle cx="-4" cy="-2" r="1.8" fill="#f1d27a"/><circle cx="3" cy="-1" r="1.8" fill="#f1d27a"/><circle cx="0" cy="-3.5" r="1.5" fill="#f1d27a"/>`;
+const sproutSVG = () => mound() + `<path d="M0 0V-10" stroke="${G2}" stroke-width="2"/>${L(0,-8,-55,.55,G3)}${L(0,-8,55,.55,G3)}`;
+const deadSVG = () => mound('#5a3518') + `<path d="M0 0L-3 -16M0 0L4 -14M-3 -16L-12 -12M4 -14L12 -10M0 -5L-9 -6M1 -8L9 -12" stroke="#8a6a3a" stroke-width="2.4" stroke-linecap="round" fill="none"/>`;
+function plantSVG(p) {
+  if (p.s === 'dead') return deadSVG();
+  const st = stageOf(p);
+  if (st === 0) return seedSVG(); if (st === 1) return sproutSVG();
+  return st === 3 ? PLANT[p.c](true) : `<g transform="scale(.82)">${PLANT[p.c](false)}</g>`;
+}
+const cropIcon = (id, size = 50) => `<svg viewBox="-34 -72 68 82" width="${size}" height="${size}">${PLANT[id](true)}</svg>`;
+
+/* ===================== 畫圖：場景 ===================== */
+const TW = 110, TH = 56, HW = TW / 2, HH = TH / 2, DZ = 9, OX = 418, OY = 262;
+const rc = i => ({r:Math.floor(i / 6), c:i % 6});
+const tilePos = i => { const {r, c} = rc(i); return {x:OX + (c - r) * HW, y:OY + (c + r) * HH}; };
+const ORDER = [...Array(MAXP).keys()].sort((a, b) => { const A = rc(a), B = rc(b); return (A.r + A.c) - (B.r + B.c) || A.c - B.c; });
+const lerp = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+function diamond(fill, furrow) {
+  let s = `<polygon points="${-HW},0 0,${HH} 0,${HH+DZ} ${-HW},${DZ}" fill="#7a4b24"/><polygon points="${HW},0 0,${HH} 0,${HH+DZ} ${HW},${DZ}" fill="#5e3a1b"/>
+    <polygon class="top" points="0,${-HH} ${HW},0 0,${HH} ${-HW},0" fill="${fill}"/>`;
+  if (furrow) for (let k = 1; k < 4; k++) { const a = lerp([0,-HH], [-HW,0], k/4), b = lerp([HW,0], [0,HH], k/4); s += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="rgba(60,30,10,.22)" stroke-width="3" stroke-linecap="round"/>`; }
+  return s;
+}
+const weedSVG = (x, y) => `<path transform="translate(${x} ${y})" d="M0 0l-5 -12M0 0l0 -15M0 0l6 -11M0 0l-9 -6M0 0l9 -5" stroke="#3a7d1e" stroke-width="2.6" stroke-linecap="round" fill="none"/>`;
+const bugSVG = (x, y) => `<g transform="translate(${x} ${y})"><path d="M-6 -1l-3 -3M-6 2l-4 1M6 -1l3 -3M6 2l4 1" stroke="#222" stroke-width="1.3"/><ellipse rx="6" ry="4.5" fill="#c62828"/><path d="M0 -4.5V4.5" stroke="#222" stroke-width="1"/><circle cx="-2.5" cy="-1" r="1.2" fill="#222"/><circle cx="2.5" cy="1.5" r="1.2" fill="#222"/><circle cx="0" cy="-5.5" r="2.5" fill="#222"/></g>`;
+const dryBubble = `<g transform="translate(34 -40) scale(.8)" class="bob"><circle r="11" fill="#fff" stroke="#90caf9" stroke-width="2"/><path d="M0 -6C3 -2 5 1 5 3A5 5 0 0 1 -5 3C-5 1 -3 -2 0 -6Z" fill="#42a5f5"/><circle cx="-8" cy="13" r="3" fill="#fff" stroke="#90caf9" stroke-width="1.5"/></g>`;
+
+function tileSVG(i, f, own) {
+  const {x, y} = tilePos(i);
+  if (i >= f.plotCount) {
+    const next = own && i === f.plotCount;
+    return `<g class="tile ${next ? 'buy' : 'locked'}" data-i="${i}" transform="translate(${x} ${y})">${diamond(next ? '#a5d86f' : '#8fcb5c', false)}${next ? `<polygon points="0,${-HH+5} ${HW-9},0 0,${HH-5} ${-HW+9},0" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="6 5"/><text class="buyTxt" y="6">＋擴建</text>` : ''}</g>`;
+  }
+  const p = f.plots[i];
+  const fill = p.s === 'grow' && p.d ? 'url(#soilDry)' : p.s === 'dead' ? 'url(#soilDead)' : 'url(#soil)';
+  let s = `<g class="tile" data-i="${i}" transform="translate(${x} ${y})">${diamond(fill, true)}`;
+  if (p.s === 'grow' && p.d) s += `<path d="M-30 -4l8 3l5 -4l7 4M10 6l7 -3l6 4M-8 12l5 -3l6 2" stroke="#9c6b35" stroke-width="1.6" fill="none"/>`;
+  if (p.s !== 'empty') {
+    s += `<g transform="translate(0 4) scale(1.35)">${plantSVG(p)}</g>`;
+    if (p.s === 'grow') {
+      const W = [[-32,4],[28,0],[8,16]], Bg = [[-12,-26],[13,-36],[0,-14]];
+      for (let k = 0; k < (p.w || 0); k++) s += weedSVG(...W[k % 3]);
+      for (let k = 0; k < (p.b || 0); k++) s += bugSVG(...Bg[k % 3]);
+      if (p.d) s += dryBubble;
+      if (isMature(p)) s += `<path class="tw" transform="translate(-24 -44)" d="M0 -7L2 -2L7 0L2 2L0 7L-2 2L-7 0L-2 -2Z" fill="#fff59d"/><path class="tw" style="animation-delay:.8s" transform="translate(22 -30) scale(.7)" d="M0 -7L2 -2L7 0L2 2L0 7L-2 2L-7 0L-2 -2Z" fill="#fff59d"/>`;
+    }
+  }
+  return s + '</g>';
+}
+
+function bgSVG() {
+  const T = [418, 218], Lc = [237, 318], R = [764, 402], Bt = [583, 502];
+  let fence = '';
+  for (const [a, b] of [[Lc, T], [T, R]]) {
+    const n = 12;
+    const pts = Array.from({length:n + 1}, (_, k) => lerp(a, b, k / n));
+    fence += `<path d="M${pts.map(p => `${p[0]} ${p[1] - 10}`).join('L')}M${pts.map(p => `${p[0]} ${p[1] - 21}`).join('L')}" stroke="#b07a43" stroke-width="4" fill="none"/>`;
+    fence += pts.map(p => `<rect x="${p[0] - 3}" y="${p[1] - 28}" width="6" height="28" rx="2" fill="#c8915a" stroke="#8d5a2b" stroke-width="1"/>`).join('');
+  }
+  const cloud = (x, y, s, d, del) => `<g class="cloud" style="animation-duration:${d}s;animation-delay:-${del}s"><g transform="translate(${x} ${y}) scale(${s})" fill="#fff" opacity=".92"><circle cx="0" cy="0" r="22"/><circle cx="24" cy="-10" r="26"/><circle cx="50" cy="0" r="20"/><rect x="0" y="-2" width="50" height="22" rx="10"/></g></g>`;
+  const tree = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cy="4" rx="34" ry="9" fill="rgba(0,0,0,.15)"/><rect x="-7" y="-40" width="14" height="44" rx="4" fill="#8d5a2b"/><circle cx="0" cy="-62" r="34" fill="#43a047"/><circle cx="-20" cy="-48" r="22" fill="#388e3c"/><circle cx="20" cy="-50" r="24" fill="#4caf50"/><circle cx="-8" cy="-74" r="10" fill="#66bb6a"/><circle cx="12" cy="-58" r="4" fill="#e53935"/><circle cx="-14" cy="-60" r="4" fill="#e53935"/></g>`;
+  const flowers = [[180,470],[205,500],[860,560],[120,560],[900,470],[300,570],[760,560],[60,430],[950,560]].map(([x,y], k) => `<g transform="translate(${x} ${y})"><path d="M0 0v-10" stroke="#388e3c" stroke-width="2"/><circle cy="-12" r="5" fill="${['#ff8a80','#fff176','#ce93d8','#80d8ff'][k % 4]}"/><circle cy="-12" r="2" fill="#fff"/></g>`).join('');
+  return `<defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5bb8f5"/><stop offset="1" stop-color="#d6f1ff"/></linearGradient>
+    <linearGradient id="soil" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b9814a"/><stop offset="1" stop-color="#8b5a2b"/></linearGradient>
+    <linearGradient id="soilDry" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#dcb57d"/><stop offset="1" stop-color="#bf9259"/></linearGradient>
+    <linearGradient id="soilDead" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9e7a52"/><stop offset="1" stop-color="#7a5a39"/></linearGradient>
+  </defs>
+  <rect x="-2000" y="-1500" width="5000" height="1720" fill="url(#sky)"/>
+  <g transform="translate(900 70)"><circle r="48" fill="#ffe082" opacity=".45"/><circle r="34" fill="#ffd54f"/></g>
+  ${cloud(80,70,1,95,10)}${cloud(400,40,.8,120,60)}${cloud(700,95,.65,80,30)}${cloud(-200,120,.9,110,85)}
+  <path d="M-2000 240Q-300 120 150 190T700 175T1300 200T3000 240V400H-2000Z" fill="#8fd16a"/>
+  <path d="M-2000 260Q200 180 520 230T1250 215T3000 260V420H-2000Z" fill="#7cc35a"/>
+  <rect x="-2000" y="250" width="5000" height="2000" fill="#79c24f"/>
+  <ellipse cx="860" cy="520" rx="80" ry="28" fill="#4fc3f7" stroke="#81d4fa" stroke-width="5"/><ellipse cx="840" cy="514" rx="22" ry="5" fill="#e1f5fe" opacity=".7"/>
+  ${tree(80, 330, .9)}${tree(930, 330, .75)}${tree(-20, 460, 1)}${tree(1010, 470, .9)}
+  <g transform="translate(150 300)">
+    <ellipse cy="4" rx="100" ry="14" fill="rgba(0,0,0,.15)"/>
+    <rect x="35" y="-165" width="18" height="44" fill="#8d6e63"/>
+    <rect x="-75" y="-95" width="150" height="95" fill="#fff3d6" stroke="#c9a46a" stroke-width="3"/>
+    <polygon points="-94,-90 0,-160 94,-90" fill="#e2553f" stroke="#a8321f" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M-70 -108H70M-48 -124H48M-24 -142H24" stroke="#c43b27" stroke-width="2"/>
+    <rect x="-18" y="-56" width="36" height="56" rx="4" fill="#8d5a2b"/><circle cx="10" cy="-28" r="3" fill="#ffd54f"/>
+    <g fill="#bbdefb" stroke="#8d5a2b" stroke-width="3"><rect x="-62" y="-78" width="30" height="26"/><rect x="32" y="-78" width="30" height="26"/></g>
+    <path d="M-47 -78v26M-62 -65h30M47 -78v26M32 -65h30" stroke="#8d5a2b" stroke-width="2"/>
+  </g>
+  <polygon points="${T[0]},${T[1]} ${R[0]},${R[1]} ${Bt[0]},${Bt[1]} ${Lc[0]},${Lc[1]}" fill="#6db544" stroke="#5aa236" stroke-width="4" stroke-linejoin="round"/>
+  ${fence}${flowers}`;
+}
+
+function decoSVG(f, own) {
+  const lv = levelOf(f.exp).L;
+  const title = own ? '我的農場' : `${f.username} 的農場`;
+  let s = `<g transform="translate(418 196)"><rect x="-4" y="-6" width="8" height="34" fill="#8d5a2b"/>
+    <rect x="-${Math.max(70, title.length * 9 + 22)}" y="-46" width="${Math.max(140, title.length * 18 + 44)}" height="44" rx="10" fill="#a0703f" stroke="#6b3f1d" stroke-width="3"/>
+    <text class="signT" y="-28">${esc(title)}</text><text class="signT" y="-9" style="font-size:13px;fill:#ffe082">Lv.${lv}${f.dog ? ' · 有狗看門 🐾' : ''}</text></g>`;
+  if (f.dog) s += `<g transform="translate(690 300)">
+      <ellipse cy="4" rx="40" ry="8" fill="rgba(0,0,0,.15)"/>
+      <polygon points="-34,-36 0,-64 34,-36" fill="#c0392b" stroke="#8e2a1f" stroke-width="2" stroke-linejoin="round"/>
+      <rect x="-29" y="-37" width="58" height="40" fill="#d7a35b" stroke="#a0703f" stroke-width="2"/>
+      <path d="M-12 3v-20a12 12 0 0 1 24 0v20z" fill="#4e342e"/></g>
+    <g transform="translate(640 312)">
+      <ellipse cy="3" rx="22" ry="5" fill="rgba(0,0,0,.15)"/>
+      <path class="tail" d="M14 -10q12 -6 12 -18" stroke="#d68a3c" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <ellipse cx="4" cy="-10" rx="16" ry="12" fill="#e8a65a"/>
+      <ellipse cx="-4" cy="-2" rx="5" ry="4" fill="#e8a65a"/><ellipse cx="10" cy="-1" rx="5" ry="4" fill="#e8a65a"/>
+      <g class="bob"><circle cx="-10" cy="-26" r="13" fill="#f0b46c"/>
+      <ellipse cx="-21" cy="-28" rx="5" ry="9" fill="#a0612a" transform="rotate(20 -21 -28)"/><ellipse cx="1" cy="-30" rx="5" ry="9" fill="#a0612a" transform="rotate(-20 1 -30)"/>
+      <ellipse cx="-12" cy="-20" rx="6" ry="4.5" fill="#fff3e0"/><circle cx="-12" cy="-22" r="2.4" fill="#3e2723"/>
+      <circle cx="-15" cy="-28" r="1.8" fill="#3e2723"/><circle cx="-6" cy="-28" r="1.8" fill="#3e2723"/>
+      <path d="M-12 -14q2 3 4 0" stroke="#e57373" stroke-width="2" fill="#e57373"/></g>
+      <path d="M-14 -16h8" stroke="#e53935" stroke-width="3"/></g>`;
+  return s;
+}
+
+/* ===================== 狀態 ===================== */
+let B = null;
+const S = {uid:null, my:null, viewUid:null, view:null, tool:'hand', seed:null, friends:[], reqs:[], unsubMy:null, unsubView:null, busy:false, hover:-1, lastFriendKey:''};
+const isOwn = () => S.viewUid === S.uid;
+
+/* ===================== 提示 ===================== */
+function toast(m) { const d = document.createElement('div'); d.textContent = m; $('#toast').appendChild(d); setTimeout(() => d.remove(), 2600); while ($('#toast').children.length > 3) $('#toast').firstChild.remove(); }
+let fxN = 0;
+function float(i, text, color = '#2e7d32', dy = 0) {
+  const {x, y} = tilePos(i); const off = (fxN++ % 3) * 14;
+  const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  t.setAttribute('class', 'fx'); t.setAttribute('x', x); t.setAttribute('y', y - 40 - off + dy); t.setAttribute('fill', color); t.textContent = text;
+  $('#fxG').appendChild(t); setTimeout(() => t.remove(), 1500);
+}
+function lvToast(up) { if (up) { toast(`🎉 升級了！現在是 Lv.${up}`); const nx = Object.values(CROPS).filter(c => c.lv === up); if (nx.length) toast(`🌱 解鎖新作物：${nx.map(c => c.n).join('、')}`); } }
+
+/* ===================== 畫面更新 ===================== */
+function renderTop() {
+  const f = S.my; if (!f) return;
+  const lv = levelOf(f.exp);
+  $('#myAv').textContent = f.username[0]; $('#myAv').style.background = colorOf(f.username);
+  $('#myName').textContent = f.username; $('#myLv').textContent = 'Lv.' + lv.L;
+  $('#myXp').style.width = (lv.cur / lv.need * 100) + '%'; $('#myXpT').textContent = `${lv.cur}/${lv.need}`;
+  $('#myCoins').textContent = f.coins.toLocaleString();
+  const unread = (f.log || []).filter(l => l.t > (f.logSeen || 0)).length;
+  $('#bdM').textContent = unread; $('#bdM').classList.toggle('on', unread > 0);
+  $('#bdF').textContent = S.reqs.length; $('#bdF').classList.toggle('on', S.reqs.length > 0);
+}
+function renderTools() {
+  const own = isOwn(); const f = S.my;
+  const T = own ? [['hand','✋','手'], ['plant','🌱', S.seed ? CROPS[S.seed].n : '播種'], ['water','💧','澆水'], ['weed','🌿','除草'], ['bug','🐞','除蟲'], ['fert','🧪','施肥'], ['plow','⛏️','翻地']]
+                : [['hand','✋','偷菜'], ['water','💧','幫澆水'], ['weed','🌿','幫除草'], ['bug','🐞','幫除蟲'], ['pbug','🐛','放蟲'], ['pweed','🌾','種草']];
+  if (!T.some(t => t[0] === S.tool)) S.tool = 'hand';
+  $('#tools').innerHTML = T.map(([id, ic, tl]) => {
+    let em = '';
+    if (id === 'fert' && f) em = `<em>${f.fert || 0}</em>`;
+    if (id === 'plant' && S.seed && f) em = `<em>${f.seeds[S.seed] || 0}</em>`;
+    if ((id === 'pbug' || id === 'pweed') && f) { const d = f.daily && f.daily.day === today() ? f.daily.prank : 0; em = `<em>${DAILY_PRANK - d}</em>`; }
+    return `<button class="tool ${S.tool === id ? 'on' : ''}" data-act="tool" data-t="${id}"><span class="ic">${ic}</span><span class="tl">${esc(tl)}</span>${em}</button>`;
+  }).join('');
+}
+function renderScene() {
+  const f = S.view, own = isOwn();
+  $('#plotsG').innerHTML = f ? ORDER.map(i => tileSVG(i, f, own)).join('') : '';
+  $('#decoG').innerHTML = f ? decoSVG(f, own) : '';
+  $('#visitBar').hidden = own; if (!own && f) $('#visitName').textContent = f.username;
+  if (S.hover >= 0) showTip(S.hover);
+}
+function renderStrip() {
+  if (!S.my) return;
+  const list = [{uid:S.uid, farm:S.my, me:true}, ...[...S.friends].sort((a, b) => b.farm.exp - a.farm.exp)];
+  $('#friendStrip').innerHTML = list.map(x => {
+    const n = x.me ? 0 : x.farm.plots.slice(0, x.farm.plotCount).filter(p => { const s = stealInfo(p, S.uid); return s && s.can; }).length;
+    return `<button class="fr ${S.viewUid === x.uid ? 'on' : ''}" data-act="${x.me ? 'home' : 'visit'}" data-uid="${x.uid}">
+      <div class="av" style="background:${colorOf(x.farm.username)}">${esc(x.farm.username[0])}${n ? `<em class="steal">🥬${n}</em>` : ''}</div>
+      <div class="fn">${x.me ? '我的農場' : esc(x.farm.username)}</div><div class="fl">Lv.${levelOf(x.farm.exp).L}</div></button>`;
+  }).join('') + `<button class="fr add" data-act="friends"><div class="av">＋</div><div class="fn">加好友</div><div class="fl">&nbsp;</div></button>`;
+}
+function renderAll() { renderTop(); renderTools(); renderScene(); renderStrip(); }
+
+function fitView() {
+  const st = $('#stage'); const r = st.clientWidth / Math.max(1, st.clientHeight);
+  $('#scene').setAttribute('viewBox', r < 1.15 ? '236 176 540 340' : r < 1.5 ? '120 120 780 420' : '0 60 1000 520');
+}
+addEventListener('resize', fitView);
+
+/* ===================== 滑過提示 ===================== */
+function plotText(i) {
+  const f = S.view; if (!f) return '';
+  if (i >= f.plotCount) return isOwn() && i === f.plotCount ? `<b>擴建土地</b><br>需要 Lv.${plotLv(i + 1)}、💰${plotPrice(i + 1)}` : '尚未開墾';
+  const p = f.plots[i];
+  if (p.s === 'empty') return isOwn() ? '空地 · 點一下播種' : '空地';
+  if (p.s === 'dead') return `<b>${CROPS[p.c].n}</b>（已收成）<br>${isOwn() ? '用 ⛏️ 翻地後就能再種' : '枯萎了'}`;
+  const c = CROPS[p.c]; let t = `<b>${c.n}</b> `;
+  if (isMature(p)) {
+    t += '已成熟！';
+    if (isOwn()) t += `<br>可收成 ${harvestAmt(p)} 個${p.st ? `（被偷了 ${p.st} 個）` : ''}`;
+    else { const si = stealInfo(p, S.uid); t += si.can ? `<br>還能偷 ${si.avail} 個 🥷` : si.mine ? '<br>你已經偷過這塊了' : '<br>剩下的不能再偷了'; }
+  } else t += `<br>還要 ${fmtDur(matureAt(p) - now())} 成熟`;
+  const pr = []; if (p.d) pr.push('💧缺水'); if (p.w) pr.push(`🌿雜草×${p.w}`); if (p.b) pr.push(`🐞蟲×${p.b}`);
+  if (pr.length) t += `<br>${pr.join(' ')}（每個問題減產 10%）`;
+  return t;
+}
+function showTip(i) { const tip = $('#tip'); tip.innerHTML = plotText(i); tip.style.display = 'block'; }
+$('#scene').addEventListener('pointermove', e => {
+  if (e.pointerType !== 'mouse') return;
+  const t = e.target.closest('.tile'); const tip = $('#tip');
+  if (!t) { S.hover = -1; tip.style.display = 'none'; return; }
+  S.hover = +t.dataset.i; showTip(S.hover);
+  const r = $('#stage').getBoundingClientRect(); let x = e.clientX - r.left + 14, y = e.clientY - r.top + 14;
+  if (x + tip.offsetWidth > r.width - 6) x = e.clientX - r.left - tip.offsetWidth - 10;
+  if (y + tip.offsetHeight > r.height - 6) y = e.clientY - r.top - tip.offsetHeight - 10;
+  tip.style.left = x + 'px'; tip.style.top = y + 'px';
+});
+$('#scene').addEventListener('pointerleave', () => { S.hover = -1; $('#tip').style.display = 'none'; });
+$('#scene').addEventListener('click', e => { const t = e.target.closest('.tile'); if (t) clickPlot(+t.dataset.i); });
+
+/* ===================== 點田地 ===================== */
+function smartTool(p, own) {
+  if (own) {
+    if (p.s === 'dead') return 'plow';
+    if (p.s === 'empty') return 'plant';
+    if (isMature(p)) return 'harvest';
+  } else if (isMature(p)) { const si = stealInfo(p, S.uid); if (si.can) return 'steal'; }
+  if (p.s === 'grow') { if (p.d) return 'water'; if (p.w) return 'weed'; if (p.b) return 'bug'; }
+  return null;
+}
+async function clickPlot(i) {
+  const f = S.view; if (!f || S.busy) return;
+  const own = isOwn();
+  if (i >= f.plotCount) { if (own && i === f.plotCount) buyPlot(); return; }
+  let tool = S.tool; if (tool === 'hand') tool = smartTool(f.plots[i], own);
+  if (!tool) { const t = plotText(i).replace(/<br>/g, '，').replace(/<[^>]+>/g, ''); return toast(t); }
+  S.busy = true;
+  try { await ACT_PLOT[tool](i); } catch (e) { console.error(e); toast('出錯了：' + e.message); }
+  finally { S.busy = false; }
+}
+const txMe = fn => B.tx(S.uid, fn);
+const txView = fn => B.tx(S.viewUid, fn);
+const ab = msg => ({abort:1, msg});
+
+const ACT_PLOT = {
+  async harvest(i) {
+    const r = await txMe(f => {
+      const p = f.plots[i]; if (!isMature(p)) return ab('還沒成熟');
+      const c = CROPS[p.c], amt = harvestAmt(p);
+      f.wh[p.c] = (f.wh[p.c] || 0) + amt; const up = gainExp(f, c.exp); f.plots[i] = {s:'dead', c:p.c};
+      return {amt, c:p.c, exp:c.exp, up};
+    });
+    if (r.abort) return toast(r.msg);
+    float(i, `+${r.amt} ${CROPS[r.c].n}`); float(i, `+${r.exp} 經驗`, '#f57c00', 22); lvToast(r.up);
+  },
+  async plow(i) {
+    const p = S.view.plots[i];
+    if (p.s === 'empty') return toast('這塊地是空的，可以直接播種');
+    if (p.s === 'grow' && !confirm(`確定要把還在長的${CROPS[p.c].n}剷掉嗎？`)) return;
+    const r = await txMe(f => { if (f.plots[i].s === 'empty') return ab('已經是空地了'); const wasDead = f.plots[i].s === 'dead'; f.plots[i] = {s:'empty'}; return {up:wasDead ? gainExp(f, 1) : 0, wasDead}; });
+    if (r.abort) return toast(r.msg);
+    float(i, r.wasDead ? '+1 經驗' : '剷掉了', '#f57c00'); lvToast(r.up);
+  },
+  async plant(i) {
+    const id = S.seed; if (!id) return openSeedPicker(i);
+    const c = CROPS[id];
+    const r = await txMe(f => {
+      const p = f.plots[i];
+      if (p.s === 'dead') return ab('先用 ⛏️ 翻地才能播種'); if (p.s !== 'empty') return ab('這塊地已經種東西了');
+      if (levelOf(f.exp).L < c.lv) return ab(`Lv.${c.lv} 才能種${c.n}`);
+      let bought = false;
+      if ((f.seeds[id] || 0) > 0) f.seeds[id]--; else if (f.coins >= c.cost) { f.coins -= c.cost; bought = true; } else return ab(`金幣不夠買${c.n}種子`);
+      f.plots[i] = {s:'grow', c:id, p:now(), w:0, b:0, d:false, st:0, th:[], k:0, f:0};
+      return {bought};
+    });
+    if (r.abort) return toast(r.msg);
+    float(i, r.bought ? `🌱 -${c.cost}💰` : '🌱 播種', '#558b2f');
+  },
+  async fert(i) {
+    const r = await txMe(f => {
+      const p = f.plots[i]; if (p.s !== 'grow') return ab('這塊地沒有作物'); if (isMature(p)) return ab('已經成熟了，直接收成吧');
+      if (p.f) return ab('這一季已經施過肥了'); if (!f.fert) return ab('沒有化肥了，去商店買吧');
+      f.fert--; p.f = Math.round(Math.min(matureAt(p) - now(), growMs(p.c) * 0.3)); return {saved:p.f};
+    });
+    if (r.abort) return toast(r.msg);
+    float(i, `🧪 快了 ${fmtDur(r.saved)}`, '#7b1fa2');
+  },
+  water(i) { return fix(i, 'd'); }, weed(i) { return fix(i, 'w'); }, bug(i) { return fix(i, 'b'); },
+  pbug(i) { return prank(i, 'b'); }, pweed(i) { return prank(i, 'w'); },
+  async steal(i) {
+    const me = S.uid, nm = S.my.username;
+    const r = await txView(f => {
+      const p = f.plots[i], si = stealInfo(p, me);
+      if (!si) return ab('還沒成熟，不能偷');
+      if (!si.can) return ab(si.mine ? '這塊你已經偷過了' : '剩下的不能再偷了，留一點給人家吧');
+      p.th = [...(p.th || []), me];
+      if (f.dog && Math.random() < DOG_BITE) { addLog(f, `🐶 你的狗咬了來偷菜的 ${nm}！`); return {bitten:30 + Math.floor(Math.random() * 51)}; }
+      const n = Math.min(si.avail, 1 + Math.floor(Math.random() * 3)); p.st = (p.st || 0) + n;
+      addLog(f, `🥷 ${nm} 偷走了你 ${n} 個${CROPS[p.c].n}`); return {n, c:p.c};
+    });
+    if (r.abort) return toast(r.msg);
+    if (r.bitten) {
+      const g = await txMe(f => { const lost = Math.min(f.coins, r.bitten); f.coins -= lost; return {lost}; });
+      float(i, '🐶 汪汪！', '#d32f2f'); toast(`被看門狗咬了！掉了 ${g.lost} 金幣 😭`); return;
+    }
+    await txMe(f => { f.wh[r.c] = (f.wh[r.c] || 0) + r.n; return {}; });
+    float(i, `🥷 +${r.n} ${CROPS[r.c].n}`);
+  },
+};
+const FIX = {d:['澆水', '不用澆水'], w:['除草', '沒有雜草'], b:['除蟲', '沒有蟲']};
+async function fix(i, key) {
+  const [label, none] = FIX[key], nm = S.my.username;
+  const doFix = p => { if (!p || p.s !== 'grow' || !p[key]) return false; if (key === 'd') p.d = false; else p[key]--; return true; };
+  if (isOwn()) {
+    const r = await txMe(f => doFix(f.plots[i]) ? {up:gainExp(f, 1)} : ab(none));
+    if (r.abort) return toast(r.msg); float(i, `${label} +1 經驗`, '#0277bd'); lvToast(r.up); return;
+  }
+  const r = await txView(f => { if (!doFix(f.plots[i])) return ab(none); addLog(f, `🤝 ${nm} 幫你${label}`); return {}; });
+  if (r.abort) return toast(r.msg);
+  const g = await txMe(f => { const d = daily(f); const e = d.help < DAILY_HELP_EXP ? 2 : 0; d.help += e; f.coins += 1; return {e, up:e ? gainExp(f, e) : 0}; });
+  float(i, g.e ? `幫忙${label} +2 經驗` : `幫忙${label} +1💰`, '#0277bd'); lvToast(g.up);
+}
+async function prank(i, key) {
+  const used = S.my.daily && S.my.daily.day === today() ? S.my.daily.prank : 0;
+  if (used >= DAILY_PRANK) return toast('今天的惡作劇次數用完了，明天再來 😈');
+  const nm = S.my.username;
+  const r = await txView(f => {
+    const p = f.plots[i]; if (!p || p.s !== 'grow') return ab('這塊地沒有作物');
+    if (isMature(p)) return ab('已經成熟了，放了也沒用'); if (probs(p) >= 3) return ab('這塊地已經夠慘了，放過它吧');
+    p[key] = (p[key] || 0) + 1; addLog(f, key === 'b' ? `🐛 ${nm} 在你的田裡放了蟲` : `🌾 ${nm} 在你的田裡種了雜草`); return {};
+  });
+  if (r.abort) return toast(r.msg);
+  await txMe(f => { daily(f).prank++; return {}; });
+  float(i, key === 'b' ? '🐛 嘿嘿' : '🌾 嘿嘿', '#6a1b9a');
+}
+
+/* ===================== 商店 / 倉庫 ===================== */
+function openModal(title, html) { $('#mt').textContent = title; $('#mb').innerHTML = html; $('#modal').hidden = false; }
+function closeModal() { $('#modal').hidden = true; S.modal = null; }
+function rerenderModal() { if (!$('#modal').hidden && S.modal) S.modal(); }
+
+function seedRows(mode) {
+  const f = S.my, L = levelOf(f.exp).L;
+  return Object.entries(CROPS).map(([id, c]) => {
+    const lock = L < c.lv, have = f.seeds[id] || 0;
+    const desc = `成熟 ${fmtDur(c.t * 1000 / SPEED)} · 產量 ${c.y} · 每個賣 ${c.sell}💰 · +${c.exp} 經驗`;
+    const acts = lock ? `<button class="b g" disabled>Lv.${c.lv} 解鎖</button>`
+      : mode === 'pick' ? `<button class="b" data-act="pickSeed" data-id="${id}">${have ? `種這個（有 ${have}）` : `種這個（${c.cost}💰）`}</button>`
+      : `<button class="b o" data-act="buySeed" data-id="${id}" data-n="1">買 1 包 ${c.cost}💰</button><button class="b o" data-act="buySeed" data-id="${id}" data-n="5">買 5 包 ${c.cost * 5}💰</button>`;
+    return `<div class="item ${lock ? 'dim' : ''}"><div class="pic">${cropIcon(id)}</div><div class="info"><div class="t">${c.n}${have ? ` <small style="color:#8d6e63">（庫存 ${have}）</small>` : ''}</div><div class="d">${desc}</div></div><div class="acts">${acts}</div></div>`;
+  }).join('');
+}
+function openSeedPicker(i) {
+  S.pendingPlot = i;
+  S.modal = () => openModal('🌱 選擇要種的種子', `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">選好之後，「播種」工具會記住這個種子，連點空地就能一直種。</p>${seedRows('pick')}`);
+  S.modal();
+}
+function openShop(tab = 'seed') {
+  S.modal = () => {
+    const f = S.my, L = levelOf(f.exp).L, n = f.plotCount + 1;
+    let body = `<div class="mtabs"><button class="${tab === 'seed' ? 'on' : ''}" data-act="shopTab" data-t="seed">🌱 種子</button><button class="${tab === 'item' ? 'on' : ''}" data-act="shopTab" data-t="item">🧰 道具</button></div>`;
+    if (tab === 'seed') body += seedRows('shop');
+    else body += `
+      <div class="item"><div class="pic">🧪</div><div class="info"><div class="t">化肥 <small style="color:#8d6e63">（有 ${f.fert || 0}）</small></div><div class="d">讓一塊地的作物提早成熟（減少 30% 時間），每季限用一次</div></div>
+        <div class="acts"><button class="b o" data-act="buyFert" data-n="1">買 1 包 ${FERT_PRICE}💰</button><button class="b o" data-act="buyFert" data-n="5">買 5 包 ${FERT_PRICE * 5}💰</button></div></div>
+      <div class="item ${f.dog ? '' : L < DOG_LV ? 'dim' : ''}"><div class="pic">🐶</div><div class="info"><div class="t">看門狗</div><div class="d">有 ${DOG_BITE * 100}% 機率咬走來偷菜的人，讓他掉 30～80 金幣</div></div>
+        <div class="acts">${f.dog ? '<button class="b g" disabled>已擁有</button>' : L < DOG_LV ? `<button class="b g" disabled>Lv.${DOG_LV} 解鎖</button>` : `<button class="b o" data-act="buyDog">買狗 ${DOG_PRICE}💰</button>`}</div></div>
+      <div class="item ${f.plotCount >= MAXP ? '' : L < plotLv(n) ? 'dim' : ''}"><div class="pic">🟫</div><div class="info"><div class="t">擴建土地（目前 ${f.plotCount}/${MAXP} 塊）</div><div class="d">${f.plotCount >= MAXP ? '土地已經全部開墾完了' : `第 ${n} 塊地：需要 Lv.${plotLv(n)}`}</div></div>
+        <div class="acts">${f.plotCount >= MAXP ? '<button class="b g" disabled>已滿</button>' : L < plotLv(n) ? `<button class="b g" disabled>Lv.${plotLv(n)} 解鎖</button>` : `<button class="b o" data-act="buyPlot">擴建 ${plotPrice(n)}💰</button>`}</div></div>`;
+    openModal('🏪 商店', body);
+  };
+  S.modal();
+}
+function openWh() {
+  S.modal = () => {
+    const f = S.my; const items = Object.entries(f.wh || {}).filter(([, n]) => n > 0);
+    const total = items.reduce((s, [id, n]) => s + n * CROPS[id].sell, 0);
+    let body = `<div class="sec">🧺 收成的作物</div>`;
+    body += items.length ? items.map(([id, n]) => `<div class="item"><div class="pic">${cropIcon(id)}</div><div class="info"><div class="t">${CROPS[id].n} × ${n}</div><div class="d">每個 ${CROPS[id].sell}💰，全部可賣 ${n * CROPS[id].sell}💰</div></div><div class="acts"><button class="b o" data-act="sell" data-id="${id}">全部賣出</button></div></div>`).join('')
+      + `<button class="b" style="width:100%;padding:10px;font-size:15px" data-act="sellAll">💰 一鍵全部賣出（${total}💰）</button>`
+      : `<div class="empty">倉庫是空的，快去收成或偷菜吧！</div>`;
+    const seeds = Object.entries(f.seeds || {}).filter(([, n]) => n > 0);
+    body += `<div class="sec">🌱 種子與道具</div>` + (seeds.length || f.fert ? `<div class="d" style="font-size:14px;line-height:1.8">${seeds.map(([id, n]) => `${CROPS[id].n}種子 × ${n}`).join('、')}${f.fert ? `${seeds.length ? '、' : ''}化肥 × ${f.fert}` : ''}</div>` : `<div class="empty">沒有種子，去商店買吧</div>`);
+    openModal('📦 倉庫', body);
+  };
+  S.modal();
+}
+async function buyPlot() {
+  const f = S.my, n = f.plotCount + 1;
+  if (n > MAXP) return toast('土地已經全部開墾完了');
+  if (levelOf(f.exp).L < plotLv(n)) return toast(`要 Lv.${plotLv(n)} 才能擴建第 ${n} 塊地`);
+  if (f.coins < plotPrice(n)) return toast(`擴建要 ${plotPrice(n)} 金幣，錢不夠喔`);
+  if (!confirm(`花 ${plotPrice(n)} 金幣擴建第 ${n} 塊地？`)) return;
+  const r = await txMe(f => { if (f.plotCount + 1 !== n) return ab('已經擴建過了'); if (f.coins < plotPrice(n)) return ab('金幣不夠'); f.coins -= plotPrice(n); f.plotCount = n; return {}; });
+  if (r.abort) return toast(r.msg); toast(`🎉 第 ${n} 塊地開墾完成！`);
+}
+
+/* ===================== 好友 / 消息 ===================== */
+async function refreshFriends() {
+  if (!S.my) return;
+  const ids = [...(S.my.friends || [])];
+  const arr = await Promise.all(ids.map(async uid => ({uid, farm:await B.getFarm(uid).catch(() => null)})));
+  S.friends = arr.filter(x => x.farm);
+  try { S.reqs = await B.listReq(S.uid); } catch { S.reqs = []; }
+  renderStrip(); renderTop(); rerenderModal();
+}
+function openFriends() {
+  S.modal = () => {
+    const rank = [{uid:S.uid, farm:S.my}, ...S.friends].sort((a, b) => b.farm.exp - a.farm.exp);
+    let body = `<div class="row"><input id="fName" placeholder="輸入好友的帳號" maxlength="10"><button class="b" data-act="addFriend">加好友</button></div>`;
+    if (S.reqs.length) body += `<div class="sec">📩 好友邀請</div>` + S.reqs.map(r => `<div class="item"><div class="pic" style="background:${colorOf(r.fromName)};color:#fff;font-weight:900">${esc(r.fromName[0])}</div><div class="info"><div class="t">${esc(r.fromName)}</div><div class="d">想加你為好友</div></div><div class="acts"><button class="b" data-act="accept" data-id="${esc(r.id)}">接受</button><button class="b r" data-act="reject" data-id="${esc(r.id)}">拒絕</button></div></div>`).join('');
+    body += `<div class="sec">👥 我的好友（${S.friends.length}）</div>`;
+    body += S.friends.length ? S.friends.map(x => {
+      const n = x.farm.plots.slice(0, x.farm.plotCount).filter(p => { const s = stealInfo(p, S.uid); return s && s.can; }).length;
+      return `<div class="item"><div class="pic" style="background:${colorOf(x.farm.username)};color:#fff;font-weight:900">${esc(x.farm.username[0])}</div><div class="info"><div class="t">${esc(x.farm.username)} <small style="color:#8d6e63">Lv.${levelOf(x.farm.exp).L}</small></div><div class="d">${n ? `🥬 有 ${n} 塊菜可以偷！` : '目前沒菜可偷'}${x.farm.dog ? ' · 🐶 有狗' : ''}</div></div><div class="acts"><button class="b" data-act="visit" data-uid="${x.uid}">去他家</button><button class="b g" data-act="unfriend" data-uid="${x.uid}">刪除</button></div></div>`;
+    }).join('') : `<div class="empty">還沒有好友～把你的帳號「${esc(S.my.username)}」告訴朋友，或在上面輸入朋友的帳號！</div>`;
+    body += `<div class="sec">🏆 好友排行榜</div>` + rank.map((x, k) => `<div class="log"><time>${['🥇', '🥈', '🥉'][k] || `#${k + 1}`}</time><span style="flex:1">${esc(x.farm.username)}${x.uid === S.uid ? '（我）' : ''}</span><b>Lv.${levelOf(x.farm.exp).L}</b><span style="color:#8d6e63;width:80px;text-align:right">💰${x.farm.coins}</span></div>`).join('');
+    openModal('👥 好友', body);
+  };
+  S.modal();
+}
+async function addFriend() {
+  const name = ($('#fName')?.value || '').trim(); if (!name) return toast('請輸入好友的帳號');
+  const uid = await B.findUid(name); if (!uid) return toast('找不到這個帳號');
+  if (uid === S.uid) return toast('不能加自己啦 😆');
+  if ((S.my.friends || []).includes(uid)) return toast('你們已經是好友了');
+  const reqs = await B.listReq(S.uid); const back = reqs.find(r => r.from === uid);
+  if (back) return acceptReq(back);
+  await B.sendReq(S.uid, S.my.username, uid); toast(`已送出好友邀請給 ${name}，等對方接受`); $('#fName').value = '';
+}
+async function acceptReq(r) {
+  await txMe(f => { f.friends = f.friends || []; if (!f.friends.includes(r.from)) f.friends.push(r.from); return {}; });
+  await B.tx(r.from, f => { f.friends = f.friends || []; if (!f.friends.includes(S.uid)) f.friends.push(S.uid); return {}; });
+  await B.delReq(r.id); toast(`🎉 你和 ${r.fromName} 成為好友了！`); await refreshFriends();
+}
+function openMsgs() {
+  const f = S.my; const seen = f.logSeen || 0; const logs = [...(f.log || [])].reverse();
+  S.modal = () => openModal('📜 農場消息', logs.length ? logs.map(l => `<div class="log ${l.t > seen ? 'new' : ''}"><time>${fmtTime(l.t)}</time><span>${esc(l.m)}</span></div>`).join('') : '<div class="empty">目前沒有消息</div>');
+  S.modal(); txMe(f => { f.logSeen = now(); return {}; }).catch(() => {});
+}
+function openHelp() {
+  S.modal = null;
+  openModal('❓ 玩法說明', `<div class="help">
+    <p>🌱 <b>種菜</b>：選「播種」工具挑種子，點空地就能種。作物會從種子→發芽→長大→成熟。</p>
+    <p>✋ <b>手</b>：最好用的工具，會自動判斷要收成、翻地、播種，還是澆水除草除蟲。</p>
+    <p>💧🌿🐞 <b>照顧作物</b>：作物成長中會缺水、長草、長蟲，每個問題收成時減產 10%，記得處理！</p>
+    <p>⛏️ <b>翻地</b>：收成後土地會留下枯枝，翻地之後才能再種。</p>
+    <p>🥷 <b>偷菜</b>：到好友家，成熟的菜可以偷 1～3 個。每塊地只能偷一次，被偷到剩 60% 就不能再偷了。</p>
+    <p>🐶 <b>看門狗</b>：Lv.${DOG_LV} 可以買，有機會咬走小偷，讓他掉金幣。</p>
+    <p>😈 <b>惡作劇</b>：可以在好友還沒成熟的田裡放蟲、種草，每天 ${DAILY_PRANK} 次。幫好友澆水除草除蟲則能拿經驗。</p>
+    <p>💰 每天第一次上線送 ${SIGN_COINS} 金幣。升級會解鎖新作物和更多土地！</p></div>`);
+}
+
+/* ===================== 按鈕 ===================== */
+let authMode = 'login';
+const ACT = {
+  authTab(d) { authMode = d.t; document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === d.t)); $('#aPass2Wrap').hidden = d.t !== 'reg'; $('#aGo').textContent = d.t === 'reg' ? '註冊並開始' : '開始種田'; $('#aPass').autocomplete = d.t === 'reg' ? 'new-password' : 'current-password'; $('#authErr').textContent = ''; },
+  tool(d) { if (d.t === 'plant') { if (!S.seed || S.tool === 'plant') { S.tool = 'plant'; renderTools(); return openSeedPicker(-1); } } S.tool = d.t; renderTools(); },
+  close: closeModal,
+  shop() { openShop('seed'); }, shopTab(d) { openShop(d.t); }, wh: openWh, friends() { openFriends(); refreshFriends(); }, msgs: openMsgs, help: openHelp,
+  async logout() { if (confirm('確定要登出嗎？')) await B.logout(); },
+  home() { closeModal(); goHome(); },
+  visit(d) { closeModal(); visit(d.uid); },
+  async pickSeed(d) {
+    const c = CROPS[d.id]; if (!(S.my.seeds[d.id] > 0) && S.my.coins < c.cost) return toast(`金幣不夠買${c.n}種子`);
+    S.seed = d.id; S.tool = 'plant'; closeModal(); renderTools();
+    const i = S.pendingPlot; S.pendingPlot = -1;
+    if (i >= 0 && isOwn()) await clickPlot(i); else toast(`已選擇${c.n}，點空地播種`);
+  },
+  async buySeed(d) {
+    const c = CROPS[d.id], n = +d.n;
+    const r = await txMe(f => { if (f.coins < c.cost * n) return ab('金幣不夠'); f.coins -= c.cost * n; f.seeds[d.id] = (f.seeds[d.id] || 0) + n; return {}; });
+    toast(r.abort ? r.msg : `買了 ${n} 包${c.n}種子`);
+  },
+  async buyFert(d) {
+    const n = +d.n; const r = await txMe(f => { if (f.coins < FERT_PRICE * n) return ab('金幣不夠'); f.coins -= FERT_PRICE * n; f.fert = (f.fert || 0) + n; return {}; });
+    toast(r.abort ? r.msg : `買了 ${n} 包化肥`);
+  },
+  async buyDog() {
+    if (!confirm(`花 ${DOG_PRICE} 金幣買一隻看門狗？`)) return;
+    const r = await txMe(f => { if (f.dog) return ab('已經有狗了'); if (levelOf(f.exp).L < DOG_LV) return ab(`Lv.${DOG_LV} 才能買`); if (f.coins < DOG_PRICE) return ab('金幣不夠'); f.coins -= DOG_PRICE; f.dog = true; return {}; });
+    toast(r.abort ? r.msg : '🐶 看門狗到家了！小偷要小心囉');
+  },
+  async buyPlot() { await buyPlot(); },
+  async sell(d) {
+    const r = await txMe(f => { const n = f.wh[d.id] || 0; if (!n) return ab('沒有可以賣的'); const g = n * CROPS[d.id].sell; f.coins += g; f.wh[d.id] = 0; return {n, g}; });
+    toast(r.abort ? r.msg : `賣出 ${r.n} 個${CROPS[d.id].n}，賺了 ${r.g} 金幣 💰`);
+  },
+  async sellAll() {
+    const r = await txMe(f => { let g = 0; for (const [id, n] of Object.entries(f.wh || {})) { g += n * CROPS[id].sell; f.wh[id] = 0; } return g ? {g} : ab('沒有可以賣的'); });
+    toast(r.abort ? r.msg : `全部賣出，賺了 ${r.g} 金幣 💰`);
+  },
+  addFriend,
+  async accept(d) { const r = S.reqs.find(x => x.id === d.id); if (r) await acceptReq(r); },
+  async reject(d) { await B.delReq(d.id); toast('已拒絕'); await refreshFriends(); },
+  async unfriend(d) {
+    const x = S.friends.find(y => y.uid === d.uid); if (!confirm(`確定要刪除好友 ${x ? x.farm.username : ''}？`)) return;
+    await txMe(f => { f.friends = (f.friends || []).filter(u => u !== d.uid); return {}; });
+    await B.tx(d.uid, f => { f.friends = (f.friends || []).filter(u => u !== S.uid); return {}; }).catch(() => {});
+    if (S.viewUid === d.uid) goHome(); toast('已刪除好友'); await refreshFriends();
+  },
+};
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const fn = ACT[el.dataset.act]; if (!fn) return;
+  if (el.disabled) return;
+  try { await fn(el.dataset, el); } catch (err) { console.error(err); toast('出錯了：' + err.message); }
+});
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'fName') addFriend(); if (e.key === 'Escape') closeModal(); });
+
+/* ===================== 登入流程 ===================== */
+$('#authForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = $('#aName').value.trim(), pass = $('#aPass').value, err = $('#authErr');
+  err.textContent = '';
+  if (!/^[A-Za-z0-9_㐀-鿿]{2,10}$/.test(name)) return err.textContent = '帳號要 2～10 個字，只能用中英文、數字或底線';
+  if (pass.length < 6) return err.textContent = '密碼至少要 6 個字';
+  if (authMode === 'reg' && pass !== $('#aPass2').value) return err.textContent = '兩次輸入的密碼不一樣';
+  $('#aGo').disabled = true;
+  try { authMode === 'reg' ? await B.register(name, pass) : await B.login(name, pass); }
+  catch (ex) { err.textContent = ex.message; }
+  finally { $('#aGo').disabled = false; }
+});
+
+function cleanup() { S.unsubMy && S.unsubMy(); S.unsubView && S.unsubView(); S.unsubMy = S.unsubView = null; }
+async function onAuth(u) {
+  cleanup(); closeModal();
+  if (!u) { S.uid = S.my = S.view = S.viewUid = null; S.friends = []; S.reqs = []; $('#game').hidden = true; $('#auth').hidden = false; $('#aPass').value = ''; $('#aPass2').value = ''; return; }
+  S.uid = u.uid;
+  let f = null; for (let k = 0; k < 20 && !(f = await B.getFarm(u.uid).catch(() => null)); k++) await sleep(400);
+  if (!f) { $('#authErr').textContent = '讀取農場失敗，請再試一次'; await B.logout(); return; }
+  S.my = f; S.seed = null; S.tool = 'hand';
+  $('#auth').hidden = true; $('#game').hidden = false; fitView();
+  S.unsubMy = B.watch(S.uid, nf => {
+    if (!nf) return; S.my = nf; if (isOwn()) S.view = nf;
+    const key = (nf.friends || []).join(','); if (key !== S.lastFriendKey) { S.lastFriendKey = key; refreshFriends(); }
+    renderAll(); rerenderModal();
+  });
+  goHome();
+  if (f.lastSign !== today()) {
+    const r = await txMe(f => { if (f.lastSign === today()) return ab(''); f.lastSign = today(); f.coins += SIGN_COINS; daily(f); return {}; });
+    if (!r.abort) toast(f.lastSign ? `☀️ 每日簽到 +${SIGN_COINS} 金幣` : `🎉 歡迎來到農場！送你 300 金幣和一些種子，先種白蘿蔔試試看`);
+  }
+  refreshFriends();
+}
+function goHome() {
+  S.unsubView && S.unsubView(); S.unsubView = null;
+  S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; renderAll();
+}
+function visit(uid) {
+  if (uid === S.uid) return goHome();
+  S.unsubView && S.unsubView();
+  S.viewUid = uid; S.view = (S.friends.find(x => x.uid === uid) || {}).farm || null; S.tool = 'hand'; renderAll();
+  S.unsubView = B.watch(uid, nf => { if (S.viewUid !== uid) return; S.view = nf; if (!nf) { toast('找不到這個農場'); return goHome(); } renderScene(); });
+}
+
+/* 定時更新：作物成長、出現問題、好友列表 */
+setInterval(() => { if (S.view) renderScene(); }, 1000);
+setInterval(async () => {
+  if (!S.my || S.busy) return;
+  const test = clone(S.my);
+  if (spawnProblems(test)) { try { await txMe(f => spawnProblems(f) ? {} : ab('')); } catch {} }
+}, 5000);
+setInterval(() => { if (S.my) refreshFriends(); }, 20000);
+setInterval(() => { if (S.my) renderStrip(); }, 10000);
+
+/* ===================== 啟動 ===================== */
+$('#bgG').innerHTML = bgSVG();
+(async () => {
+  try { B = FIREBASE_CONFIG ? await makeFirebase(FIREBASE_CONFIG) : makeLocal(); }
+  catch (e) { $('#authErr').textContent = '無法連上 Firebase：' + e.message; return; }
+  $('#modeNote').innerHTML = B.mode === 'local' ? '⚠️ 目前是<b>單機測試模式</b>：帳號只存在這台裝置。<br>接上 Firebase 之後，朋友就能用自己的手機登入互相偷菜。' : '🌐 連線模式：朋友可以用自己的手機登入';
+  B.onAuth(u => onAuth(u).catch(e => { console.error(e); toast('出錯了：' + e.message); }));
+})();
+</script>
+</body>
+</html>
