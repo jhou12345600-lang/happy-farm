@@ -338,10 +338,13 @@ async function makeFirebase(cfg) {
     'auth/too-many-requests':'嘗試太多次，請稍後再試', 'auth/network-request-failed':'網路連線失敗',
     'auth/operation-not-allowed':'Firebase 還沒開啟「電子郵件/密碼」登入', 'permission-denied':'資料庫拒絕存取（請檢查 Firestore 規則）'};
   const wrap = e => new Error(MSG[e.code] || e.message);
+  let regP = null;
   return {
     mode:'firebase',
+    async settle() { if (regP) await regP.catch(() => {}); },
     onAuth(cb) { A.onAuthStateChanged(auth, u => cb(u ? {uid:u.uid} : null)); },
-    async register(name, pass) {
+    async register(name, pass) { regP = this._register(name, pass); try { await regP; } finally { regP = null; } },
+    async _register(name, pass) {
       try {
         const k = nameKey(name);
         if ((await F.getDoc(F.doc(db, 'usernames', k))).exists()) throw new Error('這個帳號已經有人用了');
@@ -926,6 +929,7 @@ async function onAuth(u) {
   cleanup(); closeModal();
   if (!u) { S.uid = S.my = S.view = S.viewUid = null; S.friends = []; S.reqs = []; $('#game').hidden = true; $('#auth').hidden = false; $('#aPass').value = ''; $('#aPass2').value = ''; return; }
   S.uid = u.uid;
+  await sleep(0); if (B.settle) await B.settle();
   let f = null; for (let k = 0; k < 20 && !(f = await B.getFarm(u.uid).catch(() => null)); k++) await sleep(400);
   if (!f) { $('#authErr').textContent = '讀取農場失敗，請再試一次'; await B.logout(); return; }
   S.my = f; S.seed = null; S.tool = 'hand';
