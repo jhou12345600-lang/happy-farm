@@ -83,6 +83,21 @@ button{font-family:inherit;cursor:pointer;border:none}
 .chk label{background:#fff3d6;border:2px solid #e0c99d;border-radius:12px;padding:4px 8px;font-size:13px;font-weight:700;display:flex;gap:4px;align-items:center;color:#5d3a12}
 .menu{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .menu button{background:#fff3d6;border:2px solid #e0c99d;border-radius:14px;padding:14px 6px;font-size:15px;font-weight:900;color:#5d3a12;position:relative}
+#tut{position:fixed;inset:0;z-index:15;pointer-events:none}
+#tut.dim{background:rgba(20,12,4,.38)}
+#tutRing{position:absolute;border:4px solid #ffeb3b;border-radius:14px;box-shadow:0 0 0 4000px rgba(20,12,4,.38),0 0 18px 4px #ffeb3b;animation:tring 1.1s ease-in-out infinite;transition:left .2s,top .2s,width .2s,height .2s}
+@keyframes tring{50%{border-color:#ff9800;box-shadow:0 0 0 4000px rgba(20,12,4,.38),0 0 26px 8px #ffc107}}
+#tutHand{position:absolute;font-size:34px;animation:thand .8s ease-in-out infinite;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+@keyframes thand{50%{transform:translateY(-8px)}}
+#tutCard{pointer-events:auto;position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:min(94vw,460px);background:#fffaf0;border:4px solid #8d5a2b;border-radius:18px;box-shadow:0 6px 0 #6b3f1d,0 10px 30px rgba(0,0,0,.35);padding:10px 12px;animation:tcin .25s ease-out}
+@keyframes tcin{from{opacity:0;transform:translate(-50%,10px)}}
+#tutCard.top{bottom:auto;top:8px}
+#tutCard .th{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+#tutCard .th img{width:54px;height:54px;border-radius:50%;background:radial-gradient(#fffdf5,#ffe0a3);border:3px solid #ffb74d;flex:none}
+#tutCard .th b{font-size:17px;color:#5d3a12;display:block}#tutCard .th small{font-size:12px;color:#a1887f}
+#tutD{font-size:14px;line-height:1.65;color:#3b2a14}#tutD b{color:#e2553f}
+#tutCard .tb{display:flex;justify-content:space-between;gap:8px;margin-top:8px}
+#tutCard .tb button:disabled{opacity:.75}
 #hint{position:absolute;left:10px;bottom:12px;z-index:2;font-size:11px;color:#fff;font-weight:700;text-shadow:0 0 3px #3b2a14;pointer-events:none}
 
 #friendStrip{display:flex;gap:6px;overflow-x:auto;padding:6px 8px;background:rgba(255,248,230,.97);border-top:3px solid #c9a46a;scrollbar-width:thin}
@@ -259,6 +274,7 @@ button{font-family:inherit;cursor:pointer;border:none}
 </div>
 
 <div id="modal" hidden><div class="box"><div class="mh"><span id="mt"></span><button data-act="close">✕</button></div><div id="mb"></div></div></div>
+<div id="tut" hidden><div id="tutRing" hidden></div><div id="tutHand" hidden>👆</div><div id="tutCard"><div class="th"><img id="tutAv" alt=""><div><b id="tutT"></b><small id="tutN"></small></div></div><div id="tutD"></div><div class="tb"><button class="b g" id="tutSkip" data-act="tutSkip">跳過教學</button><button class="b o" id="tutNext" data-act="tutNext">下一步 ▶</button></div></div></div>
 <div id="toast"></div>
 
 <script type="module">
@@ -823,7 +839,7 @@ const coopLive = c => !c.done && now() < c.end;
 function newFarm(username) {
   return {username, nick:'', exp:0, coins:300, plotCount:START_P, plots:Array.from({length:MAXP}, () => ({s:'empty'})),
     seeds:{radish:4, carrot:2, grass:2, daisy:2}, wh:{}, fert:2, feed:5, pets:[], pet:'', ranch:{animals:[], poop:0, pt:0},
-    orders:[], ordersDone:0, gacha:1, fry:{tilapia:2}, petfood:2, petx:{}, fac:{own:{}, q:{}}, fest:{}, ach:{}, st:{}, dex:{}, fish:{n:START_POND, ponds:Array.from({length:MAXPOND}, () => ({s:'empty'}))}, friends:[], log:[], logSeen:0,
+    orders:[], ordersDone:0, gacha:1, fry:{tilapia:2}, petfood:2, petx:{}, fac:{own:{}, q:{}}, fest:{}, ach:{}, st:{}, dex:{}, tut:0, fish:{n:START_POND, ponds:Array.from({length:MAXPOND}, () => ({s:'empty'}))}, friends:[], log:[], logSeen:0,
     daily:{day:'', help:0, prank:0, t:{}, cl:[], bonus:false, spin:false, vis:[]}, lastSign:'', created:now()};
 }
 function normalize(f) {
@@ -1489,15 +1505,9 @@ const Voice = (() => {
     } catch { Music.babble(g, text); }
   }
   return {
-    speak(text, g, force) {
-      if (!Music.wanted) return;
-      if (force) { say(text, g); return; }
-      if (!Music.ready || !spOK) { pend = [text, g]; if (!hinted) { hinted = true; toast('🔊 點一下畫面就會有聲音喔'); } return; }
-      say(text, g);
-    },
+    speak(text, g) { if (Music.wanted) Music.babble(g, text); },
     unlock() {
       Music.unlock();
-      if (!spOK && has()) { try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch {} }
       spOK = true;
       if (pend && Music.wanted) { const p = pend; pend = null; if (has() && pick()) say(...p); else setTimeout(() => Music.babble(p[1], p[0]), 250); }
     },
@@ -2628,7 +2638,7 @@ async function fast(fn, show) {
 const txView = fn => B.tx(S.viewUid, fn);
 const ab = msg => ({abort:1, msg});
 function guardCheck(f, nm) { const pk = petOf(f); if (pk && PETS[pk].bite && Math.random() < biteOf(f, pk)) { addLog(f, `🐾 你的${PETS[pk].n}抓到來偷東西的 ${nm}，罰他 ${CAUGHT_COINS} 金幣和倉庫物品！`); return PETS[pk].n; } return ''; }
-['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, () => { if (!Music.ready || Voice.pendingAny || S.greetPend) Voice.unlock(); Music.kick(); if (S.greetPend && S.my) { const gp = S.greetPend; S.greetPend = null; greet(gp.first, true); } }, {capture:true, passive:true}));
+['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, () => { if (!Music.ready) Voice.unlock(); Music.kick(); }, {capture:true, passive:true}));
 function startChase(uid, k) { if (!W.pets) return; const pi = W.pets.findIndex(P => P.k === k); W.chase = {uid, pi:pi < 0 ? 0 : pi, t0:performance.now() / 1000}; }
 async function caught(x, y, z, petName) {
   const g = await txMe(f => {
@@ -3134,6 +3144,7 @@ function openMore() {
       <button data-act="pets">🐾 我的寵物${g ? `<em class="badge on">${g}</em>` : ''}</button>
       <button data-act="fest">📅 節日行事曆</button>
       <button data-act="music">${Music.wanted ? '🎵 聲音：開' : '🔇 聲音：關'}</button>
+      <button data-act="tut">📘 新手教學</button>
       <button data-act="help">❓ 玩法說明</button>
       <button data-act="profile">👤 個人資料</button>
       <button data-act="logout">🚪 登出</button></div>`);
@@ -3443,6 +3454,90 @@ function clickMach(i) {
   openMachine(i);
 }
 
+/* ================= 新手教學 ================= */
+const TUT_GIFT = {c:500, seed:'carrot', sn:5, fert:3, petfood:2};
+const modalIs = w => !$('#modal').hidden && $('#mt').textContent.includes(w);
+const firstPlot = (f, fn) => { for (let i = 0; i < f.plotCount; i++) if (fn(f.plots[i])) return i; return -1; };
+const plotW = i => { const [x, z] = plotXZ(i); return {world:[x, .5, z]}; };
+const TUT = [
+  {t:'歡迎來到歡樂農場！', d:'嗨～我是你的主角 👋 接下來帶你一步一步認識農場，照著做完還有 <b>新手禮包</b> 🎁 可以拿喔！'},
+  {t:'轉動視角', d:'用手指<b>拖曳畫面</b>可以旋轉，<b>兩指捏合</b>（電腦用滾輪）可以拉近拉遠。左上角可以切換「🌾 農場／🐮 牧場／🐟 魚塭／🏭 工廠」。', el:'#sceneTabs'},
+  {t:'種下第一顆種子', d:'先點下面的「🌱 播種」，選「<b>白蘿蔔</b>」，再點一塊<b>空地</b>種下去。', act:true,
+    enter() { S.tutBase = S.my.plots.filter(p => p.s === 'grow').length; if (S.scene !== 'farm') ACT.scene({s:'farm'}); },
+    el() { if (modalIs('種子')) return '[data-act=pickSeed][data-id=radish]'; const i = firstPlot(S.my, p => p.s === 'empty'); if (S.tool === 'plant' && S.seed && i >= 0) return plotW(i); return '#tools [data-t=plant]'; },
+    done:() => S.my.plots.filter(p => p.s === 'grow').length > S.tutBase},
+  {t:'照顧作物', d:'作物長大時可能會 <b>💧缺水、🌿長雜草、🐞長蟲</b>，田上會跳出<b>紅框提示</b>，用下面對應的工具點一下就好（每個問題減產 10%）。最簡單的方法：用「<b>✋ 手</b>」點田，會自動幫你處理！', el:'#tools'},
+  {t:'施肥', d:'點「🧪 <b>施肥</b>」，再點你剛種的田：成熟時間少 30%，而且有 <b>40% 機率大豐收、收成變雙倍</b>！', act:true,
+    el() { const i = firstPlot(S.my, p => p.s === 'grow' && !isMature(p)); if (S.tool === 'fert' && i >= 0) return plotW(i); return '#tools [data-t=fert]'; },
+    done:() => S.my.plots.some(p => p.s === 'grow' && p.f > 0) || !S.my.plots.some(p => p.s === 'grow' && !isMature(p))},
+  {t:'收成', d:'教學小魔法 ✨ 已經讓你的作物<b>馬上成熟</b>了！用「✋ 手」點一下<b>發亮的田</b>收成吧。每塊田一次收 <b>3 個</b>。', act:true,
+    async enter() { S.tutBase = S.my.st?.harvest || 0; S.tool = 'hand'; renderTools(); await txMe(f => { const i = firstPlot(f, p => p.s === 'grow' && CROPS[p.c]); if (i < 0) return ab(''); const p = f.plots[i]; p.p = now() - totalMs(p) - 2000; p.d = false; p.w = 0; p.b = 0; return {}; }).catch(() => {}); },
+    el() { const i = firstPlot(S.my, p => isMature(p)); return i >= 0 ? plotW(i) : '#tools [data-t=hand]'; },
+    done:() => (S.my.st?.harvest || 0) > S.tutBase},
+  {t:'翻地再種', d:'收成後田會枯掉，用「⛏️ <b>翻地</b>」或「✋ 手」點一下就能再種新的作物。', el:'#tools [data-t=plow]'},
+  {t:'倉庫與賣東西', d:'收成的東西都放在「📦 <b>倉庫</b>」。可以<b>自己輸入要賣幾個</b>，也可以留著做訂單或送好友。點開看看！', el:'#top [data-act=wh]', act:true, modal:'倉庫'},
+  {t:'料理訂單', d:'村民會來點菜！在「🍳 <b>訂單</b>」把需要的材料<b>分次交貨</b>，交齊就能拿到大獎勵。點開看看！', el:'#top [data-act=orders]', act:true, modal:'訂單'},
+  {t:'商店', d:'「🏪 <b>商店</b>」可以買種子、魚苗、動物、寵物（最多 2 隻）、機器和道具。點開看看！', el:'#top [data-act=shop]', act:true, modal:'商店'},
+  {t:'牧場', d:'點左上的「🐮 <b>牧場</b>」。在商店買雞、牛等動物，用「🌾 餵食」餵飽牠們就會一直生產（一次 3 個），點動物就能收集。也要記得清 💩 喔！', el:'#sceneTabs [data-s=ranch]', act:true, done:() => S.scene === 'ranch'},
+  {t:'魚塭', d:'點「🐟 <b>魚塭</b>」。放魚苗養大就能撈起來，水面有 🗑️ 垃圾要撈掉。', el:'#sceneTabs [data-s=fish]', act:true, done:() => S.scene === 'fish'},
+  {t:'加工廠', d:'點「🏭 <b>工廠</b>」。蓋機器（2 級開放磨坊）把原料做成麵粉、果汁、起司…更值錢，也能完成更多訂單。', el:'#sceneTabs [data-s=factory]', act:true, done:() => S.scene === 'factory'},
+  {t:'加好友', d:() => `點「👥 <b>好友</b>」，輸入朋友的「帳號」送出邀請。你的帳號是 <b>${esc(S.my.username)}</b>，告訴朋友讓他加你！點開看看！`, el:'#top [data-act=friends]', act:true, modal:'好友', enter() { if (S.scene !== 'farm') ACT.scene({s:'farm'}); }},
+  {t:'去好友家玩', d:'下面這排是你的好友，點頭像就能去他家：可以 <b>🥷 偷成熟的菜</b>、幫忙澆水除草除蟲、餵動物拿經驗，還能 <b>🎁 送禮</b>。小心他家的狗貓，被抓到會罰錢喔！', el:'#friendStrip'},
+  {t:'每天都要來', d:'「📋 任務」每天有 5 個任務＋幸運轉盤；每升 1 級送「🎰 抽抽樂」券；「🤝 合作」可以和好友一起完成大訂單；「🎉 節日」每年自動辦活動。', el:'#top .btns'},
+  {t:'天氣和更多功能', d:'左上角是天氣和時間：<b>下雨會自動澆水</b>，晚上偷菜多拿 1 個但狗比較兇。右上「☰ 更多」裡有圖鑑、成就、寵物、聲音和玩法說明。', el:'#wx'},
+  {t:'教學完成！🎉', d:() => S.my.tutGift ? '你已經是農場高手了！隨時可以在「☰ 更多 → 新手教學」再看一次。' : `送你<b>新手禮包</b>：💰${TUT_GIFT.c}、🌱 紅蘿蔔種子 ×${TUT_GIFT.sn}、🧪 化肥 ×${TUT_GIFT.fert}、🦴 寵物零食 ×${TUT_GIFT.petfood}！之後可以在「☰ 更多 → 新手教學」再看一次。`, final:true},
+];
+const TS = {on:false, i:0, ok:false, timer:null};
+function startTut(from = 0) {
+  if (!S.my || !W.scene) return; TS.on = true; TS.i = Math.max(0, Math.min(TUT.length - 1, from)); $('#tut').hidden = false;
+  $('#tutAv').src = thumbURL('char', myGender()); enterTut();
+  clearInterval(TS.timer); TS.timer = setInterval(tickTut, 150);
+}
+async function enterTut() {
+  const st = TUT[TS.i]; TS.ok = false; TS.adv = false;
+  $('#tutT').textContent = st.t; $('#tutN').textContent = `新手教學 ${TS.i + 1}/${TUT.length}`;
+  $('#tutD').innerHTML = typeof st.d === 'function' ? st.d() : st.d;
+  if (st.enter) await st.enter();
+  renderTutBtns(); Music.sfx('pop');
+  if (typeof S.my.tut === 'number' && S.my.tut !== TS.i) txMe(f => { if (f.tut === 'done') return ab(''); f.tut = TS.i; return {}; }).catch(() => {});
+}
+function renderTutBtns() {
+  const st = TUT[TS.i], wait = st.act && !TS.ok;
+  $('#tutNext').textContent = st.final ? (S.my.tutGift ? '完成 ✔' : '🎁 領新手禮包') : wait ? '請照著做 👆' : '下一步 ▶';
+  $('#tutNext').disabled = wait; $('#tutSkip').textContent = wait ? '略過這步' : '跳過教學'; $('#tutSkip').dataset.act = wait ? 'tutStep' : 'tutSkip';
+  $('#tutSkip').hidden = !!st.final;
+}
+function tickTut() {
+  if (!TS.on) return; const st = TUT[TS.i];
+  if (st.act && !TS.ok) {
+    const ok = st.modal ? modalIs(st.modal) : st.done && st.done();
+    if (ok) { TS.ok = true; renderTutBtns(); Music.sfx('coin'); if (!st.modal && !TS.adv) { TS.adv = true; setTimeout(() => { if (TS.on && TUT[TS.i] === st) nextTut(); }, 900); } else $('#tutD').innerHTML += '<div style="color:#2e7d32;font-weight:900;margin-top:4px">👍 很好！看完按「下一步」</div>'; }
+  }
+  // 亮框位置
+  let tg = st.act && TS.ok && st.modal ? null : typeof st.el === 'function' ? st.el() : st.el, r = null;
+  if (typeof tg === 'string') { const el = document.querySelector(tg); if (el && el.offsetParent !== null) r = el.getBoundingClientRect(); }
+  else if (tg && tg.world && W.camera) { const v = new THREE.Vector3(...tg.world).project(W.camera), cr = W.renderer.domElement.getBoundingClientRect(); const x = cr.left + (v.x * .5 + .5) * cr.width, y = cr.top + (-v.y * .5 + .5) * cr.height; r = {left:x - 42, top:y - 38, width:84, height:76}; }
+  const ring = $('#tutRing'), hand = $('#tutHand'), card = $('#tutCard');
+  if (r && r.width) {
+    ring.hidden = hand.hidden = false; $('#tut').classList.remove('dim');
+    Object.assign(ring.style, {left:r.left - 6 + 'px', top:r.top - 6 + 'px', width:r.width + 12 + 'px', height:r.height + 12 + 'px'});
+    hand.style.left = r.left + r.width / 2 - 14 + 'px'; hand.style.top = (r.top + r.height / 2 > innerHeight * .5 ? r.top - 46 : r.top + r.height + 4) + 'px'; hand.textContent = r.top + r.height / 2 > innerHeight * .5 ? '👇' : '👆';
+    card.classList.toggle('top', r.top + r.height / 2 > innerHeight * .48);
+  } else { ring.hidden = hand.hidden = true; $('#tut').classList.add('dim'); card.classList.remove('top'); }
+}
+async function nextTut() {
+  const st = TUT[TS.i];
+  if (st.modal) closeModal();
+  if (st.final) return finishTut(true);
+  TS.i++; enterTut();
+}
+async function finishTut(done) {
+  TS.on = false; clearInterval(TS.timer); $('#tut').hidden = true;
+  const r = await txMe(f => { const give = done && !f.tutGift; f.tut = 'done'; if (give) { f.tutGift = true; f.coins += TUT_GIFT.c; f.seeds[TUT_GIFT.seed] = (f.seeds[TUT_GIFT.seed] || 0) + TUT_GIFT.sn; f.fert = (f.fert || 0) + TUT_GIFT.fert; f.petfood = (f.petfood || 0) + TUT_GIFT.petfood; } return {give}; }).catch(() => ({}));
+  if (r.give) { toast(`🎁 新手禮包到手：💰${TUT_GIFT.c}、紅蘿蔔種子×${TUT_GIFT.sn}、化肥×${TUT_GIFT.fert}、寵物零食×${TUT_GIFT.petfood}`); Music.sfx('coin'); Music.sparkle(); }
+  else if (!done) toast('教學已跳過，可以在「☰ 更多 → 新手教學」再看一次');
+}
+
 /* ================= 按鈕 ================= */
 let authMode = 'login';
 const ACT = {
@@ -3496,10 +3591,13 @@ const ACT = {
   async sellSeafood() { const r = await txMe(f => { let g = 0; for (const id of Object.keys(SEA)) { const n = f.wh[id] || 0; if (n) { g += n * sellOf(id); f.wh[id] = 0; } } if (!g) return ab('倉庫裡沒有海鮮'); bump(f, 'sell'); return {g}; }); if (r.abort) return toast(r.msg); toast(`海鮮全部賣出，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); },
   async claim(d) { const T = TASKS[d.k]; const r = await txMe(f => { const dd = daily(f); if (dd.cl.includes(d.k)) return ab('已經領過了'); if ((dd.t[d.k] || 0) < T.need) return ab('還沒完成'); dd.cl.push(d.k); f.coins += T.c; return {up:gainExp(f, T.e)}; }); if (r.abort) return toast(r.msg); toast(`✅ 任務獎勵：${T.c} 金幣 + ${T.e} 經驗`); Music.sfx('coin'); lvToast(r.up); },
   async claimBonus() { const r = await txMe(f => { const dd = daily(f); if (dd.bonus) return ab('已經領過了'); if (dd.cl.length < 5) return ab('還有任務沒完成'); dd.bonus = true; f.coins += 100; f.fert = (f.fert || 0) + 2; f.feed = (f.feed || 0) + 10; return {}; }); toast(r.abort ? r.msg : '🎁 大獎到手：100 金幣、化肥×2、飼料×10！'); },
-  async setGender(d) { const first = S.charFirst; await txMe(f => { f.gender = d.g; return {}; }); S.charFirst = false; beat(); if (W.scene) W.peopleKey = null; closeModal(); toast(d.g === 'girl' ? '👧 換成女生主角了！' : '👦 換成男生主角了！'); setTimeout(() => greet(first), 600); },
+  async setGender(d) { const first = S.charFirst; await txMe(f => { f.gender = d.g; return {}; }); S.charFirst = false; beat(); if (W.scene) W.peopleKey = null; closeModal(); toast(d.g === 'girl' ? '👧 換成女生主角了！' : '👦 換成男生主角了！'); setTimeout(() => greet(first), 600); if (first && typeof S.my.tut === 'number' && !TS.on) setTimeout(() => startTut(S.my.tut), 6200); else if (TS.on) $('#tutAv').src = thumbURL('char', d.g); },
   char() { openChar(false); },
+  tutNext() { return nextTut(); }, tutStep() { TS.ok = true; nextTut(); },
+  tutSkip() { if (confirm('確定要跳過新手教學嗎？（跳過就拿不到新手禮包，之後可以在「☰ 更多」再看）')) finishTut(false); },
+  tut() { closeModal(); startTut(0); },
   async saveNick() { const v = ($('#nickIn')?.value || '').trim(); if ([...v].length > 10) return toast('名字最多 10 個字'); if (/[<>]/.test(v)) return toast('名字不能有 < 或 >'); await txMe(f => { f.nick = v; return {}; }); beat(); toast(v ? `名字改成「${v}」了！` : '已改回用帳號當名字'); },
-  async logout() { if (!confirm('確定要登出嗎？')) return; Music.stop(); await B.setPresence(S.uid, {at:'', off:true, t:now()}); await B.logout(); },
+  async logout() { if (!confirm('確定要登出嗎？')) return; if (TS.on) { TS.on = false; clearInterval(TS.timer); $('#tut').hidden = true; } Music.stop(); await B.setPresence(S.uid, {at:'', off:true, t:now()}); await B.logout(); },
   home() { closeModal(); goHome(); }, visit(d) { closeModal(); visit(d.uid); },
   async pickSeed(d) { const c = CROPS[d.id]; if (!(S.my.seeds[d.id] > 0) && S.my.coins < c.cost) return toast(`金幣不夠買${c.n}種子`); S.seed = d.id; S.tool = 'plant'; closeModal(); renderTools(); const i = S.pendingPlot; S.pendingPlot = -1; if (i >= 0 && isOwn()) clickPlot(i); else toast(`已選擇${c.n}，點空地播種`); },
   async buySeed(d) { const c = CROPS[d.id], n = +d.n; const r = await txMe(f => { if (f.coins < c.cost * n) return ab('金幣不夠'); f.coins -= c.cost * n; f.seeds[d.id] = (f.seeds[d.id] || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 包${c.n}種子`); },
@@ -3558,13 +3656,11 @@ function beat() { if (S.my && S.uid) B.setPresence(S.uid, {n:myName(), lv:levelO
 const myGender = () => S.my?.gender === 'girl' ? 'girl' : 'boy';
 function greet(first, force) {
   if (!S.my) return;
-  if (!force && !Music.ready && Music.wanted) { S.greetPend = {first}; toast('👋 點一下畫面，主角要跟你打招呼！'); return; }
   const nm = myName(), m = first ? `${nm}，歡迎來到農場！` : `${nm}，歡迎回來農場！`, t = now(), g = myGender();
   S.spokeT = t; B.setPresence(S.uid, {n:nm, lv:levelOf(S.my.exp).L, g, at:S.viewUid || S.uid, t, off:false, say:{m, t, d:3800}, wave:t});
   const P = W.people?.find(p => p.uid === S.uid); if (P) P.waveAt = t;
   setTimeout(focusMe, 250);
-  Music.sparkle(); Music.babble(g, '哈囉');
-  if ('speechSynthesis' in window) setTimeout(() => Voice.speak(m, g, true), 480); else setTimeout(() => Music.babble(g, m), 480);
+  Music.sparkle(); setTimeout(() => Music.babble(g, '哈囉歡迎回來'), 350);
 }
 function focusMe() {
   const P = W.people?.find(p => p.uid === S.uid); if (!P || !W.controls || !isOwn()) return;
@@ -3609,10 +3705,10 @@ async function onAuth(u) {
   });
   goHome();
   const isNew = !f.lastSign;
-  setTimeout(() => { if (!S.my || S.uid !== u.uid) return; if (!S.my.gender) openChar(true); else greet(isNew); }, 2200);
+  setTimeout(() => { if (!S.my || S.uid !== u.uid) return; if (!S.my.gender) openChar(true); else { greet(isNew); if (typeof S.my.tut === 'number') setTimeout(() => startTut(S.my.tut), 5600); } }, 2200);
   const r = await txMe(g => { let ch = false; if (g.lastSign !== today()) { g.lastSign = today(); g.coins += SIGN_COINS; daily(g); ch = true; } if (fillOrders(g)) ch = true; return ch ? {} : ab(''); }).catch(() => ({abort:1}));
   if (rebuilt) toast('🌱 你的農場資料不見了，已經幫你重新建好一座新農場');
-  else if (!r.abort && f.lastSign !== today()) toast(isNew ? '🎉 歡迎來到 3D 農場！先種白蘿蔔和牧草試試看，左上角可以改名字' : `☀️ 每日簽到 +${SIGN_COINS} 金幣，記得看看今天的任務和訂單 📋`);
+  else if (!r.abort && f.lastSign !== today()) toast(isNew ? '🎉 歡迎來到 3D 農場！' : `☀️ 每日簽到 +${SIGN_COINS} 金幣，記得看看今天的任務和訂單 📋`);
   refreshFriends();
 }
 function goHome() { S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; resetSceneKeys(); renderAll(); beat(); watchHere(); }
