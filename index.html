@@ -196,6 +196,12 @@ button{font-family:inherit;cursor:pointer;border:none}
 .prize .pic{width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:40px}
 .prize .pic img{width:64px;height:64px}
 .prize b{font-size:18px;color:#5d3a12}
+#reqPop{position:fixed;left:50%;top:118px;transform:translateX(-50%);z-index:19;width:min(92vw,360px);background:#fffaf0;border:3px solid #ff9800;border-radius:18px;box-shadow:0 8px 24px rgba(0,0,0,.3);padding:10px 12px;display:flex;gap:10px;align-items:center;animation:rqin .45s cubic-bezier(.2,1.5,.4,1)}
+#reqPop[hidden]{display:none}
+#reqPop .pic{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:20px;flex:none;animation:rqwig 1.2s ease-in-out infinite}
+#reqPop .rt{flex:1;min-width:0}#reqPop .rt b{display:block;font-size:15px;color:#5d4037;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#reqPop .rt small{color:#8d6e63;font-size:12px}
+#reqPop .ra{display:flex;flex-direction:column;gap:4px}#reqPop .ra .b{padding:5px 10px;font-size:13px}#reqPop .rl{position:absolute;top:-9px;right:-6px;background:#8d6e63;color:#fff;border:0;border-radius:50%;width:24px;height:24px;font-size:13px;line-height:24px;padding:0;cursor:pointer}
+@keyframes rqin{from{transform:translate(-50%,-30px) scale(.7);opacity:0}to{transform:translate(-50%,0) scale(1);opacity:1}}@keyframes rqwig{0%,100%{transform:rotate(0)}20%{transform:rotate(-12deg)}40%{transform:rotate(10deg)}60%{transform:rotate(0)}}
 #toast{position:fixed;left:50%;top:76px;transform:translateX(-50%);z-index:20;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
 #toast div{background:rgba(40,25,10,.9);color:#fff;padding:9px 16px;border-radius:14px;font-size:15px;font-weight:700;animation:tin .25s ease-out;max-width:90vw;text-align:center}
 @keyframes tin{from{opacity:0;transform:translateY(-8px)}}
@@ -276,7 +282,7 @@ button{font-family:inherit;cursor:pointer;border:none}
 
 <div id="modal" hidden><div class="box"><div class="mh"><span id="mt"></span><button data-act="close">✕</button></div><div id="mb"></div></div></div>
 <div id="tut" hidden><div id="tutRing" hidden></div><div id="tutHand" hidden>👆</div><div id="tutCard"><div class="th"><img id="tutAv" alt=""><div><b id="tutT"></b><small id="tutN"></small></div></div><div id="tutD"></div><div class="tb"><button class="b g" id="tutSkip" data-act="tutSkip">跳過教學</button><button class="b o" id="tutNext" data-act="tutNext">下一步 ▶</button></div></div></div>
-<div id="toast"></div>
+<div id="reqPop" hidden></div><div id="toast"></div>
 
 <script type="module">
 import * as THREE from 'three';
@@ -920,9 +926,9 @@ function makeLocal() {
   const K = 'hf_local_db', SK = 'hf_local_sess' + (QS.get('tab') || ''), PK = 'hf_local_pres';
   const load = () => { let d; try { d = JSON.parse(store.getItem(K)) || {}; } catch { d = {}; } d.users ??= {}; d.names ??= {}; d.farms ??= {}; d.req ??= {}; d.gifts ??= {}; d.coops ??= {}; return d; };
   const loadP = () => { try { return JSON.parse(store.getItem(PK)) || {}; } catch { return {}; } };
-  let db = load(); const watchers = new Set(), pw = new Set(); let authCb = null;
+  let db = load(); const watchers = new Set(), pw = new Set(), rw = new Set(); let authCb = null;
   const save = () => { store.setItem(K, JSON.stringify(db)); notify(); };
-  function notify() { for (const w of watchers) { const s = JSON.stringify(db.farms[w.uid] ?? null); if (s !== w.last) { w.last = s; w.cb(JSON.parse(s)); } } }
+  function notify() { for (const w of rw) { const l = Object.entries(db.req).filter(([, r]) => r.to === w.uid).map(([id, r]) => ({id, ...r})), k = JSON.stringify(l); if (k !== w.last) { w.last = k; w.cb(l); } } for (const w of watchers) { const s = JSON.stringify(db.farms[w.uid] ?? null); if (s !== w.last) { w.last = s; w.cb(JSON.parse(s)); } } }
   function notifyP() { const p = loadP(); for (const w of pw) w.cb(Object.entries(p).filter(([, v]) => v.at === w.at).map(([uid, v]) => ({uid, ...v}))); }
   addEventListener('storage', e => { if (e.key === K) { db = load(); notify(); } if (e.key === PK) notifyP(); });
   return {
@@ -939,6 +945,7 @@ function makeLocal() {
     async sendReq(from, fromName, to) { db = load(); db.req[to + '_' + from] = {from, fromName, to, t:now()}; save(); },
     async listReq(uid) { db = load(); return Object.entries(db.req).filter(([, r]) => r.to === uid).map(([id, r]) => ({id, ...r})); },
     async delReq(id) { db = load(); delete db.req[id]; save(); },
+    watchReq(uid, cb) { const w = {uid, cb, last:undefined}; rw.add(w); setTimeout(notify, 0); return () => rw.delete(w); },
     async setPresence(uid, d) { const p = loadP(); p[uid] = {...(p[uid] || {}), ...d}; store.setItem(PK, JSON.stringify(p)); notifyP(); },
     watchHere(at, cb) { const w = {at, cb}; pw.add(w); setTimeout(notifyP, 0); return () => pw.delete(w); },
     async listRecent() { return Object.entries(loadP()).map(([uid, v]) => ({uid, ...v})).sort((a, b) => b.t - a.t).slice(0, 40); },
@@ -1007,6 +1014,7 @@ async function makeFirebase(cfg) {
     async sendReq(from, fromName, to) { await F.setDoc(F.doc(db, 'requests', to + '_' + from), {from, fromName, to, t:now()}); },
     async listReq(uid) { const q = await F.getDocs(F.query(F.collection(db, 'requests'), F.where('to', '==', uid))); return q.docs.map(d => ({id:d.id, ...d.data()})); },
     async delReq(id) { await F.deleteDoc(F.doc(db, 'requests', id)); },
+    watchReq(uid, cb) { return F.onSnapshot(F.query(F.collection(db, 'requests'), F.where('to', '==', uid)), q => cb(q.docs.map(d => ({id:d.id, ...d.data()}))), e => console.warn(e)); },
     async setPresence(uid, d) { await F.setDoc(F.doc(db, 'presence', uid), d, {merge:true}).catch(e => console.warn(e)); },
     watchHere(at, cb) { return F.onSnapshot(F.query(F.collection(db, 'presence'), F.where('at', '==', at)), s => cb(s.docs.map(d => ({uid:d.id, ...d.data()}))), e => console.warn(e)); },
     async listRecent() { const q = await F.getDocs(F.query(F.collection(db, 'presence'), F.orderBy('t', 'desc'), F.limit(40))); return q.docs.map(d => ({uid:d.id, ...d.data()})); },
@@ -2520,7 +2528,7 @@ const Music = (() => {
       try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
       if (!ensure()) return; unlocked = true; try { const b = ctx.createBuffer(1, 1, 22050), src = ctx.createBufferSource(); src.buffer = b; src.connect(ctx.destination); src.start(0); } catch {}
     },
-    sfx(kind) { if (!wanted || !ensure()) return; const t = ctx.currentTime; if (kind === 'coin') { tone(t, 88, .12, .12, 'square', 5000); tone(t + .07, 93, .12, .2, 'square', 5000); } else if (kind === 'pop') { tone(t, 79, .15, .15); tone(t + .06, 84, .15, .2); } else if (kind === 'bad') { tone(t, 55, .2, .3, 'sawtooth', 900); tone(t + .12, 50, .2, .35, 'sawtooth', 900); } else if (kind === 'splash') { voc(t, {type:'sine', f0:900, f1:300, d:.18, v:.15}); voc(t + .05, {type:'triangle', f0:1400, f1:500, d:.12, v:.08}); } else if (kind === 'boom') { voc(t, {type:'sine', f0:120, f1:40, d:.6, v:.18}); voc(t + .02, {type:'sawtooth', f0:300, f1:80, d:.25, lp:600, v:.06}); } },
+    sfx(kind) { if (!wanted || !ensure()) return; const t = ctx.currentTime; if (kind === 'coin') { tone(t, 88, .12, .12, 'square', 5000); tone(t + .07, 93, .12, .2, 'square', 5000); } else if (kind === 'ding') { tone(t, 84, .14, .25); tone(t + .11, 88, .14, .25); tone(t + .22, 91, .16, .4); } else if (kind === 'pop') { tone(t, 79, .15, .15); tone(t + .06, 84, .15, .2); } else if (kind === 'bad') { tone(t, 55, .2, .3, 'sawtooth', 900); tone(t + .12, 50, .2, .35, 'sawtooth', 900); } else if (kind === 'splash') { voc(t, {type:'sine', f0:900, f1:300, d:.18, v:.15}); voc(t + .05, {type:'triangle', f0:1400, f1:500, d:.12, v:.08}); } else if (kind === 'boom') { voc(t, {type:'sine', f0:120, f1:40, d:.6, v:.18}); voc(t + .02, {type:'sawtooth', f0:300, f1:80, d:.25, lp:600, v:.06}); } },
     babble(g, text) {
       if (!wanted || !ctx || !unlocked) return;
       if (ctx.state !== 'running') { ctx.resume().then(() => this.babble(g, text)).catch(() => {}); return; }
@@ -2542,7 +2550,7 @@ const Music = (() => {
 
 /* ================= 狀態 ================= */
 let B = null;
-const S = {uid:null, my:null, viewUid:null, view:null, scene:'farm', tool:'hand', seed:null, friends:[], reqs:[], gifts:[], pres:{}, here:[], hereIds:new Set(),
+const S = {uid:null, my:null, viewUid:null, view:null, scene:'farm', tool:'hand', seed:null, friends:[], reqs:[], reqSeen:new Set(), reqLater:new Set(), selfAdded:new Set(), friendIds:null, gifts:[], pres:{}, here:[], hereIds:new Set(),
   unsubMy:null, unsubView:null, unsubHere:null, busy:false, hover:null, lastFriendKey:'', modal:null, shopCat:'veg'};
 const isOwn = () => S.viewUid === S.uid;
 const myName = () => dn(S.my);
@@ -3104,10 +3112,34 @@ async function refreshFriends() {
   const ids = [...(S.my.friends || [])];
   const arr = await Promise.all(ids.map(async uid => ({uid, farm:normalize(await B.getFarm(uid).catch(() => null)), pres:await B.getPresence(uid).catch(() => null)})));
   S.friends = arr.filter(x => x.farm); for (const x of arr) if (x.pres) S.pres[x.uid] = x.pres;
-  try { S.reqs = await B.listReq(S.uid); } catch { S.reqs = []; }
+  if (S.uid && S.my) {
+    if (S.friendIds) for (const x of S.friends) if (!S.friendIds.has(x.uid) && !S.selfAdded.has(x.uid)) { toast(`🎉 ${dn(x.farm)} 接受了你的好友邀請！`); Music.sfx('ding'); }
+    S.friendIds = new Set(S.friends.map(x => x.uid));
+  }
+  try { onReqs(await B.listReq(S.uid)); } catch {}
   await refreshCoops();
   try { const g = await B.listGifts(S.uid); if (g.length > S.gifts.length && S.giftsInit) toast(`🎁 收到 ${g.length - S.gifts.length} 份禮物！到「消息」收下`); S.gifts = g; S.giftsInit = true; } catch { S.gifts = []; }
   renderStrip(); renderTop(); rerenderModal();
+}
+/* 好友邀請即時提示：對方一送出就跳出卡片 */
+function onReqs(list) {
+  if (!S.uid) return;
+  const fresh = list.filter(r => !S.reqSeen.has(r.id)); fresh.forEach(r => S.reqSeen.add(r.id));
+  const changed = JSON.stringify(list.map(r => r.id)) !== JSON.stringify((S.reqs || []).map(r => r.id));
+  S.reqs = list;
+  if (fresh.length) { const wait = Math.max(0, (S.loginAt || 0) + 2600 - Date.now()); setTimeout(() => { if (S.reqs.some(r => fresh.some(x => x.id === r.id))) { showReqPop(); Music.sfx('ding'); } }, wait); }
+  else if (Date.now() >= (S.loginAt || 0) + 2600) showReqPop();
+  if (changed) { renderTop(); rerenderModal(); }
+}
+function showReqPop() {
+  const el = $('#reqPop'); if (!el) return;
+  const r = S.uid && (S.reqs || []).find(x => !S.reqLater.has(x.id));
+  if (!r) { el.hidden = true; el.dataset.id = ''; return; }
+  if (TS.on) { if (el.dataset.toast !== r.id) { el.dataset.toast = r.id; toast(`📩 ${r.fromName} 想加你為好友！教學結束後再接受`); } el.hidden = true; return; }
+  if (!el.hidden && el.dataset.id === r.id) return;
+  const more = S.reqs.length - 1;
+  el.dataset.id = r.id; el.hidden = false; el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+  el.innerHTML = `<button class="rl" data-act="reqLater" data-id="${esc(r.id)}" title="稍後再說">✕</button><div class="pic" style="background:${colorOf(r.fromName)}">${esc([...r.fromName][0])}</div><div class="rt"><b>📩 ${esc(r.fromName)}</b><small>想加你為好友！${more > 0 ? `（還有 ${more} 個邀請）` : ''}</small></div><div class="ra"><button class="b" data-act="accept" data-id="${esc(r.id)}">接受</button><button class="b r" data-act="reject" data-id="${esc(r.id)}">拒絕</button></div>`;
 }
 function openFriends(tab = 'list') {
   S.friendTab = tab;
@@ -3155,10 +3187,11 @@ async function sendGift(id, n) {
 async function sendFriendReq(uid, name) {
   if (uid === S.uid) return toast('不能加自己啦 😆'); if ((S.my.friends || []).includes(uid)) return toast('你們已經是好友了');
   const reqs = await B.listReq(S.uid); const back = reqs.find(r => r.from === uid); if (back) return acceptReq(back);
-  await B.sendReq(S.uid, myName(), uid); toast(`已送出好友邀請給 ${name}，等對方接受`);
+  await B.sendReq(S.uid, myName(), uid); B.tx(uid, f => { addLog(f, `📩 ${myName()} 想加你為好友，到「👥 好友」按接受吧！`); return {}; }).catch(() => {}); toast(`已送出好友邀請給 ${name}，等對方接受`);
 }
 async function addFriend() { const name = ($('#fName')?.value || '').trim(); if (!name) return toast('請輸入好友的帳號'); const uid = await B.findUid(name); if (!uid) return toast('找不到這個帳號（要輸入登入用的帳號喔）'); await sendFriendReq(uid, name); if ($('#fName')) $('#fName').value = ''; }
 async function acceptReq(r) {
+  S.selfAdded.add(r.from); S.reqLater.delete(r.id);
   await txMe(f => { if (!f.friends.includes(r.from)) f.friends.push(r.from); return {}; });
   await B.tx(r.from, f => { if (!f.friends.includes(S.uid)) f.friends.push(S.uid); return {}; });
   await B.delReq(r.id); toast(`🎉 你和 ${r.fromName} 成為好友了！`); await refreshFriends();
@@ -3638,7 +3671,7 @@ async function nextTut() {
   TS.i++; enterTut();
 }
 async function finishTut(done) {
-  TS.on = false; clearInterval(TS.timer); $('#tut').hidden = true;
+  TS.on = false; clearInterval(TS.timer); $('#tut').hidden = true; setTimeout(showReqPop, 1500);
   const r = await txMe(f => { const give = done && !f.tutGift; f.tut = 'done'; if (give) { f.tutGift = true; f.coins += TUT_GIFT.c; f.seeds[TUT_GIFT.seed] = (f.seeds[TUT_GIFT.seed] || 0) + TUT_GIFT.sn; f.fert = (f.fert || 0) + TUT_GIFT.fert; f.petfood = (f.petfood || 0) + TUT_GIFT.petfood; } return {give}; }).catch(() => ({}));
   if (r.give) { toast(`🎁 新手禮包到手：💰${TUT_GIFT.c}、紅蘿蔔種子×${TUT_GIFT.sn}、化肥×${TUT_GIFT.fert}、寵物零食×${TUT_GIFT.petfood}`); Music.sfx('coin'); Music.sparkle(); }
   else if (!done) toast('教學已跳過，可以在「☰ 更多 → 新手教學」再看一次');
@@ -3728,8 +3761,9 @@ const ACT = {
   async sellAll() { const r = await txMe(f => { let g = 0; for (const [id, n] of Object.entries(f.wh || {})) { if (id === 'grass' || id === 'manure' || !n || !isItem(id)) continue; g += n * sellOf(id); f.wh[id] = 0; } if (!g) return ab('沒有可以賣的'); bump(f, 'sell'); return {g}; }); if (r.abort) return toast(r.msg); toast(`全部賣出，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); },
   async sellProducts() { const r = await txMe(f => { let g = 0; for (const id of Object.keys(PROD)) { if (id === 'manure') continue; const n = f.wh[id] || 0; if (n) { g += n * sellOf(id); f.wh[id] = 0; } } if (!g) return ab('倉庫裡沒有動物產品'); bump(f, 'sell'); return {g}; }); if (r.abort) return toast(r.msg); toast(`動物產品全部賣出，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); },
   addFriend, async addUid(d) { await sendFriendReq(d.uid, d.n); },
-  async accept(d) { const r = S.reqs.find(x => x.id === d.id); if (r) await acceptReq(r); },
-  async reject(d) { await B.delReq(d.id); toast('已拒絕'); await refreshFriends(); },
+  async accept(d) { const r = S.reqs.find(x => x.id === d.id); if (!r) return; S.reqs = S.reqs.filter(x => x.id !== d.id); showReqPop(); await acceptReq(r); },
+  async reject(d) { S.reqLater.delete(d.id); S.reqs = S.reqs.filter(x => x.id !== d.id); showReqPop(); await B.delReq(d.id); toast('已拒絕'); await refreshFriends(); },
+  reqLater(d) { S.reqLater.add(d.id); showReqPop(); toast('之後可以在「👥 好友」裡接受'); },
   async unfriend(d) { const x = S.friends.find(y => y.uid === d.uid); if (!confirm(`確定要刪除好友 ${x ? dn(x.farm) : ''}？`)) return; await txMe(f => { f.friends = (f.friends || []).filter(u => u !== d.uid); return {}; }); await B.tx(d.uid, f => { f.friends = (f.friends || []).filter(u => u !== S.uid); return {}; }).catch(() => {}); if (S.viewUid === d.uid) goHome(); toast('已刪除好友'); await refreshFriends(); },
   say(d) { return say(d.m); }, sayIn() { return say($('#sayIn')?.value); },
 };
@@ -3795,9 +3829,10 @@ function watchHere() {
     S.hereIds = new Set(fresh.map(p => p.uid)); S.hereInit = true; S.here = list; renderScene();
   });
 }
-function cleanup() { for (const k of ['unsubMy', 'unsubView', 'unsubHere']) { S[k] && S[k](); S[k] = null; } }
+function cleanup() { for (const k of ['unsubMy', 'unsubView', 'unsubHere', 'unsubReq']) { S[k] && S[k](); S[k] = null; } }
 async function onAuth(u) {
   cleanup(); closeModal();
+  S.reqSeen = new Set(); S.reqLater = new Set(); S.selfAdded = new Set(); S.friendIds = null; if ($('#reqPop')) $('#reqPop').hidden = true;
   if (!u) { S.uid = S.my = S.view = S.viewUid = null; S.friends = []; S.reqs = []; S.gifts = []; S.giftsInit = false; $('#game').hidden = true; $('#auth').hidden = false; $('#aPass').value = ''; $('#aPass2').value = ''; return; }
   S.uid = u.uid;
   await sleep(0); if (B.settle) await B.settle();
@@ -3809,6 +3844,8 @@ async function onAuth(u) {
   $('#auth').hidden = true; $('#game').hidden = false;
   if (!W.scene) { try { init3D(); } catch (e) { console.error(e); $('#loading').textContent = '😢 你的瀏覽器無法顯示 3D（需要 WebGL），請換 Chrome 或 Safari 試試'; } }
   else setCam('farm', true);
+  S.loginAt = Date.now();
+  if (B.watchReq) S.unsubReq = B.watchReq(S.uid, list => onReqs(list));
   S.unsubMy = B.watch(S.uid, nf => {
     if (!nf) return; S.my = normalize(nf); if (isOwn()) S.view = S.my;
     const key = (nf.friends || []).join(','); if (key !== S.lastFriendKey) { S.lastFriendKey = key; refreshFriends(); }
