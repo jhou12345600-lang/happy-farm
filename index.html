@@ -104,6 +104,12 @@ button{font-family:inherit;cursor:pointer;border:none}
 .tool.on{background:#ffca28;box-shadow:0 3px 0 #e69a2e,0 0 0 3px #fff}
 .tool.act{background:#c8e6c9}
 .tool em{position:absolute;top:-5px;right:-4px;font-style:normal;font-size:11px;background:#6d4c41;color:#fff;border-radius:8px;padding:0 5px}
+.tool em.r{background:#e53935;font-size:12px;font-weight:900;border:2px solid #fff;animation:pop 1s ease-in-out infinite}
+.ov.need{background:#fff;border:3px solid #e53935;border-radius:14px;padding:1px 6px;font-size:17px;text-shadow:none;color:#c62828;box-shadow:0 2px 6px rgba(0,0,0,.35);display:flex;gap:3px;align-items:center}
+.ov.need span{display:inline-block;animation:nb 1s ease-in-out infinite}.ov.need span:nth-child(2){animation-delay:.2s}.ov.need span:nth-child(3){animation-delay:.4s}
+.ov.need small{font-size:11px;font-weight:900}
+.ov.need.trash{border-color:#1e88e5;color:#1565c0}
+@keyframes nb{50%{transform:translateY(-5px) scale(1.15)}}
 
 #modal{position:fixed;inset:0;background:rgba(30,20,5,.5);display:flex;align-items:center;justify-content:center;padding:12px;z-index:10}
 .box{width:100%;max-width:560px;max-height:88vh;display:flex;flex-direction:column;background:#fffaf0;border:4px solid #8d5a2b;border-radius:20px;box-shadow:0 8px 0 #6b3f1d;overflow:hidden}
@@ -194,6 +200,8 @@ button{font-family:inherit;cursor:pointer;border:none}
   #wx button{font-size:11px;padding:2px 7px}
   #chatBtn{width:46px;height:46px;font-size:21px}
   #hint{display:none}
+  .ov.need{font-size:13px;padding:0 4px;border-width:2px;border-radius:10px;gap:1px}
+  .ov.need small{font-size:9px}
   #hereBox{top:auto;bottom:12px;right:auto;left:8px;max-width:62%}
 }
 </style>
@@ -684,7 +692,8 @@ const growMs = c => CROPS[c].t * 1000 / SPEED;
 const totalMs = p => growMs(p.c) - (p.f || 0);
 const matureAt = p => p.p + totalMs(p);
 const isMature = p => p && p.s === 'grow' && CROPS[p.c] && now() >= matureAt(p);
-const probs = p => (p.w || 0) + (p.b || 0) + (p.d && !isRain() ? 1 : 0);
+const dryNow = p => !!p.d && !isRain();
+const probs = p => (p.w || 0) + (p.b || 0) + (dryNow(p) ? 1 : 0);
 function stageOf(p) { if (p.s !== 'grow' || !CROPS[p.c]) return -1; const pr = (now() - p.p) / totalMs(p); return pr >= 1 ? 3 : pr < 0.15 ? 0 : pr < 0.45 ? 1 : 2; }
 function stealInfo(p, uid) { if (!isMature(p)) return null; const base = CROPS[p.c].y, min = Math.ceil(base * KEEP_RATIO), remain = base - (p.st || 0); return {can:remain > min && !(p.th || []).includes(uid), avail:remain - min, mine:(p.th || []).includes(uid)}; }
 function harvestAmt(p) { return Math.max(1, Math.floor((CROPS[p.c].y - (p.st || 0)) * (1 - 0.1 * probs(p)))) + (festBonus('yield') ? 1 : 0); }
@@ -2047,12 +2056,12 @@ function buildMarker() {
 function plotKey(f, i, own) {
   if (i >= f.plotCount) return own && i === f.plotCount ? 'next' : 'lock';
   const p = f.plots[i]; if (p.s === 'empty' || !CROPS[p.c]) return 'e'; if (p.s === 'dead') return 'd';
-  return `g|${p.c}|${stageOf(p)}|${p.d ? 1 : 0}|${p.w || 0}|${p.b || 0}`;
+  return `g|${p.c}|${stageOf(p)}|${dryNow(p) ? 1 : 0}|${p.w || 0}|${p.b || 0}`;
 }
 function rebuildPlot(P, i, key, p) {
   P.content.clear(); P.bugs = []; P.drop = null; P.plant = null; P.spark.visible = false;
   const locked = key === 'lock' || key === 'next';
-  P.soil.material = mat(locked ? (key === 'next' ? '#a9dd73' : '#86c55a') : p && p.d ? '#c39a64' : '#8b5a2b');
+  P.soil.material = mat(locked ? (key === 'next' ? '#a9dd73' : '#86c55a') : p && p.s === 'grow' && dryNow(p) ? '#d8b98a' : '#8b5a2b');
   P.soil.scale.y = locked ? .14 : .32; P.soil.position.y = locked ? .07 : .16; P.furrows.visible = !locked; P.content.position.y = locked ? .14 : .32;
   if (key === 'next') P.content.add(buildMarker());
   if (locked || key === 'e') return;
@@ -2060,14 +2069,20 @@ function rebuildPlot(P, i, key, p) {
   const st = stageOf(p), plant = st === 0 ? seedsModel() : st === 1 ? sproutModel() : st === 2 ? cropCluster(p.c, false, .75) : cropCluster(p.c, true, 1);
   P.content.add(plant); P.plant = plant; P.spark.visible = st === 3;
   const W2 = [[-.95, -.95], [.95, -.8], [-.85, .95]];
-  for (let k = 0; k < (p.w || 0); k++) { const wd = new THREE.Group(); for (let j = 0; j < 5; j++) wd.add(blk('#2f6b1a', [.04, .3, .02], [Math.cos(j) * .06, .15, Math.sin(j) * .06], [Math.sin(j) * .5, j, Math.cos(j) * .5])); wd.position.set(W2[k % 3][0], 0, W2[k % 3][1]); P.content.add(wd); }
-  for (let k = 0; k < (p.b || 0); k++) { const bg = grp(ball('#d32f2f', [.09, .06, .07], [0, 0, 0]), ball('#111', U(.04), [.08, 0, 0]), ball('#111', U(.02), [0, .055, .03]), ball('#111', U(.02), [-.03, .055, -.03])); P.content.add(bg); P.bugs.push({g:bg, ph:k * 2.1}); }
-  if (p.d) { const d = grp(ball('#42a5f5', U(.16), [0, 0, 0]), cone('#42a5f5', [.12, .22, .12], [0, .17, 0])); d.position.set(0, 1.6, 0); P.content.add(d); P.drop = d; }
+  for (let k = 0; k < (p.w || 0); k++) { const wd = new THREE.Group(); for (let j = 0; j < 9; j++) wd.add(blk(j % 2 ? '#9ccc3c' : '#6d9f1f', [.07, .55 + (j % 3) * .12, .03], [Math.cos(j * .7) * .12, .27, Math.sin(j * .7) * .12], [Math.sin(j * .7) * .55, j * .7, Math.cos(j * .7) * .55])); wd.add(ball('#fdd835', U(.07), [.1, .62, 0]), ball('#fdd835', U(.07), [-.08, .55, .1])); wd.position.set(W2[k % 3][0], 0, W2[k % 3][1]); P.content.add(wd); }
+  for (let k = 0; k < (p.b || 0); k++) { const bg = grp(ball('#e53935', [.17, .11, .13], [0, 0, 0]), ball('#111', U(.07), [.15, 0, 0]), ball('#111', U(.035), [0, .1, .05]), ball('#111', U(.035), [-.06, .1, -.05]), ball('#111', U(.035), [.05, .1, -.04]), rod('#111', [.008, .12, .008], [.2, .07, .04], [0, 0, -.6]), rod('#111', [.008, .12, .008], [.2, .07, -.04], [0, 0, -.6])); bg.scale.setScalar(1.3); P.content.add(bg); P.bugs.push({g:bg, ph:k * 2.1}); }
+  if (dryNow(p)) { const d = grp(ball('#2196f3', U(.26), [0, 0, 0]), cone('#2196f3', [.19, .34, .19], [0, .27, 0]), ball('#bbdefb', U(.07), [-.09, .07, .18])); d.position.set(0, 2.1, 0); P.content.add(d); P.drop = d;
+    for (let k = 0; k < 4; k++) P.content.add(blk('#a07c4f', [1.6 - k * .2, .015, .035], [0, .005, -.6 + k * .4], [0, .4 + k * .7, 0])); }
 }
 function syncField(f, own) {
   for (let i = 0; i < MAXP; i++) {
     const P = W.plots[i], key = plotKey(f, i, own);
     if (P.key !== key) { P.key = key; rebuildPlot(P, i, key, f.plots[i]); }
+    const p = f.plots[i];
+    if (i < f.plotCount && p.s === 'grow' && CROPS[p.c] && probs(p)) {
+      const tags = []; if (dryNow(p)) tags.push('<span>💧</span>'); if (p.w) tags.push(`<span>🌿${p.w > 1 ? `<small>×${p.w}</small>` : ''}</span>`); if (p.b) tags.push(`<span>🐞${p.b > 1 ? `<small>×${p.b}</small>` : ''}</span>`);
+      const [x, z] = plotXZ(i); ov('pp' + i, tags.join(''), v => v.set(x, isMature(p) ? 2.5 : 1.8, z + .3), 'need');
+    }
   }
 }
 function syncRanch(f, own) {
@@ -2120,6 +2135,8 @@ function syncFish(f, own) {
   for (let i = 0; i < MAXPOND; i++) {
     const P = W.ponds[i], key = pondKey(f, i, own);
     if (P.key !== key) { P.key = key; rebuildPond(P, i, key, f.fish.ponds[i]); }
+    const q = f.fish.ponds[i];
+    if (i < f.fish.n && q.s === 'grow' && SEA[q.c] && q.g) { const [x, z] = pondXZ(i); ov('pg' + i, `<span>🗑️${q.g > 1 ? `<small>×${q.g}</small>` : ''}</span>`, v => v.set(x, 2.3, z), 'need trash'); }
   }
 }
 function syncPets(f) {
@@ -2162,7 +2179,7 @@ function loop() {
   W.plots.forEach((P, i) => {
     if (P.plant) P.plant.rotation.z = Math.sin(t * 1.6 + i) * .025;
     for (const b of P.bugs) { const a = t * 1.2 + b.ph; b.g.position.set(Math.cos(a) * .45, .35 + Math.sin(a * 2) * .05, Math.sin(a) * .45); b.g.rotation.y = -a - Math.PI / 2; }
-    if (P.drop) P.drop.position.y = 1.6 + Math.sin(t * 3 + i) * .12;
+    if (P.drop) { P.drop.position.y = 2.1 + Math.abs(Math.sin(t * 3 + i)) * .3; P.drop.rotation.y = t; }
     if (P.spark.visible) { P.spark.rotation.y = t * 2; P.spark.position.y = 1.9 + Math.sin(t * 2.5 + i) * .15; }
   });
   // 魚塭
@@ -2334,15 +2351,17 @@ function renderTools() {
   else T = own ? [['hand','✋','手'], ['plant','🌱', S.seed ? CROPS[S.seed].n : '播種'], ['water','💧','澆水'], ['weed','🌿','除草'], ['bug','🐞','除蟲'], ['fert','🧪','施肥'], ['plow','⛏️','翻地']]
                : [['hand','✋','偷菜'], ['water','💧','幫澆水'], ['weed','🌿','幫拔草'], ['bug','🐞','幫除蟲'], ['pbug','🐛','放蟲'], ['pweed','🌾','種草']];
   if (!T.some(t => t[0] === S.tool && !t[3])) S.tool = 'hand';
-  $('#tools').innerHTML = T.map(([id, ic, tl, instant]) => {
+  const html = T.map(([id, ic, tl, instant]) => {
     let em = '';
     if (id === 'fert' && f) em = `<em>${(f.fert || 0) + (f.wh.manure || 0)}</em>`;
+    if (['water', 'weed', 'bug'].includes(id) && S.view) { const v = S.view, k = {water:p => dryNow(p), weed:p => p.w > 0, bug:p => p.b > 0}[id]; const n = v.plots.slice(0, v.plotCount).filter(p => p.s === 'grow' && CROPS[p.c] && k(p)).length; if (n) em = `<em class="r">${n}</em>`; }
     if (id === 'plant' && S.seed && f) em = `<em>${f.seeds[S.seed] || 0}</em>`;
     if (id === 'stock' && S.fry && f) em = `<em>${f.fry[S.fry] || 0}</em>`;
     if ((id === 'feedAll' || id === 'feedFriend') && f) em = `<em>${(f.wh.grass || 0) + (f.feed || 0)}</em>`;
     if ((id === 'pbug' || id === 'pweed') && f) em = `<em>${DAILY_PRANK - dailyView(f).prank}</em>`;
     return `<button class="tool ${instant ? 'act' : S.tool === id ? 'on' : ''}" data-act="${instant ? id : 'tool'}" data-t="${id}"><span class="ic">${ic}</span><span class="tl">${esc(tl)}</span>${em}</button>`;
-  }).join('');
+  }).join('');;
+  if ($('#tools')._h !== html) { $('#tools').innerHTML = html; $('#tools')._h = html; }
 }
 function renderScene() {
   if (!W.scene) return;
@@ -3429,7 +3448,7 @@ function visit(uid) {
 }
 function resetSceneKeys() { if (!W.scene) return; W.plots.forEach(P => P.key = null); W.ponds.forEach(P => P.key = null); W.machs.forEach(P => { P.key = null; P.indKey = null; }); W.aniKey = null; W.petKey = null; }
 
-setInterval(() => { if (S.view) renderScene(); renderWx(); }, 1000);
+setInterval(() => { if (S.view) { renderScene(); renderTools(); } renderWx(); }, 1000);
 setInterval(() => {
   if (!S.view || document.hidden || !Music.wanted || !Music.on) return;
   Music.amb(isRain() ? 'rain' : '');
