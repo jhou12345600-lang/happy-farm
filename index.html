@@ -1471,22 +1471,38 @@ const genderOf = p => p?.g === 'girl' || p?.g === 'boy' ? p.g : (hashStr(p?.uid 
 
 /* ================= 角色聲音：Q 版卡通男生／女生 ================= */
 const Voice = (() => {
-  let pend = null, vs = [];
+  let pend = null, vs = [], spOK = false, hinted = false; const keep = [];
   const load = () => { try { vs = speechSynthesis.getVoices(); } catch {} };
   try { load(); speechSynthesis.onvoiceschanged = load; } catch {}
-  const pick = () => vs.find(v => /zh[-_]TW/i.test(v.lang)) || vs.find(v => /zh[-_](HK|Hant)/i.test(v.lang)) || vs.find(v => /^zh/i.test(v.lang)) || null;
-  function speak(text, g) {
-    if (!Music.wanted) return;
+  const has = () => 'speechSynthesis' in window;
+  const pick = () => { if (!vs.length) load(); return vs.find(v => /zh[-_]TW/i.test(v.lang)) || vs.find(v => /zh[-_](HK|Hant)/i.test(v.lang)) || vs.find(v => /^zh/i.test(v.lang)) || vs.find(v => /cmn/i.test(v.lang)) || null; };
+  function say(text, g) {
     const v = pick();
-    if (!('speechSynthesis' in window) || !v) return Music.babble(g, text);
+    if (!has() || !v) return Music.babble(g, text);
     try {
       const u = new SpeechSynthesisUtterance(text); u.voice = v; u.lang = v.lang;
-      u.pitch = g === 'girl' ? 2 : 1.55; u.rate = g === 'girl' ? 1.12 : 1.05; u.volume = 1;
-      u.onerror = e => { if (e.error === 'not-allowed') pend = [text, g]; else Music.babble(g, text); };
-      speechSynthesis.cancel(); speechSynthesis.speak(u);
+      u.pitch = g === 'girl' ? 2 : 1.8; u.rate = g === 'girl' ? 1.2 : 1.15; u.volume = 1;
+      u.onerror = e => { if (e.error === 'not-allowed') pend = [text, g]; else if (e.error !== 'interrupted' && e.error !== 'canceled') Music.babble(g, text); };
+      u.onend = () => keep.splice(keep.indexOf(u), 1); keep.push(u);
+      if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
+      speechSynthesis.resume(); speechSynthesis.speak(u);
     } catch { Music.babble(g, text); }
   }
-  return {speak, unlock() { if (pend) { const p = pend; pend = null; speak(...p); } }};
+  return {
+    speak(text, g, force) {
+      if (!Music.wanted) return;
+      if (force) { say(text, g); return; }
+      if (!Music.ready || !spOK) { pend = [text, g]; if (!hinted) { hinted = true; toast('🔊 點一下畫面就會有聲音喔'); } return; }
+      say(text, g);
+    },
+    unlock() {
+      Music.unlock();
+      if (!spOK && has()) { try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch {} }
+      spOK = true;
+      if (pend && Music.wanted) { const p = pend; pend = null; if (has() && pick()) say(...p); else setTimeout(() => Music.babble(p[1], p[0]), 250); }
+    },
+    get pendingAny() { return !!pend; },
+  };
 })();
 
 /* ================= 3D：縮圖 ================= */
@@ -2224,7 +2240,7 @@ function syncPeople(list) {
   const base = (SCENE_T[S.scene] || FARM_T).x;
   W.people.forEach((P, k) => {
     const x = base + [-3.2, 3.2, -6, 6, -1.6, 1.6, -8, 8][k % 8], z = 7.6 + (k >= 8 ? 1.2 : 0); P.tx = x; P.tz = z;
-    const p = list[k]; const say = p.say && now() - p.say.t < 9000 ? p.say.m : '';
+    const p = list[k]; const say = p.say && now() - p.say.t < (p.say.d || 9000) ? p.say.m : '';
     ov('pn' + p.uid, esc(p.n) + (p.uid === S.uid ? '（我）' : ''), v => v.copy(P.m.position).setY(2.25), '');
     if (say) ov('ps' + p.uid, esc(say), v => v.copy(P.m.position).setY(2.9), 'bub');
     if (p.wave && p.wave !== P.waveAt && now() - p.wave < 4000) P.waveAt = p.wave;
@@ -2237,7 +2253,7 @@ function syncPeople(list) {
 function loop() {
   requestAnimationFrame(loop);
   const t = performance.now() / 1000, w = W.renderer.domElement.clientWidth, h = W.renderer.domElement.clientHeight;
-  if (W.camAnim) { const a = W.camAnim, k = a.dur ? Math.min(1, (performance.now() - a.t0) / a.dur) : 1, e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; const off = W.camera.position.clone().sub(W.controls.target); W.controls.target.lerpVectors(a.from, a.to, e); W.camera.position.copy(W.controls.target).add(off); if (k >= 1) W.camAnim = null; }
+  if (W.camAnim) { const a = W.camAnim, k = a.dur ? Math.min(1, (performance.now() - a.t0) / a.dur) : 1, e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; const off = a.off1 ? a.off0.clone().lerp(a.off1, e) : W.camera.position.clone().sub(W.controls.target); W.controls.target.lerpVectors(a.from, a.to, e); W.camera.position.copy(W.controls.target).add(off); if (k >= 1) W.camAnim = null; }
   W.controls.update();
   const dt = Math.min(.1, t - (W.lastT || t)); W.lastT = t;
   const tg = W.controls.target; W.sun.position.set(tg.x + 18, 38, tg.z + 22); W.sun.target.position.set(tg.x, 0, tg.z);
@@ -2319,9 +2335,10 @@ function loop() {
     }
     P.m.position.x += (P.tx - P.m.position.x) * .08; P.m.position.z += (P.tz - P.m.position.z) * .08; P.m.position.y = Math.abs(Math.sin(t * 2 + P.k)) * .05; P.m.rotation.y = -Math.PI / 2 + Math.sin(t * .7 + P.k) * .3;
     if (u.head) u.head.rotation.x = Math.sin(t * 1.1 + P.k) * .1;
-    const waving = P.waveAt && now() - P.waveAt < 3500;
-    if (u.armR) { u.armR.rotation.x = waving ? -2.5 + Math.sin(t * 11) * .45 : Math.sin(t * 1.3 + P.k) * .08; u.armL.rotation.x = Math.sin(t * 1.3 + P.k + 1) * .08; u.legL.rotation.z = u.legR.rotation.z = 0; }
-    if (waving && u.head) u.head.rotation.z = Math.sin(t * 5) * .12;
+    const wa = P.waveAt ? now() - P.waveAt : 1e9, waving = wa < 3800;
+    if (u.armR) { u.armR.rotation.x = waving ? -2.6 + Math.sin(t * 12) * .5 : Math.sin(t * 1.3 + P.k) * .08; u.armL.rotation.x = waving && wa > 1200 && wa < 2600 ? 2.6 + Math.sin(t * 12 + 1) * .5 : Math.sin(t * 1.3 + P.k + 1) * .08; u.legL.rotation.z = u.legR.rotation.z = 0; }
+    if (waving) { P.m.rotation.y = -Math.PI / 2; if (u.head) u.head.rotation.z = Math.sin(t * 5) * .15; if (wa < 1400) P.m.position.y = Math.abs(Math.sin(wa / 1400 * Math.PI * 2)) * .45; const pop = wa < 300 ? wa / 300 : wa > 3400 ? (3800 - wa) / 400 : 1; P.m.scale.setScalar(1.25 * (1 + .22 * pop)); if (!P.hiFx || now() - P.hiFx > 1300) { P.hiFx = now(); fx3(P.m.position.x, 3.3, P.m.position.z, rnd(['👋', '👋✨', '💕']), '#e91e63'); } }
+    else if (P.m.scale.x !== 1.25) P.m.scale.setScalar(1.25);
   }
   if (W.hoverRing.visible) W.hoverRing.material.opacity = .55 + Math.sin(t * 6) * .3;
   W.renderer.render(W.scene, W.camera);
@@ -2394,6 +2411,16 @@ const Music = (() => {
     const n = 2 + Math.floor(Math.random() * 4), base = 2300 + Math.random() * 1600;
     for (let i = 0; i < n; i++) { const st = t + i * (.09 + Math.random() * .05); voc(st, {type:'sine', f0:base * (1 + Math.random() * .15), f1:base * 1.55, f2:base * 1.05, d:.08, v:.07, at:.008, fr:.55}); }
   }
+  const VOW = [[800, 1250], [320, 2300], [380, 850], [520, 1950], [520, 950]];
+  let unlocked = false;
+  function syl(t, f0, vi, d, v, g, bend) {
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(f0 * 1.1, t); o.frequency.exponentialRampToValueAtTime(f0 * (bend || 1), t + d);
+    const vib = ctx.createOscillator(), vg = ctx.createGain(); vib.frequency.value = 8.5; vg.gain.value = f0 * .03; vib.connect(vg).connect(o.frequency);
+    const env = ctx.createGain(); env.gain.setValueAtTime(.0001, t); env.gain.exponentialRampToValueAtTime(v, t + .014); env.gain.setValueAtTime(v, t + d * .6); env.gain.exponentialRampToValueAtTime(.0001, t + d);
+    const k = g === 'girl' ? 1.2 : 1, [F1, F2] = VOW[vi];
+    for (const [F, gq] of [[F1 * k, 1.6], [F2 * k, 1.1], [3200 * k, .35]]) { const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = F; bp.Q.value = 5; const gg = ctx.createGain(); gg.gain.value = gq; o.connect(bp).connect(gg).connect(env); }
+    env.connect(sfxBus); o.start(t); vib.start(t); o.stop(t + d + .04); vib.stop(t + d + .04);
+  }
   function ensure() { if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false; ctx = new AC(); master = ctx.createGain(); master.gain.value = .45; master.connect(ctx.destination); sfxBus = ctx.createGain(); sfxBus.gain.value = .7; sfxBus.connect(ctx.destination); } if (ctx.state === 'suspended') ctx.resume(); return true; }
   return {
     get on() { return on; }, get wanted() { return wanted; },
@@ -2401,11 +2428,23 @@ const Music = (() => {
     stop() { on = false; clearInterval(timer); },
     toggle() { wanted = !wanted; store.setItem('hf_music', wanted ? 'on' : 'off'); wanted ? this.start() : this.stop(); if (!wanted) this.amb(''); return wanted; },
     kick() { if (wanted && !on && S.my) this.start(); },
+    get ready() { return !!ctx && ctx.state === 'running'; },
+    unlock() {
+      try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
+      if (!ensure()) return; unlocked = true; try { const b = ctx.createBuffer(1, 1, 22050), src = ctx.createBufferSource(); src.buffer = b; src.connect(ctx.destination); src.start(0); } catch {}
+    },
     sfx(kind) { if (!wanted || !ensure()) return; const t = ctx.currentTime; if (kind === 'coin') { tone(t, 88, .12, .12, 'square', 5000); tone(t + .07, 93, .12, .2, 'square', 5000); } else if (kind === 'pop') { tone(t, 79, .15, .15); tone(t + .06, 84, .15, .2); } else if (kind === 'bad') { tone(t, 55, .2, .3, 'sawtooth', 900); tone(t + .12, 50, .2, .35, 'sawtooth', 900); } else if (kind === 'splash') { voc(t, {type:'sine', f0:900, f1:300, d:.18, v:.15}); voc(t + .05, {type:'triangle', f0:1400, f1:500, d:.12, v:.08}); } else if (kind === 'boom') { voc(t, {type:'sine', f0:120, f1:40, d:.6, v:.18}); voc(t + .02, {type:'sawtooth', f0:300, f1:80, d:.25, lp:600, v:.06}); } },
     babble(g, text) {
-      if (!wanted || !ensure()) return; const base = g === 'girl' ? 640 : 400; let t = ctx.currentTime + .02;
+      if (!wanted || !ctx || !unlocked) return;
+      if (ctx.state !== 'running') { ctx.resume().then(() => this.babble(g, text)).catch(() => {}); return; }
+      const base = g === 'girl' ? 560 : 370, MEL = [1, 1.19, 1.33, 1.12, 1.5, 1.26, 1.06, 1.4]; let t = ctx.currentTime + .03;
       const cs = [...String(text || '').replace(/[\s，。！？～、!?.,~]/g, '')].filter(c => c.charCodeAt(0) < 0xd800 || c.charCodeAt(0) > 0xdfff).slice(0, 14);
-      cs.forEach((c, i) => { const f0 = base * (1 + (c.charCodeAt(0) * 7 % 11) / 26) * (i === cs.length - 1 ? 1.15 : 1), d = .07 + (c.charCodeAt(0) % 3) * .012; voc(t, {type:'triangle', f0, f1:f0 * 1.14, f2:f0 * .9, d, bp:g === 'girl' ? 2300 : 1500, q:1.1, v:.2, at:.008}); voc(t, {type:'sine', f0:f0 * 2, d:d * .7, v:.05, at:.008}); t += d + .028; });
+      cs.forEach((c, i) => { const last = i === cs.length - 1, d = last ? .17 : .085 + (c.charCodeAt(0) % 3) * .01; syl(t, base * MEL[(i + c.charCodeAt(0)) % MEL.length] * (last ? 1.2 : 1), c.charCodeAt(0) % 5, d, .26, g, last ? 1.4 : .96); t += d + .022; });
+    },
+    sparkle() {
+      if (!wanted || !ctx || !unlocked) return;
+      if (ctx.state !== 'running') { ctx.resume().then(() => this.sparkle()).catch(() => {}); return; }
+      const t = ctx.currentTime + .02; [84, 88, 91, 96, 100].forEach((m, i) => { tone(t + i * .06, m, .07, .35, 'sine', 8000); tone(t + i * .06, m + 12, .02, .2, 'sine', 9000); });
     },
     cricket() { if (!wanted || !ensure()) return; const t = ctx.currentTime + .02; for (let i = 0; i < 6; i++) voc(t + i * .07, {type:'sine', f0:4300, d:.045, am:60, ad:.8, v:.03, at:.005}); },
     amb(kind) { if (!wanted || !ensure()) { if (rainNode) { rainNode.stop(); rainNode = null; } return; } if (kind === 'rain' && !rainNode) { const b = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const s = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain(); s.buffer = b; s.loop = true; bp.type = 'bandpass'; bp.frequency.value = 1400; bp.Q.value = .5; g.gain.value = .07; s.connect(bp).connect(g).connect(sfxBus); s.start(); rainNode = s; } if (kind !== 'rain' && rainNode) { rainNode.stop(); rainNode = null; } },
@@ -2589,6 +2628,7 @@ async function fast(fn, show) {
 const txView = fn => B.tx(S.viewUid, fn);
 const ab = msg => ({abort:1, msg});
 function guardCheck(f, nm) { const pk = petOf(f); if (pk && PETS[pk].bite && Math.random() < biteOf(f, pk)) { addLog(f, `🐾 你的${PETS[pk].n}抓到來偷東西的 ${nm}，罰他 ${CAUGHT_COINS} 金幣和倉庫物品！`); return PETS[pk].n; } return ''; }
+['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, () => { if (!Music.ready || Voice.pendingAny || S.greetPend) Voice.unlock(); Music.kick(); if (S.greetPend && S.my) { const gp = S.greetPend; S.greetPend = null; greet(gp.first, true); } }, {capture:true, passive:true}));
 function startChase(uid, k) { if (!W.pets) return; const pi = W.pets.findIndex(P => P.k === k); W.chase = {uid, pi:pi < 0 ? 0 : pi, t0:performance.now() / 1000}; }
 async function caught(x, y, z, petName) {
   const g = await txMe(f => {
@@ -2599,7 +2639,7 @@ async function caught(x, y, z, petName) {
   });
   const pk = petOf(S.view), kind = PETS[pk]?.kind || 'dog', t0 = now();
   startChase(S.uid, pk); S.spokeT = t0;
-  B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), at:S.viewUid, t:t0, off:false, say:{m:'救命呀～！😱', t:t0}, chase:{t:t0, k:pk}});
+  B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), at:S.viewUid, t:t0, off:false, say:{m:'救命呀～！😱', t:t0, d:5000}, chase:{t:t0, k:pk}});
   Voice.speak('救命呀～救命呀～', myGender()); Music.voice(kind); setTimeout(() => Music.voice(kind), 1300); setTimeout(() => Music.voice(kind), 2600);
   await sleep(4300);
   fx3(x, y, z, `🚨 被${petName}抓到了！`, '#d32f2f'); Music.sfx('bad');
@@ -3516,11 +3556,22 @@ $('#authForm').addEventListener('submit', async e => {
 });
 function beat() { if (S.my && S.uid) B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), at:S.viewUid || S.uid, t:now(), off:false}); }
 const myGender = () => S.my?.gender === 'girl' ? 'girl' : 'boy';
-function greet(first) {
-  if (!S.my) return; const nm = myName(), m = first ? `${nm}，歡迎來到農場！` : `${nm}，歡迎回來農場！`, t = now();
-  S.spokeT = t; B.setPresence(S.uid, {n:nm, lv:levelOf(S.my.exp).L, g:myGender(), at:S.viewUid || S.uid, t, off:false, say:{m, t}, wave:t});
+function greet(first, force) {
+  if (!S.my) return;
+  if (!force && !Music.ready && Music.wanted) { S.greetPend = {first}; toast('👋 點一下畫面，主角要跟你打招呼！'); return; }
+  const nm = myName(), m = first ? `${nm}，歡迎來到農場！` : `${nm}，歡迎回來農場！`, t = now(), g = myGender();
+  S.spokeT = t; B.setPresence(S.uid, {n:nm, lv:levelOf(S.my.exp).L, g, at:S.viewUid || S.uid, t, off:false, say:{m, t, d:3800}, wave:t});
   const P = W.people?.find(p => p.uid === S.uid); if (P) P.waveAt = t;
-  Voice.speak(m, myGender());
+  setTimeout(focusMe, 250);
+  Music.sparkle(); Music.babble(g, '哈囉');
+  if ('speechSynthesis' in window) setTimeout(() => Voice.speak(m, g, true), 480); else setTimeout(() => Music.babble(g, m), 480);
+}
+function focusMe() {
+  const P = W.people?.find(p => p.uid === S.uid); if (!P || !W.controls || !isOwn()) return;
+  const tgt = new THREE.Vector3(P.tx ?? P.m.position.x, .9, (P.tz ?? P.m.position.z) - .3), off0 = W.camera.position.clone().sub(W.controls.target);
+  W.camAnim = {from:W.controls.target.clone(), to:tgt, t0:performance.now(), dur:900, off0, off1:off0.clone().multiplyScalar(.42)};
+  const sc = S.scene;
+  setTimeout(() => { if (S.scene !== sc || !isOwn()) return; const o0 = W.camera.position.clone().sub(W.controls.target); W.camAnim = {from:W.controls.target.clone(), to:(SCENE_T[S.scene] || FARM_T).clone(), t0:performance.now(), dur:1100, off0:o0, off1:o0.clone().multiplyScalar(1 / .42)}; }, 4300);
 }
 function openChar(first) {
   S.modal = () => { const g = S.my.gender;
