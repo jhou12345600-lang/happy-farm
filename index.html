@@ -146,6 +146,21 @@ button{font-family:inherit;cursor:pointer;border:none}
 .stats b{display:block;font-size:17px;color:#5d3a12}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .grid .item{margin:0}
+.gm{position:relative;width:220px;height:250px;margin:4px auto 10px}
+.gm .dome{position:absolute;left:20px;top:0;width:180px;height:150px;border-radius:90px 90px 20px 20px;background:radial-gradient(circle at 35% 30%,#ffffffcc,#bbdefb88 40%,#90caf966);border:5px solid #e53935;overflow:hidden}
+.gm .dome i{position:absolute;width:34px;height:34px;border-radius:50%;border:2px solid rgba(0,0,0,.15);box-shadow:inset -4px -4px 0 rgba(0,0,0,.12)}
+.gm .base{position:absolute;left:10px;top:140px;width:200px;height:105px;border-radius:16px;background:linear-gradient(#ef5350,#c62828);box-shadow:0 6px 0 #8e1b1b}
+.gm .knob{position:absolute;left:84px;top:162px;width:52px;height:52px;border-radius:50%;background:#ffca28;border:5px solid #f9a825;transition:transform .8s}
+.gm .slot{position:absolute;left:150px;top:200px;width:42px;height:34px;border-radius:8px;background:#5d1010}
+.gm.spin .dome{animation:shake .25s 4}
+.gm.spin .knob{transform:rotate(720deg)}
+@keyframes shake{25%{transform:translateX(-5px) rotate(-2deg)}75%{transform:translateX(5px) rotate(2deg)}}
+.cap{position:absolute;left:150px;top:196px;width:42px;height:42px;border-radius:50%;background:linear-gradient(#ff80ab 50%,#fff 50%);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);animation:drop .6s ease-out}
+@keyframes drop{from{transform:translateY(-40px);opacity:0}}
+.prize{display:flex;align-items:center;gap:12px;background:linear-gradient(#fff8e1,#ffe082);border:3px solid #ffb300;border-radius:16px;padding:10px 14px;margin:8px auto;max-width:340px;animation:tin .4s ease-out}
+.prize .pic{width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:40px}
+.prize .pic img{width:64px;height:64px}
+.prize b{font-size:18px;color:#5d3a12}
 #toast{position:fixed;left:50%;top:76px;transform:translateX(-50%);z-index:20;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
 #toast div{background:rgba(40,25,10,.9);color:#fff;padding:9px 16px;border-radius:14px;font-size:15px;font-weight:700;animation:tin .25s ease-out;max-width:90vw;text-align:center}
 @keyframes tin{from{opacity:0;transform:translateY(-8px)}}
@@ -192,12 +207,13 @@ button{font-family:inherit;cursor:pointer;border:none}
     <div class="coins">💰 <b id="myCoins">0</b></div>
     <div class="btns">
       <button data-act="tasks">📋<span>任務</span><em class="badge" id="bdT"></em></button>
+      <button data-act="gacha">🎰<span>抽抽樂</span><em class="badge" id="bdG"></em></button>
       <button data-act="orders">🍳<span>訂單</span><em class="badge" id="bdO"></em></button>
       <button data-act="shop">🏪<span>商店</span></button>
       <button data-act="wh">📦<span>倉庫</span></button>
       <button data-act="friends">👥<span>好友</span><em class="badge" id="bdF"></em></button>
       <button data-act="msgs">📜<span>消息</span><em class="badge" id="bdM"></em></button>
-      <button data-act="music" id="musicBtn">🎵<span>音樂</span></button>
+      <button data-act="music" id="musicBtn">🎵<span>聲音</span></button>
       <button data-act="help">❓<span>玩法</span></button>
       <button data-act="logout">🚪<span>登出</span></button>
     </div>
@@ -206,7 +222,7 @@ button{font-family:inherit;cursor:pointer;border:none}
   <div id="stage">
     <div id="loading">🚜 正在載入 3D 農場…</div>
     <div id="ovl"></div>
-    <div id="sceneTabs"><button data-act="scene" data-s="farm" class="on">🌾 農場</button><button data-act="scene" data-s="ranch">🐮 牧場</button></div>
+    <div id="sceneTabs"><button data-act="scene" data-s="farm" class="on">🌾 農場</button><button data-act="scene" data-s="ranch">🐮 牧場</button><button data-act="scene" data-s="fish">🐟 魚塭</button></div>
     <div id="hereBox" hidden></div>
     <div id="hint">🖱️ 拖曳旋轉視角、滾輪縮放</div>
     <button id="chatBtn" data-act="chat" title="說話">💬</button>
@@ -343,6 +359,48 @@ const PET_LIST = [
   ['rblue','俄羅斯藍貓','cat',11,7000,.15,.6,{c:'#7e8ea3',eye:'#66bb6a'}],
   ['bengal','孟加拉豹貓','cat',12,8000,.20,.7,{c:'#d9a35a',pat:'spots',c2:'#4e342e'}],
 ];
+// 魚蝦貝類：[id, 名稱, 類別, 等級, 成熟分鐘, 模型]
+const SEA_LIST = [
+  ['tilapia','吳郭魚','fish',1,20,{t:'fish',c:'#7d8c74',c2:'#d5dcc4',fin:'#5f6e58',len:.5,h:.22}],
+  ['milkfish','虱目魚','fish',3,40,{t:'fish',c:'#9fb3bf',c2:'#eef3f6',len:.62,h:.17}],
+  ['clam','蛤蜊','shell',3,30,{t:'clam',c:'#d7ccc8',c2:'#8d6e63'}],
+  ['whiteshrimp','白蝦','shrimp',4,45,{t:'shrimp',c:'#f3dccb'}],
+  ['carp','鯉魚','fish',4,60,{t:'fish',c:'#c48a3a',c2:'#f1d9a8',fin:'#a86d24',len:.58,h:.24}],
+  ['oyster','牡蠣','shell',5,60,{t:'oyster',c:'#9e9e9e'}],
+  ['hardclam','文蛤','shell',5,50,{t:'clam',c:'#bcaaa4',c2:'#5d4037'}],
+  ['bass','鱸魚','fish',6,90,{t:'fish',c:'#5f7480',c2:'#d4dde2',len:.62,h:.2}],
+  ['mussel','淡菜','shell',6,80,{t:'mussel',c:'#263238'}],
+  ['tigershrimp','草蝦','shrimp',7,100,{t:'shrimp',c:'#4f5b45',stripe:'#d9d0a8'}],
+  ['mackerel','鯖魚','fish',7,120,{t:'fish',c:'#2e6b8a',c2:'#e3f2fd',stripe:'#173c52',len:.55,h:.17}],
+  ['squid','魷魚','squid',8,150,{t:'squid',c:'#f8c8d4'}],
+  ['saury','秋刀魚','fish',8,120,{t:'fish',c:'#4f6470',c2:'#eceff1',len:.7,h:.12,beak:true}],
+  ['crayfish','小龍蝦','shrimp',9,140,{t:'claw',c:'#c62828'}],
+  ['seabream','鯛魚','fish',9,180,{t:'fish',c:'#f48fb1',c2:'#fde4ec',fin:'#e57399',len:.52,h:.3}],
+  ['scallop','扇貝','shell',10,180,{t:'scallop',c:'#ff8a65'}],
+  ['trout','鱒魚','fish',10,200,{t:'fish',c:'#7f9466',c2:'#f9d6dc',stripe:'#f48fb1',spots:'#3e4a30',len:.58,h:.19}],
+  ['pomfret','鯧魚','fish',11,220,{t:'fish',c:'#dcdcdc',c2:'#f7f7f7',len:.42,h:.36}],
+  ['crab','螃蟹','shrimp',11,240,{t:'crab',c:'#e65100',c2:'#ffcc80'}],
+  ['octopus','章魚','squid',12,260,{t:'octopus',c:'#e57373'}],
+  ['cod','鱈魚','fish',12,300,{t:'fish',c:'#a1887f',c2:'#f1ebe7',spots:'#6d4c41',len:.66,h:.22}],
+  ['salmon','鮭魚','fish',13,360,{t:'fish',c:'#7d93a3',c2:'#ffb199',len:.7,h:.22}],
+  ['abalone','鮑魚','shell',14,420,{t:'abalone',c:'#8d6e63'}],
+  ['eel','鰻魚','fish',14,400,{t:'eel',c:'#3e4a3a'}],
+  ['grouper','石斑魚','fish',15,480,{t:'fish',c:'#8d6e63',c2:'#d7ccc8',spots:'#4e342e',len:.68,h:.3}],
+  ['urchin','海膽','shell',15,420,{t:'urchin',c:'#4a148c'}],
+  ['lobster','龍蝦','shrimp',16,540,{t:'claw',c:'#8e2a1f',big:true}],
+  ['tuna','鮪魚','fish',17,600,{t:'fish',c:'#1a3a5c',c2:'#cfd8dc',fin:'#fdd835',len:.85,h:.3}],
+  ['kingcrab','帝王蟹','shrimp',18,720,{t:'crab',c:'#c62828',c2:'#ffab91',king:true}],
+];
+const SEA_CAT = {fish:'🐟 魚', shrimp:'🦐 蝦蟹', shell:'🐚 貝類', squid:'🦑 頭足類'};
+const SEA = {};
+for (const [id, n, cat, lv, min, m] of SEA_LIST) {
+  const cost = Math.round(10 + lv * 7 + min * 0.6);
+  const y = cat === 'fish' ? 6 + Math.floor(lv / 5) : cat === 'shell' ? 12 : cat === 'squid' ? 6 : 9;
+  SEA[id] = {n, cat, lv, t:min * 60, cost, y, sell:Math.max(2, Math.ceil((cost * 1.8 + min * 0.9) / y)), exp:Math.max(2, Math.round(2 + min * 0.07 + lv)), m};
+}
+const MAXPOND = 8, START_POND = 2;
+const pondPrice = n => 800 * (n - 2);
+const pondLv = n => n * 2;
 const PETS = {};
 for (const [k, n, kind, lv, price, bite, bug, sp] of PET_LIST) PETS[k] = {n, kind, lv, price, bite, bug, sp,
   d:kind === 'dog' ? `看門犬：${Math.round(bite * 100)}% 機率抓到小偷` : `會抓蟲（少長 ${Math.round(bug * 100)}% 蟲）＋ ${Math.round(bite * 100)}% 機率抓小偷`};
@@ -372,6 +430,23 @@ const RECIPES = {
   yolk_pastry:{n:'蛋黃酥', em:'🥮', need:{duckegg:3, wheat:3}}, egg_roll:{n:'鵝蛋捲', em:'🥚', need:{gooseegg:2, wheat:2, milk:1}},
   truffle_pasta:{n:'松露義大利麵', em:'🍝', need:{truffle:1, wheat:4, egg:2}}, fur_hat:{n:'兔毛帽子', em:'🎩', need:{fur:4}},
   veg_box:{n:'有機菜籃', em:'🧺', need:{manure:2, carrot:3, cabbage:2}},
+  tilapia_ss:{n:'糖醋吳郭魚', em:'🐟', need:{tilapia:2, tomato:2}}, milkfish_porridge:{n:'虱目魚粥', em:'🥣', need:{milkfish:2, rice:2}},
+  carp_braised:{n:'紅燒鯉魚', em:'🐟', need:{carp:2, garlic:1, chili:1}}, bass_steamed:{n:'清蒸鱸魚', em:'🍲', need:{bass:2, onion:1}},
+  bream_grill:{n:'鹽烤鯛魚', em:'🐠', need:{seabream:2, lemon:1}}, trout_butter:{n:'奶油煎鱒魚', em:'🧈', need:{trout:2, milk:1}},
+  pomfret_noodle:{n:'白鯧米粉湯', em:'🍜', need:{pomfret:2, rice:2, cabbage:1}}, mackerel_bento:{n:'鹽烤鯖魚便當', em:'🍱', need:{mackerel:2, rice:2}},
+  saury_grill:{n:'鹽烤秋刀魚', em:'🐟', need:{saury:3, lemon:1}}, salmon_sashimi:{n:'鮭魚生魚片', em:'🍣', need:{salmon:2}},
+  salmon_rice:{n:'鮭魚炒飯', em:'🍛', need:{salmon:1, rice:3, egg:2}}, cod_fry:{n:'酥炸鱈魚排', em:'🍤', need:{cod:2, wheat:2, egg:1}},
+  grouper_steam:{n:'清蒸石斑', em:'🐡', need:{grouper:1, garlic:1, onion:1}}, tuna_salad:{n:'鮪魚沙拉', em:'🥗', need:{tuna:1, lettuce:3, tomato:2}},
+  eel_rice:{n:'蒲燒鰻魚飯', em:'🍱', need:{eel:1, rice:3}}, shrimp_salad:{n:'鮮蝦沙拉', em:'🦐', need:{whiteshrimp:4, lettuce:2}},
+  shrimp_rice:{n:'鮮蝦炒飯', em:'🍤', need:{whiteshrimp:3, rice:3, egg:2}}, tiger_grill:{n:'鹽烤草蝦', em:'🦐', need:{tigershrimp:4}},
+  crayfish_spicy:{n:'麻辣小龍蝦', em:'🦞', need:{crayfish:5, chili:2, garlic:1}}, lobster_bake:{n:'焗烤龍蝦', em:'🦞', need:{lobster:1, goatmilk:1, garlic:1}},
+  crab_porridge:{n:'螃蟹粥', em:'🦀', need:{crab:2, rice:3}}, kingcrab_pot:{n:'帝王蟹火鍋', em:'🍲', need:{kingcrab:1, cabbage:2, mushroom:2}},
+  clam_soup:{n:'蛤蜊湯', em:'🍵', need:{clam:5}}, hardclam_egg:{n:'文蛤蒸蛋', em:'🥚', need:{hardclam:3, egg:2}},
+  oyster_omelet:{n:'蚵仔煎', em:'🍳', need:{oyster:4, egg:2, cabbage:1}}, scallop_butter:{n:'奶油烤扇貝', em:'🐚', need:{scallop:3, milk:1}},
+  mussel_wine:{n:'白酒淡菜', em:'🦪', need:{mussel:5, garlic:1, onion:1}}, abalone_porridge:{n:'鮑魚粥', em:'🥣', need:{abalone:1, rice:3}},
+  urchin_don:{n:'海膽丼', em:'🍚', need:{urchin:2, rice:2}}, squid_rings:{n:'炸魷魚圈', em:'🦑', need:{squid:3, wheat:2}},
+  takoyaki:{n:'章魚燒', em:'🐙', need:{octopus:2, wheat:3, egg:2}}, seafood_pasta:{n:'海鮮義大利麵', em:'🍝', need:{whiteshrimp:3, clam:3, squid:1, wheat:3, tomato:2}},
+  seafood_porridge:{n:'海鮮粥', em:'🥘', need:{crab:1, whiteshrimp:2, oyster:2, rice:3}},
 };
 const TASKS = {
   plant:{n:'播種 5 次', need:5, c:50, e:5}, harvest:{n:'收成 3 塊地', need:3, c:60, e:10},
@@ -381,6 +456,7 @@ const TASKS = {
   visit:{n:'拜訪 2 位好友', need:2, c:30, e:5}, chat:{n:'在農場說一句話', need:1, c:20, e:3},
   order:{n:'完成 1 張料理訂單', need:1, c:80, e:15}, gift:{n:'送好友 1 份禮物', need:1, c:40, e:8},
   feedf:{n:'幫好友餵動物 1 次', need:1, c:40, e:8},
+  fish:{n:'收成 2 池海鮮', need:2, c:60, e:10}, gacha:{n:'玩 1 次抽抽樂', need:1, c:30, e:5},
 };
 const WHEEL = [
   {t:'50金幣', c:50, w:20, col:'#ffcc80'}, {t:'化肥×2', fert:2, w:14, col:'#ce93d8'},
@@ -393,7 +469,8 @@ const FERT_PRICE = 30, FEED_PRICE = 5, CAUGHT_COINS = 50, CAUGHT_ITEMS = 10;
 const plotPrice = n => 500 + (n - 7) * 400;
 const plotLv = n => n - 5;
 const ranchCap = L => Math.min(16, 2 + Math.ceil(L / 2));
-const orderSlots = L => 3 + (L >= 8) + (L >= 14);
+const orderSlots = L => 3 + (L >= 6) + (L >= 12) + (L >= 18);
+const DAILY_SWAP = 3;
 const DAILY_HELP_EXP = 80, DAILY_PRANK = 10, SIGN_COINS = 100, KEEP_RATIO = 0.6;
 const PHRASES = ['嗨～大家好 👋', '我來偷菜囉 😈', '謝謝你幫忙！🙏', '你的菜好漂亮 🥬', '快來我家玩！🏡', '送你禮物 🎁', '哈哈哈 😂', '晚安 🌙', '加油 💪'];
 
@@ -417,12 +494,13 @@ function fmtDur(ms) { const s = Math.max(0, Math.ceil(ms / 1000)), h = Math.floo
 function fmtTime(t) { const d = new Date(t); const p = n => String(n).padStart(2, '0'); return `${d.getMonth()+1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`; }
 function colorOf(s) { let h = 0; for (const c of String(s)) h = (h * 37 + c.charCodeAt(0)) % 360; return `hsl(${h} 65% 52%)`; }
 const dn = f => (f && (f.nick || f.username)) || '？';
-const itemInfo = id => CROPS[id] || PROD[id] || {n:id, sell:0};
+const itemInfo = id => CROPS[id] || PROD[id] || SEA[id] || {n:id, sell:0};
+const isItem = id => !!(CROPS[id] || PROD[id] || SEA[id]);
 const isOnline = p => p && !p.off && p.t && now() - p.t < 90000;
 const rnd = a => a[Math.floor(Math.random() * a.length)];
 
 function levelOf(exp) { let L = 1, need = 100, e = exp || 0; while (e >= need) { e -= need; L++; need = 100 + (L - 1) * 80; } return {L, cur:e, need}; }
-function gainExp(f, n) { const b = levelOf(f.exp).L; f.exp = (f.exp || 0) + n; const a = levelOf(f.exp).L; return a > b ? a : 0; }
+function gainExp(f, n) { const b = levelOf(f.exp).L; f.exp = (f.exp || 0) + n; const a = levelOf(f.exp).L; if (a > b) f.gacha = (f.gacha || 0) + (a - b); return a > b ? a : 0; }
 function daily(f) { if (!f.daily || f.daily.day !== today()) f.daily = {day:today(), help:0, prank:0, t:{}, cl:[], bonus:false, spin:false, vis:[]}; f.daily.t ??= {}; f.daily.cl ??= []; f.daily.vis ??= []; return f.daily; }
 const dailyView = f => f && f.daily && f.daily.day === today() ? {t:{}, cl:[], vis:[], ...f.daily} : {t:{}, cl:[], vis:[], help:0, prank:0, bonus:false, spin:false};
 function bump(f, k, n = 1) { const d = daily(f); d.t[k] = (d.t[k] || 0) + n; }
@@ -438,6 +516,11 @@ function stageOf(p) { if (p.s !== 'grow' || !CROPS[p.c]) return -1; const pr = (
 function stealInfo(p, uid) { if (!isMature(p)) return null; const base = CROPS[p.c].y, min = Math.ceil(base * KEEP_RATIO), remain = base - (p.st || 0); return {can:remain > min && !(p.th || []).includes(uid), avail:remain - min, mine:(p.th || []).includes(uid)}; }
 function harvestAmt(p) { return Math.max(1, Math.floor((CROPS[p.c].y - (p.st || 0)) * (1 - 0.1 * probs(p)))); }
 
+const seaMs = c => SEA[c].t * 1000 / SPEED;
+const pondMature = q => q && q.s === 'grow' && SEA[q.c] && now() >= q.p + seaMs(q.c);
+function pondStage(q) { if (!q || q.s !== 'grow' || !SEA[q.c]) return -1; const pr = (now() - q.p) / seaMs(q.c); return pr >= 1 ? 3 : pr < .2 ? 0 : pr < .55 ? 1 : 2; }
+function pondSteal(q, uid) { if (!pondMature(q)) return null; const base = SEA[q.c].y, min = Math.ceil(base * KEEP_RATIO), remain = base - (q.st || 0); return {can:remain > min && !(q.th || []).includes(uid), avail:remain - min, mine:(q.th || []).includes(uid)}; }
+const pondAmt = q => Math.max(1, Math.floor((SEA[q.c].y - (q.st || 0)) * (1 - 0.1 * (q.g || 0))));
 const ivMs = k => ANIMALS[k].iv * 1000 / SPEED;
 function settleA(a, t = now()) {
   const iv = ivMs(a.k), end = Math.min(t, a.fu);
@@ -456,7 +539,7 @@ function useFeed(f, n) { for (let k = 0; k < n; k++) { if (f.wh.grass > 0) f.wh.
 function newFarm(username) {
   return {username, nick:'', exp:0, coins:300, plotCount:START_P, plots:Array.from({length:MAXP}, () => ({s:'empty'})),
     seeds:{radish:4, carrot:2, grass:2, daisy:2}, wh:{}, fert:2, feed:5, pets:[], pet:'', ranch:{animals:[], poop:0, pt:0},
-    orders:[], ordersDone:0, friends:[], log:[], logSeen:0,
+    orders:[], ordersDone:0, gacha:1, fry:{tilapia:2}, fish:{n:START_POND, ponds:Array.from({length:MAXPOND}, () => ({s:'empty'}))}, friends:[], log:[], logSeen:0,
     daily:{day:'', help:0, prank:0, t:{}, cl:[], bonus:false, spin:false, vis:[]}, lastSign:'', created:now()};
 }
 function normalize(f) {
@@ -466,19 +549,24 @@ function normalize(f) {
   f.pets = f.pets.filter(k => PETS[k]); if (f.pet && !PETS[f.pet]) f.pet = f.pets[0] || '';
   f.ranch ??= {animals:[], poop:0, pt:0}; f.ranch.animals = (f.ranch.animals || []).filter(a => ANIMALS[a.k]); f.ranch.poop ??= 0;
   f.seeds ??= {}; f.wh ??= {}; f.friends ??= []; f.log ??= []; f.orders ??= []; f.ordersDone ??= 0;
-  f.orders = f.orders.filter(o => RECIPES[o.r]);
+  f.orders = f.orders.filter(o => RECIPES[o.r]); f.orders.forEach(o => { o.got ??= {}; });
+  f.gacha ??= Math.max(0, levelOf(f.exp).L - 1); f.fry ??= {};
+  f.fish ??= {n:START_POND, ponds:[]}; f.fish.n ??= START_POND; f.fish.ponds ??= [];
+  while (f.fish.ponds.length < MAXPOND) f.fish.ponds.push({s:'empty'});
+  f.fish.ponds = f.fish.ponds.map(q => q.s === 'grow' && !SEA[q.c] ? {s:'empty'} : q);
   return f;
 }
 const petOf = f => f && f.pet && PETS[f.pet] ? f.pet : '';
-const itemLv = id => CROPS[id] ? CROPS[id].lv : PROD[id] ? ANIMALS[PROD[id].from].lv : 99;
+const itemLv = id => CROPS[id] ? CROPS[id].lv : PROD[id] ? ANIMALS[PROD[id].from].lv : SEA[id] ? SEA[id].lv : 99;
 const recipeOk = (r, L) => Object.keys(RECIPES[r].need).every(id => itemLv(id) <= L);
-function recipeReward(r) { let v = 0; for (const [id, n] of Object.entries(RECIPES[r].need)) v += itemInfo(id).sell * n; return {c:Math.round(v * 1.8 + 20), e:Math.round(5 + v * 0.12)}; }
+function recipeReward(r) { let v = 0; for (const [id, n] of Object.entries(RECIPES[r].need)) v += itemInfo(id).sell * n; return {c:Math.round(v * 2.2 + 30), e:Math.round(8 + v * 0.15)}; }
+const orderLeft = o => Object.entries(RECIPES[o.r].need).map(([id, n]) => [id, n - ((o.got || {})[id] || 0)]).filter(([, n]) => n > 0);
 function fillOrders(f) {
   const L = levelOf(f.exp).L, slots = orderSlots(L); let ch = false;
   const pool = Object.keys(RECIPES).filter(r => recipeOk(r, L));
   while (f.orders.length < slots && pool.length) {
     const cand = pool.filter(r => !f.orders.some(o => o.r === r)); const r = rnd(cand.length ? cand : pool);
-    f.orders.push({r, t:now()}); ch = true;
+    f.orders.push({r, t:now(), got:{}}); ch = true;
   }
   return ch;
 }
@@ -496,6 +584,11 @@ function tickOwn(f) {
       }
       p.k = k; ch = true;
     }
+  }
+  for (let i = 0; i < f.fish.n; i++) {
+    const q = f.fish.ponds[i]; if (q.s !== 'grow' || !SEA[q.c]) continue;
+    const g = seaMs(q.c), iv = Math.max(20000 / SPEED, g / 3), end = Math.min(t, q.p + g), k = Math.floor((end - q.p) / iv), done = q.k || 0;
+    if (k > done) { for (let j = done; j < k; j++) if (Math.random() < 0.3 && (q.g || 0) < 2) q.g = (q.g || 0) + 1; q.k = k; ch = true; }
   }
   const r = f.ranch;
   if (r.animals.length && t - (r.pt || 0) > 15 * 60000 / SPEED) { r.pt = t; ch = true; if (r.poop < MAX_POOP && Math.random() < 0.3 + 0.05 * r.animals.length) r.poop++; }
@@ -856,6 +949,64 @@ function catModel(sp) {
 }
 function petModel(k) { const P = PETS[k]; const m = P.kind === 'dog' ? dogModel(P.sp) : catModel(P.sp); m.scale.multiplyScalar(1.6); return m; }
 
+/* ================= 3D：魚蝦貝類 ================= */
+function seaModel(k) {
+  const sp = SEA[k].m, G = new THREE.Group(), c = sp.c, c2 = sp.c2 || '#ffffff';
+  const eyes = (x, y, z) => [ball('#ffffff', U(.035), [x, y, z]), ball('#111111', U(.02), [x + .015, y, z + Math.sign(z) * .012]), ball('#ffffff', U(.035), [x, y, -z]), ball('#111111', U(.02), [x + .015, y, -z - Math.sign(z) * .012])];
+  switch (sp.t) {
+    case 'fish': {
+      const L = sp.len, H = sp.h, Wd = .07;
+      G.add(ball(c, [L / 2, H / 2, Wd]), ball(c2, [L * .44, H * .3, Wd * .96], [0, -H * .17, 0]));
+      if (sp.stripe) for (let i = 0; i < 4; i++) G.add(blk(sp.stripe, [.025, H * .55, Wd * 1.9], [(i - 1.5) * L * .16, H * .1, 0]));
+      if (sp.spots) for (let i = 0; i < 8; i++) G.add(ball(sp.spots, U(.022), [(i % 4 - 1.5) * L * .18, (i < 4 ? .04 : -.02), (i % 2 ? 1 : -1) * Wd * .95]));
+      if (sp.beak) G.add(cone(c, [.02, .12, .02], [L / 2 + .04, 0, 0], [0, 0, -Math.PI / 2]));
+      G.add(cone(sp.fin || c, [L * .14, H * .4, .012], [-L * .05, H * .45, 0]));
+      G.add(cone(sp.fin || c, [.06, .1, .01], [L * .05, -H * .3, .04], [.6, 0, 0]), cone(sp.fin || c, [.06, .1, .01], [L * .05, -H * .3, -.04], [-.6, 0, 0]));
+      const tail = pivot(-L / 2 + .02, 0, 0, cone(sp.fin || c, [H * .5, L * .3, .012], [-L * .14, 0, 0], [0, 0, -Math.PI / 2])); G.add(tail); G.userData.tail = tail;
+      G.add(...eyes(L * .34, H * .12, Wd * .8));
+      break; }
+    case 'eel': { for (let i = 0; i < 7; i++) G.add(ball(i % 2 ? c : '#4a5a46', [.09, .06, .055], [-i * .12, 0, 0])); G.add(ball(c, [.1, .065, .06], [.1, 0, 0]), ball('#c9c27a', [.5, .02, .04], [-.3, -.04, 0]), ...eyes(.15, .03, .045)); G.userData.eel = true; break; }
+    case 'shrimp': case 'claw': {
+      const big = sp.big ? 1.4 : 1;
+      for (let i = 0; i < 6; i++) { const a = i * .28; G.add(ball(i % 2 && sp.stripe ? sp.stripe : c, [.07 * big, .06 * big, .055 * big], [(-i * .075) * big, (-Math.sin(a) * .05 - i * .012) * big, 0])); }
+      G.add(ball(c, [.1 * big, .07 * big, .06 * big], [.09 * big, .01, 0]), cone(c, [.03, .1, .01], [-.48 * big, -.1 * big, 0], [0, 0, 1.2]));
+      for (const z of [.025, -.025]) G.add(rod(c, [.004, .22 * big, .004], [.2 * big, .07, z], [0, 0, -1.2]));
+      for (let i = 0; i < 4; i++) for (const z of [1, -1]) G.add(rod(c, [.006, .1, .006], [(.04 - i * .05) * big, -.06 * big, .05 * z * big], [z * .6, 0, 0]));
+      if (sp.t === 'claw') for (const z of [1, -1]) G.add(rod(c, [.015, .16 * big, .015], [.2 * big, -.02, .07 * z * big], [0, z * .5, -1.3]), ball(c, [.09 * big, .04 * big, .05 * big], [.33 * big, -.02, .13 * z * big]));
+      G.add(...eyes(.15 * big, .05, .03));
+      break; }
+    case 'crab': {
+      const k2 = sp.king ? 1.25 : 1;
+      G.add(ball(c, [.22 * k2, .09, .17 * k2], [0, .1, 0]), ball(c2, [.2 * k2, .05, .15 * k2], [0, .06, 0]));
+      if (sp.king) for (let i = 0; i < 10; i++) G.add(cone(c, U(.02), [Math.cos(i) * .14, .18, Math.sin(i) * .1]));
+      for (const z of [1, -1]) {
+        for (let i = 0; i < 3; i++) G.add(rod(c, [.012, sp.king ? .38 : .24, .012], [(-.06 + i * .07), .06, z * (.2 * k2 + .05)], [z * 1.1, 0, 0]));
+        G.add(rod(c, [.02, .18, .02], [.2 * k2, .1, z * .12], [0, 0, -1.1]), ball(c, [.07, .05, .05], [.3 * k2, .11, z * .16]), cone('#3e2723', [.02, .05, .02], [.36 * k2, .11, z * .16], [0, 0, -1.4]));
+        G.add(rod(c, [.008, .06, .008], [.14, .19, z * .05]), ball('#111111', U(.022), [.14, .23, z * .05]));
+      }
+      G.userData.crab = true; break; }
+    case 'clam': { G.add(ball(c, [.15, .05, .12], [0, .05, 0]), ball(c, [.15, .05, .12], [0, .1, 0], [0, 0, .25]), ring(c2, [.11, .09, .2], [0, .075, 0], [Math.PI / 2, 0, 0]), ring(c2, [.07, .06, .2], [0, .08, 0], [Math.PI / 2, 0, 0])); break; }
+    case 'oyster': { G.add(ball(c, [.17, .05, .12], [0, .05, 0]), ball('#bdbdbd', [.13, .05, .1], [.02, .09, .01], [0, .4, .15]), ball('#757575', U(.04), [-.06, .1, .04]), ball('#e0e0e0', [.1, .02, .07], [.02, .12, 0])); break; }
+    case 'mussel': { G.add(ball(c, [.15, .055, .065], [0, .06, 0], [0, 0, .1]), ball('#37474f', [.13, .04, .06], [0, .1, 0], [0, 0, .25]), ball('#ff8a65', [.08, .015, .03], [.01, .085, 0])); break; }
+    case 'scallop': { G.add(ball(c, [.15, .03, .15], [0, .04, 0])); for (let i = 0; i < 9; i++) G.add(blk('#ff7043', [.012, .02, .14], [Math.cos(i * .35 - 1.4) * .07, .065, Math.sin(i * .35 - 1.4) * .07], [0, -(i * .35 - 1.4), 0])); G.add(ball(c, [.15, .03, .15], [-.04, .12, 0], [0, 0, .5]), blk('#ffab91', [.05, .03, .08], [-.15, .05, 0])); break; }
+    case 'abalone': { G.add(ball(c, [.16, .06, .12], [0, .06, 0]), ring('#a1887f', [.1, .08, .3], [0, .1, 0], [Math.PI / 2, 0, 0]), ring('#bcaaa4', [.05, .04, .3], [.04, .11, 0], [Math.PI / 2, 0, 0])); for (let i = 0; i < 5; i++) G.add(ball('#5d4037', U(.012), [-.1 + i * .04, .11, .08])); break; }
+    case 'urchin': { G.add(ball(c, [.13, .11, .13], [0, .11, 0])); for (let i = 0; i < 24; i++) { const a = i * 2.4, b = Math.acos(1 - 2 * (i + .5) / 24); if (Math.cos(b) < -.3) continue; const d = [Math.sin(b) * Math.cos(a), Math.cos(b), Math.sin(b) * Math.sin(a)]; const m = cone('#311b92', [.012, .14, .012], [d[0] * .17, .11 + d[1] * .15, d[2] * .17]); m.lookAt(d[0] * 9, .11 + d[1] * 9, d[2] * 9); m.rotateX(Math.PI / 2); G.add(m); } break; }
+    case 'squid': { G.add(ball(c, [.24, .08, .08], [-.05, .02, 0]), cone('#f48fb1', [.1, .1, .015], [-.28, .02, 0], [0, 0, Math.PI / 2]), ...eyes(.13, .04, .06)); for (let i = 0; i < 8; i++) G.add(rod('#f8bbd0', [.01, .22, .01], [.28, -.01 + (i % 2) * .02, (i - 3.5) * .015], [0, 0, -Math.PI / 2 + (i - 3.5) * .05])); G.userData.squid = true; break; }
+    case 'octopus': {
+      G.add(ball(c, [.14, .16, .14], [0, .26, 0]), ...eyes(.11, .25, .06));
+      G.userData.arms = [];
+      for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2, arm = pivot(Math.cos(a) * .08, .14, Math.sin(a) * .08); for (let k2 = 0; k2 < 4; k2++) arm.add(ball(c, U(.04 - k2 * .006), [Math.cos(a) * k2 * .06, -k2 * .03, Math.sin(a) * k2 * .06])); G.add(arm); G.userData.arms.push(arm); }
+      break; }
+  }
+  return G;
+}
+function birdFly(col) {
+  const G = new THREE.Group();
+  G.add(ball(col, [.24, .12, .12]), ball(col, U(.1), [.2, .06, 0]), cone('#ffb300', [.025, .08, .025], [.31, .05, 0], [0, 0, -Math.PI / 2]), ball('#111', U(.018), [.26, .09, .05]), ball('#111', U(.018), [.26, .09, -.05]), ball(col, [.12, .02, .07], [-.26, .02, 0]));
+  const w1 = pivot(0, .04, .08, blk(col, [.2, .015, .34], [0, 0, .17])), w2 = pivot(0, .04, -.08, blk(col, [.2, .015, .34], [0, 0, -.17]));
+  G.add(w1, w2); G.userData.w = [w1, w2]; G.traverse(o => { o.castShadow = false; }); return G;
+}
+
 /* ================= 3D：產品、人物 ================= */
 function prodModel(id) {
   const bottle = cap => grp(rod('#ffffff', [.1, .22, .1], [0, .11, 0]), rod('#ffffff', [.05, .08, .05], [0, .26, 0]), rod(cap, [.055, .04, .055], [0, .31, 0]), rod(cap === '#42a5f5' ? '#bbdefb' : '#c8e6c9', [.102, .07, .102], [0, .1, 0]));
@@ -900,8 +1051,8 @@ function thumbURL(kind, id) {
       const s = new THREE.Scene(); s.add(new THREE.HemisphereLight('#ffffff', '#a1887f', 1.6)); const d = new THREE.DirectionalLight('#ffffff', 1.6); d.position.set(3, 6, 5); s.add(d);
       TR = {r, s, c:new THREE.PerspectiveCamera(30, 1, .01, 100)};
     }
-    const obj = kind === 'crop' ? cropPlant(id, true) : kind === 'ani' ? animalModel(id) : kind === 'pet' ? petModel(id) : prodModel(id);
-    if (kind === 'ani' || kind === 'pet') obj.rotation.y = -.6;
+    const obj = kind === 'crop' ? cropPlant(id, true) : kind === 'ani' ? animalModel(id) : kind === 'pet' ? petModel(id) : kind === 'sea' ? seaModel(id) : prodModel(id);
+    if (kind === 'ani' || kind === 'pet' || kind === 'sea') obj.rotation.y = -.6;
     TR.s.add(obj);
     const sph = new THREE.Box3().setFromObject(obj).getBoundingSphere(new THREE.Sphere());
     const dir = new THREE.Vector3(.35, .45, 1).normalize(), dist = sph.radius / Math.sin(15 * Math.PI / 180) * 1.02;
@@ -910,13 +1061,15 @@ function thumbURL(kind, id) {
   } catch (e) { console.warn(e); THUMB[key] = ''; }
   return THUMB[key];
 }
-if (QS.has('debug')) window.__hf = {thumbURL, PETS, ANIMALS, CROPS, PROD, scr(kind, i) { let p; if (kind === 'plot') { const [x, z] = plotXZ(i); p = new THREE.Vector3(x, .4, z); } else if (kind === 'ani') p = W.animals[i].g.position.clone().setY(.5); else if (kind === 'poop') p = new THREE.Vector3(POOP_XZ[i][0], .2, POOP_XZ[i][1]); else p = new THREE.Vector3(TROUGH_XZ[0], .5, TROUGH_XZ[1]); p.project(W.camera); const r = W.renderer.domElement.getBoundingClientRect(); return [r.left + (p.x * .5 + .5) * r.width, r.top + (-p.y * .5 + .5) * r.height]; }, S:() => S};
+if (QS.has('debug')) window.__hf = {thumbURL, PETS, ANIMALS, CROPS, PROD, SEA, scr(kind, i) { let p; if (kind === 'plot') { const [x, z] = plotXZ(i); p = new THREE.Vector3(x, .4, z); } else if (kind === 'ani') p = W.animals[i].g.position.clone().setY(.5); else if (kind === 'poop') p = new THREE.Vector3(POOP_XZ[i][0], .2, POOP_XZ[i][1]); else if (kind === 'pond') { const [x, z] = pondXZ(i); p = new THREE.Vector3(x, .45, z); } else p = new THREE.Vector3(TROUGH_XZ[0], .5, TROUGH_XZ[1]); p.project(W.camera); const r = W.renderer.domElement.getBoundingClientRect(); return [r.left + (p.x * .5 + .5) * r.width, r.top + (-p.y * .5 + .5) * r.height]; }, S:() => S};
 const icon = (kind, id) => { const u = thumbURL(kind, id); return u ? `<img src="${u}" alt="">` : '🌱'; };
-const itemIcon = id => icon(CROPS[id] ? 'crop' : 'prod', id);
+const itemIcon = id => icon(CROPS[id] ? 'crop' : SEA[id] ? 'sea' : 'prod', id);
 
 /* ================= 3D：世界 ================= */
 const W = {};
-const FARM_T = new THREE.Vector3(0, 0, .8), RANCH_T = new THREE.Vector3(24, 0, .8);
+const FARM_T = new THREE.Vector3(0, 0, .8), RANCH_T = new THREE.Vector3(24, 0, .8), FISH_T = new THREE.Vector3(-30, 0, .8);
+const SCENE_T = {farm:FARM_T, ranch:RANCH_T, fish:FISH_T};
+const pondXZ = i => { const r = Math.floor(i / 4), c = i % 4; return [-30 + (c - 1.5) * 4.3, (r - .5) * 4.6 + .4]; };
 const plotXZ = i => { const r = Math.floor(i / 6), c = i % 6; return [(c - 2.5) * 2.75, (r - 1) * 2.75 - .3]; };
 const aniHome = i => { const r = Math.floor(i / 4), c = i % 4; return [24 + (c - 1.5) * 3.5, .3 + (r - 1.5) * 2.7]; };
 const POOP_XZ = [[20.5, -1.2], [27.6, 1.6], [22.3, 3.4], [26, -3.6], [19.6, 4.6], [29.6, -1.6]];
@@ -1012,10 +1165,35 @@ function buildWorld() {
   for (let i = 0; i < 4; i++) S3.add(ball('#43a047', [.4, .03, .4], [-15 + i * .9, .1, 8.6 + (i % 2) * 1.2]));
   W.ripples = []; for (let i = 0; i < 3; i++) { const r = new THREE.Mesh(new THREE.RingGeometry(.9, 1, 24), new THREE.MeshBasicMaterial({color:'#ffffff', transparent:true, opacity:.5})); r.rotation.x = -Math.PI / 2; r.position.set(-13.5 + i, .08, 9.3); S3.add(r); W.ripples.push(r); }
   // 樹木
-  const trees = [[-22, -10, 1.2, 0], [-20, 2, 1, 1], [-24, 14, 1.3, 2], [-8, -14, 1.1, 1], [14, -16, 1.2, 0], [36, -14, 1.3, 1], [39, -2, 1.1, 2], [40, 10, 1.2, 0], [12, 16, 1, 1], [-4, 15, 1.1, 2], [30, 16, 1.2, 0], [-28, -4, 1.4, 1], [44, 4, 1.3, 1], [2, -18, 1.4, 2], [22, -18, 1.2, 1], [-16, -15, 1.2, 2], [48, -10, 1.5, 0], [-30, 8, 1.5, 0]];
+  const trees = [[-22, -11, 1.2, 0], [-24, 15, 1.3, 2], [-8, -14, 1.1, 1], [14, -16, 1.2, 0], [36, -14, 1.3, 1], [39, -2, 1.1, 2], [40, 10, 1.2, 0], [12, 16, 1, 1], [-4, 15, 1.1, 2], [30, 16, 1.2, 0], [44, 4, 1.3, 1], [2, -18, 1.4, 2], [22, -18, 1.2, 1], [-16, -15, 1.2, 2], [48, -10, 1.5, 0], [-44, -6, 1.4, 1], [-45, 6, 1.3, 0], [-36, 14, 1.2, 2], [-32, -14, 1.3, 1]];
   for (const [x, z, s, k] of trees) S3.add(mkTree(x, z, s, k));
   // 花叢
   for (let i = 0; i < 26; i++) { const x = -19 + (i % 7) * 1, z = -1 + Math.floor(i / 7) * .8 + (i % 2) * .3; S3.add(rod('#558b2f', [.02, .3, .02], [x, .15, z]), ball(['#ff8a80', '#fff176', '#ce93d8', '#80d8ff', '#ffffff'][i % 5], U(.11), [x, .32, z])); }
+  // 魚塭
+  S3.add(blk('#cdb98a', [19.5, .06, 11.5], [-30, .03, .4]), blk('#d2b07a', [30, .05, 2], [-28, .03, 9.6]), blk('#d2b07a', [2, .05, 3.2], [-30, .03, 7.4]));
+  const FF = new THREE.Group(); fence(FF, -40, -5.6, -20, -5.6); fence(FF, -40, -5.6, -40, 6.4); fence(FF, -20, -5.6, -20, 6.4); fence(FF, -40, 6.4, -20, 6.4, [-30, 1.3, 6.4]); S3.add(FF);
+  const hut = grp(blk('#e1f5fe', [3.4, 2.4, 2.8], [0, 1.2, 0]), blk('#1e88e5', [3.9, .2, 1.9], [0, 2.75, .7], [-.55, 0, 0]), blk('#1e88e5', [3.9, .2, 1.9], [0, 2.75, -.7], [.55, 0, 0]), blk('#8d5a2b', [.8, 1.5, .1], [.6, .75, 1.42]), blk('#bbdefb', [.8, .6, .1], [-.8, 1.4, 1.42]), rod('#8d6e63', [.03, 1.8, .03], [-1.9, .9, 1.2], [0, 0, .3]), blk('#ff7043', [.4, .3, .3], [1.9, .15, 1]));
+  hut.position.set(-36.5, 0, -8.3); S3.add(hut);
+  S3.add(rod('#6d4c41', [.05, .7, .05], [-23.8, .35, 5.6]), ball('#f44336', U(.12), [-22.8, .1, 5.7]), blk('#8d6e63', [1.4, .1, .5], [-24, .4, 5.8]));
+  W.fishSign = makeSign(-34, -6.6); S3.add(W.fishSign);
+  const waterMat = new THREE.MeshPhongMaterial({color:'#3aa6d8', transparent:true, opacity:.72, shininess:90, specular:'#ffffff'}); W.waterMat = waterMat;
+  W.ponds = [];
+  for (let i = 0; i < MAXPOND; i++) {
+    const [x, z] = pondXZ(i), g = new THREE.Group(); g.position.set(x, 0, z);
+    const rim = grp(blk('#a1887f', [3.8, .5, .3], [0, .25, 1.75]), blk('#a1887f', [3.8, .5, .3], [0, .25, -1.75]), blk('#8d7b6f', [.3, .5, 3.2], [1.75, .25, 0]), blk('#8d7b6f', [.3, .5, 3.2], [-1.75, .25, 0]));
+    const bottom = blk('#2f5d50', [3.3, .08, 3.3], [0, .04, 0]);
+    const water = new THREE.Mesh(geoOf('wp', () => new THREE.PlaneGeometry(3.25, 3.25)), waterMat); water.rotation.x = -Math.PI / 2; water.position.y = .42;
+    const cover = blk('#86c55a', [3.8, .12, 3.8], [0, .06, 0]);
+    const content = new THREE.Group(), junk = new THREE.Group();
+    const spark = new THREE.Mesh(gO(), new THREE.MeshBasicMaterial({color:'#fff59d'})); spark.scale.setScalar(.14); spark.position.set(1.2, 1.8, .8); spark.visible = false;
+    const splash = new THREE.Mesh(geoOf('spl', () => new THREE.RingGeometry(.2, .3, 20)), new THREE.MeshBasicMaterial({color:'#ffffff', transparent:true, opacity:0, depthWrite:false})); splash.rotation.x = -Math.PI / 2; splash.position.y = .45;
+    g.add(rim, bottom, water, cover, content, junk, spark, splash);
+    g.traverse(o => o.userData.hit = {type:'pond', i});
+    S3.add(g); W.ponds.push({g, rim, bottom, water, cover, content, junk, spark, splash, key:null, swim:[], jump:null});
+  }
+  // 飛鳥
+  W.birds = [];
+  for (let i = 0; i < 9; i++) { const b = birdFly(['#6d4c41', '#37474f', '#ffffff', '#8d6e63', '#455a64'][i % 5]); b.scale.setScalar(1.6); S3.add(b); W.birds.push({b, ph:i * 2.1, R:16 + (i % 4) * 7, h:9 + (i % 3) * 3, cx:[-30, 0, 24][i % 3], sp:.18 + (i % 3) * .04}); }
   // 雲
   W.clouds = [];
   for (let i = 0; i < 9; i++) { const c = new THREE.Group(); for (let k = 0; k < 5; k++) c.add(new THREE.Mesh(gS(), new THREE.MeshLambertMaterial({color:'#ffffff', emissive:'#bbbbbb', flatShading:true}))); c.children.forEach((m, k) => { m.scale.set(2.4 - Math.abs(k - 2) * .4, 1.6 - Math.abs(k - 2) * .25, 1.8); m.position.set((k - 2) * 1.8, Math.abs(k - 2) ? 0 : .7, 0); }); c.position.set(-60 + i * 17, 26 + (i % 3) * 5, -40 + (i % 4) * 22); c.scale.setScalar(1 + (i % 3) * .3); S3.add(c); W.clouds.push(c); }
@@ -1077,7 +1255,7 @@ function init3D() {
   requestAnimationFrame(loop);
 }
 function setCam(scene, instant) {
-  const tgt = scene === 'ranch' ? RANCH_T : FARM_T, st = $('#stage'), portrait = st.clientWidth / Math.max(1, st.clientHeight) < 1;
+  const tgt = SCENE_T[scene] || FARM_T, st = $('#stage'), portrait = st.clientWidth / Math.max(1, st.clientHeight) < 1;
   const off = W.camera.position.clone().sub(W.controls.target);
   if (instant || off.length() < 1) { off.set(0, portrait ? 25 : 13, portrait ? 27 : 15.5); }
   W.camAnim = {from:W.controls.target.clone(), to:tgt.clone(), t0:performance.now(), dur:instant ? 0 : 900, off};
@@ -1086,7 +1264,7 @@ function setCam(scene, instant) {
 function pick(cx, cy) {
   const r = W.renderer.domElement.getBoundingClientRect(); W.ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1);
   W.ray.setFromCamera(W.ndc, W.camera);
-  const roots = [...W.plots.map(p => p.g), ...W.animals.map(a => a.g), ...W.poops.filter(p => p.visible), W.trough];
+  const roots = [...W.plots.map(p => p.g), ...W.animals.map(a => a.g), ...W.poops.filter(p => p.visible), W.trough, ...W.ponds.map(p => p.g)];
   const hits = W.ray.intersectObjects(roots, true);
   for (const h of hits) { if (h.object.visible === false) continue; let o = h.object; while (o && !o.userData.hit) o = o.parent; if (o) return o.userData.hit; }
   return null;
@@ -1106,6 +1284,7 @@ function hoverAt(cx, cy) {
   else if (h.type === 'ani' && W.animals[h.i]) { ring.position.set(W.animals[h.i].g.position.x, .06, W.animals[h.i].g.position.z); ring.scale.setScalar(.75); }
   else if (h.type === 'poop') { ring.position.set(POOP_XZ[h.i][0], .06, POOP_XZ[h.i][1]); ring.scale.setScalar(.45); }
   else if (h.type === 'trough') { ring.position.set(TROUGH_XZ[0], .06, TROUGH_XZ[1]); ring.scale.setScalar(1.1); }
+  else if (h.type === 'pond') { const [x3, z3] = pondXZ(h.i); ring.position.set(x3, .55, z3); ring.scale.setScalar(1.55); }
 }
 
 /* ----- 覆蓋文字（名字、數量、泡泡） ----- */
@@ -1179,6 +1358,35 @@ function syncRanch(f, own) {
   if (own) ov('trough', `🌾 飼料槽 ${hay}`, v => v.set(TROUGH_XZ[0], 1.4, TROUGH_XZ[1]), 'tag');
   if (!list.length && own) ov('noani', '牧場空空的～去商店「動物」買小雞吧 🐣', v => v.set(24, 1, 0), 'bub');
 }
+function pondKey(f, i, own) {
+  if (i >= f.fish.n) return own && i === f.fish.n ? 'next' : 'lock';
+  const q = f.fish.ponds[i]; if (q.s !== 'grow' || !SEA[q.c]) return 'e';
+  return `g|${q.c}|${pondStage(q)}|${q.g || 0}`;
+}
+function rebuildPond(P, i, key, q) {
+  P.content.clear(); P.junk.clear(); P.swim = []; P.jump = null; P.spark.visible = false;
+  const locked = key === 'lock' || key === 'next';
+  P.cover.visible = locked; P.water.visible = P.bottom.visible = P.rim.visible = !locked;
+  P.cover.material = mat(key === 'next' ? '#a9dd73' : '#86c55a');
+  if (locked || key === 'e') return;
+  const st = pondStage(q), sc = [.4, .6, .82, 1][st], sp = SEA[q.c].m, n = st === 3 ? 5 : 4;
+  for (let k = 0; k < n; k++) {
+    const m = seaModel(q.c); m.scale.setScalar(sc * 1.3);
+    const still = ['clam', 'oyster', 'mussel', 'scallop', 'abalone', 'urchin'].includes(sp.t);
+    if (still) { m.position.set(Math.cos(k * 1.3) * .9, .08, Math.sin(k * 1.3) * .9); m.rotation.y = k * 1.7; }
+    P.content.add(m); P.swim.push({m, ph:k * 1.257, t:sp.t, still});
+  }
+  if (st === 3 && ['fish', 'eel', 'squid', 'shrimp', 'claw'].includes(sp.t)) { const j = seaModel(q.c); j.scale.setScalar(1.3); j.visible = false; P.content.add(j); P.jump = j; }
+  P.spark.visible = st === 3;
+  for (let k = 0; k < (q.g || 0); k++) { const jk = k % 2 ? grp(rod('#90caf9', [.06, .22, .06], [0, 0, 0], [0, 0, Math.PI / 2]), rod('#1565c0', [.035, .05, .035], [.13, 0, 0], [0, 0, Math.PI / 2])) : grp(ball('#6d8f3a', [.28, .02, .2]), ball('#8bc34a', [.18, .02, .14], [.15, .01, .1])); jk.position.set(k ? -.7 : .6, .45, k ? .5 : -.6); P.junk.add(jk); }
+}
+function syncFish(f, own) {
+  for (let i = 0; i < MAXPOND; i++) {
+    const P = W.ponds[i], key = pondKey(f, i, own);
+    if (P.key !== key) { P.key = key; rebuildPond(P, i, key, f.fish.ponds[i]); }
+    if (key === 'next') { const [x, z] = pondXZ(i); ov('pnext' + i, '＋擴建魚池', v => v.set(x, .9, z), 'buy'); }
+  }
+}
 function syncPets(f) {
   const list = (f.pets || []).filter(k => PETS[k]).slice(0, 8); const key = list.join(',') + '|' + petOf(f);
   if (W.petKey !== key) {
@@ -1193,7 +1401,7 @@ function syncPeople(list) {
     W.peopleKey = key; W.peopleG.clear(); W.people = [];
     list.forEach((p, k) => { const m = personModel(p.n, p.uid); W.peopleG.add(m); W.people.push({m, uid:p.uid, k}); });
   }
-  const base = S.scene === 'ranch' ? 24 : 0;
+  const base = (SCENE_T[S.scene] || FARM_T).x;
   W.people.forEach((P, k) => {
     const x = base + [-3.2, 3.2, -6, 6, -1.6, 1.6, -8, 8][k % 8], z = 7.6 + (k >= 8 ? 1.2 : 0); P.tx = x; P.tz = z;
     const p = list[k]; const say = p.say && now() - p.say.t < 9000 ? p.say.m : '';
@@ -1219,6 +1427,29 @@ function loop() {
     if (P.drop) P.drop.position.y = 1.6 + Math.sin(t * 3 + i) * .12;
     if (P.spark.visible) { P.spark.rotation.y = t * 2; P.spark.position.y = 1.9 + Math.sin(t * 2.5 + i) * .15; }
   });
+  // 魚塭
+  W.waterMat.opacity = .68 + Math.sin(t * 1.3) * .05;
+  W.ponds.forEach((P, i) => {
+    for (const c of P.swim) {
+      if (c.still) continue;
+      const a = t * (c.t === 'fish' || c.t === 'eel' ? .55 : c.t === 'squid' ? .35 : .22) + c.ph, r = c.t === 'crab' ? .6 : .95;
+      if (c.t === 'crab') { c.m.position.set(Math.sin(a * 2) * r, .08, Math.cos(c.ph) * .8); c.m.rotation.y = c.ph; continue; }
+      if (c.t === 'octopus') { c.m.position.set(Math.cos(c.ph) * .8, .1 + Math.abs(Math.sin(t + c.ph)) * .12, Math.sin(c.ph) * .8); (c.m.userData.arms || []).forEach((am, k) => am.rotation.z = Math.sin(t * 3 + k) * .25); continue; }
+      const y = c.t === 'shrimp' || c.t === 'claw' ? .12 : .24 + Math.sin(t * 2 + c.ph) * .04;
+      c.m.position.set(Math.cos(a) * r, y, Math.sin(a) * r * .9); c.m.rotation.y = -a - Math.PI / 2;
+      if (c.m.userData.tail) c.m.userData.tail.rotation.y = Math.sin(t * 10 + c.ph) * .45;
+      if (c.m.userData.squid) c.m.scale.x = c.m.scale.z * (1 + Math.sin(t * 4 + c.ph) * .08);
+    }
+    if (P.jump) { const ph = ((t + i * .9) % 4) / 4; if (ph < .3) { const k = ph / .3; P.jump.visible = true; P.jump.position.set(-.6 + k * 1.2, .4 + Math.sin(k * Math.PI) * 1.1, .2); P.jump.rotation.set(0, 0, -(k - .5) * 2.4); P.splash.material.opacity = 0; } else { P.jump.visible = false; const k = (ph - .3) / .2; P.splash.material.opacity = k < 1 ? .7 * (1 - k) : 0; P.splash.scale.setScalar(1 + k * 2.5); P.splash.position.x = .6; } }
+    if (P.spark.visible) { P.spark.rotation.y = t * 2; P.spark.position.y = 1.7 + Math.sin(t * 2.5 + i) * .15; }
+    P.junk.children.forEach((j, k) => { j.position.y = .45 + Math.sin(t * 2 + k) * .02; j.rotation.y = t * .2 + k; });
+  });
+  for (const B2 of W.birds) {
+    const a = t * B2.sp + B2.ph, glide = Math.sin(t * .5 + B2.ph) > .4;
+    B2.b.position.set(B2.cx + Math.cos(a) * B2.R, B2.h + Math.sin(t * .8 + B2.ph) * 1.4, Math.sin(a) * B2.R * .55 - 2);
+    B2.b.rotation.y = Math.atan2(-Math.cos(a) * .55, -Math.sin(a)); B2.b.rotation.z = glide ? .15 : 0;
+    const fl = glide ? .15 : Math.sin(t * 13 + B2.ph) * .85; B2.b.userData.w[0].rotation.x = fl; B2.b.userData.w[1].rotation.x = -fl;
+  }
   // 動物走動
   for (const A of W.animals) {
     if (A.still) { (A.m.userData.bees || []).forEach((b, k) => { const a = t * 2.5 + k * 2.1; b.position.set(Math.cos(a) * .55, .8 + Math.sin(a * 2) * .2, Math.sin(a) * .55); b.rotation.y = -a; }); continue; }
@@ -1249,7 +1480,7 @@ function loop() {
 
 /* ================= 背景音樂（原創，WebAudio 合成） ================= */
 const Music = (() => {
-  let ctx = null, master = null, timer = null, step = 0, nextT = 0, on = false, wanted = store.getItem('hf_music') !== 'off';
+  let ctx = null, master = null, sfxBus = null, timer = null, step = 0, nextT = 0, on = false, wanted = store.getItem('hf_music') !== 'off';
   const E = 60 / 112 / 2;
   const MEL = [67,72,76,72,67,72,76,79, 77,76,74,72,69,72,74,-1, 74,71,67,71,74,79,77,74, 76,72,67,72,76,-1,-1,-1,
                69,72,76,72,69,72,76,81, 81,79,77,76,74,72,74,77, 79,77,76,74,72,71,74,71, 72,-1,67,-1,72,-1,-1,-1,
@@ -1277,14 +1508,51 @@ const Music = (() => {
       nextT += E; step++;
     }
   }
-  function ensure() { if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false; ctx = new AC(); master = ctx.createGain(); master.gain.value = .45; master.connect(ctx.destination); } if (ctx.state === 'suspended') ctx.resume(); return true; }
+  // 動物叫聲、鳥叫：用振盪器即時合成
+  function voc(t, o) {
+    const osc = ctx.createOscillator(), g = ctx.createGain(); let node = osc;
+    osc.type = o.type || 'sawtooth'; osc.frequency.setValueAtTime(o.f0, t); if (o.f1) osc.frequency.exponentialRampToValueAtTime(o.f1, t + o.d * (o.fr || 1));
+    if (o.f2) osc.frequency.exponentialRampToValueAtTime(o.f2, t + o.d);
+    if (o.vib) { const l = ctx.createOscillator(), lg = ctx.createGain(); l.frequency.value = o.vib; lg.gain.value = o.va || 5; l.connect(lg).connect(osc.frequency); l.start(t); l.stop(t + o.d + .05); }
+    if (o.bp) { const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = o.bp; f.Q.value = o.q || 2; node.connect(f); node = f; }
+    if (o.lp) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = o.lp; node.connect(f); node = f; }
+    let out = g;
+    if (o.am) { const a = ctx.createGain(), l = ctx.createOscillator(), lg = ctx.createGain(); l.frequency.value = o.am; lg.gain.value = (o.ad || .5); a.gain.value = 1 - (o.ad || .5); l.connect(lg).connect(a.gain); l.start(t); l.stop(t + o.d + .05); node.connect(a); a.connect(g); } else node.connect(g);
+    const v = (o.v || .2), at = o.at || .02;
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + at); g.gain.setValueAtTime(v, t + Math.max(at, o.d * .6)); g.gain.exponentialRampToValueAtTime(.0001, t + o.d);
+    out.connect(sfxBus); osc.start(t); osc.stop(t + o.d + .05);
+  }
+  const VOICE = {
+    cow: t => voc(t, {f0:150, f1:105, d:1.3, vib:5, va:4, lp:700, v:.35, at:.18}),
+    pig: t => { voc(t, {type:'square', f0:320, f1:190, d:.17, bp:900, q:3, v:.25}); voc(t + .22, {type:'square', f0:300, f1:180, d:.15, bp:900, q:3, v:.22}); },
+    sheep: t => voc(t, {f0:420, f1:390, d:.8, am:9, ad:.7, bp:1300, q:2, v:.3, at:.05}),
+    goat: t => voc(t, {f0:540, f1:500, d:.7, am:11, ad:.75, bp:1500, q:2, v:.28, at:.04}),
+    chicken: t => { for (let i = 0; i < 3; i++) voc(t + i * .11, {type:'square', f0:760, f1:470, d:.07, bp:1500, q:3, v:.18}); voc(t + .4, {type:'square', f0:600, f1:900, f2:500, d:.3, bp:1400, q:3, v:.2}); },
+    duck: t => { voc(t, {f0:540, f1:380, d:.15, bp:1400, q:6, v:.3}); voc(t + .2, {f0:520, f1:360, d:.14, bp:1400, q:6, v:.28}); },
+    goose: t => { voc(t, {type:'square', f0:380, f1:340, d:.28, bp:1000, q:5, v:.25}); voc(t + .35, {type:'square', f0:400, f1:350, d:.25, bp:1000, q:5, v:.22}); },
+    turkey: t => voc(t, {f0:620, f1:520, d:.55, am:24, ad:.85, bp:1600, q:3, v:.28}),
+    horse: t => voc(t, {f0:950, f1:700, f2:420, d:1.0, vib:13, va:45, bp:1500, q:2, v:.28, at:.05}),
+    bee: t => { voc(t, {f0:210, d:1.1, lp:900, am:28, ad:.3, v:.12, at:.2}); voc(t, {f0:216, d:1.1, lp:900, v:.08, at:.2}); },
+    rabbit: t => { voc(t, {type:'sine', f0:1800, f1:2300, d:.06, v:.08}); voc(t + .1, {type:'sine', f0:1900, f1:2400, d:.05, v:.07}); },
+    alpaca: t => voc(t, {type:'sine', f0:560, f1:690, f2:600, d:.6, vib:6, va:12, v:.2, at:.1}),
+    ostrich: t => { voc(t, {type:'sine', f0:95, f1:70, d:.7, v:.4, at:.08}); voc(t + .8, {type:'sine', f0:90, f1:65, d:.6, v:.35, at:.08}); },
+    dog: t => { voc(t, {type:'square', f0:520, f1:300, d:.13, bp:900, q:2, v:.3}); voc(t + .2, {type:'square', f0:540, f1:310, d:.13, bp:900, q:2, v:.3}); },
+    cat: t => voc(t, {f0:650, f1:900, f2:560, d:.6, bp:1300, q:3, v:.22, at:.05, fr:.4}),
+  };
+  function chirp(t) {
+    const n = 2 + Math.floor(Math.random() * 4), base = 2300 + Math.random() * 1600;
+    for (let i = 0; i < n; i++) { const st = t + i * (.09 + Math.random() * .05); voc(st, {type:'sine', f0:base * (1 + Math.random() * .15), f1:base * 1.55, f2:base * 1.05, d:.08, v:.07, at:.008, fr:.55}); }
+  }
+  function ensure() { if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false; ctx = new AC(); master = ctx.createGain(); master.gain.value = .45; master.connect(ctx.destination); sfxBus = ctx.createGain(); sfxBus.gain.value = .7; sfxBus.connect(ctx.destination); } if (ctx.state === 'suspended') ctx.resume(); return true; }
   return {
     get on() { return on; }, get wanted() { return wanted; },
     start() { if (!ensure() || on) return; on = true; nextT = ctx.currentTime + .1; timer = setInterval(sched, 80); },
     stop() { on = false; clearInterval(timer); },
     toggle() { wanted = !wanted; store.setItem('hf_music', wanted ? 'on' : 'off'); wanted ? this.start() : this.stop(); return wanted; },
     kick() { if (wanted && !on && S.my) this.start(); },
-    sfx(kind) { if (!wanted || !ensure()) return; const t = ctx.currentTime; if (kind === 'coin') { tone(t, 88, .12, .12, 'square', 5000); tone(t + .07, 93, .12, .2, 'square', 5000); } else if (kind === 'pop') { tone(t, 79, .15, .15); tone(t + .06, 84, .15, .2); } else if (kind === 'bad') { tone(t, 55, .2, .3, 'sawtooth', 900); tone(t + .12, 50, .2, .35, 'sawtooth', 900); } },
+    sfx(kind) { if (!wanted || !ensure()) return; const t = ctx.currentTime; if (kind === 'coin') { tone(t, 88, .12, .12, 'square', 5000); tone(t + .07, 93, .12, .2, 'square', 5000); } else if (kind === 'pop') { tone(t, 79, .15, .15); tone(t + .06, 84, .15, .2); } else if (kind === 'bad') { tone(t, 55, .2, .3, 'sawtooth', 900); tone(t + .12, 50, .2, .35, 'sawtooth', 900); } else if (kind === 'splash') { voc(t, {type:'sine', f0:900, f1:300, d:.18, v:.15}); voc(t + .05, {type:'triangle', f0:1400, f1:500, d:.12, v:.08}); } },
+    voice(k) { if (!wanted || !ensure() || !VOICE[k]) return; VOICE[k](ctx.currentTime + .02); },
+    chirp() { if (!wanted || !ensure()) return; chirp(ctx.currentTime + .02); },
   };
 })();
 
@@ -1301,7 +1569,7 @@ const fxAni = (i, text, color, dy = 0) => { const A = W.animals[i]; const p = A 
 function lvToast(up) { if (up) { toast(`🎉 升級了！現在是 Lv.${up}`); Music.sfx('coin'); const nx = Object.values(CROPS).filter(c => c.lv === up).map(c => c.n).concat(Object.values(ANIMALS).filter(a => a.lv === up).map(a => a.n)).concat(Object.values(PETS).filter(p => p.lv === up).map(p => p.n)); if (nx.length) toast(`🔓 解鎖：${nx.slice(0, 8).join('、')}`); } }
 
 /* ================= 畫面更新 ================= */
-function orderReady(f) { return (f.orders || []).filter(o => Object.entries(RECIPES[o.r].need).every(([id, n]) => (f.wh[id] || 0) >= n)).length; }
+function orderReady(f) { return (f.orders || []).filter(o => orderLeft(o).some(([id]) => (f.wh[id] || 0) > 0)).length; }
 function taskClaimable(f) { const d = dailyView(f); let n = 0; for (const k of todayTasks(S.uid)) if ((d.t[k] || 0) >= TASKS[k].need && !d.cl.includes(k)) n++; if (!d.spin) n++; if (d.cl.length >= 5 && !d.bonus) n++; return n; }
 function renderTop() {
   const f = S.my; if (!f) return; const lv = levelOf(f.exp);
@@ -1311,12 +1579,14 @@ function renderTop() {
   $('#myCoins').textContent = f.coins.toLocaleString();
   const unread = (f.log || []).filter(l => l.t > (f.logSeen || 0)).length + S.gifts.length;
   const set = (id, n) => { $(id).textContent = n; $(id).classList.toggle('on', n > 0); };
-  set('#bdM', unread); set('#bdF', S.reqs.length); set('#bdT', taskClaimable(f)); set('#bdO', orderReady(f));
+  set('#bdM', unread); set('#bdF', S.reqs.length); set('#bdT', taskClaimable(f)); set('#bdO', orderReady(f)); set('#bdG', f.gacha || 0);
   $('#musicBtn').firstChild.textContent = Music.wanted ? '🎵' : '🔇';
 }
 function renderTools() {
   const own = isOwn(), f = S.my; let T;
-  if (S.scene === 'ranch') T = own ? [['hand','✋','收集'], ['feedAll','🌾','餵食', 1], ['buyAni','🛒','買動物', 1], ['sellProducts','💰','賣產品', 1]]
+  if (S.scene === 'fish') T = own ? [['hand','✋','手'], ['stock','🐟', S.fry ? SEA[S.fry].n : '放魚苗'], ['sellSea','💰','賣海鮮', 1], ['buyPond','➕','擴建魚池', 1]]
+                                  : [['hand','✋','偷撈'], ['cleanTip2','🧹','幫撈垃圾', 1]];
+  else if (S.scene === 'ranch') T = own ? [['hand','✋','收集'], ['feedAll','🌾','餵食', 1], ['buyAni','🛒','買動物', 1], ['sellProducts','💰','賣產品', 1]]
                                    : [['hand','✋','偷產品'], ['feedFriend','🌾','幫餵食', 1], ['cleanTip','🧹','幫清便便', 1]];
   else T = own ? [['hand','✋','手'], ['plant','🌱', S.seed ? CROPS[S.seed].n : '播種'], ['water','💧','澆水'], ['weed','🌿','除草'], ['bug','🐞','除蟲'], ['fert','🧪','施肥'], ['plow','⛏️','翻地']]
                : [['hand','✋','偷菜'], ['water','💧','幫澆水'], ['weed','🌿','幫拔草'], ['bug','🐞','幫除蟲'], ['pbug','🐛','放蟲'], ['pweed','🌾','種草']];
@@ -1325,6 +1595,7 @@ function renderTools() {
     let em = '';
     if (id === 'fert' && f) em = `<em>${(f.fert || 0) + (f.wh.manure || 0)}</em>`;
     if (id === 'plant' && S.seed && f) em = `<em>${f.seeds[S.seed] || 0}</em>`;
+    if (id === 'stock' && S.fry && f) em = `<em>${f.fry[S.fry] || 0}</em>`;
     if ((id === 'feedAll' || id === 'feedFriend') && f) em = `<em>${(f.wh.grass || 0) + (f.feed || 0)}</em>`;
     if ((id === 'pbug' || id === 'pweed') && f) em = `<em>${DAILY_PRANK - dailyView(f).prank}</em>`;
     return `<button class="tool ${instant ? 'act' : S.tool === id ? 'on' : ''}" data-act="${instant ? id : 'tool'}" data-t="${id}"><span class="ic">${ic}</span><span class="tl">${esc(tl)}</span>${em}</button>`;
@@ -1334,9 +1605,10 @@ function renderScene() {
   if (!W.scene) return;
   const f = S.view, own = isOwn();
   if (f) {
-    syncField(f, own); syncRanch(f, own); syncPets(f);
+    syncField(f, own); syncRanch(f, own); syncFish(f, own); syncPets(f);
     setSign(W.farmSign, own ? '我的農場' : `${dn(f)}的農場`, `Lv.${levelOf(f.exp).L}${petOf(f) ? ' · ' + PETS[petOf(f)].n + '顧家' : ''}`);
     setSign(W.ranchSign, own ? '我的牧場' : `${dn(f)}的牧場`, `動物 ${f.ranch.animals.length}/${ranchCap(levelOf(f.exp).L)}`);
+    setSign(W.fishSign, own ? '我的魚塭' : `${dn(f)}的魚塭`, `魚池 ${f.fish.n}/${MAXPOND}`);
   }
   document.querySelectorAll('#sceneTabs button').forEach(b => b.classList.toggle('on', b.dataset.s === S.scene));
   $('#visitBar').hidden = own; if (!own && f) $('#visitName').textContent = dn(f);
@@ -1346,7 +1618,7 @@ function renderScene() {
   if (S.hover) showTip(S.hover);
 }
 function hereList() { return S.here.filter(p => !p.off && p.t && now() - p.t < 75000).sort((a, b) => a.uid < b.uid ? -1 : 1); }
-function stealCount(farm) { return farm.plots.slice(0, farm.plotCount).filter(p => { const s = stealInfo(p, S.uid); return s && s.can; }).length + (farm.ranch?.animals || []).filter(a => ANIMALS[a.k] && aStealable(a, S.uid)).length; }
+function stealCount(farm) { return farm.plots.slice(0, farm.plotCount).filter(p => { const s = stealInfo(p, S.uid); return s && s.can; }).length + (farm.ranch?.animals || []).filter(a => ANIMALS[a.k] && aStealable(a, S.uid)).length + (farm.fish?.ponds || []).slice(0, farm.fish?.n || 0).filter(q => { const s = pondSteal(q, S.uid); return s && s.can; }).length; }
 function renderStrip() {
   if (!S.my) return;
   const list = [{uid:S.uid, farm:S.my, me:true}, ...[...S.friends].sort((a, b) => (isOnline(S.pres[b.uid]) - isOnline(S.pres[a.uid])) || b.farm.exp - a.farm.exp)];
@@ -1382,7 +1654,18 @@ function aniText(i) {
   else t += `下一個${PROD[A.prod].n}：${fmtDur(v.p + ivMs(a.k) - now())}<br>飽足還有 ${fmtDur(a.fu - now())}`;
   return t;
 }
+function pondText(i) {
+  const f = S.view; if (!f) return '';
+  if (i >= f.fish.n) return isOwn() && i === f.fish.n ? `<b>擴建魚池</b><br>需要 Lv.${pondLv(i + 1)}、💰${pondPrice(i + 1)}` : '尚未開挖';
+  const q = f.fish.ponds[i]; if (q.s !== 'grow' || !SEA[q.c]) return isOwn() ? '空魚池 · 點一下放魚苗' : '空魚池';
+  const c = SEA[q.c]; let t = `<b>${c.n}</b> `;
+  if (pondMature(q)) { t += '可以收成了！'; if (isOwn()) t += `<br>可撈 ${pondAmt(q)} 隻${q.st ? `（被偷了 ${q.st} 隻）` : ''}`; else { const si = pondSteal(q, S.uid); t += si.can ? `<br>還能偷撈 ${si.avail} 隻 🥷` : si.mine ? '<br>你已經撈過這池了' : '<br>剩下的不能再撈了'; } }
+  else t += `<br>還要 ${fmtDur(q.p + seaMs(q.c) - now())} 長大`;
+  if (q.g) t += `<br>🗑️ 水面垃圾×${q.g}（每個減產 10%，點一下撈掉）`;
+  return t;
+}
 function tipFor(h) {
+  if (h.type === 'pond') return pondText(h.i);
   if (h.type === 'tile') return plotText(h.i);
   if (h.type === 'ani') return aniText(h.i);
   if (h.type === 'poop') return '💩 便便！點一下清掉' + (isOwn() ? '（+1 經驗）' : '（幫忙 +2 經驗）');
@@ -1400,6 +1683,7 @@ function clickHit(h) {
   if (h.type === 'ani') { if (S.scene !== 'ranch') { S.scene = 'ranch'; setCam('ranch'); renderTools(); } return run(() => clickAnimal(h.i)); }
   if (h.type === 'poop') return run(() => cleanPoop(h.i));
   if (h.type === 'trough') return run(isOwn() ? feedAll : feedFriend);
+  if (h.type === 'pond') { if (S.scene !== 'fish') { S.scene = 'fish'; setCam('fish'); renderTools(); } return run(() => clickPond(h.i)); }
 }
 function smartTool(p, own) {
   if (own) { if (p.s === 'dead') return 'plow'; if (p.s === 'empty' || !CROPS[p.c]) return 'plant'; if (isMature(p)) return 'harvest'; }
@@ -1427,7 +1711,7 @@ async function caught(x, y, z, petName) {
     if (items.length) { const [k, have] = rnd(items); n = Math.min(have, CAUGHT_ITEMS); f.wh[k] -= n; it = k; }
     return {lost, it, n};
   });
-  fx3(x, y, z, `🚨 被${petName}抓到了！`, '#d32f2f'); Music.sfx('bad');
+  fx3(x, y, z, `🚨 被${petName}抓到了！`, '#d32f2f'); Music.sfx('bad'); Music.voice(Object.values(PETS).find(p => p.n === petName)?.kind || 'dog');
   toast(`🚨 被${petName}抓到！罰 ${g.lost} 金幣${g.n ? `，倉庫的${itemInfo(g.it).n}被沒收 ${g.n} 個` : ''} 😭`);
 }
 
@@ -1501,7 +1785,7 @@ async function prank(i, key) {
   await txMe(f => { daily(f).prank++; return {}; }); fxPlot(i, key === 'b' ? '🐛 嘿嘿' : '🌾 嘿嘿', '#6a1b9a');
 }
 async function clickAnimal(i) {
-  const a = S.view.ranch.animals[i]; if (!a) return;
+  const a = S.view.ranch.animals[i]; if (!a) return; Music.voice(a.k);
   if (isOwn()) {
     const v = aView(a);
     if (!v.s) { if (isHungry(a) || needFeed(a)) return feedAll(); return toast(plain({type:'ani', i})); }
@@ -1522,6 +1806,63 @@ async function clickAnimal(i) {
   await txMe(f => { f.wh[r.prod] = (f.wh[r.prod] || 0) + 1; bump(f, 'steal'); return {}; });
   fxAni(i, `🥷 +1 ${PROD[r.prod].n}`); Music.sfx('pop');
 }
+async function clickPond(i) {
+  const f = S.view, own = isOwn();
+  if (i >= f.fish.n) { if (own && i === f.fish.n) return buyPond(); return; }
+  const q = f.fish.ponds[i], [x, z] = pondXZ(i);
+  if (own) {
+    if (q.s !== 'grow' || !SEA[q.c]) { if (!S.fry || S.tool !== 'stock') return openFryPicker(i); return stockPond(i); }
+    if (q.g) { const r = await txMe(f2 => { const p2 = f2.fish.ponds[i]; if (!p2.g) return ab('已經乾淨了'); p2.g--; return {up:gainExp(f2, 1)}; }); if (r.abort) return toast(r.msg); fx3(x, 1.3, z, '🧹 撈掉垃圾 +1 經驗', '#0277bd'); return lvToast(r.up); }
+    if (!pondMature(q)) return toast(plain({type:'pond', i}));
+    const r = await txMe(f2 => { const p2 = f2.fish.ponds[i]; if (!pondMature(p2)) return ab('還沒長大'); const c = SEA[p2.c], amt = pondAmt(p2); f2.wh[p2.c] = (f2.wh[p2.c] || 0) + amt; f2.fish.ponds[i] = {s:'empty'}; bump(f2, 'fish'); return {amt, c:p2.c, exp:c.exp, up:gainExp(f2, c.exp)}; });
+    if (r.abort) return toast(r.msg);
+    fx3(x, 1.4, z, `🎣 +${r.amt} ${SEA[r.c].n}`); fx3(x, 1.9, z, `+${r.exp} 經驗`, '#f57c00'); Music.sfx('splash'); lvToast(r.up); return;
+  }
+  const nm = myName();
+  if (q.s === 'grow' && q.g) {
+    const r = await txView(f2 => { const p2 = f2.fish.ponds[i]; if (!p2.g) return ab('已經乾淨了'); p2.g--; addLog(f2, `🧹 ${nm} 幫你撈了魚池的垃圾`); return {}; });
+    if (r.abort) return toast(r.msg); const g = await helpReward(); fx3(x, 1.3, z, g.e ? '🧹 幫忙 +2 經驗' : '🧹 幫忙 +1💰', '#0277bd'); return lvToast(g.up);
+  }
+  const si = pondSteal(q, S.uid);
+  if (!si) return toast(plain({type:'pond', i}));
+  if (!si.can) return toast(si.mine ? '這池你已經撈過了' : '剩下的不能再撈了，留一點給人家吧');
+  const r = await txView(f2 => {
+    const p2 = f2.fish.ponds[i], s2 = pondSteal(p2, S.uid); if (!s2 || !s2.can) return ab('現在不能撈');
+    p2.th = [...(p2.th || []), S.uid]; const pet = guardCheck(f2, nm); if (pet) return {caught:pet};
+    const n = Math.min(s2.avail, 1 + Math.floor(Math.random() * 2)); p2.st = (p2.st || 0) + n; addLog(f2, `🎣 ${nm} 偷撈了你 ${n} 隻${SEA[p2.c].n}`); return {n, c:p2.c};
+  });
+  if (r.abort) return toast(r.msg);
+  if (r.caught) return caught(x, 1.5, z, r.caught);
+  await txMe(f2 => { f2.wh[r.c] = (f2.wh[r.c] || 0) + r.n; bump(f2, 'steal'); return {}; });
+  fx3(x, 1.4, z, `🎣 +${r.n} ${SEA[r.c].n}`); Music.sfx('splash');
+}
+async function stockPond(i) {
+  const id = S.fry, c = SEA[id]; if (!id) return openFryPicker(i);
+  const r = await txMe(f => {
+    const q = f.fish.ponds[i]; if (i >= f.fish.n) return ab('這個魚池還沒開挖'); if (q.s === 'grow' && SEA[q.c]) return ab('這池已經有在養了');
+    if (levelOf(f.exp).L < c.lv) return ab(`Lv.${c.lv} 才能養${c.n}`);
+    let bought = false; if ((f.fry[id] || 0) > 0) f.fry[id]--; else if (f.coins >= c.cost) { f.coins -= c.cost; bought = true; } else return ab(`金幣不夠買${c.n}苗`);
+    f.fish.ponds[i] = {s:'grow', c:id, p:now(), g:0, st:0, th:[], k:0}; return {bought};
+  });
+  if (r.abort) return toast(r.msg);
+  const [x, z] = pondXZ(i); fx3(x, 1.2, z, r.bought ? `🐟 -${c.cost}💰` : '🐟 放養', '#0277bd'); Music.sfx('splash');
+}
+async function buyPond() {
+  const f = S.my, n = f.fish.n + 1;
+  if (n > MAXPOND) return toast('魚池已經全部開挖完了'); if (levelOf(f.exp).L < pondLv(n)) return toast(`要 Lv.${pondLv(n)} 才能開挖第 ${n} 個魚池`); if (f.coins < pondPrice(n)) return toast(`開挖要 ${pondPrice(n)} 金幣，錢不夠喔`);
+  if (!confirm(`花 ${pondPrice(n)} 金幣開挖第 ${n} 個魚池？`)) return;
+  const r = await txMe(f2 => { if (f2.fish.n + 1 !== n) return ab('已經擴建過了'); if (f2.coins < pondPrice(n)) return ab('金幣不夠'); f2.coins -= pondPrice(n); f2.fish.n = n; return {}; });
+  if (r.abort) return toast(r.msg); toast(`🎉 第 ${n} 個魚池挖好了！`);
+}
+function fryRows(mode) {
+  const f = S.my, Lv = levelOf(f.exp).L, cat = S.seaCat || 'fish';
+  return `<div class="cat">${Object.entries(SEA_CAT).map(([k, n]) => `<button class="${cat === k ? 'on' : ''}" data-act="${mode === 'pick' ? 'pickSeaCat' : 'seaCat'}" data-c="${k}">${n}</button>`).join('')}</div>` + Object.entries(SEA).filter(([, c]) => c.cat === cat).map(([id, c]) => {
+    const lock = Lv < c.lv, have = f.fry[id] || 0;
+    const acts = lock ? `<button class="b g" disabled>Lv.${c.lv} 解鎖</button>` : mode === 'pick' ? `<button class="b" data-act="pickFry" data-id="${id}">${have ? `放養（有 ${have}）` : `放養（${c.cost}💰）`}</button>` : `<button class="b o" data-act="buyFry" data-id="${id}" data-n="1">買 1 份 ${c.cost}💰</button><button class="b o" data-act="buyFry" data-id="${id}" data-n="5">買 5 份 ${c.cost * 5}💰</button>`;
+    return `<div class="item ${lock ? 'dim' : ''}"><div class="pic">${lock ? '🔒' : icon('sea', id)}</div><div class="info"><div class="t">${c.n}${have ? ` <small style="color:#8d6e63">（苗 ${have}）</small>` : ''}</div><div class="d">長大 ${fmtDur(c.t * 1000 / SPEED)} · 收成 ${c.y} 隻 · 每隻 ${c.sell}💰 · +${c.exp} 經驗</div></div><div class="acts">${acts}</div></div>`;
+  }).join('');
+}
+function openFryPicker(i) { S.pendingPond = i; S.modal = () => openModal('🐟 選擇要放養的魚苗', `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">選好之後，「放魚苗」工具會記住，連點空魚池就能一直放。</p>${fryRows('pick')}`); S.modal(); }
 async function feedAll() {
   if (!isOwn()) return feedFriend();
   const r = await txMe(f => {
@@ -1577,8 +1918,9 @@ function openShop(tab = 'seed') {
   S.shopTab = tab;
   S.modal = () => {
     const f = S.my, Lv = levelOf(f.exp).L, n = f.plotCount + 1, cap = ranchCap(Lv), cnt = f.ranch.animals.length;
-    let body = `<div class="mtabs">${[['seed','🌱 種子'],['ani','🐔 動物'],['pet','🐶 寵物'],['item','🧰 道具']].map(([k, t]) => `<button class="${tab === k ? 'on' : ''}" data-act="shopTab" data-t="${k}">${t}</button>`).join('')}</div>`;
+    let body = `<div class="mtabs">${[['seed','🌱 種子'],['sea','🐟 魚苗'],['ani','🐔 動物'],['pet','🐶 寵物'],['item','🧰 道具']].map(([k, t]) => `<button class="${tab === k ? 'on' : ''}" data-act="shopTab" data-t="${k}">${t}</button>`).join('')}</div>`;
     if (tab === 'seed') body += seedRows('shop');
+    else if (tab === 'sea') body += `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">共 ${Object.keys(SEA).length} 種魚蝦貝類，養大之後可以賣，也能煮成海鮮料理完成訂單！魚池 ${f.fish.n}/${MAXPOND} 個。</p>` + fryRows('shop');
     else if (tab === 'ani') {
       body += `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">牧場空位：${cnt}/${cap}（升級可以養更多）。動物要吃牧草或飼料，吃飽才會生產；產品好友也能來偷！</p>`;
       body += Object.entries(ANIMALS).map(([k, A]) => { const lock = Lv < A.lv; return `<div class="item ${lock ? 'dim' : ''}"><div class="pic">${lock ? '🔒' : icon('ani', k)}</div><div class="info"><div class="t">${A.n}</div><div class="d">每 ${fmtDur(A.iv * 1000 / SPEED)} 產 1 個${PROD[A.prod].n}（${PROD[A.prod].sell}💰）<br>每次吃 ${A.eat} 份飼料 · +${A.exp} 經驗/個</div></div>
@@ -1600,13 +1942,14 @@ function openShop(tab = 'seed') {
 }
 function openWh() {
   S.modal = () => {
-    const f = S.my; const items = Object.entries(f.wh || {}).filter(([id, n]) => n > 0 && (CROPS[id] || PROD[id]));
-    let body = `<div class="sec">🧺 收成與動物產品</div>`;
+    const f = S.my; const items = Object.entries(f.wh || {}).filter(([id, n]) => n > 0 && isItem(id));
+    let body = `<div class="sec">🧺 收成、動物產品、海鮮</div>`;
     body += items.length ? items.map(([id, n]) => `<div class="item"><div class="pic">${itemIcon(id)}</div><div class="info"><div class="t">${itemInfo(id).n} × ${n}</div><div class="d">每個 ${itemInfo(id).sell}💰，全部 ${n * itemInfo(id).sell}💰${id === 'grass' ? '<br>（留著可以餵動物）' : id === 'manure' ? '<br>（可以當化肥用）' : ''}</div></div><div class="acts"><button class="b o" data-act="sell" data-id="${id}">全部賣出</button></div></div>`).join('')
       + `<button class="b" style="width:100%;padding:10px;font-size:15px" data-act="sellAll">💰 一鍵全部賣出（牧草、有機肥除外）</button>`
       : `<div class="empty">倉庫是空的，快去收成或偷菜吧！</div>`;
     const seeds = Object.entries(f.seeds || {}).filter(([id, n]) => n > 0 && CROPS[id]);
-    body += `<div class="sec">🌱 種子與道具</div><div class="d" style="font-size:14px;line-height:1.8">${[...seeds.map(([id, n]) => `${CROPS[id].n}種子 × ${n}`), `化肥 × ${f.fert || 0}`, `飼料 × ${f.feed || 0}`].join('、')}</div>`;
+    const fry = Object.entries(f.fry || {}).filter(([id, n]) => n > 0 && SEA[id]);
+    body += `<div class="sec">🌱 種子、魚苗與道具</div><div class="d" style="font-size:14px;line-height:1.8">${[...seeds.map(([id, n]) => `${CROPS[id].n}種子 × ${n}`), ...fry.map(([id, n]) => `${SEA[id].n}苗 × ${n}`), `化肥 × ${f.fert || 0}`, `飼料 × ${f.feed || 0}`, `抽抽樂券 × ${f.gacha || 0}`].join('、')}</div>`;
     openModal('📦 倉庫', body);
   };
   S.modal();
@@ -1622,20 +1965,61 @@ async function buyPlot() {
 /* ----- 料理訂單 ----- */
 function openOrders() {
   S.modal = () => {
-    const f = S.my, L = levelOf(f.exp).L;
-    let body = `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">村民來點菜啦！準備好需要的農產品就能完成訂單，拿到大量金幣和經驗。已完成 <b>${f.ordersDone || 0}</b> 張。等級越高訂單越多（目前 ${orderSlots(L)} 張）。</p>`;
+    const f = S.my, L = levelOf(f.exp).L, swaps = DAILY_SWAP - (dailyView(f).swap || 0);
+    let body = `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">村民來點菜啦！把需要的農產品、動物產品、海鮮<b>慢慢收集、分次交貨</b>，交齊就能完成訂單拿大獎勵。已完成 <b>${f.ordersDone || 0}</b> 張，同時可接 ${orderSlots(L)} 張。</p>`;
     if (!f.orders.length) body += '<div class="empty">訂單準備中…</div>';
     body += f.orders.map((o, i) => {
-      const R = RECIPES[o.r], rw = recipeReward(o.r); const ok = Object.entries(R.need).every(([id, n]) => (f.wh[id] || 0) >= n);
-      return `<div class="item ${ok ? 'done' : ''}"><div class="pic" style="font-size:34px">${R.em}</div><div class="info"><div class="t">${R.n}</div>
-        <div class="need">${Object.entries(R.need).map(([id, n]) => `<span class="${(f.wh[id] || 0) >= n ? 'ok' : 'no'}">${itemIcon(id)}${itemInfo(id).n} ${Math.min(f.wh[id] || 0, n)}/${n}</span>`).join('')}</div>
-        <div class="d" style="margin-top:4px">獎勵：💰${rw.c} + ${rw.e} 經驗</div></div>
-        <div class="acts">${ok ? `<button class="b o" data-act="doOrder" data-i="${i}">完成！</button>` : '<button class="b g" disabled>材料不足</button>'}<button class="b g" data-act="skipOrder" data-i="${i}">換一張 10💰</button></div></div>`;
+      const R = RECIPES[o.r], rw = recipeReward(o.r), got = o.got || {}; const tot = Object.values(R.need).reduce((a, b) => a + b, 0), done = Object.entries(R.need).reduce((a, [id, n]) => a + Math.min(n, got[id] || 0), 0);
+      const can = orderLeft(o).some(([id]) => (f.wh[id] || 0) > 0), started = done > 0;
+      return `<div class="item"><div class="pic" style="font-size:34px">${R.em}</div><div class="info"><div class="t">${R.n}</div>
+        <div class="need">${Object.entries(R.need).map(([id, n]) => { const g = Math.min(n, got[id] || 0); return `<span class="${g >= n ? 'ok' : 'no'}" title="倉庫有 ${f.wh[id] || 0}">${itemIcon(id)}${itemInfo(id).n} ${g}/${n}${g < n && f.wh[id] ? ` <small>（倉庫 ${f.wh[id]}）</small>` : ''}</span>`; }).join('')}</div>
+        <div class="bar"><i style="width:${done / tot * 100}%"></i></div><div class="d" style="margin-top:4px">交貨進度 ${done}/${tot} · 獎勵：💰${rw.c} + ${rw.e} 經驗</div></div>
+        <div class="acts">${can ? `<button class="b o" data-act="deliver" data-i="${i}">📦 交貨</button>` : '<button class="b g" disabled>還沒有材料</button>'}${!started && swaps > 0 ? `<button class="b g" data-act="swapOrder" data-i="${i}">換一張（今天剩 ${swaps}）</button>` : ''}</div></div>`;
     }).join('');
     openModal('🍳 料理訂單', body);
   };
   S.modal();
   if (S.my.orders.length < orderSlots(levelOf(S.my.exp).L)) txMe(f => fillOrders(f) ? {} : ab('')).catch(() => {});
+}
+
+/* ----- 升級抽抽樂 ----- */
+function rollGacha(f) {
+  const L = levelOf(f.exp).L, okCrops = Object.keys(CROPS).filter(k => CROPS[k].lv <= L), okSea = Object.keys(SEA).filter(k => SEA[k].lv <= L);
+  const pets = Object.keys(PETS).filter(k => PETS[k].lv <= L + 2 && !f.pets.includes(k)), anis = Object.keys(ANIMALS).filter(k => ANIMALS[k].lv <= L);
+  const table = [['coin', 30], ['fert', 12], ['feed', 12], ['seed', 14], ['fry', okSea.length ? 12 : 0], ['exp', 10], ['ani', anis.length && f.ranch.animals.length < ranchCap(L) ? 5 : 0], ['pet', pets.length ? 3 : 0], ['big', 2]];
+  let x = Math.random() * table.reduce((a, b) => a + b[1], 0), kind = 'coin'; for (const [k, w] of table) { if (x < w) { kind = k; break; } x -= w; }
+  if (kind === 'coin') { const n = Math.round(100 + L * 30 + Math.random() * L * 20); f.coins += n; return {t:`💰 ${n} 金幣`, ic:'💰'}; }
+  if (kind === 'big') { f.coins += 2000; return {t:'🎊 大獎！💰 2000 金幣', ic:'🎊', rare:true}; }
+  if (kind === 'fert') { f.fert = (f.fert || 0) + 3; return {t:'🧪 化肥 ×3', ic:'🧪'}; }
+  if (kind === 'feed') { f.feed = (f.feed || 0) + 20; return {t:'🌾 飼料 ×20', ic:'🌾'}; }
+  if (kind === 'seed') { const k = rnd(okCrops); f.seeds[k] = (f.seeds[k] || 0) + 5; return {t:`🌱 ${CROPS[k].n}種子 ×5`, kind:'crop', id:k}; }
+  if (kind === 'fry') { const k = rnd(okSea); f.fry[k] = (f.fry[k] || 0) + 3; return {t:`🐟 ${SEA[k].n}苗 ×3`, kind:'sea', id:k}; }
+  if (kind === 'exp') { const n = 50 + L * 5; gainExp(f, n); return {t:`⭐ ${n} 經驗`, ic:'⭐'}; }
+  if (kind === 'ani') { const k = rnd(anis), t = now(); f.ranch.animals.push({k, b:t, p:t, fu:t + ivMs(k) * 2, s:0, th:[]}); return {t:`🎁 免費${ANIMALS[k].n}一隻！`, kind:'ani', id:k, rare:true}; }
+  const k = rnd(pets); f.pets.push(k); if (!f.pet) f.pet = k; return {t:`🐾 稀有寵物：${PETS[k].n}！`, kind:'pet', id:k, rare:true};
+}
+function openGacha() {
+  S.modal = () => {
+    const f = S.my, n = f.gacha || 0;
+    openModal('🎰 升級抽抽樂', `<p class="d" style="font-size:13px;color:#8d6e63;text-align:center">每升 1 級就送 1 張抽抽樂券！可能抽到金幣、種子、魚苗、化肥、飼料，運氣好還有<b>免費動物、稀有寵物、2000 金幣大獎</b>！</p>
+      <div class="gm" id="gm"><div class="dome">${Array.from({length:14}, (_, k) => `<i style="left:${8 + (k * 37) % 140}px;top:${30 + Math.floor(k / 4) * 28 + (k % 2) * 8}px;background:${['#ff80ab', '#80d8ff', '#ffe082', '#b9f6ca', '#ea80fc', '#ffab91'][k % 6]}"></i>`).join('')}</div><div class="base"></div><div class="knob"></div><div class="slot"></div></div>
+      <div id="prize"></div>
+      <div style="text-align:center">${n ? `<button class="b o" style="font-size:17px;padding:9px 26px" data-act="drawGacha">轉一次！（剩 ${n} 張）</button>` : '<button class="b g" disabled>沒有抽抽樂券了，升級就會拿到 🎫</button>'}</div>`);
+  };
+  S.modal();
+}
+async function drawGacha() {
+  const r = await txMe(f => { if (!(f.gacha > 0)) return ab('沒有抽抽樂券了'); f.gacha--; bump(f, 'gacha'); return rollGacha(f); });
+  if (r.abort) return toast(r.msg);
+  const keep = S.modal; S.modal = null; await sleep(30);
+  const gm = $('#gm'); if (gm) { gm.classList.add('spin'); gm.insertAdjacentHTML('beforeend', ''); }
+  Music.sfx('pop'); await sleep(1100);
+  if (gm) gm.insertAdjacentHTML('beforeend', '<div class="cap"></div>');
+  await sleep(700);
+  const pic = r.kind ? icon(r.kind, r.id) : r.ic;
+  if ($('#prize')) $('#prize').innerHTML = `<div class="prize"><div class="pic">${pic}</div><div><div class="d" style="color:#8d6e63">${r.rare ? '✨ 超幸運！' : '恭喜抽到'}</div><b>${esc(r.t)}</b></div></div>`;
+  Music.sfx('coin'); toast(`🎰 抽到 ${r.t}`);
+  await sleep(1500); S.modal = keep; const pz = $('#prize')?.innerHTML; rerenderModal(); if ($('#prize') && pz) $('#prize').innerHTML = pz;
 }
 
 /* ----- 任務、轉盤 ----- */
@@ -1711,7 +2095,7 @@ function openGift(uid) {
   const fr = S.friends.find(x => x.uid === uid); if (!fr) return;
   S.giftTo = uid;
   S.modal = () => {
-    const items = Object.entries(S.my.wh || {}).filter(([id, n]) => n > 0 && (CROPS[id] || PROD[id]));
+    const items = Object.entries(S.my.wh || {}).filter(([id, n]) => n > 0 && isItem(id));
     openModal(`🎁 送禮給 ${dn(fr.farm)}`, `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">從倉庫挑東西送給好友，他上線後在「消息」就能收下。</p>` + (items.length ? `<div class="grid">${items.map(([id, n]) => `<div class="item" style="flex-direction:column;text-align:center"><div class="pic">${itemIcon(id)}</div><div class="t" style="font-size:13px">${itemInfo(id).n} ×${n}</div><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center">${[1, 5, 10].filter(k => k <= n).map(k => `<button class="b o" data-act="sendGift" data-id="${id}" data-n="${k}">送${k}</button>`).join('')}${n > 10 ? `<button class="b o" data-act="sendGift" data-id="${id}" data-n="${n}">全部</button>` : ''}</div></div>`).join('')}</div>` : '<div class="empty">倉庫是空的，先去收成吧！</div>'));
   };
   S.modal();
@@ -1768,20 +2152,22 @@ function openHelp() {
     <p>🌱 <b>種菜</b>：共 ${Object.keys(CROPS).length} 種作物，有蔬菜、水果、花、果樹、草穀。選「播種」挑種子，點田地就能種。✋「手」會自動收成、翻地、播種或照顧作物。</p>
     <p>💧🌿🐞 <b>照顧</b>：作物會缺水、長草、長蟲，每個問題減產 10%。</p>
     <p>🐮 <b>牧場</b>：${Object.keys(ANIMALS).length} 種動物，吃<b>牧草</b>或<b>飼料</b>才會生產。產品可以賣錢、煮料理；馬會產有機肥料。</p>
-    <p>🍳 <b>料理訂單</b>：村民會點菜，湊齊需要的農產品就能完成，獎勵很多！</p>
+    <p>🐟 <b>魚塭</b>：${Object.keys(SEA).length} 種魚蝦貝類（吳郭魚、鮭魚、鮪魚、龍蝦、帝王蟹、牡蠣、海膽、章魚…），放魚苗養大就能撈。水面有垃圾記得撈掉。</p>
+    <p>🍳 <b>料理訂單</b>：村民會點菜，把需要的材料<b>慢慢收集、分次交貨</b>，交齊就能拿大獎勵，不能用錢買。</p>
+    <p>🎰 <b>升級抽抽樂</b>：每升 1 級送 1 張抽抽樂券，有機會抽到稀有寵物、免費動物和大獎。</p>
     <p>🥷 <b>偷東西</b>：到好友家偷成熟的菜和動物產品。小心好友的狗貓！<b>被抓到會罰 ${CAUGHT_COINS} 金幣，倉庫隨機一樣東西被沒收 ${CAUGHT_ITEMS} 個</b>。</p>
     <p>🐶🐱 <b>寵物</b>：${Object.values(PETS).filter(p => p.kind === 'dog').length} 種狗、${Object.values(PETS).filter(p => p.kind === 'cat').length} 種貓，買了都會在農場 3D 巡邏。選一隻顧家抓小偷；貓還會幫忙抓蟲。</p>
     <p>🤝 <b>好友互動</b>：幫好友澆水、拔草、除蟲、清便便、<b>用你的飼料幫好友餵動物</b>，都能拿經驗。也可以從倉庫<b>送禮</b>給好友。惡作劇：放蟲、種草（每天 ${DAILY_PRANK} 次）。</p>
     <p>👥 <b>多人連線</b>：🟢 是在線上的好友。走到誰家，大家都會看到你的 3D 小人，按 💬 可以說話。</p>
     <p>📋 <b>每日任務</b>：每天 5 個任務＋幸運轉盤＋簽到金幣。</p>
-    <p>🎵 右上角可以開關背景音樂。</p></div>`);
+    <p>🎵 右上角可以開關背景音樂、鳥叫聲和動物叫聲。</p></div>`);
 }
 
 /* ================= 按鈕 ================= */
 let authMode = 'login';
 const ACT = {
   authTab(d) { authMode = d.t; document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === d.t)); $('#aPass2Wrap').hidden = d.t !== 'reg'; $('#aGo').textContent = d.t === 'reg' ? '註冊並開始' : '開始種田'; $('#aPass').autocomplete = d.t === 'reg' ? 'new-password' : 'current-password'; $('#authErr').textContent = ''; },
-  tool(d) { if (d.t === 'plant' && (!S.seed || S.tool === 'plant')) { S.tool = 'plant'; renderTools(); return openSeedPicker(-1); } S.tool = d.t; renderTools(); },
+  tool(d) { if (d.t === 'plant' && (!S.seed || S.tool === 'plant')) { S.tool = 'plant'; renderTools(); return openSeedPicker(-1); } if (d.t === 'stock' && (!S.fry || S.tool === 'stock')) { S.tool = 'stock'; renderTools(); return openFryPicker(-1); } S.tool = d.t; renderTools(); },
   scene(d) { S.scene = d.s; S.tool = 'hand'; S.hover = null; $('#tip').style.display = 'none'; setCam(d.s); renderTools(); renderScene(); },
   feedAll() { return run(feedAll); }, feedFriend() { return run(feedFriend); },
   buyAni() { openShop('ani'); }, cleanTip() { toast('點牧場上的 💩 就能幫好友清掉，拿經驗！'); },
@@ -1794,12 +2180,31 @@ const ACT = {
   spin() { return run(doSpin); },
   gift(d) { openGift(d.uid); }, sendGift(d) { return run(() => sendGift(d.id, +d.n)); },
   async takeGift(d) { const g = await B.takeGift(d.id); if (!g) { toast('這份禮物已經收過了'); return refreshFriends(); } await txMe(f => { f.wh[g.item] = (f.wh[g.item] || 0) + g.n; return {}; }); S.gifts = S.gifts.filter(x => x.id !== d.id); toast(`🎁 收下了 ${g.n} 個${itemInfo(g.item).n}！`); Music.sfx('coin'); rerenderModal(); renderTop(); },
-  async doOrder(d) {
+  async deliver(d) {
     const i = +d.i, o = S.my.orders[i]; if (!o) return;
-    const r = await txMe(f => { const x = f.orders[i]; if (!x || x.r !== o.r) return ab('訂單已經變了，請再看一次'); const R = RECIPES[x.r]; for (const [id, n] of Object.entries(R.need)) if ((f.wh[id] || 0) < n) return ab(`${itemInfo(id).n}不夠`); for (const [id, n] of Object.entries(R.need)) f.wh[id] -= n; const rw = recipeReward(x.r); f.coins += rw.c; const up = gainExp(f, rw.e); f.orders.splice(i, 1); f.ordersDone = (f.ordersDone || 0) + 1; bump(f, 'order'); fillOrders(f); return {rw, up, n:R.n}; });
-    if (r.abort) return toast(r.msg); toast(`🍳 ${r.n}完成！獲得 💰${r.rw.c} + ${r.rw.e} 經驗`); Music.sfx('coin'); lvToast(r.up);
+    const r = await txMe(f => {
+      const x = f.orders[i]; if (!x || x.r !== o.r) return ab('訂單已經變了，請再看一次'); x.got ??= {};
+      let moved = 0; for (const [id, n] of orderLeft(x)) { const give = Math.min(n, f.wh[id] || 0); if (give > 0) { f.wh[id] -= give; x.got[id] = (x.got[id] || 0) + give; moved += give; } }
+      if (!moved) return ab('倉庫裡沒有這張訂單需要的東西');
+      if (orderLeft(x).length) return {moved, done:false};
+      const rw = recipeReward(x.r), R = RECIPES[x.r]; f.coins += rw.c; const up = gainExp(f, rw.e); f.orders.splice(i, 1); f.ordersDone = (f.ordersDone || 0) + 1; bump(f, 'order'); fillOrders(f); return {moved, done:true, rw, up, n:R.n};
+    });
+    if (r.abort) return toast(r.msg);
+    if (r.done) { toast(`🍳 ${r.n}完成！獲得 💰${r.rw.c} + ${r.rw.e} 經驗`); Music.sfx('coin'); lvToast(r.up); }
+    else { toast(`📦 交了 ${r.moved} 份材料，繼續收集吧！`); Music.sfx('pop'); }
   },
-  async skipOrder(d) { const i = +d.i; const r = await txMe(f => { if (!f.orders[i]) return ab('沒有這張訂單'); if (f.coins < 10) return ab('金幣不夠'); f.coins -= 10; f.orders.splice(i, 1); fillOrders(f); return {}; }); if (r.abort) toast(r.msg); },
+  async swapOrder(d) {
+    const i = +d.i;
+    const r = await txMe(f => { const x = f.orders[i]; if (!x) return ab('沒有這張訂單'); if (Object.values(x.got || {}).some(v => v > 0)) return ab('已經交過貨的訂單不能換'); const dd = daily(f); if ((dd.swap || 0) >= DAILY_SWAP) return ab('今天換單次數用完了'); dd.swap = (dd.swap || 0) + 1; f.orders.splice(i, 1); fillOrders(f); return {}; });
+    if (r.abort) toast(r.msg);
+  },
+  gacha: openGacha, drawGacha() { return run(drawGacha); },
+  stock(d) {}, sellSea() { return ACT.sellSeafood(); }, buyPond() { return run(buyPond); },
+  cleanTip2() { toast('點魚池水面上的垃圾就能幫好友撈掉，拿經驗！'); },
+  seaCat(d) { S.seaCat = d.c; openShop('sea'); }, pickSeaCat(d) { S.seaCat = d.c; openFryPicker(S.pendingPond); },
+  async pickFry(d) { const c = SEA[d.id]; if (!(S.my.fry[d.id] > 0) && S.my.coins < c.cost) return toast(`金幣不夠買${c.n}苗`); S.fry = d.id; S.tool = 'stock'; closeModal(); renderTools(); const i = S.pendingPond; S.pendingPond = -1; if (i >= 0 && isOwn()) run(() => stockPond(i)); else toast(`已選擇${c.n}苗，點空魚池放養`); },
+  async buyFry(d) { const c = SEA[d.id], n = +d.n; const r = await txMe(f => { if (f.coins < c.cost * n) return ab('金幣不夠'); f.coins -= c.cost * n; f.fry[d.id] = (f.fry[d.id] || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 份${c.n}苗`); },
+  async sellSeafood() { const r = await txMe(f => { let g = 0; for (const id of Object.keys(SEA)) { const n = f.wh[id] || 0; if (n) { g += n * SEA[id].sell; f.wh[id] = 0; } } if (!g) return ab('倉庫裡沒有海鮮'); bump(f, 'sell'); return {g}; }); if (r.abort) return toast(r.msg); toast(`海鮮全部賣出，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); },
   async claim(d) { const T = TASKS[d.k]; const r = await txMe(f => { const dd = daily(f); if (dd.cl.includes(d.k)) return ab('已經領過了'); if ((dd.t[d.k] || 0) < T.need) return ab('還沒完成'); dd.cl.push(d.k); f.coins += T.c; return {up:gainExp(f, T.e)}; }); if (r.abort) return toast(r.msg); toast(`✅ 任務獎勵：${T.c} 金幣 + ${T.e} 經驗`); Music.sfx('coin'); lvToast(r.up); },
   async claimBonus() { const r = await txMe(f => { const dd = daily(f); if (dd.bonus) return ab('已經領過了'); if (dd.cl.length < 5) return ab('還有任務沒完成'); dd.bonus = true; f.coins += 100; f.fert = (f.fert || 0) + 2; f.feed = (f.feed || 0) + 10; return {}; }); toast(r.abort ? r.msg : '🎁 大獎到手：100 金幣、化肥×2、飼料×10！'); },
   async saveNick() { const v = ($('#nickIn')?.value || '').trim(); if ([...v].length > 10) return toast('名字最多 10 個字'); if (/[<>]/.test(v)) return toast('名字不能有 < 或 >'); await txMe(f => { f.nick = v; return {}; }); beat(); toast(v ? `名字改成「${v}」了！` : '已改回用帳號當名字'); },
@@ -1824,7 +2229,7 @@ const ACT = {
   async setPet(d) { await txMe(f => { if (!f.pets.includes(d.k)) return ab('還沒有這隻寵物'); f.pet = d.k; return {}; }); toast(`${PETS[d.k].n}負責顧家了！`); },
   buyPlot() { return run(buyPlot); },
   async sell(d) { const r = await txMe(f => { const n = f.wh[d.id] || 0; if (!n) return ab('沒有可以賣的'); const g = n * itemInfo(d.id).sell; f.coins += g; f.wh[d.id] = 0; bump(f, 'sell'); return {n, g}; }); if (r.abort) return toast(r.msg); toast(`賣出 ${r.n} 個${itemInfo(d.id).n}，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); },
-  async sellAll() { const r = await txMe(f => { let g = 0; for (const [id, n] of Object.entries(f.wh || {})) { if (id === 'grass' || id === 'manure' || !n || !(CROPS[id] || PROD[id])) continue; g += n * itemInfo(id).sell; f.wh[id] = 0; } if (!g) return ab('沒有可以賣的'); bump(f, 'sell'); return {g}; }); if (r.abort) return toast(r.msg); toast(`全部賣出，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); },
+  async sellAll() { const r = await txMe(f => { let g = 0; for (const [id, n] of Object.entries(f.wh || {})) { if (id === 'grass' || id === 'manure' || !n || !isItem(id)) continue; g += n * itemInfo(id).sell; f.wh[id] = 0; } if (!g) return ab('沒有可以賣的'); bump(f, 'sell'); return {g}; }); if (r.abort) return toast(r.msg); toast(`全部賣出，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); },
   async sellProducts() { const r = await txMe(f => { let g = 0; for (const id of Object.keys(PROD)) { if (id === 'manure') continue; const n = f.wh[id] || 0; if (n) { g += n * PROD[id].sell; f.wh[id] = 0; } } if (!g) return ab('倉庫裡沒有動物產品'); bump(f, 'sell'); return {g}; }); if (r.abort) return toast(r.msg); toast(`動物產品全部賣出，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); },
   addFriend, async addUid(d) { await sendFriendReq(d.uid, d.n); },
   async accept(d) { const r = S.reqs.find(x => x.id === d.id); if (r) await acceptReq(r); },
@@ -1900,9 +2305,15 @@ function visit(uid) {
   S.unsubView = B.watch(uid, nf => { if (S.viewUid !== uid) return; S.view = normalize(nf); if (!nf) { toast('找不到這個農場'); return goHome(); } renderScene(); renderTools(); });
   if (!dailyView(S.my).vis.includes(uid)) txMe(f => { const d = daily(f); if (d.vis.includes(uid)) return ab(''); d.vis.push(uid); bump(f, 'visit'); return {}; }).catch(() => {});
 }
-function resetSceneKeys() { if (!W.scene) return; W.plots.forEach(P => P.key = null); W.aniKey = null; W.petKey = null; }
+function resetSceneKeys() { if (!W.scene) return; W.plots.forEach(P => P.key = null); W.ponds.forEach(P => P.key = null); W.aniKey = null; W.petKey = null; }
 
 setInterval(() => { if (S.view) renderScene(); }, 1000);
+setInterval(() => {
+  if (!S.view || document.hidden || !Music.wanted || !Music.on) return;
+  if (S.scene === 'ranch') { const list = S.view.ranch.animals; if (list.length && Math.random() < .5) Music.voice(rnd(list).k); }
+  else if (Math.random() < .45) Music.chirp();
+  if (Math.random() < .08 && S.view.pets?.length) Music.voice(PETS[rnd(S.view.pets)]?.kind || 'dog');
+}, 3200);
 setInterval(async () => { if (!S.my || S.busy) return; if (tickOwn(normalize(clone(S.my)))) { try { await txMe(f => tickOwn(f) ? {} : ab('')); } catch {} } }, 5000);
 setInterval(() => { if (S.my) beat(); }, 25000);
 setInterval(() => { if (S.my) refreshFriends(); }, 20000);
