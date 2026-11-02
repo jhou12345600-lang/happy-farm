@@ -1309,6 +1309,10 @@ function projectTo(el, p, w, h, dy = 0, extra = '') {
 }
 
 /* ----- 同步：資料 → 3D ----- */
+function buildMarker() {
+  const m = grp(blk('#8d5a2b', [.07, .55, .07], [0, .27, 0]), blk('#43a047', [.46, .4, .06], [0, .62, 0]), blk('#ffffff', [.28, .07, .07], [0, .62, 0]), blk('#ffffff', [.07, .28, .07], [0, .62, 0]));
+  m.position.set(.75, 0, .75); m.rotation.y = -.5; return m;
+}
 function plotKey(f, i, own) {
   if (i >= f.plotCount) return own && i === f.plotCount ? 'next' : 'lock';
   const p = f.plots[i]; if (p.s === 'empty' || !CROPS[p.c]) return 'e'; if (p.s === 'dead') return 'd';
@@ -1319,6 +1323,7 @@ function rebuildPlot(P, i, key, p) {
   const locked = key === 'lock' || key === 'next';
   P.soil.material = mat(locked ? (key === 'next' ? '#a9dd73' : '#86c55a') : p && p.d ? '#c39a64' : '#8b5a2b');
   P.soil.scale.y = locked ? .14 : .32; P.soil.position.y = locked ? .07 : .16; P.furrows.visible = !locked; P.content.position.y = locked ? .14 : .32;
+  if (key === 'next') P.content.add(buildMarker());
   if (locked || key === 'e') return;
   if (key === 'd') { P.content.add(deadModel()); return; }
   const st = stageOf(p), plant = st === 0 ? seedsModel() : st === 1 ? sproutModel() : st === 2 ? cropCluster(p.c, false, .75) : cropCluster(p.c, true, 1);
@@ -1332,7 +1337,6 @@ function syncField(f, own) {
   for (let i = 0; i < MAXP; i++) {
     const P = W.plots[i], key = plotKey(f, i, own);
     if (P.key !== key) { P.key = key; rebuildPlot(P, i, key, f.plots[i]); }
-    if (key === 'next') { const [x, z] = plotXZ(i); ov('next' + i, '＋擴建', v => v.set(x, .8, z), 'buy'); }
   }
 }
 function syncRanch(f, own) {
@@ -1356,7 +1360,7 @@ function syncRanch(f, own) {
   W.poops.forEach((p, k) => p.visible = k < Math.min(f.ranch.poop || 0, MAX_POOP));
   const hay = (f.wh.grass || 0) + (f.feed || 0); W.hay.visible = !own || hay > 0;
   if (own) ov('trough', `🌾 飼料槽 ${hay}`, v => v.set(TROUGH_XZ[0], 1.4, TROUGH_XZ[1]), 'tag');
-  if (!list.length && own) ov('noani', '牧場空空的～去商店「動物」買小雞吧 🐣', v => v.set(24, 1, 0), 'bub');
+  if (!list.length && own) ov('noani', '🐣 去商店買動物', v => v.set(24, .6, 0), 'tag');
 }
 function pondKey(f, i, own) {
   if (i >= f.fish.n) return own && i === f.fish.n ? 'next' : 'lock';
@@ -1368,6 +1372,7 @@ function rebuildPond(P, i, key, q) {
   const locked = key === 'lock' || key === 'next';
   P.cover.visible = locked; P.water.visible = P.bottom.visible = P.rim.visible = !locked;
   P.cover.material = mat(key === 'next' ? '#a9dd73' : '#86c55a');
+  if (key === 'next') { const mk = buildMarker(); mk.position.set(1.2, .12, 1.2); P.content.add(mk); }
   if (locked || key === 'e') return;
   const st = pondStage(q), sc = [.4, .6, .82, 1][st], sp = SEA[q.c].m, n = st === 3 ? 5 : 4;
   for (let k = 0; k < n; k++) {
@@ -1384,7 +1389,6 @@ function syncFish(f, own) {
   for (let i = 0; i < MAXPOND; i++) {
     const P = W.ponds[i], key = pondKey(f, i, own);
     if (P.key !== key) { P.key = key; rebuildPond(P, i, key, f.fish.ponds[i]); }
-    if (key === 'next') { const [x, z] = pondXZ(i); ov('pnext' + i, '＋擴建魚池', v => v.set(x, .9, z), 'buy'); }
   }
 }
 function syncPets(f) {
