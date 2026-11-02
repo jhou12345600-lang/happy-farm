@@ -85,9 +85,9 @@ button{font-family:inherit;cursor:pointer;border:none}
 .menu button{background:#fff3d6;border:2px solid #e0c99d;border-radius:14px;padding:14px 6px;font-size:15px;font-weight:900;color:#5d3a12;position:relative}
 #tut{position:fixed;inset:0;z-index:15;pointer-events:none}
 #tut.dim{background:rgba(20,12,4,.38)}
-#tutRing{position:absolute;border:4px solid #ffeb3b;border-radius:14px;box-shadow:0 0 0 4000px rgba(20,12,4,.38),0 0 18px 4px #ffeb3b;animation:tring 1.1s ease-in-out infinite;transition:left .2s,top .2s,width .2s,height .2s}
+#tutRing{position:absolute;pointer-events:auto;cursor:pointer;border:4px solid #ffeb3b;border-radius:14px;box-shadow:0 0 0 4000px rgba(20,12,4,.38),0 0 18px 4px #ffeb3b;animation:tring 1.1s ease-in-out infinite;transition:left .2s,top .2s,width .2s,height .2s}
 @keyframes tring{50%{border-color:#ff9800;box-shadow:0 0 0 4000px rgba(20,12,4,.38),0 0 26px 8px #ffc107}}
-#tutHand{position:absolute;font-size:34px;animation:thand .8s ease-in-out infinite;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+#tutHand{position:absolute;pointer-events:auto;cursor:pointer;font-size:34px;animation:thand .8s ease-in-out infinite;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
 @keyframes thand{50%{transform:translateY(-8px)}}
 #tutCard{pointer-events:auto;position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:min(94vw,460px);background:#fffaf0;border:4px solid #8d5a2b;border-radius:18px;box-shadow:0 6px 0 #6b3f1d,0 10px 30px rgba(0,0,0,.35);padding:10px 12px;animation:tcin .25s ease-out}
 @keyframes tcin{from{opacity:0;transform:translate(-50%,10px)}}
@@ -3458,7 +3458,7 @@ function clickMach(i) {
 const TUT_GIFT = {c:500, seed:'carrot', sn:5, fert:3, petfood:2};
 const modalIs = w => !$('#modal').hidden && $('#mt').textContent.includes(w);
 const firstPlot = (f, fn) => { for (let i = 0; i < f.plotCount; i++) if (fn(f.plots[i])) return i; return -1; };
-const plotW = i => { const [x, z] = plotXZ(i); return {world:[x, .5, z]}; };
+const plotW = i => { const [x, z] = plotXZ(i); return {world:[x, .5, z], plot:i}; };
 const TUT = [
   {t:'歡迎來到歡樂農場！', d:'嗨～我是你的主角 👋 接下來帶你一步一步認識農場，照著做完還有 <b>新手禮包</b> 🎁 可以拿喔！'},
   {t:'轉動視角', d:'用手指<b>拖曳畫面</b>可以旋轉，<b>兩指捏合</b>（電腦用滾輪）可以拉近拉遠。左上角可以切換「🌾 農場／🐮 牧場／🐟 魚塭／🏭 工廠」。', el:'#sceneTabs'},
@@ -3507,6 +3507,13 @@ function renderTutBtns() {
   $('#tutNext').disabled = wait; $('#tutSkip').textContent = wait ? '略過這步' : '跳過教學'; $('#tutSkip').dataset.act = wait ? 'tutStep' : 'tutSkip';
   $('#tutSkip').hidden = !!st.final;
 }
+function tutTap(e) {
+  e.preventDefault(); e.stopPropagation(); Music.kick();
+  const tg = TS.tg; if (!TS.on || !tg) return;
+  if (typeof tg === 'string') { const el = document.querySelector(tg); if (el && !el.disabled) el.click(); }
+  else if (tg.plot != null) clickHit({type:'tile', i:tg.plot});
+}
+['#tutRing', '#tutHand'].forEach(id => $(id).addEventListener('click', tutTap));
 function tickTut() {
   if (!TS.on) return; const st = TUT[TS.i];
   if (st.act && !TS.ok) {
@@ -3514,12 +3521,12 @@ function tickTut() {
     if (ok) { TS.ok = true; renderTutBtns(); Music.sfx('coin'); if (!st.modal && !TS.adv) { TS.adv = true; setTimeout(() => { if (TS.on && TUT[TS.i] === st) nextTut(); }, 900); } else $('#tutD').innerHTML += '<div style="color:#2e7d32;font-weight:900;margin-top:4px">👍 很好！看完按「下一步」</div>'; }
   }
   // 亮框位置
-  let tg = st.act && TS.ok && st.modal ? null : typeof st.el === 'function' ? st.el() : st.el, r = null;
+  let tg = st.act && TS.ok && st.modal ? null : typeof st.el === 'function' ? st.el() : st.el, r = null; TS.tg = st.act ? tg : null;
   if (typeof tg === 'string') { const el = document.querySelector(tg); if (el && el.offsetParent !== null) r = el.getBoundingClientRect(); }
   else if (tg && tg.world && W.camera) { const v = new THREE.Vector3(...tg.world).project(W.camera), cr = W.renderer.domElement.getBoundingClientRect(); const x = cr.left + (v.x * .5 + .5) * cr.width, y = cr.top + (-v.y * .5 + .5) * cr.height; r = {left:x - 42, top:y - 38, width:84, height:76}; }
   const ring = $('#tutRing'), hand = $('#tutHand'), card = $('#tutCard');
   if (r && r.width) {
-    ring.hidden = hand.hidden = false; $('#tut').classList.remove('dim');
+    ring.hidden = hand.hidden = false; $('#tut').classList.remove('dim'); ring.style.pointerEvents = hand.style.pointerEvents = TS.tg ? 'auto' : 'none';
     Object.assign(ring.style, {left:r.left - 6 + 'px', top:r.top - 6 + 'px', width:r.width + 12 + 'px', height:r.height + 12 + 'px'});
     hand.style.left = r.left + r.width / 2 - 14 + 'px'; hand.style.top = (r.top + r.height / 2 > innerHeight * .5 ? r.top - 46 : r.top + r.height + 4) + 'px'; hand.textContent = r.top + r.height / 2 > innerHeight * .5 ? '👇' : '👆';
     card.classList.toggle('top', r.top + r.height / 2 > innerHeight * .48);
