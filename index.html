@@ -51,7 +51,7 @@ button{font-family:inherit;cursor:pointer;border:none}
 .btns button:active{transform:translateY(2px);box-shadow:0 1px 0 #c9a46a}
 .badge{position:absolute;top:-6px;right:-6px;background:#e53935;color:#fff;font-style:normal;font-size:11px;min-width:18px;height:18px;border-radius:9px;display:none;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff}
 .badge.on{display:flex}
-#visitBar{background:#fff3cd;color:#7a4b24;text-align:center;padding:6px;font-size:14px;font-weight:700;border-bottom:2px solid #e0c99d;display:flex;align-items:center;justify-content:center;gap:10px}
+#visitBar{position:absolute;left:8px;top:84px;z-index:2;background:#fff3cd;color:#7a4b24;padding:4px 6px 4px 12px;font-size:14px;font-weight:700;border:2px solid #e0c99d;border-radius:14px;display:flex;align-items:center;gap:8px;box-shadow:0 2px 6px rgba(0,0,0,.18);max-width:calc(100% - 16px)}
 #visitBar button{background:#4caf50;color:#fff;border-radius:10px;padding:4px 12px;font-weight:700;box-shadow:0 2px 0 #2e7d32}
 #stage{flex:1;position:relative;min-height:0;overflow:hidden;background:#9fd8ff}
 #stage canvas{display:block;width:100%;height:100%;touch-action:none}
@@ -215,6 +215,7 @@ button{font-family:inherit;cursor:pointer;border:none}
   #sceneTabs button{padding:5px 7px;font-size:12px}
   #wx{top:44px;max-width:74%}
   #wx button{font-size:11px;padding:2px 7px}
+  #visitBar{top:72px;font-size:13px}
   #chatBtn{width:46px;height:46px;font-size:21px}
   #hint{display:none}
   .ov.need{font-size:13px;padding:0 4px;border-width:2px;border-radius:10px;gap:1px}
@@ -258,12 +259,12 @@ button{font-family:inherit;cursor:pointer;border:none}
       <button data-act="more">☰<span>更多</span><em class="badge" id="bdX"></em></button>
     </div>
   </header>
-  <div id="visitBar" hidden><span>你正在 <b id="visitName"></b> 的家 👀</span><button data-act="home">🏠 回家</button></div>
   <div id="stage">
     <div id="loading">🚜 正在載入 3D 農場…</div>
     <div id="ovl"></div>
     <div id="sceneTabs"><button data-act="scene" data-s="farm" class="on">🌾 農場</button><button data-act="scene" data-s="ranch">🐮 牧場</button><button data-act="scene" data-s="fish">🐟 魚塭</button><button data-act="scene" data-s="factory">🏭 工廠</button></div>
     <div id="wx"></div>
+    <div id="visitBar" hidden><span>👀 在 <b id="visitName"></b> 的家</span><button data-act="home">🏠 回家</button></div>
     <div id="hereBox" hidden></div>
     <div id="hint">🖱️ 拖曳旋轉視角、滾輪縮放</div>
     <button id="chatBtn" data-act="chat" title="說話">💬</button>
@@ -669,7 +670,7 @@ const ranchCap = L => Math.min(16, 2 + Math.ceil(L / 2));
 const orderSlots = L => 3 + (L >= 6) + (L >= 12) + (L >= 18);
 const DAILY_SWAP = 3;
 const DAILY_HELP_EXP = 80, DAILY_PRANK = 10, SIGN_COINS = 100, KEEP_RATIO = 0.6;
-const PHRASES = ['嗨～大家好 👋', '我來偷菜囉 😈', '謝謝你幫忙！🙏', '你的菜好漂亮 🥬', '快來我家玩！🏡', '送你禮物 🎁', '哈哈哈 😂', '晚安 🌙', '加油 💪'];
+const PHRASES = ['👋 揮手打招呼', '嗨～大家好 👋', '我來偷菜囉 😈', '謝謝你幫忙！🙏', '你的菜好漂亮 🥬', '快來我家玩！🏡', '送你禮物 🎁', '哈哈哈 😂', '晚安 🌙', '加油 💪'];
 
 /* ================= 小工具 ================= */
 const $ = s => document.querySelector(s);
@@ -916,7 +917,7 @@ function tickOwn(f, msgs) {
 
 /* ================= 後台：單機測試版 ================= */
 function makeLocal() {
-  const K = 'hf_local_db', SK = 'hf_local_sess', PK = 'hf_local_pres';
+  const K = 'hf_local_db', SK = 'hf_local_sess' + (QS.get('tab') || ''), PK = 'hf_local_pres';
   const load = () => { let d; try { d = JSON.parse(store.getItem(K)) || {}; } catch { d = {}; } d.users ??= {}; d.names ??= {}; d.farms ??= {}; d.req ??= {}; d.gifts ??= {}; d.coops ??= {}; return d; };
   const loadP = () => { try { return JSON.parse(store.getItem(PK)) || {}; } catch { return {}; } };
   let db = load(); const watchers = new Set(), pw = new Set(); let authCb = null;
@@ -1756,9 +1757,10 @@ function syncFactory(f, own) {
   MACH_KEYS.forEach((k, i) => {
     const P = W.machs[i], has = !!f.fac?.own?.[k], key = has ? 'own' : own && L >= MACH[k].lv ? 'buy' : own ? 'lock' : 'none';
     if (P.key !== key) {
-      P.key = key; P.content.clear(); P.m = null;
-      if (has) { P.m = machineModel(k); P.content.add(P.m); }
-      else if (key === 'buy') { P.content.add(ghostOf(machineModel(k))); const mk = buildMarker(); mk.position.set(1.25, 0, 1.25); P.content.add(mk); }
+      if ((key === 'own' && !P.ownM || key === 'buy' && !P.ghostM) && !take()) { P.content.visible = false; return; }
+      P.key = key; P.content.clear(); P.m = null; P.content.visible = true;
+      if (has) { P.m = P.ownM ||= machineModel(k); P.content.add(P.m); }
+      else if (key === 'buy') { P.ghostM ||= ghostOf(machineModel(k)); if (!P.mk) { P.mk = buildMarker(); P.mk.position.set(1.25, 0, 1.25); } P.content.add(P.ghostM, P.mk); }
       P.pad.material = mat(key === 'buy' ? '#bcd99a' : key === 'own' ? '#b0a99f' : '#a5a5a5');
     }
     const v = jobsView(f.fac?.q?.[k]), done = v.filter(j => j.e <= now());
@@ -1932,6 +1934,43 @@ function syncFest() {
   G.traverse(o => { if (o.isMesh) o.castShadow = false; });
 }
 
+function mergeLocal(root) {
+  root.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(root.matrixWorld).invert(), groups = new Map(), mw = new THREE.Matrix4();
+  root.traverse(o => { if (o.isMesh && !o.isInstancedMesh && !Array.isArray(o.material) && !o.material.map && o.geometry.attributes.position) { let g = groups.get(o.material); if (!g) groups.set(o.material, g = []); g.push(o); } });
+  const v = new THREE.Vector3(), nm = new THREE.Matrix3();
+  for (const [m, list] of groups) {
+    if (list.length < 2) continue; let n = 0; const geos = list.map(o => { const geo = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry; n += geo.attributes.position.count; return geo; });
+    const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3); let off = 0;
+    list.forEach((o, k) => { const geo = geos[k], Pa = geo.attributes.position, Na = geo.attributes.normal; mw.multiplyMatrices(inv, o.matrixWorld); nm.getNormalMatrix(mw);
+      for (let i = 0; i < Pa.count; i++, off++) { v.fromBufferAttribute(Pa, i).applyMatrix4(mw); pos[off * 3] = v.x; pos[off * 3 + 1] = v.y; pos[off * 3 + 2] = v.z; if (Na) { v.fromBufferAttribute(Na, i).applyMatrix3(nm).normalize(); nor[off * 3] = v.x; nor[off * 3 + 1] = v.y; nor[off * 3 + 2] = v.z; } }
+      o.parent.remove(o); });
+    const bg = new THREE.BufferGeometry(); bg.setAttribute('position', new THREE.BufferAttribute(pos, 3)); bg.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); bg.computeBoundingSphere();
+    const mm = new THREE.Mesh(bg, m); mm.castShadow = list.some(o => o.castShadow); mm.receiveShadow = true; root.add(mm);
+  }
+  return root;
+}
+function mergeStatic(S3) {
+  const keep = new Set([W.sky, W.sunBall, W.blades, W.trough, W.animalsG, W.petsG, W.peopleG, W.hoverRing, W.farmSign, W.ranchSign, W.fishSign, W.facSign, W.festSign, W.festG, W.stars, W.moon, W.rain, W.snow, W.pond,
+    ...W.ripples, ...W.ponds.map(p => p.g), ...W.plots.map(p => p.g), ...W.poops, ...W.birds.map(b => b.b), ...W.clouds, ...W.flies.map(f => f.b), ...W.machs.map(m => m.g), ...W.ffly.map(f => f.m), ...(W.hens || []).map(h => h.m)].filter(Boolean));
+  S3.updateMatrixWorld(true);
+  const list = [];
+  const walk = o => { if (keep.has(o)) return; if (o.isMesh && !o.isInstancedMesh && !Array.isArray(o.material) && !o.material.map && !o.material.transparent && o.visible && o.geometry.attributes.position) list.push(o); for (const c of o.children) walk(c); };
+  walk(S3);
+  const groups = new Map();
+  for (const o of list) { const k = o.material.uuid + (o.castShadow ? 's' : ''); let g = groups.get(k); if (!g) groups.set(k, g = {mat:o.material, cast:o.castShadow, items:[], n:0}); const geo = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry; g.items.push([o, geo]); g.n += geo.attributes.position.count; }
+  const v = new THREE.Vector3(), nm = new THREE.Matrix3();
+  for (const g of groups.values()) {
+    if (g.items.length < 2) continue;
+    const pos = new Float32Array(g.n * 3), nor = new Float32Array(g.n * 3); let off = 0;
+    for (const [o, geo] of g.items) {
+      const P = geo.attributes.position, N = geo.attributes.normal; nm.getNormalMatrix(o.matrixWorld);
+      for (let i = 0; i < P.count; i++, off++) { v.fromBufferAttribute(P, i).applyMatrix4(o.matrixWorld); pos.set([v.x, v.y, v.z], off * 3); if (N) { v.fromBufferAttribute(N, i).applyMatrix3(nm).normalize(); nor.set([v.x, v.y, v.z], off * 3); } }
+      o.parent.remove(o);
+    }
+    const bg = new THREE.BufferGeometry(); bg.setAttribute('position', new THREE.BufferAttribute(pos, 3)); bg.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); bg.computeBoundingSphere();
+    const m = new THREE.Mesh(bg, g.mat); m.castShadow = g.cast; m.receiveShadow = true; S3.add(m);
+  }
+}
 function buildWorld() {
   const S3 = W.scene;
   // 天空
@@ -2056,18 +2095,19 @@ function buildWorld() {
   W.winMat = new THREE.MeshLambertMaterial({color:'#bbdefb', emissive:'#000000'});
   const glass = mat('#bbdefb'); S3.traverse(o => { if (o.isMesh && o.material === glass) o.material = W.winMat; });
   buildScenery(S3); buildFactory(S3); buildEnv(S3);
+  mergeStatic(S3);
 }
 
 function init3D() {
   const st = $('#stage');
   const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
-  renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 700 ? 1.5 : 2)); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 700 ? 1.5 : 2)); renderer.shadowMap.enabled = true; renderer.shadowMap.type = innerWidth < 700 ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap; renderer.outputColorSpace = THREE.SRGBColorSpace;
   st.prepend(renderer.domElement);
   const scene = new THREE.Scene(); scene.fog = new THREE.Fog('#cfeaff', 80, 230);
   const camera = new THREE.PerspectiveCamera(42, 1, .1, 500);
   const hemi = new THREE.HemisphereLight('#e3f4ff', '#5d8f3a', 1.25); scene.add(hemi);
   const sun = new THREE.DirectionalLight('#fff1d0', 1.9); sun.position.set(30, 38, 22); sun.target.position.set(12, 0, 0); sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, {left:-34, right:34, top:26, bottom:-26, near:5, far:110}); sun.shadow.bias = -.0005; sun.shadow.normalBias = .02;
+  sun.shadow.mapSize.set(innerWidth < 700 ? 1024 : 2048, innerWidth < 700 ? 1024 : 2048); Object.assign(sun.shadow.camera, {left:-34, right:34, top:26, bottom:-26, near:5, far:110}); sun.shadow.bias = -.0005; sun.shadow.normalBias = .02;
   scene.add(sun, sun.target); W.sun = sun; W.hemi = hemi;
   const controls = new OrbitControls(camera, renderer.domElement);
   Object.assign(controls, {enableDamping:true, dampingFactor:.08, enablePan:false, minDistance:8, maxDistance:36, minPolarAngle:.35, maxPolarAngle:1.25, rotateSpeed:.6, zoomSpeed:.8});
@@ -2096,7 +2136,7 @@ function setCam(scene, instant) {
 function pick(cx, cy) {
   const r = W.renderer.domElement.getBoundingClientRect(); W.ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1);
   W.ray.setFromCamera(W.ndc, W.camera);
-  const roots = [...W.plots.map(p => p.g), ...W.animals.map(a => a.g), ...W.poops.filter(p => p.visible), W.trough, ...W.ponds.map(p => p.g), ...W.machs.map(p => p.g), ...W.pets.map(p => p.m)];
+  const roots = [...W.people.map(p => p.m), ...W.plots.map(p => p.g), ...W.animals.map(a => a.g), ...W.poops.filter(p => p.visible), W.trough, ...W.ponds.map(p => p.g), ...W.machs.map(p => p.g), ...W.pets.map(p => p.m)];
   const hits = W.ray.intersectObjects(roots, true);
   for (const h of hits) { if (h.object.visible === false) continue; let o = h.object; while (o && !o.userData.hit) o = o.parent; if (o) return o.userData.hit; }
   return null;
@@ -2118,6 +2158,7 @@ function hoverAt(cx, cy) {
   else if (h.type === 'trough') { ring.position.set(TROUGH_XZ[0], .06, TROUGH_XZ[1]); ring.scale.setScalar(1.1); }
   else if (h.type === 'pond') { const [x3, z3] = pondXZ(h.i); ring.position.set(x3, .55, z3); ring.scale.setScalar(1.55); }
   else if (h.type === 'mach') { const [x4, z4] = facXZ(h.i); ring.position.set(x4, .2, z4); ring.scale.setScalar(1.55); }
+  else if (h.type === 'person') { const P = W.people.find(p => p.uid === h.uid); if (P) { ring.position.set(P.m.position.x, .06, P.m.position.z); ring.scale.setScalar(.6); } }
   else if (h.type === 'pet' && W.pets[h.i]) { ring.position.set(W.pets[h.i].m.position.x, .06, W.pets[h.i].m.position.z); ring.scale.setScalar(.6); }
 }
 
@@ -2143,6 +2184,8 @@ function projectTo(el, p, w, h, dy = 0, extra = '') {
 }
 
 /* ----- 同步：資料 → 3D ----- */
+let BUD = 0, BUILT = 0;
+const take = () => { if (BUILT && performance.now() > BUD) { W.syncPending = true; return false; } BUILT++; return true; };
 function buildMarker() {
   const m = grp(blk('#8d5a2b', [.07, .55, .07], [0, .27, 0]), blk('#43a047', [.46, .4, .06], [0, .62, 0]), blk('#ffffff', [.28, .07, .07], [0, .62, 0]), blk('#ffffff', [.07, .28, .07], [0, .62, 0]));
   m.position.set(.75, 0, .75); m.rotation.y = -.5; return m;
@@ -2159,8 +2202,8 @@ function rebuildPlot(P, i, key, p) {
   P.soil.scale.y = locked ? .14 : .32; P.soil.position.y = locked ? .07 : .16; P.furrows.visible = !locked; P.content.position.y = locked ? .14 : .32;
   if (key === 'next') P.content.add(buildMarker());
   if (locked || key === 'e') return;
-  if (key === 'd') { P.content.add(deadModel()); return; }
-  const st = stageOf(p), plant = st === 0 ? seedsModel() : st === 1 ? sproutModel() : st === 2 ? cropCluster(p.c, false, .75) : cropCluster(p.c, true, 1);
+  if (key === 'd') { P.content.add(mergeLocal(deadModel())); return; }
+  const st = stageOf(p), plant = mergeLocal(st === 0 ? seedsModel() : st === 1 ? sproutModel() : st === 2 ? cropCluster(p.c, false, .75) : cropCluster(p.c, true, 1));
   P.content.add(plant); P.plant = plant; P.spark.visible = st === 3;
   const W2 = [[-.95, -.95], [.95, -.8], [-.85, .95]];
   for (let k = 0; k < (p.w || 0); k++) { const wd = new THREE.Group(); for (let j = 0; j < 9; j++) wd.add(blk(j % 2 ? '#9ccc3c' : '#6d9f1f', [.07, .55 + (j % 3) * .12, .03], [Math.cos(j * .7) * .12, .27, Math.sin(j * .7) * .12], [Math.sin(j * .7) * .55, j * .7, Math.cos(j * .7) * .55])); wd.add(ball('#fdd835', U(.07), [.1, .62, 0]), ball('#fdd835', U(.07), [-.08, .55, .1])); wd.position.set(W2[k % 3][0], 0, W2[k % 3][1]); P.content.add(wd); }
@@ -2171,7 +2214,12 @@ function rebuildPlot(P, i, key, p) {
 function syncField(f, own) {
   for (let i = 0; i < MAXP; i++) {
     const P = W.plots[i], key = plotKey(f, i, own);
-    if (P.key !== key) { P.key = key; rebuildPlot(P, i, key, f.plots[i]); }
+    if (P.key !== key) {
+      P.cache ??= new Map(); let c = P.cache.get(key);
+      if (!c) { if (!take()) { P.content.visible = false; continue; } const holder = P.content, g = new THREE.Group(); P.content = g; rebuildPlot(P, i, key, f.plots[i]); P.content = holder; c = {g, y:g.position.y, bugs:P.bugs, drop:P.drop, plant:P.plant, spark:P.spark.visible, soil:P.soil.material, sy:P.soil.scale.y, spy:P.soil.position.y, fur:P.furrows.visible}; g.position.y = 0; P.cache.set(key, c); if (P.cache.size > 4) P.cache.delete(P.cache.keys().next().value); }
+      P.key = key; P.content.clear(); P.content.add(c.g); P.content.position.y = c.y; P.content.visible = true;
+      Object.assign(P, {bugs:c.bugs, drop:c.drop, plant:c.plant}); P.spark.visible = c.spark; P.soil.material = c.soil; P.soil.scale.y = c.sy; P.soil.position.y = c.spy; P.furrows.visible = c.fur;
+    }
     const p = f.plots[i];
     if (i < f.plotCount && p.s === 'grow' && CROPS[p.c] && probs(p)) {
       const tags = []; if (dryNow(p)) tags.push('<span>💧</span>'); if (p.w) tags.push(`<span>🌿${p.w > 1 ? `<small>×${p.w}</small>` : ''}</span>`); if (p.b) tags.push(`<span>🐞${p.b > 1 ? `<small>×${p.b}</small>` : ''}</span>`);
@@ -2182,7 +2230,20 @@ function syncField(f, own) {
 function syncRanch(f, own) {
   const list = f.ranch.animals, key = list.map(a => a.k + (isBaby(a) ? 'b' : '')).join(',');
   if (W.aniKey !== key) {
-    W.aniKey = key; W.animalsG.clear(); W.animals = [];
+    W.aniCache ??= new Map(); let c = W.aniCache.get(key);
+    if (!c) {
+      if (!take()) { W.animalsG.visible = false; return; }
+      const holder = W.animalsG; W.animalsG = new THREE.Group(); W.animals = [];
+      buildAnimals(list);
+      c = {g:W.animalsG, animals:W.animals}; W.animalsG = holder; W.aniCache.set(key, c); if (W.aniCache.size > 4) W.aniCache.delete(W.aniCache.keys().next().value);
+    }
+    W.aniKey = key; W.animalsG.clear(); W.animalsG.add(c.g); W.animals = c.animals; W.animalsG.visible = true;
+  }
+  if (!W.animalsG.visible) return;
+  syncRanchRest(f, own, list);
+}
+function buildAnimals(list) {
+  {
     list.forEach((a, i) => {
       const g = new THREE.Group(), m = animalModel(a.k); m.scale.multiplyScalar(({chicken:1.9, duck:1.9, goose:1.7, turkey:1.6, rabbit:1.9, pig:1.6, bee:1.3, goat:1.5, sheep:1.5, cow:1.35, horse:1.35, alpaca:1.4, ostrich:1.3})[a.k] * (isBaby(a) ? .6 : 1)); g.add(m);
       const [hx, hz] = aniHome(i); g.position.set(hx, 0, hz); g.traverse(o => o.userData.hit = {type:'ani', i});
@@ -2190,6 +2251,8 @@ function syncRanch(f, own) {
       W.animalsG.add(g); W.animals.push({g, m, ind, home:[hx, hz], ph:i * 1.37, k:a.k, still:a.k === 'bee'});
     });
   }
+}
+function syncRanchRest(f, own, list) {
   list.forEach((a, i) => {
     const A = W.animals[i]; if (!A) return; const v = aView(a);
     A.ind.visible = v.s > 0;
@@ -2228,7 +2291,7 @@ function rebuildPond(P, i, key, q) {
 function syncFish(f, own) {
   for (let i = 0; i < MAXPOND; i++) {
     const P = W.ponds[i], key = pondKey(f, i, own);
-    if (P.key !== key) { P.key = key; rebuildPond(P, i, key, f.fish.ponds[i]); }
+    if (P.key !== key) { if (!take()) { P.content.visible = P.junk.visible = false; continue; } P.key = key; rebuildPond(P, i, key, f.fish.ponds[i]); P.content.visible = P.junk.visible = true; }
     const q = f.fish.ponds[i];
     if (i < f.fish.n && q.s === 'grow' && SEA[q.c] && q.g) { const [x, z] = pondXZ(i); ov('pg' + i, `<span>🗑️${q.g > 1 ? `<small>×${q.g}</small>` : ''}</span>`, v => v.set(x, 2.3, z), 'need trash'); }
   }
@@ -2236,24 +2299,38 @@ function syncFish(f, own) {
 function syncPets(f) {
   const list = (f.pets || []).filter(k => PETS[k]).slice(0, 8); const key = list.join(',') + '|' + petOf(f);
   if (W.petKey !== key) {
-    W.petKey = key; W.petsG.clear(); W.pets = [];
-    list.forEach((k, i) => { const m = petModel(k); m.traverse(o => o.userData.hit = {type:'pet', i}); W.petsG.add(m); W.pets.push({m, k, ph:i * (PATH_LEN / Math.max(list.length, 1)), sp:PETS[k].kind === 'cat' ? 1.2 : 1.7, guard:k === petOf(f)}); });
+    W.petCache ??= new Map(); let c = W.petCache.get(key);
+    if (!c) {
+      if (!take()) { W.petsG.visible = false; return; }
+      const g = new THREE.Group(), pets = [];
+      list.forEach((k, i) => { const m = petModel(k); m.traverse(o => o.userData.hit = {type:'pet', i}); g.add(m); pets.push({m, k, ph:i * (PATH_LEN / Math.max(list.length, 1)), sp:PETS[k].kind === 'cat' ? 1.2 : 1.7, guard:k === petOf(f)}); });
+      c = {g, pets}; W.petCache.set(key, c); if (W.petCache.size > 4) W.petCache.delete(W.petCache.keys().next().value);
+    }
+    W.petKey = key; W.petsG.clear(); W.petsG.add(c.g); W.pets = c.pets; W.petsG.visible = true;
   }
+  if (!W.petsG.visible) return;
   W.pets.forEach((P, i) => ov('pet' + i, `${P.guard ? '🛡️' : ''}${PETS[P.k].n} Lv${petLv(f, P.k)}`, v => v.copy(P.m.position).setY(P.m.userData.top || 1.3), 'tag'));
 }
 function syncPeople(list) {
   const key = list.map(p => p.uid + ':' + p.n + ':' + genderOf(p)).join(',');
   if (W.peopleKey !== key) {
+    if (!take()) return;
+    const old = new Map(W.people.map(P => [P.uid + ':' + P.g, P]));
     W.peopleKey = key; W.peopleG.clear(); W.people = [];
-    list.forEach((p, k) => { const m = charModel(genderOf(p), p.uid); W.peopleG.add(m); W.people.push({m, uid:p.uid, k, g:genderOf(p), sayT:p.say?.t || 0, waveAt:p.wave || 0}); });
+    list.forEach((p, k) => { const g = genderOf(p), o = old.get(p.uid + ':' + g); const m = o ? o.m : charModel(g, p.uid); m.traverse(x => x.userData.hit = {type:'person', uid:p.uid}); W.peopleG.add(m); W.people.push(o ? Object.assign(o, {k}) : {m, uid:p.uid, k, g, sayT:p.say?.t || 0, waveAt:p.wave || 0}); });
   }
   const base = (SCENE_T[S.scene] || FARM_T).x;
   W.people.forEach((P, k) => {
     const x = base + [-3.2, 3.2, -6, 6, -1.6, 1.6, -8, 8][k % 8], z = 7.6 + (k >= 8 ? 1.2 : 0); P.tx = x; P.tz = z;
     const p = list[k]; const say = p.say && now() - p.say.t < (p.say.d || 9000) ? p.say.m : '';
-    ov('pn' + p.uid, esc(p.n) + (p.uid === S.uid ? '（我）' : ''), v => v.copy(P.m.position).setY(2.25), '');
+    ov('pn' + p.uid, esc(p.n) + (p.uid === S.uid ? '（我）' : p.uid === S.viewUid ? ' 🏠' : ''), v => v.copy(P.m.position).setY(2.25), '');
     if (say) ov('ps' + p.uid, esc(say), v => v.copy(P.m.position).setY(2.9), 'bub');
-    if (p.wave && p.wave !== P.waveAt && now() - p.wave < 4000) P.waveAt = p.wave;
+    if (p.wave && p.wave !== P.waveAt && now() - p.wave < 4000) { P.waveAt = p.wave; P.waveTo = p.waveTo || ''; }
+    if (p.uid !== S.uid && p.waveTo === S.uid && p.wave && now() - p.wave < 6000 && (S.wavedBy ??= {})[p.uid] !== p.wave) {
+      S.wavedBy[p.uid] = p.wave;
+      if (!p.arr) toast(p.back ? `👋 ${p.n} 也跟你揮手了！` : `👋 ${p.n} 跟你揮手！`);
+      if (!p.back) setTimeout(() => waveAt(p.uid, p.n, true), 900);
+    }
     if (p.say && p.say.t !== P.sayT) { const fresh = now() - p.say.t < 4000; P.sayT = p.say.t; if (fresh && S.spokeT !== p.say.t) Music.babble(P.g, p.say.m); }
     if (p.chase && p.uid !== S.uid && now() - p.chase.t < 5000 && W.chaseSeen !== p.uid + p.chase.t) { W.chaseSeen = p.uid + p.chase.t; startChase(p.uid, p.chase.k); }
   });
@@ -2347,7 +2424,7 @@ function loop() {
     if (u.head) u.head.rotation.x = Math.sin(t * 1.1 + P.k) * .1;
     const wa = P.waveAt ? now() - P.waveAt : 1e9, waving = wa < 3800;
     if (u.armR) { u.armR.rotation.x = waving ? -2.6 + Math.sin(t * 12) * .5 : Math.sin(t * 1.3 + P.k) * .08; u.armL.rotation.x = waving && wa > 1200 && wa < 2600 ? 2.6 + Math.sin(t * 12 + 1) * .5 : Math.sin(t * 1.3 + P.k + 1) * .08; u.legL.rotation.z = u.legR.rotation.z = 0; }
-    if (waving) { P.m.rotation.y = -Math.PI / 2; if (u.head) u.head.rotation.z = Math.sin(t * 5) * .15; if (wa < 1400) P.m.position.y = Math.abs(Math.sin(wa / 1400 * Math.PI * 2)) * .45; const pop = wa < 300 ? wa / 300 : wa > 3400 ? (3800 - wa) / 400 : 1; P.m.scale.setScalar(1.25 * (1 + .22 * pop)); if (!P.hiFx || now() - P.hiFx > 1300) { P.hiFx = now(); fx3(P.m.position.x, 3.3, P.m.position.z, rnd(['👋', '👋✨', '💕']), '#e91e63'); } }
+    if (waving) { const T2 = P.waveTo && W.people.find(q => q.uid === P.waveTo); if (T2) { const a2 = Math.atan2(-(T2.m.position.z - P.m.position.z), T2.m.position.x - P.m.position.x), ac = -Math.PI / 2; let dd = a2 - ac; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y = ac + dd * .6; } else P.m.rotation.y = -Math.PI / 2; if (u.head) u.head.rotation.z = Math.sin(t * 5) * .15; if (wa < 1400) P.m.position.y = Math.abs(Math.sin(wa / 1400 * Math.PI * 2)) * .45; const pop = wa < 300 ? wa / 300 : wa > 3400 ? (3800 - wa) / 400 : 1; P.m.scale.setScalar(1.25 * (1 + .22 * pop)); if (!P.hiFx || now() - P.hiFx > 1300) { P.hiFx = now(); fx3(P.m.position.x, 3.3, P.m.position.z, rnd(['👋', '👋✨', '💕']), '#e91e63'); } }
     else if (P.m.scale.x !== 1.25) P.m.scale.setScalar(1.25);
   }
   if (W.hoverRing.visible) W.hoverRing.material.opacity = .55 + Math.sin(t * 6) * .3;
@@ -2515,7 +2592,9 @@ function renderScene() {
   if (!W.scene) return;
   const f = S.view, own = isOwn();
   if (f) {
-    syncField(f, own); syncRanch(f, own); syncFish(f, own); syncPets(f); syncFactory(f, own); syncFest();
+    BUD = performance.now() + 10; BUILT = 0; W.syncPending = false;
+    const order = {farm:[syncField, syncPets, syncRanch, syncFish, syncFactory], ranch:[syncRanch, syncPets, syncField, syncFish, syncFactory], fish:[syncFish, syncPets, syncField, syncRanch, syncFactory], factory:[syncFactory, syncPets, syncField, syncRanch, syncFish]}[S.scene] || [syncField, syncRanch, syncFish, syncPets, syncFactory];
+    for (const fn of order) fn(f, own); syncFest();
     setSign(W.facSign, own ? '我的加工廠' : `${dn(f)}的工廠`, `機器 ${Object.keys(f.fac?.own || {}).length}/${MACH_KEYS.length}`);
     setSign(W.farmSign, own ? '我的農場' : `${dn(f)}的農場`, `Lv.${levelOf(f.exp).L}${petOf(f) ? ' · ' + PETS[petOf(f)].n + '顧家' : ''}`);
     setSign(W.ranchSign, own ? '我的牧場' : `${dn(f)}的牧場`, `動物 ${f.ranch.animals.length}/${ranchCap(levelOf(f.exp).L)}`);
@@ -2523,10 +2602,13 @@ function renderScene() {
   }
   document.querySelectorAll('#sceneTabs button').forEach(b => b.classList.toggle('on', b.dataset.s === S.scene));
   $('#visitBar').hidden = own; if (!own && f) $('#visitName').textContent = dn(f);
-  const list = hereList(); syncPeople(list);
-  const others = list.filter(p => p.uid !== S.uid); $('#hereBox').hidden = !others.length; $('#hereBox').textContent = others.length ? `👀 現在在這裡：${others.map(p => p.n).join('、')}` : '';
+  const list = hereList();
+  if (!own && f && !list.some(p => p.uid === S.viewUid)) { const nw = W.npc?.uid === S.viewUid ? W.npc : {}; list.push({uid:S.viewUid, n:dn(f), g:f.gender || genderOf({uid:S.viewUid}), lv:levelOf(f.exp).L, npc:true, t:now(), say:nw.say, wave:nw.wave, waveTo:nw.wave ? S.uid : '', back:true}); }
+  S.people = list; syncPeople(list);
+  const others = list.filter(p => p.uid !== S.uid && !p.npc); $('#hereBox').hidden = !others.length; $('#hereBox').textContent = others.length ? `👀 現在在這裡：${others.map(p => p.n).join('、')}` : '';
   ovSweep();
   if (S.hover) showTip(S.hover);
+  if (W.syncPending && !W.rafQ) { W.rafQ = true; requestAnimationFrame(() => { W.rafQ = false; renderScene(); }); }
 }
 function hereList() { return S.here.filter(p => !p.off && p.t && now() - p.t < 75000).sort((a, b) => a.uid < b.uid ? -1 : 1); }
 function stealCount(farm) { return farm.plots.slice(0, farm.plotCount).filter(p => { const s = stealInfo(p, S.uid); return s && s.can; }).length + (farm.ranch?.animals || []).filter(a => ANIMALS[a.k] && aStealable(a, S.uid)).length + (farm.fish?.ponds || []).slice(0, farm.fish?.n || 0).filter(q => { const s = pondSteal(q, S.uid); return s && s.can; }).length; }
@@ -2578,6 +2660,7 @@ function pondText(i) {
 function tipFor(h) {
   if (h.type === 'pond') return pondText(h.i);
   if (h.type === 'mach') return machText(h.i);
+  if (h.type === 'person') { const p = (S.people || hereList()).find(x => x.uid === h.uid); return p ? (h.uid === S.uid ? `<b>${esc(p.n)}</b>（我）<br>點一下跟大家揮手 👋` : `<b>${esc(p.n)}</b> Lv.${p.lv || 1}<br>點一下跟他揮手 👋`) : ''; }
   if (h.type === 'pet') { const P = W.pets[h.i]; if (!P) return ''; return `<b>${PETS[P.k].n}</b> Lv.${petLv(S.view, P.k)}${P.guard ? '（顧家中 🛡️）' : ''}<br>${isOwn() ? '點一下摸摸頭 💕' : '小心別被牠抓到！'}`; }
   if (h.type === 'tile') return plotText(h.i);
   if (h.type === 'ani') return aniText(h.i);
@@ -2597,6 +2680,7 @@ function clickHit(h) {
   if (h.type === 'poop') return run(() => cleanPoop(h.i));
   if (h.type === 'trough') return run(isOwn() ? feedAll : feedFriend);
   if (h.type === 'pond') { if (S.scene !== 'fish') { S.scene = 'fish'; setCam('fish'); renderTools(); } return run(() => clickPond(h.i)); }
+  if (h.type === 'person') { const p = (S.people || hereList()).find(x => x.uid === h.uid); return waveAt(h.uid, p ? p.n : ''); }
   if (h.type === 'mach') { if (S.scene !== 'factory') { S.scene = 'factory'; setCam('factory'); renderTools(); } return clickMach(h.i); }
   if (h.type === 'pet') { const P = W.pets[h.i]; if (!P) return; Music.voice(PETS[P.k].kind); if (!isOwn()) return toast(`${dn(S.view)}家的${PETS[P.k].n}（Lv.${petLv(S.view, P.k)}）正在巡邏，小心別被抓到！`); const x = S.my.petx?.[P.k]; if ((x?.pat || 0) + PET_PAT / SPEED > now()) return openPets(); return run(() => petPat(P.k)); }
 }
@@ -2639,6 +2723,20 @@ const txView = fn => B.tx(S.viewUid, fn);
 const ab = msg => ({abort:1, msg});
 function guardCheck(f, nm) { const pk = petOf(f); if (pk && PETS[pk].bite && Math.random() < biteOf(f, pk)) { addLog(f, `🐾 你的${PETS[pk].n}抓到來偷東西的 ${nm}，罰他 ${CAUGHT_COINS} 金幣和倉庫物品！`); return PETS[pk].n; } return ''; }
 ['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, () => { if (!Music.ready) Voice.unlock(); Music.kick(); }, {capture:true, passive:true}));
+function npcReply(delay = 1000) {
+  const host = S.viewUid; if (isOwn() || hereList().some(p => p.uid === host)) return;
+  setTimeout(() => { if (S.viewUid !== host || !S.view) return; const t = now(), m = rnd([`歡迎來我家玩，${myName()}！😊`, `嗨～${myName()}！好久不見 👋`, `${myName()}來了！要幫我顧菜喔 🥬`]);
+    W.npc = {uid:host, wave:t, say:{m, t, d:3500}}; renderScene(); }, delay);
+}
+function waveAt(uid, name, back, arrive) {
+  if (uid === S.viewUid && !isOwn()) npcReply(arrive ? 1300 : 900);
+  if (!S.my) return; const t = now(), me = uid === S.uid;
+  if (!back && !arrive && S.lastWave && t - S.lastWave < 1500) return; S.lastWave = t;
+  const m = arrive ? `嗨～${name || ''}，我來玩囉！👋` : me ? '👋 大家好～' : back ? `👋 嗨，${name}～` : `👋 嗨，${name}！`;
+  S.spokeT = t; B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), at:S.viewUid || S.uid, t, off:false, say:{m, t, d:3500}, wave:t, waveTo:me ? '' : uid, back:!!back, arr:!!arrive});
+  const P = W.people?.find(p => p.uid === S.uid); if (P) { P.waveAt = t; P.waveTo = me ? '' : uid; }
+  Music.babble(myGender(), m);
+}
 function startChase(uid, k) { if (!W.pets) return; const pi = W.pets.findIndex(P => P.k === k); W.chase = {uid, pi:pi < 0 ? 0 : pi, t0:performance.now() / 1000}; }
 async function caught(x, y, z, petName) {
   const g = await txMe(f => {
@@ -3089,6 +3187,7 @@ function openChat() {
 }
 async function say(m) {
   m = String(m || '').trim().slice(0, 24); if (!m) return; closeModal(); const t = now();
+  if (m === '👋 揮手打招呼') { const o = hereList().filter(p => p.uid !== S.uid); return o.length ? o.forEach((p, k) => setTimeout(() => waveAt(p.uid, p.n, false), k * 1600)) : waveAt(S.uid, myName()); }
   await B.setPresence(S.uid, {say:{m, t}, at:S.viewUid, t, n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), off:false});
   if (!(dailyView(S.my).t.chat >= 1)) txMe(f => { bump(f, 'chat'); return {}; }).catch(() => {});
 }
@@ -3550,7 +3649,7 @@ let authMode = 'login';
 const ACT = {
   authTab(d) { authMode = d.t; document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === d.t)); $('#aPass2Wrap').hidden = d.t !== 'reg'; $('#aGo').textContent = d.t === 'reg' ? '註冊並開始' : '開始種田'; $('#aPass').autocomplete = d.t === 'reg' ? 'new-password' : 'current-password'; $('#authErr').textContent = ''; },
   tool(d) { if (d.t === 'plant' && (!S.seed || S.tool === 'plant')) { S.tool = 'plant'; renderTools(); return openSeedPicker(-1); } if (d.t === 'stock' && (!S.fry || S.tool === 'stock')) { S.tool = 'stock'; renderTools(); return openFryPicker(-1); } S.tool = d.t; renderTools(); },
-  scene(d) { S.scene = d.s; S.tool = 'hand'; S.hover = null; $('#tip').style.display = 'none'; setCam(d.s); renderTools(); renderScene(); },
+  scene(d) { if (W.zoomed) { W.zoomed = false; clearTimeout(W.zoomT); const o = (W.camAnim?.off1 || W.camera.position.clone().sub(W.controls.target)).clone().multiplyScalar(1 / .42); W.camAnim = null; W.camera.position.copy(W.controls.target).add(o); } S.scene = d.s; S.tool = 'hand'; S.hover = null; $('#tip').style.display = 'none'; setCam(d.s); renderTools(); renderScene(); },
   feedAll() { return run(feedAll); }, feedFriend() { return run(feedFriend); },
   buyAni() { openShop('ani'); }, cleanTip() { toast('點牧場上的 💩 就能幫好友清掉，拿經驗！'); },
   close: closeModal,
@@ -3664,7 +3763,7 @@ const myGender = () => S.my?.gender === 'girl' ? 'girl' : 'boy';
 function greet(first, force) {
   if (!S.my) return;
   const nm = myName(), m = first ? `${nm}，歡迎來到農場！` : `${nm}，歡迎回來農場！`, t = now(), g = myGender();
-  S.spokeT = t; B.setPresence(S.uid, {n:nm, lv:levelOf(S.my.exp).L, g, at:S.viewUid || S.uid, t, off:false, say:{m, t, d:3800}, wave:t});
+  S.spokeT = t; B.setPresence(S.uid, {n:nm, lv:levelOf(S.my.exp).L, g, at:S.viewUid || S.uid, t, off:false, say:{m, t, d:3800}, wave:t, waveTo:'', back:false, arr:false});
   const P = W.people?.find(p => p.uid === S.uid); if (P) P.waveAt = t;
   setTimeout(focusMe, 250);
   Music.sparkle(); setTimeout(() => Music.babble(g, '哈囉歡迎回來'), 350);
@@ -3672,9 +3771,14 @@ function greet(first, force) {
 function focusMe() {
   const P = W.people?.find(p => p.uid === S.uid); if (!P || !W.controls || !isOwn()) return;
   const tgt = new THREE.Vector3(P.tx ?? P.m.position.x, .9, (P.tz ?? P.m.position.z) - .3), off0 = W.camera.position.clone().sub(W.controls.target);
+  if (W.zoomed) return; W.zoomed = true;
   W.camAnim = {from:W.controls.target.clone(), to:tgt, t0:performance.now(), dur:900, off0, off1:off0.clone().multiplyScalar(.42)};
-  const sc = S.scene;
-  setTimeout(() => { if (S.scene !== sc || !isOwn()) return; const o0 = W.camera.position.clone().sub(W.controls.target); W.camAnim = {from:W.controls.target.clone(), to:(SCENE_T[S.scene] || FARM_T).clone(), t0:performance.now(), dur:1100, off0:o0, off1:o0.clone().multiplyScalar(1 / .42)}; }, 4300);
+  clearTimeout(W.zoomT); W.zoomT = setTimeout(unZoom, 4300);
+}
+function unZoom() {
+  if (!W.zoomed || !W.camera) return; W.zoomed = false; clearTimeout(W.zoomT);
+  const o0 = (W.camAnim?.off1 || W.camera.position.clone().sub(W.controls.target)).clone();
+  W.camAnim = {from:W.controls.target.clone(), to:(SCENE_T[S.scene] || FARM_T).clone(), t0:performance.now(), dur:900, off0:o0, off1:o0.clone().multiplyScalar(1 / .42)};
 }
 function openChar(first) {
   S.modal = () => { const g = S.my.gender;
@@ -3683,7 +3787,7 @@ function openChar(first) {
   S.modal(); S.charFirst = !!first;
 }
 function watchHere() {
-  S.unsubHere && S.unsubHere(); S.here = []; S.hereIds = new Set(); S.hereInit = false; const at = S.viewUid;
+  S.unsubHere && S.unsubHere(); S.here = S.here.filter(p => p.uid === S.uid).map(p => ({...p, at:S.viewUid, t:now()})); S.hereIds = new Set(); S.hereInit = false; const at = S.viewUid;
   S.unsubHere = B.watchHere(at, list => {
     if (S.viewUid !== at) return;
     const fresh = list.filter(p => !p.off && p.t && now() - p.t < 75000);
@@ -3718,12 +3822,13 @@ async function onAuth(u) {
   else if (!r.abort && f.lastSign !== today()) toast(isNew ? '🎉 歡迎來到 3D 農場！' : `☀️ 每日簽到 +${SIGN_COINS} 金幣，記得看看今天的任務和訂單 📋`);
   refreshFriends();
 }
-function goHome() { S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; resetSceneKeys(); renderAll(); beat(); watchHere(); }
+function goHome() { unZoom(); S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; renderAll(); beat(); watchHere(); }
 function visit(uid) {
   if (uid === S.uid) return goHome();
-  S.unsubView && S.unsubView();
-  S.viewUid = uid; const fr = S.friends.find(x => x.uid === uid); S.view = fr ? fr.farm : null; S.tool = 'hand'; resetSceneKeys(); renderAll(); beat(); watchHere();
-  S.unsubView = B.watch(uid, nf => { if (S.viewUid !== uid) return; S.view = normalize(nf); if (!nf) { toast('找不到這個農場'); return goHome(); } renderScene(); renderTools(); });
+  unZoom(); S.unsubView && S.unsubView();
+  S.viewUid = uid; const fr = S.friends.find(x => x.uid === uid); S.view = fr ? fr.farm : null; S.tool = 'hand'; renderAll(); beat(); watchHere();
+  setTimeout(() => { if (S.viewUid === uid) waveAt(uid, fr ? dn(fr.farm) : '', false, true); }, 1200);
+  S.unsubView = B.watch(uid, nf => { if (S.viewUid !== uid) return; if (!nf) { toast('找不到這個農場'); return goHome(); } S.view = normalize(nf); const fr2 = S.friends.find(x => x.uid === uid); if (fr2) fr2.farm = S.view; renderScene(); renderTools(); });
   if (!dailyView(S.my).vis.includes(uid)) txMe(f => { const d = daily(f); if (d.vis.includes(uid)) return ab(''); d.vis.push(uid); bump(f, 'visit'); return {}; }).catch(() => {});
 }
 function resetSceneKeys() { if (!W.scene) return; W.plots.forEach(P => P.key = null); W.ponds.forEach(P => P.key = null); W.machs.forEach(P => { P.key = null; P.indKey = null; }); W.aniKey = null; W.petKey = null; }
