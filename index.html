@@ -180,6 +180,9 @@ button{font-family:inherit;cursor:pointer;border:none}
 .row input{flex:1;padding:9px 11px;border-radius:12px;border:2px solid #e0c99d;font-size:15px;font-family:inherit;outline:none;min-width:0}
 .sec{font-weight:900;color:#8d5a2b;margin:12px 0 6px;font-size:14px}
 .empty{text-align:center;color:#a1887f;padding:14px;font-size:14px}
+.frow{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:8px 6px;border-bottom:1px dashed #e0c99d;align-items:center}.frow.on{background:#fff3c4;border-radius:10px}
+.frow .fl{font-size:15px;color:#5d4037;display:flex;align-items:center;gap:6px}.frow .fe{font-size:20px}.frow i{font-style:normal;background:#e53935;color:#fff;font-size:11px;padding:1px 6px;border-radius:8px;font-weight:800}
+.frow .fd{font-weight:800;color:#6d4c41;font-size:14px;white-space:nowrap}.frow .fs{grid-column:1/3;font-size:12px;color:#8d6e63;padding-left:32px;line-height:1.6}.frow .fm{color:#d84315}.frow .fw{color:#a1887f}
 .log{padding:7px 4px;border-bottom:1px dashed #e0c99d;font-size:14px;display:flex;gap:8px;align-items:center}
 .log time{color:#a1887f;font-size:12px;flex:none;width:70px}
 .log.new{background:#fff3cd}
@@ -633,41 +636,41 @@ const nthSun = (Y, M, n) => { const w = new Date(Date.UTC(Y, M - 1, 1)).getUTCDa
 const BONUS_N = {exp:'收成經驗 ×1.5', yield:'收成每塊多 +1', order:'料理訂單金幣 ×1.5', sell:'倉庫賣東西多 20%'};
 // th：場景主題；r：節日訂單（每天各能完成一次）[簡單, 進階]
 const FESTS = [
-  {id:'newyear', n:'元旦跨年', em:'🎆', th:'firework', fw:1, hello:'新年快樂！🎆', at:Y => ymd(Y, 1, 1), from:-1, len:2, bonus:'exp', gift:{c:500, fert:3}, d:'晚上有跨年煙火秀！',
+  {id:'newyear', n:'元旦跨年', em:'🎆', th:'firework', fw:1, hello:'新年快樂！🎆', at:Y => ymd(Y, 1, 1), from:-3, len:7, bonus:'exp', gift:{c:500, fert:3}, d:'晚上有跨年煙火秀！',
     r:[{n:'跨年薯條派對', em:'🍟', need:{potato:4, tomato:2}}, {n:'跨年火鍋', em:'🍲', need:{cabbage:2, mushroom:2, whiteshrimp:3, clam:3}}]},
-  {id:'cny', n:'農曆春節', em:'🧧', th:'lantern', fw:1, mg:'redenv', hello:'新年快樂！恭喜發財 🧧', at:Y => lunarDate(Y, 'cny'), from:-1, len:4, bonus:'order', gift:{c:888, seed:6, fert:3}, d:'除夕到初三，放煙火、抽紅包！紅燈籠掛滿農場。',
+  {id:'cny', n:'農曆春節', em:'🧧', th:'lantern', fw:1, mg:'redenv', hello:'新年快樂！恭喜發財 🧧', at:Y => lunarDate(Y, 'cny'), from:-1, len:7, bonus:'order', gift:{c:888, seed:6, fert:3}, d:'除夕到初六，放煙火、抽紅包！紅燈籠掛滿農場。',
     r:[{n:'蘿蔔糕', em:'🍘', need:{radish:5, wheat:2}}, {n:'年年有魚年夜飯', em:'🐟', need:{carp:2, garlic:2, cabbage:2, duckegg:2}}]},
-  {id:'lantern', n:'元宵節', em:'🏮', th:'lantern', mg:'riddle', at:Y => addDays(lunarDate(Y, 'cny'), 14), from:-1, len:2, bonus:'exp', gift:{c:300, feed:20}, d:'提燈籠、吃湯圓、猜燈謎！',
+  {id:'lantern', n:'元宵節', em:'🏮', th:'lantern', mg:'riddle', at:Y => addDays(lunarDate(Y, 'cny'), 14), from:-3, len:7, bonus:'exp', gift:{c:300, feed:20}, d:'提燈籠、吃湯圓、猜燈謎！',
     r:[{n:'花燈', em:'🏮', need:{daisy:3, tulip:2}}, {n:'元宵湯圓', em:'🍡', need:{rice:4, honey:1}}]},
-  {id:'valentine', n:'西洋情人節', em:'💝', th:'heart', at:Y => ymd(Y, 2, 14), from:-1, len:2, bonus:'sell', gift:{c:214, seed:4}, d:'農場飄滿粉紅泡泡和愛心，幸福美滿！',
+  {id:'valentine', n:'西洋情人節', em:'💝', th:'heart', at:Y => ymd(Y, 2, 14), from:-3, len:7, bonus:'sell', gift:{c:214, seed:4}, d:'農場飄滿粉紅泡泡和愛心，幸福美滿！',
     r:[{n:'愛心花束', em:'💐', need:{tulip:3, daisy:3}}, {n:'玫瑰草莓禮盒', em:'🌹', need:{rose:6, strawberry:3}}]},
-  {id:'tree', n:'植樹節', em:'🌳', th:'balloon', mg:'tree', at:Y => ymd(Y, 3, 12), from:-1, len:2, bonus:'exp', gift:{c:300, seed:8}, d:'種樹愛地球，收成經驗加倍拿！',
+  {id:'tree', n:'植樹節', em:'🌳', th:'balloon', mg:'tree', at:Y => ymd(Y, 3, 12), from:-3, len:7, bonus:'exp', gift:{c:300, seed:8}, d:'種樹愛地球，收成經驗加倍拿！',
     r:[{n:'綠化便當', em:'🥗', need:{lettuce:3, cabbage:1}}, {n:'果樹禮籃', em:'🍎', need:{apple:3, orange:2}}]},
-  {id:'kids', n:'兒童節', em:'🎈', th:'balloon', mg:'candy', at:Y => ymd(Y, 4, 4), from:-1, len:2, bonus:'yield', gift:{c:404, feed:20}, d:'彩色氣球派對！',
+  {id:'kids', n:'兒童節', em:'🎈', th:'balloon', mg:'candy', at:Y => ymd(Y, 4, 4), from:-3, len:7, bonus:'yield', gift:{c:404, feed:20}, d:'彩色氣球派對！',
     r:[{n:'兒童點心', em:'🌽', need:{corn:2, egg:2}}, {n:'兒童節蛋糕', em:'🎂', need:{strawberry:3, egg:2, wheat:2, milk:1}}]},
-  {id:'mother', n:'母親節', em:'💐', th:'balloon', at:Y => nthSun(Y, 5, 2), from:-1, len:2, bonus:'order', gift:{c:500, fert:2}, d:'送媽媽一束花吧！',
+  {id:'mother', n:'母親節', em:'💐', th:'balloon', at:Y => nthSun(Y, 5, 2), from:-3, len:7, bonus:'order', gift:{c:500, fert:2}, d:'送媽媽一束花吧！',
     r:[{n:'媽媽花束', em:'💐', need:{tulip:3, daisy:2}}, {n:'康乃馨蛋糕', em:'🍰', need:{carnation:4, egg:2, wheat:2}}]},
-  {id:'dragon', n:'端午節', em:'🐉', th:'dragon', mg:'boat', at:Y => lunarDate(Y, 'dragon'), from:-1, len:2, bonus:'yield', gift:{c:505, seed:5}, d:'和好友比划龍舟、綁粽子囉！',
+  {id:'dragon', n:'端午節', em:'🐉', th:'dragon', mg:'boat', at:Y => lunarDate(Y, 'dragon'), from:-3, len:7, bonus:'yield', gift:{c:505, seed:5}, d:'和好友比划龍舟、綁粽子囉！',
     r:[{n:'艾草香包', em:'🌿', need:{grass:5, daisy:2}}, {n:'香菇粽', em:'🍙', need:{rice:4, mushroom:1, duckegg:1}}]},
-  {id:'qixi', n:'七夕情人節', em:'💞', th:'heart', at:Y => lunarDate(Y, 'qixi'), from:-1, len:2, bonus:'sell', gift:{c:300, seed:4}, d:'牛郎織女鵲橋相會！',
+  {id:'qixi', n:'七夕情人節', em:'💞', th:'heart', at:Y => lunarDate(Y, 'qixi'), from:-3, len:7, bonus:'sell', gift:{c:300, seed:4}, d:'牛郎織女鵲橋相會！',
     r:[{n:'七夕花束', em:'💐', need:{daisy:4, tulip:2}}, {n:'七夕甜點', em:'🍓', need:{strawberry:4, milk:1}}]},
-  {id:'father', n:'父親節', em:'👔', th:'balloon', at:Y => ymd(Y, 8, 8), from:-1, len:2, bonus:'order', gift:{c:300, feed:20}, d:'爸爸辛苦了！',
+  {id:'father', n:'父親節', em:'👔', th:'balloon', at:Y => ymd(Y, 8, 8), from:-3, len:7, bonus:'order', gift:{c:300, feed:20}, d:'爸爸辛苦了！',
     r:[{n:'爸爸早餐', em:'🍳', need:{egg:2, radish:2, wheat:2}}, {n:'爸爸海鮮大餐', em:'🦀', need:{crab:1, whiteshrimp:3}}]},
-  {id:'ghost', n:'中元普渡', em:'🏮', th:'lantern', at:Y => addDays(lunarDate(Y, 'qixi'), 8), from:-1, len:2, bonus:'yield', gift:{c:300, feed:20}, d:'準備豐盛的普渡供品。',
+  {id:'ghost', n:'中元普渡', em:'🏮', th:'lantern', at:Y => addDays(lunarDate(Y, 'qixi'), 8), from:-3, len:7, bonus:'yield', gift:{c:300, feed:20}, d:'準備豐盛的普渡供品。',
     r:[{n:'普渡供品', em:'🧺', need:{wheat:3, corn:2, potato:2}}, {n:'豐盛普渡桌', em:'🍍', need:{pineapple:1, apple:2, rice:3}}]},
-  {id:'moon', n:'中秋節', em:'🥮', th:'moon', mg:'skewer', at:Y => lunarDate(Y, 'moon'), from:-1, len:2, bonus:'exp', gift:{c:815, fert:3}, d:'大家都在烤肉！晚上有超大月亮。',
+  {id:'moon', n:'中秋節', em:'🥮', th:'moon', mg:'skewer', at:Y => lunarDate(Y, 'moon'), from:-3, len:7, bonus:'exp', gift:{c:815, fert:3}, d:'大家都在烤肉！晚上有超大月亮。',
     r:[{n:'中秋烤肉', em:'🍢', need:{corn:3, potato:2, cabbage:1}}, {n:'蛋黃月餅', em:'🥮', need:{wheat:3, duckegg:2, honey:1}}]},
-  {id:'teacher', n:'教師節', em:'🍎', th:'balloon', at:Y => ymd(Y, 9, 28), from:-1, len:2, bonus:'exp', gift:{c:300, seed:4}, d:'謝謝老師！',
+  {id:'teacher', n:'教師節', em:'🍎', th:'balloon', at:Y => ymd(Y, 9, 28), from:-3, len:7, bonus:'exp', gift:{c:300, seed:4}, d:'謝謝老師！',
     r:[{n:'敬師便當', em:'🍱', need:{lettuce:2, egg:2, carrot:2}}, {n:'感恩蘋果籃', em:'🍎', need:{apple:4, honey:1}}]},
-  {id:'chongyang', n:'重陽節', em:'🏔️', th:'balloon', at:Y => lunarDate(Y, 'cy'), from:-1, len:2, bonus:'yield', gift:{c:300, feed:20}, d:'登高敬老。',
+  {id:'chongyang', n:'重陽節', em:'🏔️', th:'balloon', at:Y => lunarDate(Y, 'cy'), from:-3, len:7, bonus:'yield', gift:{c:300, feed:20}, d:'登高敬老。',
     r:[{n:'登高點心', em:'🥔', need:{potato:3, egg:1}}, {n:'長壽麵', em:'🍜', need:{wheat:4, egg:2, mushroom:1}}]},
-  {id:'national', n:'國慶日', em:'🎇', th:'firework', at:Y => ymd(Y, 10, 10), from:-1, len:2, bonus:'sell', gift:{c:1010}, d:'晚上有國慶煙火！',
+  {id:'national', n:'國慶日', em:'🎇', th:'firework', at:Y => ymd(Y, 10, 10), from:-3, len:7, bonus:'sell', gift:{c:1010}, d:'晚上有國慶煙火！',
     r:[{n:'國慶野餐', em:'🧺', need:{tomato:2, lettuce:2, egg:2}}, {n:'國慶大餐', em:'🍽️', need:{bass:2, rice:3, broccoli:1}}]},
-  {id:'halloween', n:'萬聖節', em:'🎃', th:'pumpkin', at:Y => ymd(Y, 10, 31), from:-1, len:2, bonus:'yield', gift:{c:300, seed:6}, d:'不給糖就搗蛋！南瓜燈晚上會發光。',
+  {id:'halloween', n:'萬聖節', em:'🎃', th:'pumpkin', at:Y => ymd(Y, 10, 31), from:-3, len:7, bonus:'yield', gift:{c:300, seed:6}, d:'不給糖就搗蛋！南瓜燈晚上會發光。',
     r:[{n:'搗蛋糖果', em:'🍬', need:{carrot:3, corn:2}}, {n:'南瓜派', em:'🥧', need:{pumpkin:2, egg:2, wheat:2}}]},
-  {id:'winter', n:'冬至', em:'🍡', th:'lantern', snow:1, at:Y => ymd(Y, 12, 22), from:-1, len:2, bonus:'exp', gift:{c:300, feed:20}, d:'下雪了！吃湯圓長一歲。',
+  {id:'winter', n:'冬至', em:'🍡', th:'lantern', snow:1, at:Y => ymd(Y, 12, 22), from:-3, len:7, bonus:'exp', gift:{c:300, feed:20}, d:'下雪了！吃湯圓長一歲。',
     r:[{n:'暖暖蔬菜湯', em:'🍲', need:{radish:3, cabbage:2}}, {n:'冬至湯圓', em:'🍡', need:{rice:4, honey:1}}]},
-  {id:'xmas', n:'聖誕節', em:'🎄', th:'xmas', snow:1, mg:'santa', at:Y => ymd(Y, 12, 25), from:-1, len:3, bonus:'order', gift:{c:1225, seed:6, fert:3}, d:'農場下雪了！聖誕老公公每天會來送禮物。',
+  {id:'xmas', n:'聖誕節', em:'🎄', th:'xmas', snow:1, mg:'santa', at:Y => ymd(Y, 12, 25), from:-3, len:7, bonus:'order', gift:{c:1225, seed:6, fert:3}, d:'農場下雪了！聖誕老公公每天會來送禮物。',
     r:[{n:'聖誕餅乾', em:'🍪', need:{wheat:3, egg:2}}, {n:'聖誕大蛋糕', em:'🎂', need:{strawberry:4, egg:3, wheat:3, milk:2}}]},
 ];
 const FEST_R = {}; for (const F of FESTS) F.r.forEach((R, k) => { R.id = F.id + k; R.f = F.id; FEST_R[R.id] = R; });
@@ -789,14 +792,16 @@ const isRain = () => weather() === 'rain';
 const WX_N = {sun:['☀️', '晴天'], cloud:['⛅', '多雲'], rain:['🌧️', '下雨']};
 
 /* ----- 節日 ----- */
-function festOcc(F, Y) { const main = F.at(Y); if (!main) return null; const s = addDays(main, F.from); return {F, s, e:addDays(s, F.len - 1), key:F.id + ':' + main.slice(0, 4)}; }
+function festOcc(F, Y) { const main = F.at(Y); if (!main) return null; const s = addDays(main, F.from); return {F, s, m:main, e:addDays(s, F.len - 1), key:F.id + ':' + main.slice(0, 4)}; }
 let _af = {k:'', v:[]};
 function activeFests(day = twDay()) {
   if (_af.k === day) return _af.v;
   let out = [];
   const tf = OVR && QS.get('fest') && FESTS.find(x => x.id === QS.get('fest'));
-  if (tf) out = [{F:tf, s:day, e:day, key:tf.id + ':' + day.slice(0, 4)}];
+  if (tf) out = [{F:tf, s:day, m:day, e:day, key:tf.id + ':' + day.slice(0, 4)}];
   else { const Y = +day.slice(0, 4); for (const F of FESTS) for (const y of [Y - 1, Y, Y + 1]) { const o = festOcc(F, y); if (o && o.s <= day && day <= o.e) out.push(o); } }
+  const dd = o => Math.abs(Date.UTC(+o.m.slice(0, 4), +o.m.slice(5, 7) - 1, +o.m.slice(8, 10)) - Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10)));
+  out.sort((a, b) => dd(a) - dd(b) || (a.m < b.m ? 1 : -1));
   _af = {k:day, v:out}; return out;
 }
 function nextFests(n = 6, day = twDay()) {
@@ -805,6 +810,9 @@ function nextFests(n = 6, day = twDay()) {
   return out.sort((a, b) => a.s < b.s ? -1 : 1).slice(0, n);
 }
 const festBonus = k => activeFests().some(o => o.F.bonus === k);
+const FEST_VIS = {xmas:'❄️ 下雪', winter:'❄️ 下雪', newyear:'🎆 白天晚上放煙火 · 👋 到好友家說新年快樂', cny:'🎆 白天晚上放煙火 · 👋 到好友家說新年快樂', valentine:'🫧 滿滿粉紅泡泡', qixi:'🫧 粉紅泡泡', moon:'🍖 大家一起烤肉 · 🌕 超大月亮', dragon:'🐉 池塘龍舟', halloween:'🎃 南瓜燈', lantern:'🏮 滿滿燈籠', national:'🎇 晚上煙火'};
+// 一整年的節日表：每個節日取「進行中或下一次」，照開始日期排
+function festYear(day = twDay()) { const Y = +day.slice(0, 4), out = []; for (const F of FESTS) for (const y of [Y - 1, Y, Y + 1]) { const o = festOcc(F, y); if (o && o.e >= day) { out.push(o); break; } } return out.sort((a, b) => a.s < b.s ? -1 : 1); }
 const daysTo = s => Math.round((Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10)) - Date.UTC(...twDay().split('-').map((v, i) => i === 1 ? v - 1 : +v))) / 864e5);
 const festRecipeOk = (R, L) => Object.keys(R.need).every(id => itemLv(id) <= L);
 function festLeft(f, key, R) { const got = f.fest?.[key]?.got?.[R.id] || {}; return Object.entries(R.need).map(([id, n]) => [id, n - (got[id] || 0)]).filter(([, n]) => n > 0); }
@@ -850,7 +858,7 @@ const RIDDLES = [
   ['有頭沒有頸，身上冷冰冰，有翅不能飛，無腳也能行', '打一動物', '魚', ['蛇', '鴨子', '烏龜']],
 ];
 const strHash = s => { let h = 2166136261; for (const ch of s) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; } return h; };
-function riddleToday(day = twDay()) { const h = strHash('riddle:' + day), R = RIDDLES[h % RIDDLES.length], opts = [R[2], ...R[3]], k = (h >>> 8) % 4; return {q:R[0], h:R[1], a:R[2], o:[...opts.slice(4 - k), ...opts.slice(0, 4 - k)]}; }
+function riddleToday(day = twDay()) { const h = strHash('riddle:' + day), dn0 = Math.floor(Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10)) / 864e5), R = RIDDLES[(dn0 * 7) % RIDDLES.length], opts = [R[2], ...R[3]], k = (h >>> 8) % 4; return {q:R[0], h:R[1], a:R[2], o:[...opts.slice(4 - k), ...opts.slice(0, 4 - k)]}; }
 const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const mgFests = () => activeFests().filter(o => o.F.mg);
 const mgSt = (f, o) => f?.fest?.[o.key]?.mg || null;
@@ -1957,7 +1965,7 @@ function applyEnv(dt, t) {
   for (const F2 of W.ffly) { F2.m.visible = ffOn; if (ffOn) { const a = t * .4 + F2.ph; F2.m.position.set(F2.cx + Math.cos(a) * F2.r + Math.sin(t * 1.3 + F2.ph) * .5, .6 + Math.sin(t * .9 + F2.ph) * .5 + (F2.ph % 1), F2.cz + Math.sin(a * 1.2) * F2.r * .7); F2.m.material.opacity = .4 + .6 * Math.max(0, Math.sin(t * 3 + F2.ph * 3)); } }
   // 煙火
   if ((W.festFw || (W.festTh === 'firework' && night > .5)) && t > W.fwNext && W.fw.length < 5) { W.fwNext = t + (night > .5 ? .8 : 1.4) + Math.random() * 1.4; launchFirework(night <= .5); }
-  W.bub.visible = W.festTh === 'heart';
+  W.bub.visible = !!W.festBubOn;
   if (W.bub.visible) { const tg = W.controls.target, a = W.bub.geometry.attributes.position.array; W.bub.position.set(tg.x, 0, tg.z); for (let i = 0, j = 0; i < a.length; i += 3, j++) { a[i + 1] += dt * (.6 + (j % 5) * .15); a[i] += Math.sin(t * .8 + W.bubPh[j]) * dt * .4; if (a[i + 1] > 13) a[i + 1] = 0; } W.bub.geometry.attributes.position.needsUpdate = true; }
   for (const sm of W.festSmoke) { const k = (t * .45 + sm.ph) % 1; sm.m.position.set(sm.x + Math.sin(t + sm.ph * 6) * .15 * k, sm.y + k * 1.8, 0); sm.m.scale.setScalar(.12 + k * .32); sm.m.material.opacity = .45 * (1 - k); }
   for (let i = W.fw.length - 1; i >= 0; i--) {
@@ -2117,12 +2125,14 @@ function raceFrame(t) {
   if (rt > R.end && !R.done) { R.done = true; R.onEnd(); }
   W.renderer.render(R.sc, R.cam);
 }
+const BBQ_AT = [[-5.6, 9.6, 0], [5.4, 9.8, 1], [.3, 12, 6], [-12.4, 7.6, 2], [20.5, 9.6, 3], [28, 9.8, 4], [-26, 9.8, 5]], th0 = o => o.F.th;
 function syncFest() {
   if (!W.festG) return;
-  const o = activeFests()[0] || null, key = o ? o.F.id : '';
+  const act = activeFests(), o = act[0] || null, key = act.map(x => x.F.id).join(',');
   if (W.festKey === key) return;
-  W.festKey = key; W.festG.clear(); W.festBob = []; W.festGlow = []; W.festSmoke = []; W.festTh = o ? o.F.th : ''; W.festSnow = !!o?.F.snow; W.festFw = !!o?.F.fw;
-  if (o?.F.mg !== 'santa') clearSanta();
+  W.festKey = key; W.festG.clear(); W.festBob = []; W.festGlow = []; W.festSmoke = []; W.festTh = o ? o.F.th : ''; W.festSnow = act.some(x => x.F.snow); W.festFw = act.some(x => x.F.fw); W.festBubOn = act.some(x => x.F.th === 'heart');
+  if (!act.some(x => x.F.mg === 'santa')) clearSanta();
+  if (o && th0(o) !== 'moon' && act.some(x => x.F.th === 'moon')) for (const [bx, bz, k] of BBQ_AT) W.festG.add(bbqGroup(bx, bz, k));
   W.festSign.visible = !!o; if (!o) return;
   setSign(W.festSign, o.F.em + o.F.n, '節日活動進行中！'); W.glowMat.color.set(o.F.th === 'pumpkin' ? '#ff8f00' : '#e53935');
   const G = W.festG, th = o.F.th;
@@ -2136,7 +2146,7 @@ function syncFest() {
     for (const [a, b2] of [[-40, -20], [-9.4, 9.4], [15, 33], [40.5, 59.5]]) for (let x = a + 1; x <= b2 - 1; x += 3) G.add(lantern(x, 2.4, -6.9, .8));
     for (const [x, z] of [[-13.4, -1.6], [-11.6, -1], [-6, -6.3], [-2.4, -6.3], [18.2, -6.6], [21.8, -6.6]]) G.add(lantern(x, 2.6, z, 1.2));
     if (th === 'moon') { const grill = grp(blk('#424242', [1.4, .5, .7], [0, .9, 0]), blk('#212121', [1.45, .06, .75], [0, 1.17, 0]), ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => rod('#616161', [.04, .9, .04], [a * .6, .45, b * .28])), ...[0, 1, 2].map(k => rod(['#ffb300', '#8d6e63', '#43a047'][k], [.06, .5, .06], [-.4 + k * .4, 1.25, 0], [0, 0, Math.PI / 2])));
-      grill.position.set(-11.6, 0, 5); G.add(grill); for (const [bx, bz, k] of [[-5.6, 9.6, 0], [5.4, 9.8, 1], [.3, 12, 6], [-12.4, 7.6, 2], [20.5, 9.6, 3], [28, 9.8, 4], [-26, 9.8, 5]]) G.add(bbqGroup(bx, bz, k)); G.add(grp(ball('#fafafa', [.28, .24, .36], [0, .25, 0]), ball('#fafafa', U(.17), [0, .48, .26]), ball('#fafafa', [.05, .2, .05], [.06, .72, .24]), ball('#fafafa', [.05, .2, .05], [-.06, .72, .24])).translateX(-10.2).translateZ(5.8)); }
+      grill.position.set(-11.6, 0, 5); G.add(grill); for (const [bx, bz, k] of BBQ_AT) G.add(bbqGroup(bx, bz, k)); G.add(grp(ball('#fafafa', [.28, .24, .36], [0, .25, 0]), ball('#fafafa', U(.17), [0, .48, .26]), ball('#fafafa', [.05, .2, .05], [.06, .72, .24]), ball('#fafafa', [.05, .2, .05], [-.06, .72, .24])).translateX(-10.2).translateZ(5.8)); }
   } else if (th === 'xmas') {
     const tree = (x, z, s) => { const g = grp(rod('#6d4c41', [.25, .8, .25], [0, .4, 0]), cone('#1b5e20', [1.7, 2, 1.7], [0, 1.6, 0]), cone('#2e7d32', [1.3, 1.7, 1.3], [0, 2.7, 0]), cone('#388e3c', [.9, 1.4, .9], [0, 3.7, 0]));
       const star = new THREE.Mesh(gO(), new THREE.MeshLambertMaterial({color:'#ffd740', emissive:'#000'})); star.scale.setScalar(.3); star.position.y = 4.6; star.userData.col = new THREE.Color('#ffd740'); star.userData.ph = 0; W.festGlow.push(star); g.add(star);
@@ -3589,7 +3599,7 @@ const md = s => +s.slice(5, 7) + '/' + +s.slice(8, 10);
 function openFest() {
   S.modal = () => {
     const f = S.my, L = levelOf(f.exp).L, act = activeFests(), nx = nextFests(8);
-    let body = act.length ? '' : `<div class="empty">現在沒有節日活動。下一個是 <b>${nx[0] ? `${nx[0].F.em} ${nx[0].F.n}（${daysTo(nx[0].s)} 天後）` : '—'}</b><br>節日一到，農場會自動換上節日布置，還有節日禮包、限定訂單和加成！</div>`;
+    let body = act.length ? '' : `<div class="empty">現在沒有節日活動。下一個是 <b>${nx[0] ? `${nx[0].F.em} ${nx[0].F.n}` : '—'}</b>${nx[0] ? `（${md(nx[0].s)}～${md(nx[0].e)}，${daysTo(nx[0].s)} 天後開始）` : ''}<br>節日一到，農場會自動換上節日布置，還有節日禮包、限定訂單、加成和每日小遊戲！</div>`;
     for (const o of act) {
       const F = o.F, st = f.fest?.[o.key] || {};
       body += `<div class="item" style="background:linear-gradient(#fff8e1,#ffe9b0);border-color:#ffb300"><div class="pic" style="font-size:38px">${F.em}</div><div class="info"><div class="t">${F.n} <small style="color:#8d6e63">${md(o.s)} ～ ${md(o.e)}</small></div><div class="d">${F.d}<br>✨ 節日加成：<b>${BONUS_N[F.bonus]}</b></div></div>
@@ -3603,7 +3613,9 @@ function openFest() {
           <div class="acts">${done ? '<button class="b g" disabled>今天完成了 ✅</button>' : !ok ? `<button class="b g" disabled>Lv.${Math.max(...Object.keys(R.need).map(itemLv))} 才能做</button>` : can ? `<button class="b o" data-act="festDeliver" data-k="${o.key}" data-r="${R.id}">📦 交貨</button>` : '<button class="b g" disabled>還沒有材料</button>'}</div></div>`;
       }).join('');
     }
-    body += `<div class="sec">📅 接下來的節日（每年自動舉辦，台灣時間）</div>` + nx.map(o => `<div class="log"><time>${md(o.s)}</time><span style="flex:1">${o.F.em} ${o.F.n}</span><small style="color:#8d6e63">${daysTo(o.s)} 天後 · ${BONUS_N[o.F.bonus]}</small></div>`).join('');
+    body += `<div class="sec">📅 節日活動表（每個節日 7 天，每年自動舉辦，台灣時間）</div>` + festYear().map(o => { const on = act.some(x => x.key === o.key), M = o.F.mg ? MG[o.F.mg] : null;
+      return `<div class="frow ${on ? 'on' : ''}"><div class="fl"><span class="fe">${o.F.em}</span><b>${o.F.n}</b>${on ? '<i>進行中</i>' : ''}</div><div class="fd">${md(o.s)}～${md(o.e)}</div>
+        <div class="fs">${M ? `<b class="fm">${M.em} ${M.n}</b> · ` : ''}${FEST_VIS[o.F.id] ? FEST_VIS[o.F.id] + ' · ' : ''}✨ ${BONUS_N[o.F.bonus]}<br><span class="fw">${on ? `進行中，還有 ${daysTo(o.e) + 1} 天` : `${daysTo(o.s)} 天後開始`}</span></div></div>`; }).join('');
     openModal('🎉 節日活動', body);
   };
   S.modal();
