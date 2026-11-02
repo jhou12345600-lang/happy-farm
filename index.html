@@ -57,6 +57,25 @@ button{font-family:inherit;cursor:pointer;border:none}
 #stage canvas{display:block;width:100%;height:100%;touch-action:none}
 #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;font-weight:900;color:#5d3a12;background:linear-gradient(#bfe6ff,#9ad85f);z-index:3;font-size:16px}
 #ovl{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}
+#stage.racing #ovl,#stage.racing #sceneTabs,#stage.racing #chatBtn,#stage.racing #wx,#stage.racing #visitBar,#stage.racing #hereBox,#stage.racing #hint{visibility:hidden}
+#race{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden}#race[hidden]{display:none}
+#race .rtitle{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:linear-gradient(#e53935,#b71c1c);color:#fff;font-weight:900;font-size:18px;padding:6px 18px;border-radius:16px;border:3px solid #fdd835;box-shadow:0 4px 10px rgba(0,0,0,.25)}
+#raceRank{position:absolute;top:56px;left:10px;background:rgba(255,250,240,.92);border:2px solid #8d6e63;border-radius:12px;padding:5px 9px;font-weight:800;font-size:13px;color:#5d4037;min-width:110px}#raceRank .me{color:#d84315}
+#raceCd{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);font-size:84px;font-weight:900;color:#fff;text-shadow:0 0 8px #b71c1c,0 4px 0 #b71c1c}#raceCd.go{animation:cdpop .9s ease-out}
+@keyframes cdpop{from{transform:translate(-50%,-50%) scale(1.8);opacity:.3}30%{transform:translate(-50%,-50%) scale(1);opacity:1}}
+#raceLbl .rl{position:absolute;left:0;top:0;white-space:nowrap;background:rgba(255,255,255,.92);border:2px solid #8d6e63;border-radius:10px;padding:1px 7px;font-weight:900;font-size:12px;color:#4e342e}#raceLbl .rl.me{background:#fff3c4;border-color:#ff9800;font-size:13px}
+#raceEnd{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25);pointer-events:auto}#raceEnd[hidden]{display:none}
+#raceEnd .rc{background:#fffaf0;border:4px solid #ff9800;border-radius:20px;padding:16px 22px;text-align:center;color:#5d4037;font-size:15px;line-height:1.7;animation:rqin2 .4s cubic-bezier(.2,1.5,.4,1)}#raceEnd .rc .big{font-size:58px;line-height:1.1}#raceEnd .rc .b{margin-top:8px}
+@keyframes rqin2{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.mgbox{text-align:center}.mgd{color:#8d6e63;font-size:13px;margin-bottom:10px}.mgtip{color:#8d6e63;font-weight:800;margin:8px 0}.mgres{font-size:16px;line-height:1.7;margin:10px 0;color:#5d4037}.mgres small{color:#8d6e63}.mgbtn{margin:10px 0}
+.mg3{display:flex;justify-content:center;gap:12px;margin:8px 0}.mgi{position:relative;width:88px;height:104px;border-radius:18px;border:3px solid #d7b98e;background:linear-gradient(#fffdf5,#ffeccc);font-size:52px;cursor:pointer;animation:mgfl 2s ease-in-out infinite}
+.mgi:nth-child(2){animation-delay:.3s}.mgi:nth-child(3){animation-delay:.6s}.mgi:disabled{cursor:default;color:inherit}.mgi.sel{border-color:#ff9800;box-shadow:0 0 0 3px #ffe0b2}
+.mgi em{position:absolute;right:-6px;top:-10px;font-style:normal;font-size:34px;animation:rqin2 .4s cubic-bezier(.2,1.5,.4,1)}.mgi.lose{opacity:.55}.mgi.win{border-color:#43a047;box-shadow:0 0 0 4px #c8e6c9}
+.shake{animation:mgsh .18s linear infinite!important}@keyframes mgsh{0%,100%{transform:rotate(0)}25%{transform:rotate(-9deg)}75%{transform:rotate(9deg)}}@keyframes mgfl{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.mg6{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:300px;margin:6px auto}.mgr{height:92px;border-radius:12px;border:3px solid #ffd54f;background:linear-gradient(#e53935,#c62828);color:#ffd54f;font-size:30px;font-weight:900;cursor:pointer}
+.mgr span{display:inline-block;width:46px;height:46px;line-height:46px;border-radius:50%;background:#ffd54f;color:#c62828;font-size:26px}.mgr em{font-style:normal;font-size:14px;color:#fff;line-height:1.3}.mgr.lose{opacity:.45}.mgr.sel{box-shadow:0 0 0 4px #ffe082}
+.rid{background:linear-gradient(#fff3e0,#ffe0b2);border:3px dashed #e53935;border-radius:16px;padding:12px;margin:4px 0 10px}.rq{font-size:18px;font-weight:900;color:#b71c1c;line-height:1.5}.rh{color:#8d6e63;font-size:13px;margin-top:4px}
+.ropts{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:320px;margin:0 auto}.ropts .b{font-size:17px;padding:10px}.ropts .b.win{background:#43a047;color:#fff;opacity:1}.ropts .b.lose{background:#e53935;color:#fff;opacity:1}.ropts .b.dim{opacity:.45}
 .ov{position:absolute;left:0;top:0;white-space:nowrap;font-weight:900;font-size:12px;color:#fff;text-shadow:0 0 3px #5d3a12,0 0 3px #5d3a12,0 0 2px #5d3a12;will-change:transform}
 .ov.bub{background:#fff;color:#3b2a14;text-shadow:none;border:2px solid #8d6e63;border-radius:12px;padding:3px 9px;font-size:13px;max-width:200px;white-space:normal;text-align:center}
 .ov.cnt{background:#e53935;border:2px solid #fff;border-radius:10px;padding:0 6px;font-size:11px;text-shadow:none}
@@ -272,6 +291,7 @@ button{font-family:inherit;cursor:pointer;border:none}
     <div id="wx"></div>
     <div id="visitBar" hidden><span>👀 在 <b id="visitName"></b> 的家</span><button data-act="home">🏠 回家</button></div>
     <div id="hereBox" hidden></div>
+    <div id="race" hidden><div class="rtitle">🐉 端午龍舟賽</div><div id="raceRank"></div><div id="raceCd"></div><div id="raceLbl"></div><div id="raceEnd" hidden></div></div>
     <div id="hint">🖱️ 拖曳旋轉視角、滾輪縮放</div>
     <button id="chatBtn" data-act="chat" title="說話">💬</button>
     <div id="tip"></div>
@@ -613,21 +633,21 @@ const nthSun = (Y, M, n) => { const w = new Date(Date.UTC(Y, M - 1, 1)).getUTCDa
 const BONUS_N = {exp:'收成經驗 ×1.5', yield:'收成每塊多 +1', order:'料理訂單金幣 ×1.5', sell:'倉庫賣東西多 20%'};
 // th：場景主題；r：節日訂單（每天各能完成一次）[簡單, 進階]
 const FESTS = [
-  {id:'newyear', n:'元旦跨年', em:'🎆', th:'firework', at:Y => ymd(Y, 1, 1), from:-1, len:3, bonus:'exp', gift:{c:500, fert:3}, d:'晚上有跨年煙火秀！',
+  {id:'newyear', n:'元旦跨年', em:'🎆', th:'firework', fw:1, hello:'新年快樂！🎆', at:Y => ymd(Y, 1, 1), from:-1, len:2, bonus:'exp', gift:{c:500, fert:3}, d:'晚上有跨年煙火秀！',
     r:[{n:'跨年薯條派對', em:'🍟', need:{potato:4, tomato:2}}, {n:'跨年火鍋', em:'🍲', need:{cabbage:2, mushroom:2, whiteshrimp:3, clam:3}}]},
-  {id:'cny', n:'農曆春節', em:'🧧', th:'lantern', at:Y => lunarDate(Y, 'cny'), from:-1, len:6, bonus:'order', gift:{c:888, seed:6, fert:3}, d:'除夕到初五，發紅包囉！紅燈籠掛滿農場。',
+  {id:'cny', n:'農曆春節', em:'🧧', th:'lantern', fw:1, mg:'redenv', hello:'新年快樂！恭喜發財 🧧', at:Y => lunarDate(Y, 'cny'), from:-1, len:4, bonus:'order', gift:{c:888, seed:6, fert:3}, d:'除夕到初三，放煙火、抽紅包！紅燈籠掛滿農場。',
     r:[{n:'蘿蔔糕', em:'🍘', need:{radish:5, wheat:2}}, {n:'年年有魚年夜飯', em:'🐟', need:{carp:2, garlic:2, cabbage:2, duckegg:2}}]},
-  {id:'lantern', n:'元宵節', em:'🏮', th:'lantern', at:Y => addDays(lunarDate(Y, 'cny'), 14), from:-1, len:3, bonus:'exp', gift:{c:300, feed:20}, d:'提燈籠、吃湯圓！',
+  {id:'lantern', n:'元宵節', em:'🏮', th:'lantern', mg:'riddle', at:Y => addDays(lunarDate(Y, 'cny'), 14), from:-1, len:2, bonus:'exp', gift:{c:300, feed:20}, d:'提燈籠、吃湯圓、猜燈謎！',
     r:[{n:'花燈', em:'🏮', need:{daisy:3, tulip:2}}, {n:'元宵湯圓', em:'🍡', need:{rice:4, honey:1}}]},
-  {id:'valentine', n:'西洋情人節', em:'💝', th:'heart', at:Y => ymd(Y, 2, 14), from:-1, len:3, bonus:'sell', gift:{c:214, seed:4}, d:'農場飄滿愛心氣球！',
+  {id:'valentine', n:'西洋情人節', em:'💝', th:'heart', at:Y => ymd(Y, 2, 14), from:-1, len:2, bonus:'sell', gift:{c:214, seed:4}, d:'農場飄滿粉紅泡泡和愛心，幸福美滿！',
     r:[{n:'愛心花束', em:'💐', need:{tulip:3, daisy:3}}, {n:'玫瑰草莓禮盒', em:'🌹', need:{rose:6, strawberry:3}}]},
-  {id:'tree', n:'植樹節', em:'🌳', th:'balloon', at:Y => ymd(Y, 3, 12), from:-1, len:3, bonus:'exp', gift:{c:300, seed:8}, d:'種樹愛地球，收成經驗加倍拿！',
+  {id:'tree', n:'植樹節', em:'🌳', th:'balloon', mg:'tree', at:Y => ymd(Y, 3, 12), from:-1, len:2, bonus:'exp', gift:{c:300, seed:8}, d:'種樹愛地球，收成經驗加倍拿！',
     r:[{n:'綠化便當', em:'🥗', need:{lettuce:3, cabbage:1}}, {n:'果樹禮籃', em:'🍎', need:{apple:3, orange:2}}]},
-  {id:'kids', n:'兒童節', em:'🎈', th:'balloon', at:Y => ymd(Y, 4, 4), from:-1, len:3, bonus:'yield', gift:{c:404, feed:20}, d:'彩色氣球派對！',
+  {id:'kids', n:'兒童節', em:'🎈', th:'balloon', mg:'candy', at:Y => ymd(Y, 4, 4), from:-1, len:2, bonus:'yield', gift:{c:404, feed:20}, d:'彩色氣球派對！',
     r:[{n:'兒童點心', em:'🌽', need:{corn:2, egg:2}}, {n:'兒童節蛋糕', em:'🎂', need:{strawberry:3, egg:2, wheat:2, milk:1}}]},
-  {id:'mother', n:'母親節', em:'💐', th:'balloon', at:Y => nthSun(Y, 5, 2), from:-2, len:3, bonus:'order', gift:{c:500, fert:2}, d:'送媽媽一束花吧！',
+  {id:'mother', n:'母親節', em:'💐', th:'balloon', at:Y => nthSun(Y, 5, 2), from:-1, len:2, bonus:'order', gift:{c:500, fert:2}, d:'送媽媽一束花吧！',
     r:[{n:'媽媽花束', em:'💐', need:{tulip:3, daisy:2}}, {n:'康乃馨蛋糕', em:'🍰', need:{carnation:4, egg:2, wheat:2}}]},
-  {id:'dragon', n:'端午節', em:'🐉', th:'dragon', at:Y => lunarDate(Y, 'dragon'), from:-2, len:3, bonus:'yield', gift:{c:505, seed:5}, d:'池塘有龍舟，綁粽子囉！',
+  {id:'dragon', n:'端午節', em:'🐉', th:'dragon', mg:'boat', at:Y => lunarDate(Y, 'dragon'), from:-1, len:2, bonus:'yield', gift:{c:505, seed:5}, d:'和好友比划龍舟、綁粽子囉！',
     r:[{n:'艾草香包', em:'🌿', need:{grass:5, daisy:2}}, {n:'香菇粽', em:'🍙', need:{rice:4, mushroom:1, duckegg:1}}]},
   {id:'qixi', n:'七夕情人節', em:'💞', th:'heart', at:Y => lunarDate(Y, 'qixi'), from:-1, len:2, bonus:'sell', gift:{c:300, seed:4}, d:'牛郎織女鵲橋相會！',
     r:[{n:'七夕花束', em:'💐', need:{daisy:4, tulip:2}}, {n:'七夕甜點', em:'🍓', need:{strawberry:4, milk:1}}]},
@@ -635,7 +655,7 @@ const FESTS = [
     r:[{n:'爸爸早餐', em:'🍳', need:{egg:2, radish:2, wheat:2}}, {n:'爸爸海鮮大餐', em:'🦀', need:{crab:1, whiteshrimp:3}}]},
   {id:'ghost', n:'中元普渡', em:'🏮', th:'lantern', at:Y => addDays(lunarDate(Y, 'qixi'), 8), from:-1, len:2, bonus:'yield', gift:{c:300, feed:20}, d:'準備豐盛的普渡供品。',
     r:[{n:'普渡供品', em:'🧺', need:{wheat:3, corn:2, potato:2}}, {n:'豐盛普渡桌', em:'🍍', need:{pineapple:1, apple:2, rice:3}}]},
-  {id:'moon', n:'中秋節', em:'🥮', th:'moon', at:Y => lunarDate(Y, 'moon'), from:-2, len:4, bonus:'exp', gift:{c:815, fert:3}, d:'晚上有超大月亮，全家烤肉賞月！',
+  {id:'moon', n:'中秋節', em:'🥮', th:'moon', mg:'skewer', at:Y => lunarDate(Y, 'moon'), from:-1, len:2, bonus:'exp', gift:{c:815, fert:3}, d:'大家都在烤肉！晚上有超大月亮。',
     r:[{n:'中秋烤肉', em:'🍢', need:{corn:3, potato:2, cabbage:1}}, {n:'蛋黃月餅', em:'🥮', need:{wheat:3, duckegg:2, honey:1}}]},
   {id:'teacher', n:'教師節', em:'🍎', th:'balloon', at:Y => ymd(Y, 9, 28), from:-1, len:2, bonus:'exp', gift:{c:300, seed:4}, d:'謝謝老師！',
     r:[{n:'敬師便當', em:'🍱', need:{lettuce:2, egg:2, carrot:2}}, {n:'感恩蘋果籃', em:'🍎', need:{apple:4, honey:1}}]},
@@ -643,11 +663,11 @@ const FESTS = [
     r:[{n:'登高點心', em:'🥔', need:{potato:3, egg:1}}, {n:'長壽麵', em:'🍜', need:{wheat:4, egg:2, mushroom:1}}]},
   {id:'national', n:'國慶日', em:'🎇', th:'firework', at:Y => ymd(Y, 10, 10), from:-1, len:2, bonus:'sell', gift:{c:1010}, d:'晚上有國慶煙火！',
     r:[{n:'國慶野餐', em:'🧺', need:{tomato:2, lettuce:2, egg:2}}, {n:'國慶大餐', em:'🍽️', need:{bass:2, rice:3, broccoli:1}}]},
-  {id:'halloween', n:'萬聖節', em:'🎃', th:'pumpkin', at:Y => ymd(Y, 10, 31), from:-6, len:7, bonus:'yield', gift:{c:300, seed:6}, d:'不給糖就搗蛋！南瓜燈晚上會發光。',
+  {id:'halloween', n:'萬聖節', em:'🎃', th:'pumpkin', at:Y => ymd(Y, 10, 31), from:-1, len:2, bonus:'yield', gift:{c:300, seed:6}, d:'不給糖就搗蛋！南瓜燈晚上會發光。',
     r:[{n:'搗蛋糖果', em:'🍬', need:{carrot:3, corn:2}}, {n:'南瓜派', em:'🥧', need:{pumpkin:2, egg:2, wheat:2}}]},
-  {id:'winter', n:'冬至', em:'🍡', th:'lantern', at:Y => ymd(Y, 12, 22), from:-1, len:2, bonus:'exp', gift:{c:300, feed:20}, d:'吃湯圓長一歲！',
+  {id:'winter', n:'冬至', em:'🍡', th:'lantern', snow:1, at:Y => ymd(Y, 12, 22), from:-1, len:2, bonus:'exp', gift:{c:300, feed:20}, d:'下雪了！吃湯圓長一歲。',
     r:[{n:'暖暖蔬菜湯', em:'🍲', need:{radish:3, cabbage:2}}, {n:'冬至湯圓', em:'🍡', need:{rice:4, honey:1}}]},
-  {id:'xmas', n:'聖誕節', em:'🎄', th:'xmas', at:Y => ymd(Y, 12, 25), from:-5, len:7, bonus:'order', gift:{c:1225, seed:6, fert:3}, d:'農場下雪了！聖誕樹閃閃發亮。',
+  {id:'xmas', n:'聖誕節', em:'🎄', th:'xmas', snow:1, mg:'santa', at:Y => ymd(Y, 12, 25), from:-1, len:3, bonus:'order', gift:{c:1225, seed:6, fert:3}, d:'農場下雪了！聖誕老公公每天會來送禮物。',
     r:[{n:'聖誕餅乾', em:'🍪', need:{wheat:3, egg:2}}, {n:'聖誕大蛋糕', em:'🎂', need:{strawberry:4, egg:3, wheat:3, milk:2}}]},
 ];
 const FEST_R = {}; for (const F of FESTS) F.r.forEach((R, k) => { R.id = F.id + k; R.f = F.id; FEST_R[R.id] = R; });
@@ -790,6 +810,62 @@ const festRecipeOk = (R, L) => Object.keys(R.need).every(id => itemLv(id) <= L);
 function festLeft(f, key, R) { const got = f.fest?.[key]?.got?.[R.id] || {}; return Object.entries(R.need).map(([id, n]) => [id, n - (got[id] || 0)]).filter(([, n]) => n > 0); }
 const festDoneToday = (f, key, R) => f.fest?.[key]?.d?.[R.id] === twDay();
 function festRw(R) { const rw = recipeReward(R.id, R.need); return {c:rw.c * 2, e:rw.e * 2}; }
+
+/* ----- 節日小遊戲 ----- */
+const MG = {
+  santa:{n:'聖誕老公公送禮', em:'🎅', d:'聖誕老公公每天會坐雪橇飛過你的農場，丟下一份隨機禮物，點禮物就能打開！'},
+  redenv:{n:'抽紅包', em:'🧧', d:'每天可以抽一個紅包，每個紅包都有獎！'},
+  riddle:{n:'猜燈謎', em:'🏮', d:'每天一題燈謎（每天題目不一樣），只有一次機會，猜對有獎！'},
+  tree:{n:'植樹尋寶', em:'🌳', d:'三棵樹只有一棵藏著禮物，每天只能搖一次！', it:'🌳', none:'🍃'},
+  candy:{n:'糖果抽抽樂', em:'🍬', d:'三顆糖果只有一顆有獎，每天只能抽一次！', it:'🍬', none:'💨'},
+  skewer:{n:'中秋肉串抽抽樂', em:'🍢', d:'三支肉串只有一支有獎，每天只能抽一次！', it:'🍢', none:'💨'},
+  boat:{n:'好友龍舟賽', em:'🐉', d:'和好友一起划龍舟比賽！第一名拿大獎，其他名次也有 2 個化肥。每天一場。'},
+};
+const RIDDLES = [
+  ['一口咬掉牛尾巴', '打一字', '告', ['吾', '舌', '午']], ['一人一張口，口下長隻手', '打一字', '拿', ['拾', '合', '招']],
+  ['千里相逢', '打一字', '重', ['逢', '千', '童']], ['半部春秋', '打一字', '秦', ['春', '秋', '奏']],
+  ['上不在上，下不在下，不可在上，且宜在下', '打一字', '一', ['卡', '丁', '止']], ['一月七日', '打一字', '脂', ['明', '旨', '肥']],
+  ['自大一點', '打一字', '臭', ['犬', '太', '哭']], ['九十九', '打一字', '白', ['百', '旭', '丸']],
+  ['十張口，一顆心', '打一字', '思', ['患', '恩', '田']], ['人在草木中', '打一字', '茶', ['苦', '休', '菜']],
+  ['半個月亮', '打一字', '胖', ['朋', '伴', '明']], ['四面不透風，十字在當中', '打一字', '田', ['由', '甲', '回']],
+  ['兩個月亮', '打一字', '朋', ['明', '用', '肥']], ['一點一橫長，一撇到南洋，南洋有個人，只有一寸長', '打一字', '府', ['付', '店', '底']],
+  ['上面一個上，下面一個下', '打一字', '卡', ['止', '下', '占']], ['一邊是紅，一邊是綠，一邊喜風，一邊喜雨', '打一字', '秋', ['炒', '和', '科']],
+  ['七十二小時', '打一字', '晶', ['昌', '早', '時']], ['牛過獨木橋', '打一字', '生', ['牛', '午', '半']],
+  ['森林大火', '打一字', '焚', ['林', '炎', '燒']], ['一隻黑狗，不叫不吼', '打一字', '默', ['然', '獸', '狀']],
+  ['三人同日去看花', '打一字', '春', ['晶', '夫', '香']], ['二人頂破天', '打一字', '夫', ['天', '失', '犬']],
+  ['一個人，他姓王，口袋裡裝著兩塊糖', '打一字', '金', ['全', '玉', '呈']],
+  ['麻屋子，紅帳子，裡面住著白胖子', '打一植物', '花生', ['蓮子', '栗子', '紅豆']],
+  ['小時候穿黑衣，長大了穿綠衣，水裡過日子，岸上來睡覺', '打一動物', '青蛙', ['烏龜', '鴨子', '螃蟹']],
+  ['頭戴紅帽子，身穿白袍子，走路像公子，說話伸脖子', '打一動物', '鵝', ['公雞', '白鷺鷥', '鴿子']],
+  ['身穿綠衣裳，肚裡水汪汪，生的子兒多，個個黑臉膛', '打一水果', '西瓜', ['芭樂', '蓮霧', '哈密瓜']],
+  ['紅口袋，綠口袋，有人怕，有人愛', '打一蔬菜', '辣椒', ['番茄', '紅蘿蔔', '茄子']],
+  ['有面沒有口，有腳沒有手，雖有四隻腳，自己不會走', '打一傢俱', '桌子', ['衣櫃', '門', '鏡子']],
+  ['弟兄七八個，圍著柱子坐，只要一分開，衣服就扯破', '打一食物', '大蒜', ['洋蔥', '竹筍', '馬鈴薯']],
+  ['一物生來身穿三百多件衣，每天脫一件，年底剩張皮', '打一物', '日曆', ['洋蔥', '筆記本', '衣櫃']],
+  ['千條線，萬條線，掉到水裡看不見', '打一自然現象', '雨', ['雪', '風', '霧']],
+  ['小小諸葛亮，獨坐中軍帳，擺下八卦陣，專捉飛來將', '打一動物', '蜘蛛', ['螳螂', '青蛙', '壁虎']],
+  ['耳朵長，尾巴短，紅眼睛，白毛衫', '打一動物', '兔子', ['綿羊', '老鼠', '貓咪']],
+  ['獨木造高樓，沒瓦沒磚頭，人在水下走，水在人上流', '打一物', '雨傘', ['橋', '雨衣', '屋簷']],
+  ['小小一姑娘，坐在水中央，身穿粉紅衫，坐在綠船上', '打一植物', '荷花', ['浮萍', '水草', '菱角']],
+  ['有頭沒有頸，身上冷冰冰，有翅不能飛，無腳也能行', '打一動物', '魚', ['蛇', '鴨子', '烏龜']],
+];
+const strHash = s => { let h = 2166136261; for (const ch of s) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; } return h; };
+function riddleToday(day = twDay()) { const h = strHash('riddle:' + day), R = RIDDLES[h % RIDDLES.length], opts = [R[2], ...R[3]], k = (h >>> 8) % 4; return {q:R[0], h:R[1], a:R[2], o:[...opts.slice(4 - k), ...opts.slice(0, 4 - k)]}; }
+const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const mgFests = () => activeFests().filter(o => o.F.mg);
+const mgSt = (f, o) => f?.fest?.[o.key]?.mg || null;
+const mgDone = (f, o) => mgSt(f, o)?.d === twDay();
+const festHello = () => activeFests().find(o => o.F.hello)?.F.hello || '';
+function rollPrize(onlyItem) { const L = levelOf(S.my.exp).L; return {k:onlyItem ? ri(1, 5) : ri(0, 5), c:300 + ri(0, 5) * 100, s:rnd(Object.keys(CROPS).filter(c => CROPS[c].lv <= L))}; }
+function givePrize(f, p) {
+  if (!p) return '';
+  if (p.k === 0) { f.coins += p.c; return `💰${p.c}`; }
+  if (p.k === 1) { f.fert = (f.fert || 0) + 3; return '🧪化肥×3'; }
+  if (p.k === 2 && CROPS[p.s]) { f.seeds[p.s] = (f.seeds[p.s] || 0) + 6; return `🌱${CROPS[p.s].n}種子×6`; }
+  if (p.k === 3) { f.feed = (f.feed || 0) + 20; return '🌾飼料×20'; }
+  if (p.k === 4) { f.petfood = (f.petfood || 0) + 3; return '🦴寵物零食×3'; }
+  f.gacha = (f.gacha || 0) + 1; return '🎰抽抽樂券×1';
+}
 
 /* ----- 圖鑑、成就 ----- */
 function dexAdd(f, id, n = 1) { if (!id) return; f.dex ??= {}; f.dex[id] = (f.dex[id] || 0) + n; }
@@ -1544,7 +1620,7 @@ function thumbURL(kind, id) {
   } catch (e) { console.warn(e); THUMB[key] = ''; }
   return THUMB[key];
 }
-if (QS.has('debug')) window.__hf = {thumbURL, PETS, ANIMALS, CROPS, PROD, SEA, PROC, MACH, activeFests, weather, twNow, scr(kind, i) { let p; if (kind === 'mach') { const [x, z] = facXZ(i); p = new THREE.Vector3(x, 1, z); } else if (kind === 'pet') p = W.pets[i].m.position.clone().setY(.5); else if (kind === 'plot') { const [x, z] = plotXZ(i); p = new THREE.Vector3(x, .4, z); } else if (kind === 'ani') p = W.animals[i].g.position.clone().setY(.5); else if (kind === 'poop') p = new THREE.Vector3(POOP_XZ[i][0], .2, POOP_XZ[i][1]); else if (kind === 'pond') { const [x, z] = pondXZ(i); p = new THREE.Vector3(x, .45, z); } else p = new THREE.Vector3(TROUGH_XZ[0], .5, TROUGH_XZ[1]); p.project(W.camera); const r = W.renderer.domElement.getBoundingClientRect(); return [r.left + (p.x * .5 + .5) * r.width, r.top + (-p.y * .5 + .5) * r.height]; }, S:() => S, get W() { return W; }};
+if (QS.has('debug')) window.__hf = {act:(k, d = {}) => ACT[k](d), clickHit:h => clickHit(h), riddleToday, thumbURL, PETS, ANIMALS, CROPS, PROD, SEA, PROC, MACH, activeFests, weather, twNow, scr(kind, i) { let p; if (kind === 'mach') { const [x, z] = facXZ(i); p = new THREE.Vector3(x, 1, z); } else if (kind === 'pet') p = W.pets[i].m.position.clone().setY(.5); else if (kind === 'plot') { const [x, z] = plotXZ(i); p = new THREE.Vector3(x, .4, z); } else if (kind === 'ani') p = W.animals[i].g.position.clone().setY(.5); else if (kind === 'poop') p = new THREE.Vector3(POOP_XZ[i][0], .2, POOP_XZ[i][1]); else if (kind === 'pond') { const [x, z] = pondXZ(i); p = new THREE.Vector3(x, .45, z); } else p = new THREE.Vector3(TROUGH_XZ[0], .5, TROUGH_XZ[1]); p.project(W.camera); const r = W.renderer.domElement.getBoundingClientRect(); return [r.left + (p.x * .5 + .5) * r.width, r.top + (-p.y * .5 + .5) * r.height]; }, S:() => S, get W() { return W; }};
 const icon = (kind, id) => { const u = thumbURL(kind, id); return u ? `<img src="${u}" alt="">` : '🌱'; };
 const itemIcon = id => icon(CROPS[id] ? 'crop' : SEA[id] ? 'sea' : PROC[id] ? 'proc' : 'prod', id);
 
@@ -1820,10 +1896,10 @@ function buildEnv(S3) {
   W.rain = new THREE.LineSegments(rg, new THREE.LineBasicMaterial({color:'#dbe7f0', transparent:true, opacity:0, depthWrite:false})); W.rain.frustumCulled = false; W.rain.visible = false; S3.add(W.rain);
   const SN = 1100, sp = new Float32Array(SN * 3); for (let i = 0; i < SN; i++) sp.set([(Math.random() - .5) * 70, Math.random() * 28, (Math.random() - .5) * 40 - 8], i * 3);
   const sng = new THREE.BufferGeometry(); sng.setAttribute('position', new THREE.BufferAttribute(sp, 3));
-  W.snow = new THREE.Points(sng, new THREE.PointsMaterial({color:'#ffffff', size:.22, map:dotTex(), transparent:true, opacity:.95, depthWrite:false})); W.snow.frustumCulled = false; W.snow.visible = false; S3.add(W.snow);
+  W.snow = new THREE.Points(sng, new THREE.PointsMaterial({color:'#ffffff', size:.34, map:dotTex(), transparent:true, opacity:.95, depthWrite:false})); W.snow.frustumCulled = false; W.snow.visible = false; S3.add(W.snow);
   // 節日裝飾
   W.festG = new THREE.Group(); S3.add(W.festG); W.festKey = null; W.festBob = []; W.festGlow = []; W.fw = []; W.fwNext = 0;
-  W.festSign = makeSign(4.6, -7.4); W.festSign.visible = false; S3.add(W.festSign);
+  W.festSign = makeSign(4.6, -7.4); W.festSign.visible = false; S3.add(W.festSign); W.festSmoke = []; buildBubbles(S3);
   W.glowMat = new THREE.MeshLambertMaterial({color:'#e53935', emissive:'#000000'});
   W.envS = null; W.envAt = 0;
 }
@@ -1873,38 +1949,180 @@ function applyEnv(dt, t) {
   // 雨
   W.rain.visible = rain > .03; W.rain.material.opacity = .55 * rain;
   if (W.rain.visible) { const tg = W.controls.target, a = W.rain.geometry.attributes.position.array; W.rain.position.set(tg.x, 0, tg.z); for (let i = 0; i < W.rainY.length; i++) { let y = W.rainY[i] - dt * 32; if (y < 0) y += 32; W.rainY[i] = y; a[i * 6 + 1] = y; a[i * 6 + 4] = y + .75; } W.rain.geometry.attributes.position.needsUpdate = true; }
-  W.snow.visible = W.festTh === 'xmas' && rain < .5;
+  W.snow.visible = W.festSnow && rain < .5;
   if (W.snow.visible) { const tg = W.controls.target, a = W.snow.geometry.attributes.position.array; W.snow.position.set(tg.x, 0, tg.z); for (let i = 0; i < a.length; i += 3) { a[i + 1] -= dt * 1.6; a[i] += Math.sin(t + i) * dt * .3; if (a[i + 1] < 0) a[i + 1] += 28; } W.snow.geometry.attributes.position.needsUpdate = true; }
   // 動態生物：白天鳥和蝴蝶，晚上螢火蟲
   const birdsOn = day > .4 && rain < .5; for (const B2 of W.birds) B2.b.visible = birdsOn; for (const f of W.flies) f.b.visible = birdsOn;
   const ffOn = night > .6 && rain < .3;
   for (const F2 of W.ffly) { F2.m.visible = ffOn; if (ffOn) { const a = t * .4 + F2.ph; F2.m.position.set(F2.cx + Math.cos(a) * F2.r + Math.sin(t * 1.3 + F2.ph) * .5, .6 + Math.sin(t * .9 + F2.ph) * .5 + (F2.ph % 1), F2.cz + Math.sin(a * 1.2) * F2.r * .7); F2.m.material.opacity = .4 + .6 * Math.max(0, Math.sin(t * 3 + F2.ph * 3)); } }
   // 煙火
-  if (W.festTh === 'firework' && night > .5 && t > W.fwNext && W.fw.length < 5) { W.fwNext = t + .8 + Math.random() * 1.4; launchFirework(); }
+  if ((W.festFw || (W.festTh === 'firework' && night > .5)) && t > W.fwNext && W.fw.length < 5) { W.fwNext = t + (night > .5 ? .8 : 1.4) + Math.random() * 1.4; launchFirework(night <= .5); }
+  W.bub.visible = W.festTh === 'heart';
+  if (W.bub.visible) { const tg = W.controls.target, a = W.bub.geometry.attributes.position.array; W.bub.position.set(tg.x, 0, tg.z); for (let i = 0, j = 0; i < a.length; i += 3, j++) { a[i + 1] += dt * (.6 + (j % 5) * .15); a[i] += Math.sin(t * .8 + W.bubPh[j]) * dt * .4; if (a[i + 1] > 13) a[i + 1] = 0; } W.bub.geometry.attributes.position.needsUpdate = true; }
+  for (const sm of W.festSmoke) { const k = (t * .45 + sm.ph) % 1; sm.m.position.set(sm.x + Math.sin(t + sm.ph * 6) * .15 * k, sm.y + k * 1.8, 0); sm.m.scale.setScalar(.12 + k * .32); sm.m.material.opacity = .45 * (1 - k); }
   for (let i = W.fw.length - 1; i >= 0; i--) {
     const F3 = W.fw[i], age = t - F3.t0; if (age > 2.4) { W.scene.remove(F3.p); F3.p.geometry.dispose(); F3.p.material.dispose(); W.fw.splice(i, 1); continue; }
-    const a = F3.p.geometry.attributes.position.array; for (let j = 0; j < F3.v.length; j++) { const v = F3.v[j]; a[j * 3] = v[0] * age * 4; a[j * 3 + 1] = v[1] * age * 4 - 2.2 * age * age; a[j * 3 + 2] = v[2] * age * 4; }
+    const a = F3.p.geometry.attributes.position.array; for (let j = 0; j < F3.v.length; j++) { const v = F3.v[j]; const sp = F3.sp || 4; a[j * 3] = v[0] * age * sp; a[j * 3 + 1] = v[1] * age * sp - 2.2 * age * age * sp / 4; a[j * 3 + 2] = v[2] * age * sp; }
     F3.p.geometry.attributes.position.needsUpdate = true; F3.p.material.opacity = Math.max(0, 1 - age / 2.4);
   }
   for (const b of W.festBob) b.g.position.y = b.y + Math.sin(t * 1.4 + b.ph) * .18;
 }
-function launchFirework() {
-  if (!W.fw) return; const n = 80, pos = new Float32Array(n * 3), v = [];
+function launchFirework(day) {
+  if (!W.fw) return; const n = day ? 110 : 80, pos = new Float32Array(n * 3), v = [];
   for (let i = 0; i < n; i++) { const u = Math.random() * 2 - 1, th = Math.random() * Math.PI * 2, r = Math.sqrt(1 - u * u); v.push([r * Math.cos(th), u, r * Math.sin(th)]); }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  const p = new THREE.Points(g, new THREE.PointsMaterial({color:rnd(['#ff5252', '#ffd740', '#69f0ae', '#40c4ff', '#e040fb', '#ffffff']), size:.9, map:dotTex(), transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, fog:false}));
-  const tg = W.controls.target; p.position.set(tg.x + (Math.random() - .5) * 36, 16 + Math.random() * 9, tg.z - 14 - Math.random() * 10); p.frustumCulled = false;
-  W.scene.add(p); W.fw.push({p, v, t0:performance.now() / 1000}); Music.sfx('boom');
+  const p = new THREE.Points(g, new THREE.PointsMaterial({color:rnd(day ? ['#ff1744', '#ff6d00', '#d500f9', '#2962ff', '#ffd600', '#f50057'] : ['#ff5252', '#ffd740', '#69f0ae', '#40c4ff', '#e040fb', '#ffffff']), size:day ? 1.6 : .9, map:dotTex(), transparent:true, depthWrite:false, depthTest:!day, blending:day ? THREE.NormalBlending : THREE.AdditiveBlending, fog:false}));
+  const tg = W.controls.target; p.position.set(tg.x + (Math.random() - .5) * 24, 4.2 + Math.random() * 2.6, tg.z - 5 - Math.random() * 3.5); p.frustumCulled = false;
+  W.scene.add(p); W.fw.push({p, v, sp:day ? 2.3 : 4, t0:performance.now() / 1000}); Music.sfx('boom');
 }
 function glowBall(col, s, p) { const m = new THREE.Mesh(gS(), new THREE.MeshLambertMaterial({color:col, emissive:'#000000'})); m.scale.set(...s); m.position.set(...p); m.userData.col = new THREE.Color(col); m.userData.ph = Math.random() * 6; W.festGlow.push(m); return m; }
 function lantern(x, y, z, s = 1) { const g = grp(new THREE.Mesh(gS(), W.glowMat).translateY(0), rod('#ffca28', [.16, .07, .16], [0, .4, 0]), rod('#ffca28', [.16, .07, .16], [0, -.4, 0]), rod('#ffca28', [.025, .25, .025], [0, -.58, 0])); g.children[0].scale.set(.34, .42, .34); g.position.set(x, y, z); g.scale.setScalar(s); return g; }
 function balloonCluster(x, z, cols, h = 3) { const g = new THREE.Group(), bs = new THREE.Group(); g.add(bs); cols.forEach((c, k) => { const b = grp(ball(c, [.32, .4, .32], [0, 0, 0]), cone(c, [.06, .08, .06], [0, -.42, 0], [Math.PI, 0, 0])); b.position.set(Math.cos(k * 2.1) * .35, h + (k % 2) * .4, Math.sin(k * 2.1) * .35); bs.add(b); const pts = [new THREE.Vector3(b.position.x, b.position.y - .45, b.position.z), new THREE.Vector3(0, .9, 0)]; bs.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({color:'#ffffff'}))); }); g.add(blk('#8d6e63', [.12, .9, .12], [0, .45, 0])); g.position.set(x, 0, z); W.festBob.push({g:bs, y:0, ph:Math.random() * 6}); return g; }
 function heartModel(c) { return grp(ball(c, U(.3), [-.2, .1, 0]), ball(c, U(.3), [.2, .1, 0]), cone(c, [.42, .55, .3], [0, -.25, 0], [Math.PI, 0, 0])); }
+/* ----- 節日 3D：泡泡、烤肉、聖誕老公公 ----- */
+let BUBT = null;
+function bubTex() { if (BUBT) return BUBT; const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
+  const g = x.createRadialGradient(32, 32, 8, 32, 32, 30); g.addColorStop(0, 'rgba(255,150,200,.35)'); g.addColorStop(.75, 'rgba(255,100,160,.7)'); g.addColorStop(.92, 'rgba(255,255,255,.95)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = g; x.beginPath(); x.arc(32, 32, 30, 0, Math.PI * 2); x.fill(); x.fillStyle = 'rgba(255,255,255,.9)'; x.beginPath(); x.ellipse(23, 21, 7, 4, -.7, 0, Math.PI * 2); x.fill(); return BUBT = new THREE.CanvasTexture(c); }
+function buildBubbles(S3) {
+  const N = 170, p = new Float32Array(N * 3); W.bubPh = new Float32Array(N);
+  for (let i = 0; i < N; i++) { p.set([(Math.random() - .5) * 40, Math.random() * 13, (Math.random() - .5) * 22 + 2], i * 3); W.bubPh[i] = Math.random() * 6; }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(p, 3));
+  W.bub = new THREE.Points(g, new THREE.PointsMaterial({color:'#ffffff', size:1.25, map:bubTex(), transparent:true, depthWrite:false})); W.bub.frustumCulled = false; W.bub.visible = false; S3.add(W.bub);
+}
+function bbqGroup(x, z, k) {
+  const G = new THREE.Group();
+  const grill = grp(blk('#424242', [1.3, .45, .62], [0, .85, 0]), blk('#212121', [1.36, .05, .68], [0, 1.1, 0]), ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => rod('#616161', [.04, .85, .04], [a * .55, .42, b * .25])),
+    ...[0, 1, 2, 3].map(i => grp(rod('#d7ccc8', [.02, .02, .7], [0, 0, 0], [Math.PI / 2, 0, 0]), ball(['#8d4a2b', '#ffb300', '#43a047', '#a1572e'][i], [.07, .07, .09], [0, 0, -.1]), ball(['#a1572e', '#ffffff', '#8d4a2b', '#ffb300'][i], [.07, .07, .09], [0, 0, .1])).translateX(-.45 + i * .3).translateY(1.17)));
+  G.add(grill);
+  const fire = glowBall('#ff6d00', [.5, .06, .22], [0, 1.08, 0]); G.add(fire);
+  const table = grp(blk('#a1887f', [1, .06, .6], [0, .62, 0]), rod('#8d6e63', [.05, .6, .05], [-.4, .3, -.22]), rod('#8d6e63', [.05, .6, .05], [.4, .3, -.22]), rod('#8d6e63', [.05, .6, .05], [-.4, .3, .22]), rod('#8d6e63', [.05, .6, .05], [.4, .3, .22]),
+    ball('#d4a04c', [.13, .06, .13], [-.25, .7, 0]), ball('#c08a3a', [.13, .06, .13], [0, .7, .1]), ball('#c5e1a5', U(.16), [.28, .78, 0]), ball('#ffd54f', [.1, .1, .1], [.05, .72, -.15]));
+  table.position.set(1.4, 0, .1); G.add(table);
+  const ppl = new THREE.Group();
+  [[-.85, .75, .5], [.85, .75, -.6], [0, -.75, 0], [2.1, .55, -1.2]].forEach(([px, pz, ry], i) => {
+    const m = charModel((k + i) % 2 ? 'girl' : 'boy', 'bbq' + k + i); m.position.set(px, 0, pz); m.rotation.y = Math.atan2(-px, -pz); m.scale.setScalar(.95);
+    const ud = m.userData; if (ud.armR) ud.armR.rotation.x = -1.1; if (ud.armL && i % 2) ud.armL.rotation.x = -.5;
+    if (i === 1 && ud.head) ud.head.add(ball('#c5e1a5', [.3, .18, .3], [0, .42, 0]));
+    ppl.add(m);
+  });
+  mergeLocal(ppl); G.add(ppl);
+  W.festBob.push({g:ppl, y:0, ph:k * 1.7});
+  for (let i = 0; i < 4; i++) { const s = new THREE.Mesh(gS(), new THREE.MeshLambertMaterial({color:'#cfcfcf', transparent:true, opacity:.4, depthWrite:false})); s.position.set(-.3 + i * .2, 1.3, 0); G.add(s); W.festSmoke.push({m:s, y:1.3, x:-.3 + i * .2, ph:i / 4}); }
+  G.position.set(x, 0, z); return G;
+}
+function santaModel() {
+  const red = '#d32f2f', gold = '#ffd740';
+  const sleigh = grp(blk(red, [1.5, .42, .8], [0, .5, 0]), blk(red, [.32, .62, .8], [-.62, .78, 0]), blk(gold, [1.55, .06, .82], [0, .72, 0]),
+    blk(gold, [1.9, .06, .06], [.1, .1, .33]), blk(gold, [1.9, .06, .06], [.1, .1, -.33]), ...[[.55, .33], [.55, -.33], [-.5, .33], [-.5, -.33]].map(([a, b]) => rod(gold, [.04, .34, .04], [a, .28, b])),
+    ball('#8d6e63', [.32, .34, .32], [-.4, 1.12, 0]), blk('#e53935', [.2, .2, .2], [-.55, 1.38, .1]), blk('#43a047', [.18, .18, .18], [-.3, 1.4, -.12]));
+  const santa = grp(ball(red, [.34, .36, .32], [.15, 1.02, 0]), blk('#212121', [.5, .07, .5], [.15, .92, 0]), ball(SKIN, U(.19), [.2, 1.4, 0]), ball('#ffffff', [.18, .2, .2], [.32, 1.3, 0]),
+    cone(red, [.2, .36, .2], [.14, 1.66, 0], [0, 0, .5]), ball('#ffffff', U(.07), [-.02, 1.8, 0]), blk('#ffffff', [.36, .07, .36], [.2, 1.53, 0]), ball('#212121', U(.03), [.37, 1.45, .08]), ball('#212121', U(.03), [.37, 1.45, -.08]));
+  const deer = (x, nose) => grp(ball('#8d5a2b', [.42, .24, .2], [x, .82, 0]), ball('#8d5a2b', [.15, .15, .13], [x + .4, 1.08, 0]), ball(nose, U(.055), [x + .55, 1.06, 0]), ball('#f5e6d3', [.12, .1, .1], [x - .35, .9, 0]),
+    ...[[.22, .1], [.22, -.1], [-.22, .1], [-.22, -.1]].map(([a, b]) => rod('#5d4037', [.04, .45, .04], [x + a, .48, b], [0, 0, a > 0 ? -.5 : .5])),
+    rod('#6d4c41', [.03, .3, .03], [x + .36, 1.3, .07], [.4, 0, 0]), rod('#6d4c41', [.03, .3, .03], [x + .36, 1.3, -.07], [-.4, 0, 0]), rod('#6d4c41', [.03, .14, .03], [x + .42, 1.38, .13], [.4, 0, -.9]), rod('#6d4c41', [.03, .14, .03], [x + .42, 1.38, -.13], [-.4, 0, -.9]));
+  const g = grp(sleigh, santa, deer(1.7, '#3e2723'), deer(2.75, '#ff1744'), rod('#ffd740', [.02, .02, 1.6], [1.4, .9, 0], [0, Math.PI / 2, 0]));
+  g.traverse(o => { if (o.isMesh) o.castShadow = false; }); return g;
+}
+function giftModel() {
+  const c = rnd(['#e53935', '#43a047', '#1e88e5', '#8e24aa']);
+  const g = grp(blk(c, [.62, .5, .62], [0, .25, 0]), blk('#ffd740', [.64, .52, .12], [0, .25, 0]), blk('#ffd740', [.12, .52, .64], [0, .25, 0]), ball('#ffd740', [.16, .12, .1], [-.1, .56, 0], [0, 0, .5]), ball('#ffd740', [.16, .12, .1], [.1, .56, 0], [0, 0, -.5]));
+  const sp = glowBall('#fff59d', U(.08), [0, .9, 0]); g.add(sp); g.traverse(o => o.userData.hit = {type:'santa'}); return g;
+}
+function startSanta() {
+  if (!W.scene || W.santa || W.santaGift) return;
+  const tg = FARM_T, P = W.people?.find(p => p.uid === S.uid), gx = P ? P.m.position.x + 1.1 : tg.x + 1.5, gz = P ? P.m.position.z + .4 : 7.6;
+  const g = santaModel(); g.scale.setScalar(1.8); W.scene.add(g);
+  W.santa = {g, t0:performance.now() / 1000, x0:tg.x - 26, x1:tg.x + 26, gx, gz, dropped:false};
+  toast('🎅 呵呵呵～聖誕老公公飛過來了！'); Music.babble('boy', '呵呵呵'); Music.sparkle();
+}
+function santaTick(t, dt) {
+  const s = W.santa;
+  if (s) { const k = (t - s.t0) / 7; const x = s.x0 + (s.x1 - s.x0) * k; s.g.position.set(x, 6.6 + Math.sin(t * 2) * .35, s.gz + 1); s.g.rotation.z = Math.sin(t * 2) * .06;
+    if (!s.dropped && x >= s.gx - 1) { s.dropped = true; const gm = giftModel(); gm.position.set(x, 6.3, s.gz + 1); W.scene.add(gm); W.santaGift = {g:gm, vy:0, vz:(4 / 1.15), tx:s.gx, tz:s.gz, landed:false, t0:t}; Music.sfx('pop'); }
+    if (k > 1) { W.scene.remove(s.g); W.santa = null; } }
+  const G = W.santaGift;
+  if (G) { const g = G.g;
+    if (!G.landed) { G.vy -= 9.8 * dt; g.position.y = Math.max(0, g.position.y + G.vy * dt); g.position.x += (G.tx - g.position.x) * Math.min(1, dt * 3); g.position.z += (G.tz - g.position.z) * Math.min(1, dt * 3); g.rotation.y += dt * 4;
+      if (g.position.y <= 0) { if (G.vy < -3) { G.vy = -G.vy * .35; Music.sfx('pop'); } else { G.landed = true; g.position.y = 0; toast('🎁 聖誕老公公丟了一份禮物給你！點禮物打開'); } } }
+    else { g.position.y = Math.abs(Math.sin(t * 3)) * .12; g.rotation.y = Math.sin(t * 1.5) * .3; } }
+}
+function clearSanta() { if (W.santa) { W.scene.remove(W.santa.g); W.santa = null; } if (W.santaGift) { W.scene.remove(W.santaGift.g); W.santaGift = null; } }
+
+/* ----- 端午龍舟賽（獨立 3D 畫面） ----- */
+const RACE_LEN = 60;
+function dragonBoat(col, racer) {
+  const head = grp(ball(col, [.42, .38, .32], [0, 0, 0]), ball(col, [.3, .22, .26], [.38, -.05, 0]), cone('#fdd835', [.07, .32, .07], [-.05, .38, .13], [0, 0, -.4]), cone('#fdd835', [.07, .32, .07], [-.05, .38, -.13], [0, 0, -.4]),
+    ball('#ffffff', U(.08), [.2, .14, .19]), ball('#ffffff', U(.08), [.2, .14, -.19]), ball('#111', U(.04), [.25, .15, .23]), ball('#111', U(.04), [.25, .15, -.23]), blk('#e53935', [.25, .04, .3], [.55, -.14, 0]), rod('#fdd835', [.02, .02, .5], [.5, 0, 0], [0, 0, 1.2]));
+  head.position.set(3.1, 1.05, 0);
+  const g = grp(blk(col, [5.6, .42, 1], [0, .3, 0]), blk('#fdd835', [5.65, .1, 1.04], [0, .5, 0]), blk('#5d4037', [5.2, .06, .7], [0, .53, 0]), ball(col, [.5, .3, .45], [2.75, .55, 0]), head, cone(col, [.32, .9, .22], [-3.1, .9, 0], [0, 0, 1.0]), cone('#fdd835', [.2, .5, .14], [-3.5, 1.3, 0], [0, 0, 1.3]),
+    grp(rod('#8d6e63', [.04, .4, .04], [0, .2, .2]), rod('#8d6e63', [.04, .4, .04], [0, .2, -.2]), ball('#e53935', [.26, .2, .26], [0, .52, 0]), ball('#fdd835', [.27, .04, .27], [0, .62, 0])).translateX(-2.3).translateY(.5));
+  const paddles = [];
+  [-1.4, -.4, .6, 1.6].forEach((x, i) => { const side = i % 2 ? 1 : -1, r = new THREE.Group(); r.position.set(x, .55, side * .22);
+    r.add(ball(['#ff7043', '#29b6f6', '#ffee58', '#ab47bc'][i], [.16, .2, .14], [0, .22, 0]), ball(SKIN, U(.13), [0, .5, 0]), blk('#e53935', [.27, .05, .27], [0, .6, 0]));
+    const pv = new THREE.Group(); pv.position.set(0, .3, side * .1); pv.add(rod('#8d6e63', [.03, .9, .03], [0, -.25, side * .25], [side * .6, 0, 0]), blk('#a1887f', [.14, .3, .03], [0, -.66, side * .5], [side * .6, 0, 0])); r.add(pv);
+    g.add(r); paddles.push({pv, side, ph:i * .5}); });
+  const cm = charModel(racer.g, 'race' + racer.n); cm.position.set(-2.3, .55, 0); cm.rotation.y = Math.PI / 2; cm.scale.setScalar(.85); g.add(cm);
+  g.traverse(o => { if (o.isMesh) o.castShadow = false; });
+  return {g, paddles, cm};
+}
+function buildRace(racers) {
+  const sc = new THREE.Scene(); sc.background = new THREE.Color('#a8dcff'); sc.fog = new THREE.Fog('#a8dcff', 45, 110);
+  sc.add(new THREE.HemisphereLight('#e3f4ff', '#5d8f3a', 1.15)); const dl = new THREE.DirectionalLight('#fff1d0', 1.7); dl.position.set(8, 20, 14); sc.add(dl);
+  const disp = [], WW = racers.length * 3 + 4, add = (geo, color, opts = {}) => { disp.push(geo); const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({color, ...opts})); sc.add(m); return m; };
+  const water = add(new THREE.PlaneGeometry(RACE_LEN + 80, WW), '#3c9bd6'); water.rotation.x = -Math.PI / 2; water.position.set(RACE_LEN / 2, 0, 0);
+  for (const sd of [-1, 1]) { const b = add(new THREE.BoxGeometry(RACE_LEN + 80, .8, 14), '#7cb342'); b.position.set(RACE_LEN / 2, .1, sd * (WW / 2 + 7)); }
+  const deco = new THREE.Group(); sc.add(deco);
+  for (let x = -30; x <= RACE_LEN + 40; x += 4) {
+    deco.add(grp(rod('#6d4c41', [.2, 1, .2], [0, .5, 0]), cone(x % 8 ? '#2e7d32' : '#388e3c', [1, 1.8, 1], [0, 1.7, 0])).translateX(x + (x % 3)).translateY(.5).translateZ(-(WW / 2 + 5 + (x % 5))));
+    if (x % 8 === 0) deco.add(grp(rod('#8d6e63', [.05, 2.4, .05], [0, 1.2, 0]), tri(['#e53935', '#fdd835', '#43a047', '#1e88e5'][(x / 8 & 3)], [[0, 0], [.9, -.3], [0, -.6]])).translateX(x).translateY(.5).translateZ(-(WW / 2 + .8)));
+  }
+  for (let i = 0; i < 26; i++) { const c = new THREE.Group(); c.add(ball(['#ef5350', '#42a5f5', '#ffee58', '#66bb6a', '#ab47bc', '#ffa726'][i % 6], [.26, .32, .22], [0, .3, 0]), ball(SKIN, U(.18), [0, .78, 0]), ball('#3e2723', [.19, .1, .19], [0, .9, 0]));
+    c.position.set(RACE_LEN - 22 + i * 1.3, .5, -(WW / 2 + 1.8 + (i % 2) * .9)); deco.add(c); }
+  const crowd = deco.children.slice(-26);
+  for (let j = 1; j < racers.length; j++) for (let x = 0, z = (j - racers.length / 2) * 3; x <= RACE_LEN; x += 2.5) deco.add(ball((x / 2.5) % 2 ? '#ffffff' : '#e53935', U(.12), [x, .08, z]));
+  deco.add(blk('#ffffff', [.3, .05, WW], [0, .04, 0]), blk('#ffffff', [.3, .05, WW], [RACE_LEN + 1, .04, 0]));
+  deco.add(rod('#e53935', [.25, 4.5, .25], [RACE_LEN + 1, 2.25, -WW / 2 - .3]), rod('#e53935', [.25, 4.5, .25], [RACE_LEN + 1, 2.25, WW / 2 + .3]), blk('#e53935', [.4, .9, WW + 1.2], [RACE_LEN + 1, 4.4, 0]), blk('#fdd835', [.42, .2, WW + 1.25], [RACE_LEN + 1, 4.95, 0]));
+  for (let i = 0; i < 5; i++) deco.add(cone(['#81c784', '#66bb6a', '#a5d6a7', '#4caf50', '#8bc34a'][i], [14, 12 + i * 2, 10], [i * 26 - 10, 5.5, -48 - (i % 2) * 8]));
+  deco.traverse(o => { if (o.isMesh) o.castShadow = false; });
+  const cols = ['#e53935', '#1e88e5', '#43a047', '#fb8c00'];
+  const boats = racers.map((r, i) => { const B = dragonBoat(cols[i % 4], r); B.g.position.set(0, 0, (i - (racers.length - 1) / 2) * 3); sc.add(B.g); return B; });
+  const cam = new THREE.PerspectiveCamera(50, 1, .1, 300);
+  return {sc, cam, boats, crowd, disp};
+}
+function raceFrame(t) {
+  const R = W.race, el = W.renderer.domElement, w = el.clientWidth || 1, h = el.clientHeight || 1, portrait = w / h < 1;
+  const dt = Math.min(.1, t - (R.last || t)); R.last = t;
+  const rt = t - R.t0 - 3;
+  if (rt < 0) { const n = Math.ceil(-rt); if (n !== R.cd) { R.cd = n; $('#raceCd').textContent = n; $('#raceCd').className = 'pop'; void $('#raceCd').offsetWidth; $('#raceCd').className = 'pop go'; Music.sfx('pop'); } }
+  else if (!R.go) { R.go = true; $('#raceCd').textContent = '划！'; Music.sfx('boom'); setTimeout(() => { if (W.race === R) $('#raceCd').textContent = ''; }, 900); }
+  let lead = 0;
+  R.racers.forEach((r, i) => { const B = R.boats[i];
+    let x = 0; if (rt > 0) { const u = rt / r.T; x = u < 1 ? RACE_LEN * (u + r.a * Math.sin(Math.PI * 2 * u)) : RACE_LEN + Math.min(7, (rt - r.T) * 3.5); }
+    B.g.position.x = x; B.g.position.y = Math.sin(t * 6 + i) * .05; B.g.rotation.x = Math.sin(t * 5 + i) * .025; r.x = x; lead = Math.max(lead, x);
+    const row = rt > 0 && x < RACE_LEN + 6;
+    for (const p of B.paddles) p.pv.rotation.z = row ? Math.sin(t * 9 + p.ph) * .7 : 0;
+    const ud = B.cm.userData; if (ud.armL && ud.armR) { const s = row ? Math.sin(t * 9) : 0; ud.armL.rotation.x = -1.4 + s * .6; ud.armR.rotation.x = -1.4 - s * .6; if (r.T <= rt && r.win) { ud.armL.rotation.x = -2.8; ud.armR.rotation.x = -2.8 + Math.sin(t * 8) * .3; } }
+  });
+  if (rt > 0 && rt < R.end && t - (R.drum || 0) > .42) { R.drum = t; Music.sfx('drum'); }
+  for (let i = 0; i < R.crowd.length; i++) R.crowd[i].position.y = .5 + Math.max(0, Math.sin(t * 7 + i * 1.3)) * (lead > RACE_LEN - 25 ? .35 : .1);
+  const fx = Math.min(lead, RACE_LEN + 4) - 2; R.camX = R.camX == null ? fx : R.camX + (fx - R.camX) * Math.min(1, dt * 3);
+  R.cam.aspect = w / h; R.cam.fov = portrait ? 62 : 48; R.cam.updateProjectionMatrix();
+  R.cam.position.set(R.camX - 6, portrait ? 11 : 8.5, portrait ? 17.5 : 14); R.cam.lookAt(R.camX + 3, 0, 0);
+  // 名牌和即時排名
+  const v = new THREE.Vector3();
+  R.racers.forEach((r, i) => { v.set(r.x, 2.6, R.boats[i].g.position.z).project(R.cam); const L = R.lbl[i]; L.style.transform = `translate(${(v.x * .5 + .5) * w}px,${(-v.y * .5 + .5) * h}px) translate(-50%,-100%)`; });
+  const sc = r => r.T <= rt ? 1000 - r.T : r.x, order = R.racers.map((r, i) => [r, i]).sort((a, b) => sc(b[0]) - sc(a[0]));
+  const key = order.map(o => o[1]).join(); if (key !== R.rk) { R.rk = key; $('#raceRank').innerHTML = order.map(([r], k) => `<div class="${r.me ? 'me' : ''}">${['🥇', '🥈', '🥉', '4️⃣'][k]} ${esc(r.n)}</div>`).join(''); }
+  if (rt > R.end && !R.done) { R.done = true; R.onEnd(); }
+  W.renderer.render(R.sc, R.cam);
+}
 function syncFest() {
   if (!W.festG) return;
   const o = activeFests()[0] || null, key = o ? o.F.id : '';
   if (W.festKey === key) return;
-  W.festKey = key; W.festG.clear(); W.festBob = []; W.festGlow = []; W.festTh = o ? o.F.th : '';
+  W.festKey = key; W.festG.clear(); W.festBob = []; W.festGlow = []; W.festSmoke = []; W.festTh = o ? o.F.th : ''; W.festSnow = !!o?.F.snow; W.festFw = !!o?.F.fw;
+  if (o?.F.mg !== 'santa') clearSanta();
   W.festSign.visible = !!o; if (!o) return;
   setSign(W.festSign, o.F.em + o.F.n, '節日活動進行中！'); W.glowMat.color.set(o.F.th === 'pumpkin' ? '#ff8f00' : '#e53935');
   const G = W.festG, th = o.F.th;
@@ -1918,7 +2136,7 @@ function syncFest() {
     for (const [a, b2] of [[-40, -20], [-9.4, 9.4], [15, 33], [40.5, 59.5]]) for (let x = a + 1; x <= b2 - 1; x += 3) G.add(lantern(x, 2.4, -6.9, .8));
     for (const [x, z] of [[-13.4, -1.6], [-11.6, -1], [-6, -6.3], [-2.4, -6.3], [18.2, -6.6], [21.8, -6.6]]) G.add(lantern(x, 2.6, z, 1.2));
     if (th === 'moon') { const grill = grp(blk('#424242', [1.4, .5, .7], [0, .9, 0]), blk('#212121', [1.45, .06, .75], [0, 1.17, 0]), ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => rod('#616161', [.04, .9, .04], [a * .6, .45, b * .28])), ...[0, 1, 2].map(k => rod(['#ffb300', '#8d6e63', '#43a047'][k], [.06, .5, .06], [-.4 + k * .4, 1.25, 0], [0, 0, Math.PI / 2])));
-      grill.position.set(-11.6, 0, 5); G.add(grill); G.add(grp(ball('#fafafa', [.28, .24, .36], [0, .25, 0]), ball('#fafafa', U(.17), [0, .48, .26]), ball('#fafafa', [.05, .2, .05], [.06, .72, .24]), ball('#fafafa', [.05, .2, .05], [-.06, .72, .24])).translateX(-10.2).translateZ(5.8)); }
+      grill.position.set(-11.6, 0, 5); G.add(grill); for (const [bx, bz, k] of [[-5.6, 9.6, 0], [5.4, 9.8, 1], [.3, 12, 6], [-12.4, 7.6, 2], [20.5, 9.6, 3], [28, 9.8, 4], [-26, 9.8, 5]]) G.add(bbqGroup(bx, bz, k)); G.add(grp(ball('#fafafa', [.28, .24, .36], [0, .25, 0]), ball('#fafafa', U(.17), [0, .48, .26]), ball('#fafafa', [.05, .2, .05], [.06, .72, .24]), ball('#fafafa', [.05, .2, .05], [-.06, .72, .24])).translateX(-10.2).translateZ(5.8)); }
   } else if (th === 'xmas') {
     const tree = (x, z, s) => { const g = grp(rod('#6d4c41', [.25, .8, .25], [0, .4, 0]), cone('#1b5e20', [1.7, 2, 1.7], [0, 1.6, 0]), cone('#2e7d32', [1.3, 1.7, 1.3], [0, 2.7, 0]), cone('#388e3c', [.9, 1.4, .9], [0, 3.7, 0]));
       const star = new THREE.Mesh(gO(), new THREE.MeshLambertMaterial({color:'#ffd740', emissive:'#000'})); star.scale.setScalar(.3); star.position.y = 4.6; star.userData.col = new THREE.Color('#ffd740'); star.userData.ph = 0; W.festGlow.push(star); g.add(star);
@@ -2144,7 +2362,7 @@ function setCam(scene, instant) {
 function pick(cx, cy) {
   const r = W.renderer.domElement.getBoundingClientRect(); W.ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1);
   W.ray.setFromCamera(W.ndc, W.camera);
-  const roots = [...W.people.map(p => p.m), ...W.plots.map(p => p.g), ...W.animals.map(a => a.g), ...W.poops.filter(p => p.visible), W.trough, ...W.ponds.map(p => p.g), ...W.machs.map(p => p.g), ...W.pets.map(p => p.m)];
+  const roots = [...(W.santaGift ? [W.santaGift.g] : []), ...W.people.map(p => p.m), ...W.plots.map(p => p.g), ...W.animals.map(a => a.g), ...W.poops.filter(p => p.visible), W.trough, ...W.ponds.map(p => p.g), ...W.machs.map(p => p.g), ...W.pets.map(p => p.m)];
   const hits = W.ray.intersectObjects(roots, true);
   for (const h of hits) { if (h.object.visible === false) continue; let o = h.object; while (o && !o.userData.hit) o = o.parent; if (o) return o.userData.hit; }
   return null;
@@ -2166,6 +2384,7 @@ function hoverAt(cx, cy) {
   else if (h.type === 'trough') { ring.position.set(TROUGH_XZ[0], .06, TROUGH_XZ[1]); ring.scale.setScalar(1.1); }
   else if (h.type === 'pond') { const [x3, z3] = pondXZ(h.i); ring.position.set(x3, .55, z3); ring.scale.setScalar(1.55); }
   else if (h.type === 'mach') { const [x4, z4] = facXZ(h.i); ring.position.set(x4, .2, z4); ring.scale.setScalar(1.55); }
+  else if (h.type === 'santa' && W.santaGift) { ring.position.set(W.santaGift.g.position.x, .06, W.santaGift.g.position.z); ring.scale.setScalar(.6); }
   else if (h.type === 'person') { const P = W.people.find(p => p.uid === h.uid); if (P) { ring.position.set(P.m.position.x, .06, P.m.position.z); ring.scale.setScalar(.6); } }
   else if (h.type === 'pet' && W.pets[h.i]) { ring.position.set(W.pets[h.i].m.position.x, .06, W.pets[h.i].m.position.z); ring.scale.setScalar(.6); }
 }
@@ -2347,12 +2566,13 @@ function syncPeople(list) {
 /* ----- 每一幀 ----- */
 function loop() {
   requestAnimationFrame(loop);
+  if (W.race) { raceFrame(performance.now() / 1000); return; }
   const t = performance.now() / 1000, w = W.renderer.domElement.clientWidth, h = W.renderer.domElement.clientHeight;
   if (W.camAnim) { const a = W.camAnim, k = a.dur ? Math.min(1, (performance.now() - a.t0) / a.dur) : 1, e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; const off = a.off1 ? a.off0.clone().lerp(a.off1, e) : W.camera.position.clone().sub(W.controls.target); W.controls.target.lerpVectors(a.from, a.to, e); W.camera.position.copy(W.controls.target).add(off); if (k >= 1) W.camAnim = null; }
   W.controls.update();
   const dt = Math.min(.1, t - (W.lastT || t)); W.lastT = t;
   const tg = W.controls.target; W.sun.position.set(tg.x + 18, 38, tg.z + 22); W.sun.target.position.set(tg.x, 0, tg.z);
-  applyEnv(dt, t); animMachines(t);
+  applyEnv(dt, t); animMachines(t); santaTick(t, dt);
   W.blades.rotation.z = -t * .9;
   for (const c of W.clouds) { c.position.x += .012; if (c.position.x > 90) c.position.x = -70; }
   W.ripples.forEach((r, i) => { const k = (t * .35 + i / 3) % 1; r.scale.setScalar(.4 + k * 2.6); r.material.opacity = .55 * (1 - k); });
@@ -2528,7 +2748,7 @@ const Music = (() => {
       try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
       if (!ensure()) return; unlocked = true; try { const b = ctx.createBuffer(1, 1, 22050), src = ctx.createBufferSource(); src.buffer = b; src.connect(ctx.destination); src.start(0); } catch {}
     },
-    sfx(kind) { if (!wanted || !ensure()) return; const t = ctx.currentTime; if (kind === 'coin') { tone(t, 88, .12, .12, 'square', 5000); tone(t + .07, 93, .12, .2, 'square', 5000); } else if (kind === 'ding') { tone(t, 84, .14, .25); tone(t + .11, 88, .14, .25); tone(t + .22, 91, .16, .4); } else if (kind === 'pop') { tone(t, 79, .15, .15); tone(t + .06, 84, .15, .2); } else if (kind === 'bad') { tone(t, 55, .2, .3, 'sawtooth', 900); tone(t + .12, 50, .2, .35, 'sawtooth', 900); } else if (kind === 'splash') { voc(t, {type:'sine', f0:900, f1:300, d:.18, v:.15}); voc(t + .05, {type:'triangle', f0:1400, f1:500, d:.12, v:.08}); } else if (kind === 'boom') { voc(t, {type:'sine', f0:120, f1:40, d:.6, v:.18}); voc(t + .02, {type:'sawtooth', f0:300, f1:80, d:.25, lp:600, v:.06}); } },
+    sfx(kind) { if (!wanted || !ensure()) return; const t = ctx.currentTime; if (kind === 'coin') { tone(t, 88, .12, .12, 'square', 5000); tone(t + .07, 93, .12, .2, 'square', 5000); } else if (kind === 'drum') { voc(t, {type:'sine', f0:140, f1:55, d:.2, v:.22}); voc(t, {type:'triangle', f0:320, f1:120, d:.06, v:.05}); } else if (kind === 'ding') { tone(t, 84, .14, .25); tone(t + .11, 88, .14, .25); tone(t + .22, 91, .16, .4); } else if (kind === 'pop') { tone(t, 79, .15, .15); tone(t + .06, 84, .15, .2); } else if (kind === 'bad') { tone(t, 55, .2, .3, 'sawtooth', 900); tone(t + .12, 50, .2, .35, 'sawtooth', 900); } else if (kind === 'splash') { voc(t, {type:'sine', f0:900, f1:300, d:.18, v:.15}); voc(t + .05, {type:'triangle', f0:1400, f1:500, d:.12, v:.08}); } else if (kind === 'boom') { voc(t, {type:'sine', f0:120, f1:40, d:.6, v:.18}); voc(t + .02, {type:'sawtooth', f0:300, f1:80, d:.25, lp:600, v:.06}); } },
     babble(g, text) {
       if (!wanted || !ctx || !unlocked) return;
       if (ctx.state !== 'running') { ctx.resume().then(() => this.babble(g, text)).catch(() => {}); return; }
@@ -2666,6 +2886,7 @@ function pondText(i) {
   return t;
 }
 function tipFor(h) {
+  if (h.type === 'santa') return '<b>🎁 聖誕老公公的禮物</b><br>點一下打開！';
   if (h.type === 'pond') return pondText(h.i);
   if (h.type === 'mach') return machText(h.i);
   if (h.type === 'person') { const p = (S.people || hereList()).find(x => x.uid === h.uid); return p ? (h.uid === S.uid ? `<b>${esc(p.n)}</b>（我）<br>點一下跟大家揮手 👋` : `<b>${esc(p.n)}</b> Lv.${p.lv || 1}<br>點一下跟他揮手 👋`) : ''; }
@@ -2686,6 +2907,7 @@ function clickHit(h) {
   if (h.type === 'tile') { if (S.scene !== 'farm') { S.scene = 'farm'; setCam('farm'); renderTools(); } return clickPlot(h.i); }
   if (h.type === 'ani') { if (S.scene !== 'ranch') { S.scene = 'ranch'; setCam('ranch'); renderTools(); } return run(() => clickAnimal(h.i)); }
   if (h.type === 'poop') return run(() => cleanPoop(h.i));
+  if (h.type === 'santa') return run(claimSanta);
   if (h.type === 'trough') return run(isOwn() ? feedAll : feedFriend);
   if (h.type === 'pond') { if (S.scene !== 'fish') { S.scene = 'fish'; setCam('fish'); renderTools(); } return run(() => clickPond(h.i)); }
   if (h.type === 'person') { const p = (S.people || hereList()).find(x => x.uid === h.uid); return waveAt(h.uid, p ? p.n : ''); }
@@ -2733,14 +2955,14 @@ function guardCheck(f, nm) { const pk = petOf(f); if (pk && PETS[pk].bite && Mat
 ['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, () => { if (!Music.ready) Voice.unlock(); Music.kick(); }, {capture:true, passive:true}));
 function npcReply(delay = 1000) {
   const host = S.viewUid; if (isOwn() || hereList().some(p => p.uid === host)) return;
-  setTimeout(() => { if (S.viewUid !== host || !S.view) return; const t = now(), m = rnd([`歡迎來我家玩，${myName()}！😊`, `嗨～${myName()}！好久不見 👋`, `${myName()}來了！要幫我顧菜喔 🥬`]);
+  setTimeout(() => { if (S.viewUid !== host || !S.view) return; const t = now(), hi = festHello(), m = hi ? `${myName()}，${hi}` : rnd([`歡迎來我家玩，${myName()}！😊`, `嗨～${myName()}！好久不見 👋`, `${myName()}來了！要幫我顧菜喔 🥬`]);
     W.npc = {uid:host, wave:t, say:{m, t, d:3500}}; renderScene(); }, delay);
 }
 function waveAt(uid, name, back, arrive) {
   if (uid === S.viewUid && !isOwn()) npcReply(arrive ? 1300 : 900);
   if (!S.my) return; const t = now(), me = uid === S.uid;
   if (!back && !arrive && S.lastWave && t - S.lastWave < 1500) return; S.lastWave = t;
-  const m = arrive ? `嗨～${name || ''}，我來玩囉！👋` : me ? '👋 大家好～' : back ? `👋 嗨，${name}～` : `👋 嗨，${name}！`;
+  const hi = festHello(), m = hi ? (me ? `🎉 大家${hi}` : `👋 ${name ? name + '，' : ''}${hi}`) : arrive ? `嗨～${name || ''}，我來玩囉！👋` : me ? '👋 大家好～' : back ? `👋 嗨，${name}～` : `👋 嗨，${name}！`;
   S.spokeT = t; B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), at:S.viewUid || S.uid, t, off:false, say:{m, t, d:3500}, wave:t, waveTo:me ? '' : uid, back:!!back, arr:!!arrive});
   const P = W.people?.find(p => p.uid === S.uid); if (P) { P.waveAt = t; P.waveTo = me ? '' : uid; }
   Music.babble(myGender(), m);
@@ -3362,7 +3584,7 @@ async function petGift(k) {
 
 /* ----- 節日活動 ----- */
 function pruneFest(f) { const Y = +twDay().slice(0, 4); for (const k of Object.keys(f.fest || {})) { const y = +k.split(':')[1]; if (y && y < Y - 1) delete f.fest[k]; } }
-function festReady(f) { let n = 0; const L = levelOf(f.exp).L; for (const o of activeFests()) { if (!f.fest?.[o.key]?.g) n++; for (const R of o.F.r) if (festRecipeOk(R, L) && !festDoneToday(f, o.key, R) && festLeft(f, o.key, R).some(([id]) => (f.wh[id] || 0) > 0)) n++; } return n; }
+function festReady(f) { let n = 0; const L = levelOf(f.exp).L; for (const o of activeFests()) { if (!f.fest?.[o.key]?.g) n++; if (o.F.mg && !mgDone(f, o)) n++; for (const R of o.F.r) if (festRecipeOk(R, L) && !festDoneToday(f, o.key, R) && festLeft(f, o.key, R).some(([id]) => (f.wh[id] || 0) > 0)) n++; } return n; }
 const md = s => +s.slice(5, 7) + '/' + +s.slice(8, 10);
 function openFest() {
   S.modal = () => {
@@ -3372,6 +3594,7 @@ function openFest() {
       const F = o.F, st = f.fest?.[o.key] || {};
       body += `<div class="item" style="background:linear-gradient(#fff8e1,#ffe9b0);border-color:#ffb300"><div class="pic" style="font-size:38px">${F.em}</div><div class="info"><div class="t">${F.n} <small style="color:#8d6e63">${md(o.s)} ～ ${md(o.e)}</small></div><div class="d">${F.d}<br>✨ 節日加成：<b>${BONUS_N[F.bonus]}</b></div></div>
         <div class="acts">${st.g ? '<button class="b g" disabled>禮包已領</button>' : `<button class="b o" data-act="festGift" data-k="${o.key}">🎁 領節日禮包</button>`}</div></div>`;
+      if (F.mg) body += mgRow(o);
       body += F.r.map(R => {
         const ok = festRecipeOk(R, L), done = festDoneToday(f, o.key, R), got = st.got?.[R.id] || {}, rw = festRw(R), can = !done && ok && festLeft(f, o.key, R).some(([id]) => (f.wh[id] || 0) > 0);
         return `<div class="item ${done ? 'done' : ok ? '' : 'dim'}"><div class="pic" style="font-size:32px">${R.em}</div><div class="info"><div class="t">${R.n} <small style="color:#e65100">節日訂單</small></div>
@@ -3396,6 +3619,131 @@ async function festGift(key) {
     bump(f, 'fest'); return {t:parts.join('、')};
   });
   if (r.abort) return toast(r.msg); toast(`${o.F.em} ${o.F.n}禮包：${r.t}`); Music.sfx('coin');
+}
+/* ----- 節日小遊戲介面 ----- */
+async function mgPlay(key, pack, x) {
+  const o = activeFests().find(z => z.key === key); if (!o) { toast('這個節日已經結束了'); return null; }
+  const r = await txMe(f => {
+    f.fest ??= {}; const st = f.fest[o.key] ??= {}; if (st.mg?.d === twDay()) return ab('今天已經玩過了，明天再來！');
+    const t = []; if (pack.c) { f.coins += pack.c; t.push(`💰${pack.c}`); } if (pack.p) t.push(givePrize(f, pack.p)); if (pack.fert) { f.fert = (f.fert || 0) + pack.fert; t.push(`🧪化肥×${pack.fert}`); }
+    st.mg = {d:twDay(), w:pack.w ? 1 : 0, t:t.join('、'), x:x ?? null}; pruneFest(f); return {t:t.join('、')};
+  }).catch(e => ({abort:1, msg:'出錯了：' + e.message}));
+  if (r.abort) { toast(r.msg); return null; }
+  return r;
+}
+function mgRow(o) {
+  const M = MG[o.F.mg], done = mgDone(S.my, o);
+  return `<div class="item ${done ? 'done' : ''}" style="border-color:#ff7043"><div class="pic" style="font-size:36px">${M.em}</div><div class="info"><div class="t">${M.n} <small style="color:#e65100">節日小遊戲 · 每天一次</small></div><div class="d">${M.d}</div></div>
+    <div class="acts"><button class="b ${done ? 'g' : 'o'}" data-act="mg" data-k="${o.key}">${done ? '今天玩過了 ✅' : '▶ 去玩'}</button></div></div>`;
+}
+function openMG(key) {
+  if (!S.mg || S.mg.key !== key || S.mg.day !== twDay()) S.mg = {key, ph:'pick', day:twDay()};
+  S.modal = () => {
+    const o = activeFests().find(x => x.key === key); if (!o) return openModal('🎉 節日小遊戲', '<div class="empty">這個節日已經結束了，明年見！</div>');
+    const M = MG[o.F.mg], st = mgSt(S.my, o), done = st?.d === twDay(), G = S.mg, kind = o.F.mg;
+    let body = `<div class="mgbox"><div class="mgd">${M.d}</div>`;
+    const tomorrow = festLeftDays(o) > 0 ? '明天再來玩！' : '今天是節日最後一天，明年見！';
+    if (kind === 'tree' || kind === 'candy' || kind === 'skewer') {
+      const live = G.ph !== 'pick' && G.ph;
+      if (done && !live) body += `<div class="mgres">${st.w ? `🎉 今天中獎了：<b>${st.t}</b>` : '😢 今天沒抽中…'}<br><small>${tomorrow}</small></div>`;
+      else {
+        body += `<div class="mg3">${[0, 1, 2].map(i => { const sel = G.i === i, rev = G.ph === 'reveal';
+          return `<button class="mgi ${sel ? 'sel' : ''} ${G.ph === 'shake' && sel ? 'shake' : ''} ${rev ? (i === G.at ? 'win' : 'lose') : ''}" data-act="mgPick" data-i="${i}" ${G.ph !== 'pick' ? 'disabled' : ''}><span>${M.it}</span>${rev ? `<em>${i === G.at ? '🎁' : M.none}</em>` : ''}</button>`; }).join('')}</div>`;
+        body += G.ph === 'pick' ? `<div class="mgtip">👆 選一個${kind === 'tree' ? '搖搖看' : kind === 'candy' ? '剝開看看' : '咬一口看看'}！</div>` : G.ph === 'shake' ? '<div class="mgtip">…… 🤞</div>'
+          : `<div class="mgres">${G.win ? `🎉 中獎了！獲得 <b>${G.t}</b>` : `😢 這個沒有獎品…禮物藏在第 ${G.at + 1} 個！`}<br><small>${tomorrow}</small></div>`;
+      }
+    } else if (kind === 'redenv') {
+      const live = G.ph !== 'pick' && G.ph;
+      if (done && !live) body += `<div class="mgres">🧧 今天的紅包：<b>${st.t}</b><br><small>${tomorrow}</small></div>`;
+      else {
+        body += `<div class="mg6">${[0, 1, 2, 3, 4, 5].map(i => { const sel = G.i === i; return `<button class="mgr ${sel ? 'sel' : ''} ${G.ph === 'shake' && sel ? 'shake' : ''} ${G.ph === 'reveal' && !sel ? 'lose' : ''}" data-act="mgPick" data-i="${i}" ${G.ph !== 'pick' ? 'disabled' : ''}>${G.ph === 'reveal' && sel ? `<em>${G.t.split('、').join('<br>')}</em>` : '<span>福</span>'}</button>`; }).join('')}</div>`;
+        body += G.ph === 'pick' ? '<div class="mgtip">👆 選一個紅包打開！每個都有獎</div>' : G.ph === 'shake' ? '<div class="mgtip">拆紅包中…… 🧧</div>' : `<div class="mgres">🎉 恭喜發財！獲得 <b>${G.t}</b><br><small>${tomorrow}</small></div>`;
+      }
+    } else if (kind === 'riddle') {
+      const R = riddleToday(), ans = done ? st.x : G.ans;
+      body += `<div class="rid"><div class="rq">🏮 ${esc(R.q)}</div><div class="rh">（${R.h}）</div></div><div class="ropts">${R.o.map(op => { const cls = ans == null ? '' : op === R.a ? 'win' : op === ans ? 'lose' : 'dim';
+        return `<button class="b ${cls}" data-act="mgAns" data-o="${esc(op)}" ${ans != null || G.ph === 'shake' ? 'disabled' : ''}>${esc(op)}</button>`; }).join('')}</div>`;
+      if (ans != null) body += `<div class="mgres">${ans === R.a ? `🎉 答對了！謎底是「${esc(R.a)}」${(done ? st.t : G.t) ? `，獲得 <b>${done ? st.t : G.t}</b>` : ''}` : `😢 答錯了，謎底是「<b>${esc(R.a)}</b>」`}<br><small>${festLeftDays(o) > 0 ? '明天會有新的燈謎！' : '今天是元宵最後一天，明年見！'}</small></div>`;
+      else body += '<div class="mgtip">只有一次機會，想清楚再選喔！🤔</div>';
+    } else if (kind === 'santa') {
+      if (done) body += `<div class="mgres">🎁 今天聖誕老公公送你：<b>${st.t}</b><br><small>${tomorrow}</small></div>`;
+      else if (W.santaGift) body += `<div class="mgres">🎁 禮物已經掉在你的農場了，快去點它！</div><div class="mgbtn"><button class="b o" data-act="santaGo">🏠 去看看</button></div>`;
+      else body += `<div class="mgres" style="font-size:44px">🎅🛷🦌</div><div class="mgbtn"><button class="b o" data-act="santaGo">🎅 呼叫聖誕老公公</button></div>`;
+    } else if (kind === 'boat') {
+      if (done) body += `<div class="mgres">${st.w ? '🥇' : '🚣'} 今天的比賽：<b>${st.x}</b><br>獎勵：<b>${st.t}</b><br><small>${tomorrow}</small></div>`;
+      else { const rs = raceLineup(); body += `<div class="sec">🚣 今天的參賽隊伍</div>${rs.map((r, i) => `<div class="log"><span style="flex:1">${['🟥', '🟦', '🟩', '🟧'][i]} ${esc(r.n)}${r.me ? '（我）' : r.npc ? ' <small>（村民隊）</small>' : ' <small>（好友）</small>'}</span></div>`).join('')}<div class="mgbtn"><button class="b o" data-act="raceGo">🐉 開始比賽！</button></div>`; }
+    }
+    openModal(`${M.em} ${M.n}`, body + '</div>');
+  };
+  S.modal();
+}
+function festLeftDays(o) { return daysTo(o.e); }
+async function mgPick(i) {
+  const G = S.mg; if (!G || G.ph !== 'pick') return; const o = activeFests().find(x => x.key === G.key); if (!o || mgDone(S.my, o)) return S.modal && S.modal();
+  const kind = o.F.mg; let pack, at = i, win = true;
+  if (kind === 'redenv') { const amt = rnd([88, 88, 88, 168, 168, 168, 188, 188, 288, 288, 388, 520, 666, 888]); pack = {w:1, c:amt, p:Math.random() < .3 ? rollPrize(true) : null}; }
+  else { win = Math.random() < 1 / 3; at = win ? i : rnd([0, 1, 2].filter(x => x !== i)); pack = win ? {w:1, c:300 + ri(0, 3) * 100, p:rollPrize(true)} : {w:0}; }
+  Object.assign(G, {ph:'shake', i, at}); S.modal(); Music.sfx('pop');
+  await sleep(1100);
+  const r = await mgPlay(G.key, pack, i); if (!r) { G.ph = 'pick'; G.i = null; return S.modal && S.modal(); }
+  Object.assign(G, {ph:'reveal', win, t:r.t}); if (S.modal) S.modal();
+  if (win) { Music.sfx('coin'); Music.sparkle(); } else Music.sfx('bad');
+}
+async function mgAns(op) {
+  const G = S.mg; if (!G || G.ans != null || G.ph === 'shake') return; const o = activeFests().find(x => x.key === G.key); if (!o || mgDone(S.my, o)) return;
+  const R = riddleToday(), win = op === R.a; G.ph = 'shake';
+  const r = await mgPlay(G.key, win ? {w:1, c:500, p:rollPrize(true)} : {w:0}, op); G.ph = 'pick'; if (!r) return S.modal && S.modal();
+  G.ans = op; G.t = r.t; if (S.modal) S.modal();
+  if (win) { Music.sfx('coin'); Music.sparkle(); } else Music.sfx('bad');
+}
+// 聖誕老公公：在自己家的農場時，每天飛過來丟一份禮物
+function santaFest() { return activeFests().find(o => o.F.mg === 'santa'); }
+function santaCheck() {
+  const o = santaFest(); if (!o || !W.scene || W.race || !S.my) return;
+  if (!isOwn() || S.scene !== 'farm' || TS.on || W.zoomed) return;
+  if (mgDone(S.my, o) || W.santa || W.santaGift) return;
+  if (Date.now() - (S.loginAt || 0) < 9000 && !S.santaNow) return;
+  S.santaNow = false; startSanta();
+}
+async function claimSanta() {
+  const o = santaFest(), G = W.santaGift; if (!G) return; if (!o) { clearSanta(); return toast('聖誕節已經結束了'); }
+  if (!isOwn()) return toast('這是聖誕老公公送給主人的禮物喔 🎅');
+  const pack = {w:1, c:Math.random() < .5 ? 300 + ri(0, 7) * 100 : 0, p:rollPrize(true)};
+  const r = await mgPlay(o.key, pack); W.scene.remove(G.g); W.santaGift = null; if (!r) return;
+  fx3(G.g.position.x, 1.3, G.g.position.z, r.t, '#e65100'); toast(`🎅 聖誕快樂！禮物裡面有：${r.t}`); Music.sfx('coin'); Music.sparkle(); renderAll();
+}
+function santaGo() {
+  closeModal(); if (!isOwn()) goHome(); if (S.scene !== 'farm') { S.scene = 'farm'; setCam('farm'); renderTools(); }
+  if (!W.santaGift) { S.santaNow = true; setTimeout(santaCheck, 900); }
+}
+// 端午龍舟賽
+function raceLineup() {
+  const day = twDay(), fr = [...S.friends].sort((a, b) => (isOnline(S.pres[b.uid]) - isOnline(S.pres[a.uid])) || (strHash(day + a.uid) - strHash(day + b.uid))).slice(0, 3);
+  const out = [{n:myName(), g:myGender(), me:1}, ...fr.map(x => ({n:dn(x.farm), g:x.farm.gender === 'girl' ? 'girl' : 'boy'}))];
+  for (const [n, g] of [['阿土伯', 'boy'], ['小美', 'girl'], ['阿福', 'boy']]) if (out.length < 4) out.push({n, g, npc:1});
+  return out;
+}
+function startRace() {
+  const o = activeFests().find(x => x.F.mg === 'boat'); if (!o || !W.scene) return toast('端午節已經結束了');
+  if (mgDone(S.my, o)) return toast('今天已經比過了，明天再來！'); if (W.race) return;
+  closeModal(); unZoom();
+  const racers = raceLineup(), w = ri(0, racers.length - 1), ts = racers.map((_, i) => i === w ? 0 : .35 + Math.random() * 1.6).map(d => 8.4 + d);
+  racers.forEach((r, i) => { r.T = ts[i]; r.a = (Math.random() < .5 ? -1 : 1) * (.04 + Math.random() * .1); r.win = i === w; r.x = 0; });
+  const rank = [...racers].sort((a, b) => a.T - b.T).findIndex(r => r.me) + 1, win = rank === 1;
+  const B = buildRace(racers);
+  $('#raceLbl').innerHTML = racers.map((r, i) => `<div class="rl ${r.me ? 'me' : ''}">${['🟥', '🟦', '🟩', '🟧'][i]} ${esc(r.n)}</div>`).join('');
+  W.race = {...B, racers, t0:performance.now() / 1000, end:Math.max(...ts) + 1.3, lbl:[...$('#raceLbl').children], rk:'', cd:0,
+    onEnd:async () => {
+      const r = await mgPlay(o.key, win ? {w:1, c:800, p:rollPrize(true)} : {w:0, fert:2}, `第 ${rank} 名`);
+      $('#raceEnd').innerHTML = `<div class="rc"><div class="big">${win ? '🥇' : ['', '', '🥈', '🥉', '🚣'][rank]}</div><b>${win ? '你贏了！第 1 名！' : `第 ${rank} 名，${esc(racers[w].n)} 贏了！`}</b><div>${r ? `獎勵：${r.t}` : ''}</div><button class="b o" data-act="raceEnd">🏠 回農場</button></div>`;
+      $('#raceEnd').hidden = false; if (win) { Music.sfx('coin'); Music.sparkle(); } else Music.sfx('pop');
+    }};
+  $('#raceRank').innerHTML = ''; $('#raceCd').textContent = ''; $('#raceEnd').hidden = true; $('#race').hidden = false; $('#stage').classList.add('racing');
+  toast('🐉 端午龍舟賽開始囉！');
+}
+function endRace() {
+  const R = W.race; if (!R) return; W.race = null; for (const g of R.disp) g.dispose();
+  $('#race').hidden = true; $('#raceEnd').hidden = true; $('#stage').classList.remove('racing'); renderAll();
 }
 async function festDeliver(key, rid) {
   const o = activeFests().find(x => x.key === key), R = FEST_R[rid]; if (!o || !R) return toast('這個節日已經結束了');
@@ -3694,7 +4042,7 @@ const ACT = {
   more: openMore, wxInfo, dex(d) { openDex(d.t); }, claimAch(d) { return run(() => claimAch(d.id)); },
   pets: openPets, petPat(d) { return run(() => petPat(d.k)); }, petFeed(d) { return run(() => petFeed(d.k)); }, petGift(d) { return run(() => petGift(d.k)); },
   async buyPetfood(d) { const n = +d.n; const r = await txMe(f => { if (f.coins < PETFOOD_PRICE * n) return ab('金幣不夠'); f.coins -= PETFOOD_PRICE * n; f.petfood = (f.petfood || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 個寵物零食 🦴`); },
-  fest: openFest, festGift(d) { return run(() => festGift(d.k)); }, festDeliver(d) { return run(() => festDeliver(d.k, d.r)); },
+  fest: openFest, festGift(d) { return run(() => festGift(d.k)); }, mg(d) { openMG(d.k); }, mgPick(d) { return mgPick(+d.i); }, mgAns(d) { return mgAns(d.o); }, santaGo, raceGo: startRace, raceEnd: endRace, festDeliver(d) { return run(() => festDeliver(d.k, d.r)); },
   coop: openCoop, coopNew(d) { return run(() => coopNew(+d.i)); }, coopGive(d) { return run(() => coopGive(d.id)); }, coopClaim(d) { return run(() => coopClaim(d.id)); }, coopDel(d) { return run(() => coopDel(d.id)); },
   buyMach(d) { return run(() => buyMach(d.k)); }, startProc(d) { return run(() => startProc(d.k, d.r)); }, collectMach(d) { return run(() => collectMach(d.k)); }, helpMach(d) { return run(() => helpMach(d.k)); },
   collectAll() { return run(collectAll); }, machShop() { openShop('mach'); },
@@ -3803,7 +4151,7 @@ function greet(first, force) {
   Music.sparkle(); setTimeout(() => Music.babble(g, '哈囉歡迎回來'), 350);
 }
 function focusMe() {
-  const P = W.people?.find(p => p.uid === S.uid); if (!P || !W.controls || !isOwn()) return;
+  const P = W.people?.find(p => p.uid === S.uid); if (!P || !W.controls || !isOwn() || W.santa) return;
   const tgt = new THREE.Vector3(P.tx ?? P.m.position.x, .9, (P.tz ?? P.m.position.z) - .3), off0 = W.camera.position.clone().sub(W.controls.target);
   if (W.zoomed) return; W.zoomed = true;
   W.camAnim = {from:W.controls.target.clone(), to:tgt, t0:performance.now(), dur:900, off0, off1:off0.clone().multiplyScalar(.42)};
@@ -3855,6 +4203,7 @@ async function onAuth(u) {
   const isNew = !f.lastSign;
   setTimeout(() => { if (!S.my || S.uid !== u.uid) return; if (!S.my.gender) openChar(true); else { greet(isNew); if (typeof S.my.tut === 'number') setTimeout(() => startTut(S.my.tut), 5600); } }, 2200);
   const r = await txMe(g => { let ch = false; if (g.lastSign !== today()) { g.lastSign = today(); g.coins += SIGN_COINS; daily(g); ch = true; } if (fillOrders(g)) ch = true; return ch ? {} : ab(''); }).catch(() => ({abort:1}));
+  setTimeout(() => { if (!S.my || S.uid !== u.uid || TS.on) return; const o = mgFests().find(x => !mgDone(S.my, x) && x.F.mg !== 'santa'); if (o) toast(`${MG[o.F.mg].em} ${o.F.n}「${MG[o.F.mg].n}」開始囉！到「🎉 節日」玩`); }, 7600);
   if (rebuilt) toast('🌱 你的農場資料不見了，已經幫你重新建好一座新農場');
   else if (!r.abort && f.lastSign !== today()) toast(isNew ? '🎉 歡迎來到 3D 農場！' : `☀️ 每日簽到 +${SIGN_COINS} 金幣，記得看看今天的任務和訂單 📋`);
   refreshFriends();
@@ -3862,7 +4211,7 @@ async function onAuth(u) {
 function goHome() { unZoom(); S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; renderAll(); beat(); watchHere(); }
 function visit(uid) {
   if (uid === S.uid) return goHome();
-  unZoom(); S.unsubView && S.unsubView();
+  unZoom(); clearSanta(); S.unsubView && S.unsubView();
   S.viewUid = uid; const fr = S.friends.find(x => x.uid === uid); S.view = fr ? fr.farm : null; S.tool = 'hand'; renderAll(); beat(); watchHere();
   setTimeout(() => { if (S.viewUid === uid) waveAt(uid, fr ? dn(fr.farm) : '', false, true); }, 1200);
   S.unsubView = B.watch(uid, nf => { if (S.viewUid !== uid) return; if (!nf) { toast('找不到這個農場'); return goHome(); } S.view = normalize(nf); const fr2 = S.friends.find(x => x.uid === uid); if (fr2) fr2.farm = S.view; renderScene(); renderTools(); });
@@ -3870,7 +4219,7 @@ function visit(uid) {
 }
 function resetSceneKeys() { if (!W.scene) return; W.plots.forEach(P => P.key = null); W.ponds.forEach(P => P.key = null); W.machs.forEach(P => { P.key = null; P.indKey = null; }); W.aniKey = null; W.petKey = null; }
 
-setInterval(() => { if (S.view) { renderScene(); renderTools(); } renderWx(); }, 1000);
+setInterval(() => { if (S.view) { renderScene(); renderTools(); } renderWx(); santaCheck(); }, 1000);
 setInterval(() => {
   if (!S.view || document.hidden || !Music.wanted || !Music.on) return;
   Music.amb(isRain() ? 'rain' : '');
