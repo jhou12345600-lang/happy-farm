@@ -1509,40 +1509,106 @@ function tractorModel() {
     wheel(.62, .38, -.55, .62), wheel(.62, .38, -.55, -.62), wheel(.34, .26, 1.2, .55), wheel(.34, .26, 1.2, -.55), rod('#424242', [.05, .7, .05], [1.05, 1.4, .25]), blk('#eeeeee', [.06, .2, .5], [1.73, .8, 0]));
 }
 function farmhouseFar(c) { return grp(blk('#f5f0e6', [4, 2.4, 3], [0, 1.2, 0]), blk(c, [4.6, .25, 2.1], [0, 2.75, .75], [-.6, 0, 0]), blk(c, [4.6, .25, 2.1], [0, 2.75, -.75], [.6, 0, 0]), blk('#9e9e9e', [.5, 1, .5], [1.2, 3.2, 0])); }
+/* ----- 台灣鄉下：檳榔樹、香蕉樹、竹林、榕樹、土地公廟、三合院、水牛、白鷺鷥 ----- */
+function bananaTree(s = 1) { const g = grp(rod('#8a9a5b', [.16, 1.6, .16], [0, .8, 0]), ball('#b5c03a', [.15, .32, .15], [.22, 1.3, 0])); g.add(rosette('#5dae3a', 6, 1.6, .42, .25, 1.55)); g.scale.setScalar(s); return g; }
+function bambooClump(s = 1) { const g = new THREE.Group(); for (let k = 0; k < 9; k++) { const a = k * 2.3, r = .25 + (k % 3) * .2, h = 4 + (k % 4) * .9; g.add(rod('#7cb342', [.06, h, .06], [Math.cos(a) * r, h / 2, Math.sin(a) * r], [Math.sin(a) * .12, 0, -Math.cos(a) * .12])); g.add(ball(k % 2 ? '#5a9e34' : '#6aae3c', [1, .55, 1], [Math.cos(a) * (r + .45), h, Math.sin(a) * (r + .45)])); } g.scale.setScalar(s); return g; }
+function banyan() { const g = grp(rod('#6d5a48', [.6, 2.4, .6], [0, 1.2, 0]), ball('#3f7f35', [3.6, 1.5, 3.4], [0, 3.2, 0]), ball('#4a8c3c', [2.4, 1.2, 2.4], [1.4, 3.9, .6]), ball('#357030', [2.2, 1.1, 2.2], [-1.5, 3.7, -.5])); for (let k = 0; k < 12; k++) { const a = k * .53; g.add(rod('#7a6656', [.025, 1.9, .025], [Math.cos(a) * 2.3, 1.9, Math.sin(a) * 1.9])); } return g; }
+function templeModel() {
+  const up = (x, z, r) => cone('#e65100', [.07, .42, .07], [x, 2.28, z], [0, 0, r]);
+  return grp(blk('#9e9e9e', [3, .4, 2.4], [0, .2, 0]), blk('#c62828', [2.2, 1.6, 1.6], [0, 1.2, 0]), blk('#3e2723', [.9, 1.05, .05], [0, .95, .81]), blk('#ffca28', [1, .25, .06], [0, 1.68, .82]),
+    blk('#e65100', [2.9, .18, 2.2], [0, 2.1, 0]), blk('#d84315', [2.1, .5, 1.5], [0, 2.44, 0]), blk('#e65100', [2.6, .15, 1.9], [0, 2.75, 0]), cone('#ffca28', [.12, .45, .12], [0, 3.05, 0]),
+    up(1.45, .95, -1), up(-1.45, .95, 1), up(1.45, -.95, -1), up(-1.45, -.95, 1), rod('#8d6e63', [.3, .5, .3], [0, .65, 1.6]), rod('#ffca28', [.32, .08, .32], [0, .92, 1.6]),
+    ball('#e53935', [.18, .24, .18], [.8, 1.75, .95]), ball('#e53935', [.18, .24, .18], [-.8, 1.75, .95]));
+}
+function sanheyuan() {
+  const brick = '#b5532f', roof = '#8e3b20';
+  const hall = (w, d) => grp(blk(brick, [w, 2.2, d], [0, 1.1, 0]), blk(roof, [w + .4, .2, d * .62], [0, 2.55, d * .24], [-.55, 0, 0]), blk(roof, [w + .4, .2, d * .62], [0, 2.55, -d * .24], [.55, 0, 0]), blk('#7a2e17', [w + .5, .18, .22], [0, 2.84, 0]),
+    blk('#5d4037', [1, 1.6, .06], [0, .8, d / 2 + .02]), blk('#ffca28', [1.1, .3, .07], [0, 1.85, d / 2 + .03]), blk('#cfd8dc', [.75, .55, .06], [w * .3, 1.35, d / 2 + .02]), blk('#cfd8dc', [.75, .55, .06], [-w * .3, 1.35, d / 2 + .02]));
+  const main = hall(10, 3.2), l = hall(7, 3), r = hall(7, 3);
+  l.rotation.y = Math.PI / 2; l.position.set(-6.4, 0, 4.6); r.rotation.y = -Math.PI / 2; r.position.set(6.4, 0, 4.6);
+  const g = grp(main, l, r, blk('#c8c3b8', [9.6, .06, 7.6], [0, .03, 5]), blk('#e6c35a', [5.6, .08, 3.8], [0, .07, 5.2]), ...[0, 1, 2].map(k => grp(rod('#c9a24a', [.45, .7, .45], [0, .35, 0]), cone('#d8b45a', [.55, .7, .55], [0, 1.05, 0])).translateX(-2 + k * 2).translateZ(3.5)));
+  for (let k = 0; k < 6; k++) g.add(grp(ball('#fafafa', [.13, .11, .1], [0, .12, 0]), ball('#d32f2f', U(.04), [.1, .23, 0]), ball('#fafafa', U(.06), [.09, .2, 0])).translateX(-3 + k * 1.1).translateZ(6.6 + (k % 2) * .5));
+  return g;
+}
+function buffaloModel() { const b = quad({c:'#4b4b4b', s:2.3, len:1.25, h:.5, w:.42, leg:.42, lr:.07, hc:'#444444', snout:'#333333', tail:'long'}); const h = b.userData.head; h.add(ring('#d7ccc8', [.2, .2, .35], [-.05, .2, 0], [Math.PI / 2, 0, 0])); return b; }
+function egretModel() { return grp(ball('#ffffff', [.22, .14, .12], [0, .55, 0]), rod('#ffffff', [.03, .3, .03], [.15, .72, 0], [0, 0, -.4]), ball('#ffffff', U(.06), [.24, .86, 0]), cone('#fbc02d', [.02, .14, .02], [.33, .85, 0], [0, 0, -Math.PI / 2]), rod('#333333', [.012, .45, .012], [0, .23, .04]), rod('#333333', [.012, .45, .012], [0, .23, -.04])); }
+function scarecrow() { return grp(rod('#8d6e63', [.05, 2, .05], [0, 1, 0]), rod('#8d6e63', [.04, 1.4, .04], [0, 1.45, 0], [Math.PI / 2, 0, 0]), blk('#1e88e5', [.32, .5, .25], [0, 1.3, 0]), ball('#e6c35a', U(.17), [0, 1.78, 0]), cone('#c9a24a', [.38, .25, .38], [0, 2.0, 0])); }
+function strawStack(s = 1) { const g = grp(rod('#c9a24a', [.5, .9, .5], [0, .45, 0]), cone('#d8b45a', [.62, .95, .62], [0, 1.37, 0])); g.scale.setScalar(s); return g; }
 function buildScenery(S3) {
   const R = (() => { let h = 12345; return () => (h = (Math.imul(h, 1103515245) + 12345) >>> 0) / 4294967296; })();
   const flat = (x, z, m = 2) => Math.hypot((x - 12) / 1.3, z) < 57 - m;
-  // 田園拼布：後方與前方的大片農田
-  const kinds = ['wheat', 'green', 'rape', 'plow', 'corn', 'paddy', 'lav', 'sun', 'veg', 'meadow', 'wheat', 'paddy', 'green', 'rape'];
-  const cols = [-58, -42, -26, -10, 6, 22, 38, 54, 70, 86], hedge = [], trees = [], corn = [], sunS = [], sunH = [], bales = [];
+  const busy = (x, z) => (x > -10.5 && x < 10.5 && z > -6.5 && z < 6) || (x > 14 && x < 34 && z > -7 && z < 8) || (x > -41 && x < -19 && z > -7 && z < 7.5) || (x > 39.5 && x < 60.5 && z > -7 && z < 7.5) || (z > 8.3 && z < 11) || (x > -20 && x < -10 && z > -9 && z < 0) || (Math.hypot(x + 14, z - 9.5) < 5) || (x > 18 && x < 31 && z > -14 && z < -7.5);
+  const water = new THREE.MeshPhongMaterial({color:'#5f8f74', shininess:60, specular:'#c8e6ff'});
+  const kinds = ['paddy', 'paddy', 'gold', 'veg', 'paddy', 'banana', 'gold', 'paddy', 'fallow', 'veg', 'paddy', 'rape', 'gold', 'paddy'];
+  const cols = [-58, -42, -26, -10, 6, 22, 38, 54, 70, 86], seed = [], gold = [], cab = [], bund = [], palmT = [], palmF = [], palmC = [], paths = [];
+  const skip = (x, z) => (z === -27 && (x === -42 || x === -26));   // 三合院
   let n = 0;
   for (const z of [-27, -39, -51, 21, 33, 45]) for (const x of cols) {
-    if (!(flat(x - 7, z - 5) && flat(x + 7, z - 5) && flat(x - 7, z + 5) && flat(x + 7, z + 5))) continue;
-    const kind = kinds[(n++ * 5 + (z > 0 ? 3 : 0)) % kinds.length], rot = (n % 3) === 0;
-    S3.add(fieldMesh(kind, x, z, 14, 10, rot));
-    if (kind === 'corn') for (let i = -6.3; i <= 6.3; i += 1) for (let j = -4.3; j <= 4.3; j += .9) corn.push([x + (rot ? j : i), .7, z + (rot ? i : j), .16, 1.4 + R() * .3, .16, R() * 6]);
-    if (kind === 'sun') for (let i = -6; i <= 6; i += 1.1) for (let j = -4; j <= 4; j += 1) { const px2 = x + i + R() * .2, pz = z + j, hgt = 1.3 + R() * .3; sunS.push([px2, hgt / 2, pz, .04, hgt, .04]); sunH.push([px2, hgt, pz + .08, .28, .28, .06, 0, 0]); }
-    if (kind === 'wheat' && n % 2) for (let k = 0; k < 4; k++) bales.push([x - 4.5 + k * 3 + R(), z - 2 + R() * 4]);
+    if (!(flat(x - 7, z - 5) && flat(x + 7, z - 5) && flat(x - 7, z + 5) && flat(x + 7, z + 5)) || skip(x, z)) continue;
+    const kind = kinds[(n++ * 5 + (z > 0 ? 3 : 0)) % kinds.length];
+    // 田埂（四邊微高的土堤）
+    bund.push([x, .09, z - 5, 14, .18, .45], [x, .09, z + 5, 14, .18, .45], [x - 7, .09, z, .45, .18, 10], [x + 7, .09, z, .45, .18, 10]);
+    if (kind === 'paddy' || kind === 'gold') {
+      const w = new THREE.Mesh(geoOf('pw', () => new THREE.PlaneGeometry(13.6, 9.6)), kind === 'paddy' ? water : mat('#a8954e')); w.rotation.x = -Math.PI / 2; w.position.set(x, .04, z); w.receiveShadow = true; S3.add(w);
+      for (let i = -6.3; i <= 6.3; i += .62) for (let j = -4.3; j <= 4.3; j += .55) (kind === 'paddy' ? seed : gold).push(kind === 'paddy' ? [x + i + R() * .06, .2, z + j, .09, .42 + R() * .1, .09, R() * 6] : [x + i + R() * .1, .32, z + j, .1, .6 + R() * .1, .1, R() * 6]);
+      if (kind === 'paddy' && R() < .45) { const sc = scarecrow(); sc.position.set(x + (R() - .5) * 8, 0, z + (R() - .5) * 5); sc.rotation.y = R() * 6; S3.add(sc); }
+      if (kind === 'paddy' && R() < .5) for (let k = 0; k < 3; k++) { const e = egretModel(); e.position.set(x + (R() - .5) * 11, 0, z + (R() - .5) * 7); e.rotation.y = R() * 6; e.scale.setScalar(1.4); S3.add(e); }
+      if (kind === 'gold' && R() < .6) for (let k = 0; k < 3; k++) S3.add(strawStack(.9 + R() * .3).translateX(x - 4 + k * 4).translateZ(z + 3.2));
+    } else if (kind === 'veg') {
+      S3.add(fieldMesh('veg', x, z, 13.6, 9.6, false));
+      for (let i = -6; i <= 6; i += .9) for (let j = -4.2; j <= 4.2; j += .75) cab.push([x + i, .14, z + j, .22, .16, .22, R() * 6]);
+    } else if (kind === 'rape') S3.add(fieldMesh('rape', x, z, 13.6, 9.6, false));
+    else if (kind === 'fallow') {
+      S3.add(fieldMesh('plow', x, z, 13.6, 9.6, true));
+      const b = buffaloModel(); b.position.set(x - 2, 0, z + 1); b.rotation.y = .6; S3.add(b);
+      for (let k = 0; k < 4; k++) { const e = egretModel(); e.position.set(x - 3 + k * 1.6, 0, z + 2.2 + (k % 2)); e.rotation.y = k; e.scale.setScalar(1.4); S3.add(e); }
+    } else {
+      S3.add(fieldMesh('meadow', x, z, 13.6, 9.6, false));
+      for (let i = -5.5; i <= 5.5; i += 2.6) for (let j = -3.6; j <= 3.6; j += 2.4) { const t = bananaTree(.9 + R() * .4); t.position.set(x + i + R() * .6, 0, z + j + R() * .6); t.rotation.y = R() * 6; S3.add(t); }
+    }
+    // 田邊的檳榔樹
+    if (n % 2) for (let k = 0; k < 6; k++) { const px2 = x + 7.6, pz = z - 4.5 + k * 1.8; if (!flat(px2, pz, 0)) continue; const h = 3.6 + R() * 1.4; palmT.push([px2, h / 2, pz, .1, h, .1]); palmC.push([px2, h + .15, pz, .55, .4, .55]); for (let f = 0; f < 4; f++) palmF.push([px2, h + .05, pz, 1.5, .09, .26, f * .8 + R() * .3]); }
   }
-  for (const x of cols) for (const zs of [[-21.5, -57], [15.5, 51]]) for (let z = zs[0]; Math.abs(z) <= Math.abs(zs[1]); z += zs[0] < 0 ? -1.15 : 1.15) {
-    const hx = x - 8; if (!flat(hx, z, 0)) continue; hedge.push([hx + R() * .3, .35, z, .6 + R() * .3, .5 + R() * .3, .6 + R() * .3]);
-    if (R() < .09) trees.push([hx, z]);
-  }
-  for (const z of [-21.5, 15.5]) for (let x = -64; x < 94; x += 1.2) if (flat(x, z, 0) && R() < .55) hedge.push([x, .3, z + R() * .3, .5 + R() * .3, .45 + R() * .25, .5 + R() * .3]);
-  S3.add(inst(gS(), '#4a8a34', hedge));
-  if (corn.length) S3.add(inst(gN(), '#4f8f2e', corn));
-  if (sunS.length) { S3.add(inst(gC(), '#558b2f', sunS)); S3.add(inst(gC(), '#f2b705', sunH.map(a => [...a.slice(0, 3), .28, .05, .28, 0, Math.PI / 2]))); S3.add(inst(gC(), '#5d3a12', sunH.map(a => [a[0], a[1], a[2] + .035, .12, .02, .12, 0, Math.PI / 2]))); }
-  for (const [x, z] of bales) S3.add(grp(rod('#d8b45a', [.55, .9, .55], [0, .55, 0], [0, 0, Math.PI / 2]), rod('#c9a24a', [.4, .92, .4], [0, .55, 0], [0, 0, Math.PI / 2])).translateX(x).translateZ(z));
-  // 樹籬間的大樹＋遠山樹林
+  // 田間小路
+  for (const x of cols) for (const zc of [-39, 33]) if (flat(x + 8, zc, 0)) paths.push([x + 8, .03, zc, 1.4, .04, 34]);
+  S3.add(inst(gB(), '#7d8a48', bund)); S3.add(inst(gB(), '#b49a68', paths));
+  if (seed.length) S3.add(inst(gN(), '#6fbf3f', seed)); if (gold.length) S3.add(inst(gN(), '#d9b54a', gold)); if (cab.length) S3.add(inst(gS(), '#8bc34a', cab));
+  // 灌溉水圳
+  S3.add(blk('#6aa5b0', [128, .05, 1.2], [14, .02, -20.6]), blk('#a8a8a8', [128, .22, .16], [14, .11, -20]), blk('#a8a8a8', [128, .22, .16], [14, .11, -21.2]));
+  // 三合院＋竹林＋香蕉樹
+  const sh = sanheyuan(); sh.position.set(-34, 0, -33); S3.add(sh);
+  for (const [x, z, s] of [[-43, -33, 1.1], [-25, -33.5, 1], [-44, -26, .9], [-23.5, -26.5, .9], [-36, -38, 1.2], [-30, -38.5, 1]]) S3.add(bambooClump(s).translateX(x).translateZ(z));
+  for (const [x, z] of [[-41, -24], [-27, -24], [-21, -29]]) S3.add(bananaTree(1.2).translateX(x).translateZ(z));
+  // 土地公廟＋大榕樹
+  const tp = templeModel(); tp.position.set(31.5, 0, -16.6); tp.rotation.y = -.2; S3.add(tp);
+  S3.add(banyan().translateX(36).translateZ(-17.2)); S3.add(bambooClump(1).translateX(26.5).translateZ(-18));
+  // 遠山樹林：闊葉樹、檳榔樹、竹子
   const trunk = [], crown = [], pine = [];
-  for (const [x, z] of trees) { trunk.push([x, .9, z, .18, 1.8, .18]); crown.push([x, 2.6, z, 1.4, 1.2, 1.4]); }
-  for (let i = 0; i < 420; i++) {
+  for (let i = 0; i < 480; i++) {
     const a = R() * Math.PI * 2, r = 64 + R() * 70, x = 12 + Math.cos(a) * r * 1.3, z = Math.sin(a) * r; if (Math.abs(z) < 8 && x > 0) continue;
-    const y = terrainH(x, z), s = .9 + R() * 1.1;
-    if (R() < .55) pine.push([x, y + 1.4 * s, z, 1.1 * s, 2.8 * s, 1.1 * s]); else { trunk.push([x, y + .7 * s, z, .2 * s, 1.4 * s, .2 * s]); crown.push([x, y + 2 * s, z, 1.3 * s, 1.1 * s, 1.3 * s]); }
+    const y = terrainH(x, z), s = .9 + R() * 1.1, k = R();
+    if (k < .3) { const h = 3.8 * s; palmT.push([x, y + h / 2, z, .12 * s, h, .12 * s]); palmC.push([x, y + h + .15, z, .6 * s, .45 * s, .6 * s]); for (let f = 0; f < 4; f++) palmF.push([x, y + h + .05, z, 1.6 * s, .1, .28 * s, f * .8]); }
+    else if (k < .45) pine.push([x, y + 1.4 * s, z, 1.1 * s, 2.8 * s, 1.1 * s]);
+    else { trunk.push([x, y + .7 * s, z, .2 * s, 1.4 * s, .2 * s]); crown.push([x, y + 2 * s, z, 1.5 * s, 1.15 * s, 1.5 * s]); }
   }
   S3.add(inst(gC(), '#6d4c41', trunk)); S3.add(inst(gS(), '#3f8a37', crown)); S3.add(inst(gN(), '#2f6d33', pine));
-  for (const [x, z, c] of [[-70, -60, '#b23a2c'], [90, -55, '#5d6d7e'], [-85, 30, '#8d5a2b'], [100, 40, '#b23a2c'], [40, -75, '#8d5a2b']]) { const h = farmhouseFar(c); h.position.set(x, terrainH(x, z), z); h.rotation.y = Math.atan2(x - 12, z); h.traverse(o => o.castShadow = false); S3.add(h); }
+  S3.add(inst(gC(), '#a39577', palmT)); S3.add(inst(gS(), '#3d8a2c', palmF)); S3.add(inst(gS(), '#4b9a34', palmC));
+  for (const [x, z, c] of [[-70, -60, '#b5532f'], [90, -55, '#b5532f'], [-85, 30, '#8e3b20'], [100, 40, '#b5532f'], [40, -75, '#8e3b20']]) { const h = farmhouseFar(c); h.position.set(x, terrainH(x, z), z); h.rotation.y = Math.atan2(x - 12, z); h.traverse(o => o.castShadow = false); S3.add(h); }
+  // 農舍旁、田後面的鄉下小景（預設視角就看得到）
+  for (const [x, z, s] of [[-20.5, -9.5, 1.2], [-22.5, -6, 1], [-19.5, -13, 1.1], [11.5, -12.5, 1], [-11, -11.5, .9]]) S3.add(bananaTree(s).translateX(x).translateZ(z));
+  for (const [x, z, s] of [[-6, -12.8, .8], [3, -14.5, .9], [13.5, -15, .8]]) S3.add(bambooClump(s).translateX(x).translateZ(z));
+  for (let k = 0; k < 9; k++) { const x = -9 + k * 2.4, z = -16 - (k % 2) * .6, h = 3.4 + (k % 3) * .5; S3.add(grp(rod('#a39577', [.09, h, .09], [0, h / 2, 0]), ball('#4b9a34', [.5, .38, .5], [0, h + .15, 0]), ...[0, 1, 2, 3].map(f => ball('#3d8a2c', [1.4, .08, .24], [0, h + .05, 0], [0, f * .8, 0])), ball('#c8a23a', U(.1), [.12, h - .1, .06])).translateX(x).translateZ(z)); }
+  for (const [x, z] of [[-24, 4.5], [12.2, 11.6], [-36, 11.8]]) S3.add(strawStack(1).translateX(x).translateZ(z));
+  // 竹籬笆（農舍旁）
+  for (let k = 0; k < 10; k++) S3.add(rod('#c9b37a', [.05, 1 + (k % 2) * .15, .05], [-25 + k * .45, .5, -1.5]));
+  S3.add(rod('#b39b62', [.03, 4.5, .03], [-23, .45, -1.5], [0, 0, Math.PI / 2]), rod('#b39b62', [.03, 4.5, .03], [-23, .8, -1.5], [0, 0, Math.PI / 2]));
+  // 草地上的泥土塊、小石頭
+  const dirt = [], rock = [];
+  for (let i = 0; i < 900 && dirt.length < 70; i++) { const x = -45 + R() * 110, z = -14 + R() * 30; if (busy(x, z)) continue; if (R() < .6) dirt.push([x, .025, z, .35 + R() * .6, .02, .25 + R() * .45, R() * 6]); else rock.push([x, .08, z, .15 + R() * .2, .1 + R() * .1, .15 + R() * .15, R() * 6]); }
+  S3.add(inst(gS(), '#a8936a', dirt)); S3.add(inst(gS(), '#9e9e9e', rock));
+  // 放山雞：在農舍和路邊散步啄食
+  W.hens = [];
+  for (let k = 0; k < 7; k++) { const m = animalModel('chicken'); m.scale.multiplyScalar(1.5); S3.add(m); W.hens.push({m, cx:[-17, -15, -22, 6, -5, 14, -28][k], cz:[3.5, 6.5, 2, 7.6, 7.8, 8, 6][k], r:1 + (k % 3) * .6, ph:k * 1.9}); }
   // 拖拉機、水塔、乾草捲
   const tr = tractorModel(); tr.position.set(16.5, 0, -9.6); tr.rotation.y = -.5; S3.add(tr);
   const wt = grp(...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([a, b]) => blk('#8d6e63', [.16, 5, .16], [a * .9, 2.5, b * .9])), rod('#a1887f', [1.5, 2, 1.5], [0, 6, 0]), cone('#6d4c41', [1.7, 1, 1.7], [0, 7.5, 0]), blk('#795548', [2.2, .1, 2.2], [0, 4.95, 0]));
@@ -1557,7 +1623,6 @@ function buildScenery(S3) {
   });
   // 草叢＋野花
   const tuft = [], wild = [];
-  const busy = (x, z) => (x > -10.5 && x < 10.5 && z > -6.5 && z < 6) || (x > 14 && x < 34 && z > -7 && z < 8) || (x > -41 && x < -19 && z > -7 && z < 7.5) || (x > 39.5 && x < 60.5 && z > -7 && z < 7.5) || (z > 8.3 && z < 11) || (x > -20 && x < -10 && z > -9 && z < 0) || (Math.hypot(x + 14, z - 9.5) < 5) || (x > 18 && x < 31 && z > -14 && z < -7.5);
   for (let i = 0; i < 2600 && tuft.length < 1300; i++) { const x = -62 + R() * 152, z = -19 + R() * 36; if (busy(x, z)) continue; tuft.push([x, .12, z, .07 + R() * .05, .22 + R() * .2, .07, R() * 6]); if (R() < .12) wild.push([x + .2, .2, z, .06, .06, .06, 0, 0, ['#fff59d', '#ffffff', '#f8bbd0', '#ce93d8', '#ffcc80'][i % 5]]); }
   S3.add(inst(gN(), '#5e9a3a', tuft)); if (wild.length) S3.add(inst(gS(), new THREE.MeshLambertMaterial({color:'#ffffff'}), wild));
 }
@@ -1785,7 +1850,7 @@ function buildWorld() {
   gg.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3)); gg.computeVertexNormals();
   const ground = new THREE.Mesh(gg, new THREE.MeshLambertMaterial({vertexColors:true, flatShading:true})); ground.receiveShadow = true; S3.add(ground);
   // 遠山
-  for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2 + .2, r = 130 + (i % 3) * 18, h = 28 + (i * 7) % 22, R = 24 + (i % 4) * 6; const m = grp(cone('#6d8f62', [R, h, R], [0, h / 2, 0]), cone('#f5f5f5', [R * 7 / h, 7, R * 7 / h], [0, h - 3.5, 0])); m.position.set(12 + Math.cos(a) * r, 0, Math.sin(a) * r); m.traverse(o => { o.castShadow = false; }); S3.add(m); }
+  for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2 + .2, r = 130 + (i % 3) * 18, h = 28 + (i * 7) % 22, R = 24 + (i % 4) * 6; const m = grp(cone(i % 2 ? '#4f7f4a' : '#5b8a52', [R, h, R], [0, h / 2, 0]), cone('#3f6e3d', [R * .45, h * .45, R * .45], [R * .25, h * .72, 0])); m.position.set(12 + Math.cos(a) * r, 0, Math.sin(a) * r); m.traverse(o => { o.castShadow = false; }); S3.add(m); }
   // 田地、牧場地面、小路
   S3.add(blk('#9c6a3c', [17.6, .12, 9.6], [0, .04, -.3]));
   S3.add(blk('#8fd16a', [17.6, .06, 12.6], [24, .02, .5]));
@@ -1921,7 +1986,7 @@ function init3D() {
 function setCam(scene, instant) {
   const tgt = SCENE_T[scene] || FARM_T, st = $('#stage'), portrait = st.clientWidth / Math.max(1, st.clientHeight) < 1;
   const off = W.camera.position.clone().sub(W.controls.target);
-  if (instant || off.length() < 1) { off.set(0, portrait ? 25 : 13, portrait ? 27 : 15.5); }
+  if (instant || off.length() < 1) { off.set(0, portrait ? 24 : 12, portrait ? 28 : 16.2); }
   W.camAnim = {from:W.controls.target.clone(), to:tgt.clone(), t0:performance.now(), dur:instant ? 0 : 900, off};
   if (instant) { W.controls.target.copy(tgt); W.camera.position.copy(tgt).add(off); W.controls.update(); W.camAnim = null; }
 }
@@ -2135,6 +2200,8 @@ function loop() {
     if (A.m.userData.tail) A.m.userData.tail.rotation.x = Math.sin(t * 5 + A.ph) * .4;
     A.ind.position.y += 0; A.ind.rotation.y = t * 1.5;
   }
+  // 放山雞
+  for (const H of W.hens || []) { const a = t * .18 + H.ph, peck = Math.sin(t * .9 + H.ph) > .55; if (!peck) { H.m.position.set(H.cx + Math.cos(a) * H.r, 0, H.cz + Math.sin(a * 1.3) * H.r * .6); H.m.rotation.y = Math.atan2(-Math.cos(a * 1.3) * .78, -Math.sin(a)); } if (H.m.userData.head) H.m.userData.head.rotation.z = peck ? -.7 + Math.abs(Math.sin(t * 9 + H.ph)) * .5 : 0; const sw = peck ? 0 : Math.sin(t * 10 + H.ph) * .5; (H.m.userData.legs || []).forEach((l, k) => l.rotation.z = k % 2 ? sw : -sw); }
   // 寵物巡邏
   for (const P of W.pets) {
     const d = t * P.sp + P.ph, a = pathAt(d); P.m.position.set(a.x, 0, a.z); P.m.rotation.y = Math.atan2(-a.dz, a.dx);
@@ -2381,7 +2448,26 @@ function clickPlot(i) {
   if (!tool) return toast(plain({type:'tile', i}));
   run(() => ACT_PLOT[tool](i));
 }
-const txMe = fn => B.tx(S.uid, fn);
+function optimistic(fn) {
+  if (!S.my) return null; let c, r;
+  try { c = normalize(clone(S.my)); r = fn(c) || {}; } catch { return null; }
+  if (r.abort) return r;
+  S.my = c; if (isOwn()) S.view = S.my; renderAll(); rerenderModal(); return r;
+}
+async function resync() { const f = await B.getFarm(S.uid).catch(() => null); if (f) { S.my = normalize(f); if (isOwn()) S.view = S.my; renderAll(); rerenderModal(); } }
+async function txMe(fn) {
+  const o = optimistic(fn); S.lastOpt = o; const ok = o && !o.abort;
+  try { const r = await B.tx(S.uid, fn); if (ok && r.abort) resync(); return r; }
+  catch (e) { if (ok) resync(); throw e; }
+}
+// 先用本機算出的結果馬上給回饋，伺服器結果回來後只在不一致時更正
+async function fast(fn, show) {
+  const p = txMe(fn), o = S.lastOpt, early = o && !o.abort;
+  if (early) show(o);
+  const r = await p;
+  if (r.abort) toast(r.msg); else if (!early) show(r);
+  return r;
+}
 const txView = fn => B.tx(S.viewUid, fn);
 const ab = msg => ({abort:1, msg});
 function guardCheck(f, nm) { const pk = petOf(f); if (pk && PETS[pk].bite && Math.random() < biteOf(f, pk)) { addLog(f, `🐾 你的${PETS[pk].n}抓到來偷東西的 ${nm}，罰他 ${CAUGHT_COINS} 金幣和倉庫物品！`); return PETS[pk].n; } return ''; }
@@ -2398,9 +2484,7 @@ async function caught(x, y, z, petName) {
 
 const ACT_PLOT = {
   async harvest(i) {
-    const r = await txMe(f => isMature(f.plots[i]) ? doHarvest(f, i) : ab('還沒成熟'));
-    if (r.abort) return toast(r.msg);
-    fxPlot(i, `+${r.amt} ${CROPS[r.c].n}`); fxPlot(i, `+${r.exp} 經驗`, '#f57c00', -.5); Music.sfx('pop'); lvToast(r.up);
+    await fast(f => isMature(f.plots[i]) ? doHarvest(f, i) : ab('還沒成熟'), r => { fxPlot(i, `+${r.amt} ${CROPS[r.c].n}`); fxPlot(i, `+${r.exp} 經驗`, '#f57c00', -.5); Music.sfx('pop'); lvToast(r.up); });
   },
   async plow(i) {
     const p = S.view.plots[i];
@@ -3005,7 +3089,7 @@ async function festGift(key) {
 }
 async function festDeliver(key, rid) {
   const o = activeFests().find(x => x.key === key), R = FEST_R[rid]; if (!o || !R) return toast('這個節日已經結束了');
-  const r = await txMe(f => {
+  await fast(f => {
     f.fest ??= {}; const st = f.fest[o.key] ??= {}; st.got ??= {}; st.d ??= {};
     if (st.d[R.id] === twDay()) return ab('今天已經完成這張了');
     const got = st.got[R.id] ??= {}; let moved = 0;
@@ -3013,9 +3097,9 @@ async function festDeliver(key, rid) {
     if (!moved) return ab('倉庫裡沒有需要的材料');
     if (festLeft(f, o.key, R).length) return {moved, done:false};
     st.d[R.id] = twDay(); delete st.got[R.id]; const rw = festRw(R); f.coins += rw.c; bump(f, 'fest'); return {done:true, rw, up:gainExp(f, rw.e)};
-  });
-  if (r.abort) return toast(r.msg);
+  }, r => {
   if (r.done) { toast(`${o.F.em} ${R.n}完成！獲得 💰${r.rw.c} + ${r.rw.e} 經驗`); Music.sfx('coin'); lvToast(r.up); } else { toast(`📦 交了 ${r.moved} 份材料，繼續收集吧！`); Music.sfx('pop'); }
+  });
 }
 
 /* ----- 好友合作大訂單 ----- */
@@ -3220,16 +3304,16 @@ const ACT = {
   async takeGift(d) { const g = await B.takeGift(d.id); if (!g) { toast('這份禮物已經收過了'); return refreshFriends(); } await txMe(f => { f.wh[g.item] = (f.wh[g.item] || 0) + g.n; dexAdd(f, g.item, g.n); return {}; }); S.gifts = S.gifts.filter(x => x.id !== d.id); toast(`🎁 收下了 ${g.n} 個${itemInfo(g.item).n}！`); Music.sfx('coin'); rerenderModal(); renderTop(); },
   async deliver(d) {
     const i = +d.i, o = S.my.orders[i]; if (!o) return;
-    const r = await txMe(f => {
+    await fast(f => {
       const x = f.orders[i]; if (!x || x.r !== o.r) return ab('訂單已經變了，請再看一次'); x.got ??= {};
       let moved = 0; for (const [id, n] of orderLeft(x)) { const give = Math.min(n, f.wh[id] || 0); if (give > 0) { f.wh[id] -= give; x.got[id] = (x.got[id] || 0) + give; moved += give; } }
       if (!moved) return ab('倉庫裡沒有這張訂單需要的東西');
       if (orderLeft(x).length) return {moved, done:false};
       const rw0 = recipeReward(x.r), rw = {c:festBonus('order') ? Math.round(rw0.c * 1.5) : rw0.c, e:rw0.e}, R = RECIPES[x.r]; dexAdd(f, 'r:' + x.r); f.coins += rw.c; const up = gainExp(f, rw.e); f.orders.splice(i, 1); f.ordersDone = (f.ordersDone || 0) + 1; bump(f, 'order'); fillOrders(f); return {moved, done:true, rw, up, n:R.n};
+    }, r => {
+      if (r.done) { toast(`🍳 ${r.n}完成！獲得 💰${r.rw.c} + ${r.rw.e} 經驗`); Music.sfx('coin'); lvToast(r.up); }
+      else { toast(`📦 交了 ${r.moved} 份材料，繼續收集吧！`); Music.sfx('pop'); }
     });
-    if (r.abort) return toast(r.msg);
-    if (r.done) { toast(`🍳 ${r.n}完成！獲得 💰${r.rw.c} + ${r.rw.e} 經驗`); Music.sfx('coin'); lvToast(r.up); }
-    else { toast(`📦 交了 ${r.moved} 份材料，繼續收集吧！`); Music.sfx('pop'); }
   },
   async swapOrder(d) {
     const i = +d.i;
