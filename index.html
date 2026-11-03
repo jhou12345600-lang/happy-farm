@@ -372,7 +372,39 @@ const CROP_LIST = [
   ['mango','芒果','tree',14,960,{m:'tree',c2:'#ffb300',leaf:'#2e7d32'}],
   ['cherry','櫻桃','tree',15,1080,{m:'tree',c2:'#c62828',leaf:'#66bb6a',blossom:true}],
   ['coconut','椰子','tree',16,1200,{m:'palm',f:'coconut'}],
+  // ---- 新增種子 ----
+  ['pakchoi','小白菜','veg',1,8,{m:'leafy',c:'#8bc34a',up:true}],
+  ['scallion','青蔥','veg',2,22,{m:'leafy',c:'#43a047',up:true}],
+  ['cosmos','波斯菊','flower',2,35,{m:'flower',st:'daisy',c:'#f48fb1'}],
+  ['beetroot','甜菜根','veg',3,55,{m:'root',c2:'#8e244d'}],
+  ['marigold','萬壽菊','flower',3,60,{m:'flower',st:'carn',c:'#ffa000'}],
+  ['okra','秋葵','veg',4,100,{m:'bush',f:'long',c2:'#7cb342'}],
+  ['peanut','花生','veg',4,110,{m:'tuber',c2:'#d7a86e'}],
+  ['morning','牽牛花','flower',5,120,{m:'flower',st:'tulip',c:'#7e57c2'}],
+  ['ginger','老薑','veg',6,160,{m:'tuber',c2:'#d9b45f'}],
+  ['jasmine','茉莉花','flower',6,190,{m:'flower',st:'daisy',c:'#fffde7'}],
+  ['taro','芋頭','veg',7,220,{m:'tuber',c2:'#9c8aa5'}],
+  ['sorghum','高粱','grass',7,160,{m:'grain',c2:'#a1572e'}],
+  ['bittermelon','苦瓜','veg',8,210,{m:'bush',f:'long',c2:'#9ccc65'}],
+  ['guava','芭樂','tree',9,560,{m:'tree',c2:'#c5e1a5',leaf:'#388e3c'}],
+  ['lotus','荷花','flower',9,280,{m:'flower',st:'lily',c:'#f8bbd0'}],
+  ['wintermelon','冬瓜','veg',10,420,{m:'vine',f:'wmelon',c2:'#689f38'}],
+  ['tea','茶葉','grass',10,330,{m:'leafy',c:'#33691e',up:true}],
+  ['camellia','山茶花','flower',11,360,{m:'flower',st:'rose',c:'#e53935'}],
+  ['plum','梅子','tree',11,760,{m:'tree',c2:'#9ccc65',leaf:'#4caf50',blossom:true}],
+  ['kiwi','奇異果','fruit',11,640,{m:'trellis',c2:'#8d6e63'}],
+  ['pear','水梨','tree',12,860,{m:'tree',c2:'#e6ee9c',leaf:'#43a047'}],
+  ['passion','百香果','fruit',12,700,{m:'trellis',c2:'#5d1b4b'}],
+  ['orchid','蝴蝶蘭','flower',12,420,{m:'flower',st:'lily',c:'#ce93d8'}],
+  ['wax','蓮霧','tree',13,880,{m:'tree',c2:'#e53950',leaf:'#2e7d32'}],
+  ['persimmon','柿子','tree',13,900,{m:'tree',c2:'#ff7043',leaf:'#558b2f'}],
+  ['peony','牡丹','flower',13,480,{m:'flower',st:'rose',c:'#ec407a'}],
+  ['dragonfruit','火龍果','fruit',14,880,{m:'bush',f:'round',c2:'#e91e63'}],
+  ['lychee','荔枝','tree',14,960,{m:'tree',c2:'#d32f2f',leaf:'#2e7d32'}],
+  ['longan','龍眼','tree',15,1000,{m:'tree',c2:'#c8a165',leaf:'#33691e'}],
+  ['coffee','咖啡豆','tree',16,1100,{m:'tree',c2:'#6d1b1b',leaf:'#2e7d32'}],
 ];
+CROP_LIST.sort((a, b) => a[3] - b[3]);
 const CAT_N = {veg:'🥬 蔬菜', fruit:'🍓 水果', flower:'🌸 花', tree:'🌳 果樹', grass:'🌾 草穀'};
 const CROPS = {};
 for (const [id, n, cat, lv, min, m] of CROP_LIST) {
@@ -958,6 +990,8 @@ function coopReward(c, uid) { const V = coopValue(c); let mine = 0; for (const [
 const coopLeft = c => Object.entries(c.need).map(([id, n]) => [id, n - (c.got?.[id] || 0)]).filter(([, n]) => n > 0);
 const coopMine = (c, uid) => Object.keys(c.by?.[uid] || {}).length > 0;
 const coopLive = c => !c.done && now() < c.end;
+const coopAllClaimed = c => Object.keys(c.by || {}).every(u => (c.claimed || []).includes(u));
+const coopBlocking = (c, uid) => c.owner === uid && (coopLive(c) || (c.done && !coopAllClaimed(c)));
 
 function newFarm(username) {
   return {username, nick:'', exp:0, coins:300, plotCount:START_P, plots:Array.from({length:MAXP}, () => ({s:'empty'})),
@@ -2984,12 +3018,32 @@ function optimistic(fn) {
   if (r.abort) return r;
   S.my = c; if (isOwn()) S.view = S.my; renderAll(); rerenderModal(); return r;
 }
-async function resync() { const f = await B.getFarm(S.uid).catch(() => null); if (f) { S.my = normalize(f); if (isOwn()) S.view = S.my; renderAll(); rerenderModal(); } }
+async function resync() { const f = await B.getFarm(S.uid).catch(() => null); if (f) { S.my = applyPending(f); if (isOwn()) S.view = S.my; renderAll(); rerenderModal(); } }
+// 自己農場的寫入：先在本機套用（畫面馬上更新），伺服器確認前收到的舊快照會把還沒確認的動作疊回去，數字不會跳回舊的
+S.pend = [];
 async function txMe(fn) {
   const o = optimistic(fn); S.lastOpt = o; const ok = o && !o.abort;
-  try { const r = await B.tx(S.uid, fn); if (ok && r.abort) resync(); return r; }
-  catch (e) { if (ok) resync(); throw e; }
+  const P = {fn, rev:0}; if (ok) S.pend.push(P);
+  const drop = () => { S.pend = S.pend.filter(x => x !== P); };
+  try {
+    const r = await B.tx(S.uid, f => { const res = fn(f) || {}; if (!res.abort) { f.rev = (f.rev || 0) + 1; P.rev = f.rev; } return res; });
+    if (r.abort) { drop(); if (ok) resync(); } else if (!P.rev || (S.myRev || 0) >= P.rev) drop(); else setTimeout(drop, 8000);
+    return r;
+  }
+  catch (e) { drop(); if (ok) resync(); throw e; }
 }
+function applyPending(nf) {
+  S.myRev = nf.rev || 0; S.pend = S.pend.filter(P => !(P.rev && S.myRev >= P.rev));
+  let base = normalize(nf);
+  for (const P of S.pend) { try { const c = clone(base), r = P.fn(c) || {}; if (!r.abort) base = c; } catch {} }
+  return base;
+}
+function sellGroup(ids, label, none) {
+  return fast(f => { let g = 0, k = 0; const parts = []; for (const id of ids) { const n = f.wh[id] || 0; if (n > 0) { g += n * sellOf(id); k += n; f.wh[id] = 0; parts.push(`${itemInfo(id).n}×${n}`); } } if (!g) return ab(none); f.coins += g; bump(f, 'sell');
+    addTrade(f, `倉庫一次賣出${label ? '全部' + label : '全部'}：${parts.slice(0, 6).join('、')}${parts.length > 6 ? ` 等 ${parts.length} 種` : ''}`, g); return {g, k}; },
+    r => { toast(`${label ? label + '全部' : '全部'}賣出 ${r.k} 個，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); });
+}
+function addTrade(f, m, c) { f.trade = f.trade || []; f.trade.push({t:now(), m, c:c || 0}); if (f.trade.length > 40) f.trade = f.trade.slice(-40); }
 // 先用本機算出的結果馬上給回饋，伺服器結果回來後只在不一致時更正
 async function fast(fn, show) {
   const p = txMe(fn), o = S.lastOpt, early = o && !o.abort;
@@ -3470,7 +3524,8 @@ async function acceptReq(r) {
 function openMsgs() {
   const f = S.my; const seen = f.logSeen || 0; const logs = [...(f.log || [])].reverse();
   S.modal = () => openModal('📜 消息與禮物', (S.gifts.length ? `<div class="sec" style="margin-top:0">🎁 收到的禮物</div>` + S.gifts.map(g => `<div class="item"><div class="pic">${itemIcon(g.item)}</div><div class="info"><div class="t">${esc(g.fromName)} 送你 ${itemInfo(g.item).n} ×${g.n}</div><div class="d">${fmtTime(g.t)}</div></div><div class="acts"><button class="b o" data-act="takeGift" data-id="${esc(g.id)}">收下</button></div></div>`).join('') + '<div class="sec">📜 農場消息</div>' : '')
-    + (logs.length ? logs.map(l => `<div class="log ${l.t > seen ? 'new' : ''}"><time>${fmtTime(l.t)}</time><span>${esc(l.m)}</span></div>`).join('') : '<div class="empty">目前沒有消息</div>'));
+    + (logs.length ? logs.map(l => `<div class="log ${l.t > seen ? 'new' : ''}"><time>${fmtTime(l.t)}</time><span>${esc(l.m)}</span></div>`).join('') : '<div class="empty">目前沒有消息</div>')
+    + `<div class="sec">💰 交易紀錄</div>` + ((S.my.trade || []).length ? [...S.my.trade].reverse().map(l => `<div class="log"><time>${fmtTime(l.t)}</time><span style="flex:1">${esc(l.m)}</span>${l.c ? `<b style="color:${l.c > 0 ? '#2e7d32' : '#c62828'};white-space:nowrap">${l.c > 0 ? '+' : ''}${l.c}💰</b>` : ''}</div>`).join('') : '<div class="empty">還沒有交易，賣東西、市集成交都會記在這裡</div>'));
   S.modal(); txMe(f => { f.logSeen = now(); return {}; }).catch(() => {});
 }
 function openProfile() {
@@ -3812,7 +3867,10 @@ async function festDeliver(key, rid) {
 }
 
 /* ----- 好友合作大訂單 ----- */
-async function refreshCoops() { if (!B?.listCoops) return; try { S.coops = await B.listCoops(S.uid); } catch (e) { console.warn(e); S.coops ??= []; } }
+async function refreshCoops() { if (!B?.listCoops) return; try { S.coops = await B.listCoops(S.uid); } catch (e) { console.warn(e); S.coops ??= []; }
+  // 大家都領完獎的合作訂單，由發起人自動收掉，才會換下一張
+  for (const c of S.coops.filter(c => c.owner === S.uid && c.done && coopAllClaimed(c))) { B.delCoop(c.id).catch(() => {}); S.coops = S.coops.filter(x => x !== c); }
+}
 function coopReady(f) { return (S.coops || []).filter(c => (coopLive(c) && coopLeft(c).some(([id]) => (f.wh[id] || 0) > 0)) || (c.done && coopMine(c, S.uid) && !(c.claimed || []).includes(S.uid))).length; }
 function openCoop() {
   S.modal = () => {
@@ -3828,12 +3886,13 @@ function openCoop() {
         <div class="bar"><i style="width:${got / tot * 100}%"></i></div>
         <div class="d" style="margin-top:4px">${c.done ? '🎉 完成了！' : live ? `⏰ 還剩 ${fmtDur(c.end - now())}` : '⌛ 已過期'} · 成員：${c.members.map(u => esc((c.names || {})[u] || '?')).join('、')}</div>
         ${who.length ? `<div class="d">🏅 貢獻：${who.map(([u, v]) => `${esc((c.names || {})[u] || '?')} ${Math.round(v / V * 100)}%`).join('、')}</div>` : ''}
-        <div class="d">${mine ? `我的獎勵：💰${rw.c} + ${rw.e} 經驗` : `交貨後可領：💰${coopReward({...c, by:{}}, S.uid).c} 起，交越多越多`}</div></div>
-        <div class="acts">${canGive ? `<button class="b o" data-act="coopGive" data-id="${esc(c.id)}">📦 交貨</button>` : ''}${c.done && mine && !claimed ? `<button class="b o" data-act="coopClaim" data-id="${esc(c.id)}">🎁 領獎</button>` : ''}${c.done && claimed ? '<button class="b g" disabled>已領獎</button>' : ''}${c.owner === S.uid ? `<button class="b g" data-act="coopDel" data-id="${esc(c.id)}">${c.done || !live ? '清除' : '取消'}</button>` : ''}</div></div>`;
+        <div class="d">${mine ? `我的獎勵：💰${rw.c} + ${rw.e} 經驗` : c.done ? '你這次沒有交貨' : `交貨後可領：💰${coopReward({...c, by:{}}, S.uid).c} 起，交越多越多`}</div>
+        ${c.done ? `<div class="d">${coopAllClaimed(c) ? '✅ 大家都領完獎了' : `⏳ 等待領獎：${Object.keys(c.by || {}).filter(u => !(c.claimed || []).includes(u)).map(u => esc((c.names || {})[u] || '?')).join('、')}（大家都領完才會換下一張）`}</div>` : ''}</div>
+        <div class="acts">${canGive ? `<button class="b o" data-act="coopGive" data-id="${esc(c.id)}">📦 交貨</button>` : ''}${c.done && mine && !claimed ? `<button class="b o" data-act="coopClaim" data-id="${esc(c.id)}">🎁 領獎</button>` : ''}${c.done && claimed ? '<button class="b g" disabled>已領獎</button>' : ''}${c.owner === S.uid && !c.done ? `<button class="b g" data-act="coopDel" data-id="${esc(c.id)}">${live ? '取消' : '清除'}</button>` : ''}</div></div>`;
     }).join('') : '<div class="empty">還沒有合作訂單，發起一張邀好友一起完成吧！</div>';
-    const hasOwn = list.some(c => c.owner === S.uid && coopLive(c));
+    const hasOwn = list.some(c => coopBlocking(c, S.uid)), waitClaim = list.some(c => c.owner === S.uid && c.done && !coopAllClaimed(c));
     body += `<div class="sec">✨ 發起新的合作訂單（今天的選擇）</div>`;
-    if (hasOwn) body += '<div class="empty">你已經有一張進行中的合作訂單，完成或取消後才能再發起</div>';
+    if (hasOwn) body += waitClaim ? '<div class="empty">🎁 合作訂單完成了！等所有有交貨的好友都領完獎勵，就能發起下一張</div>' : '<div class="empty">你已經有一張進行中的合作訂單，完成或取消後才能再發起</div>';
     else if (!S.friends.length) body += '<div class="empty">先加好友才能發起合作訂單喔！</div>';
     else {
       body += `<div class="d" style="font-size:13px;font-weight:700;color:#8d5a2b">邀請誰？（最多 ${COOP_MAX - 1} 位）</div><div class="chk">${S.friends.slice(0, 20).map((x, k) => `<label><input type="checkbox" class="cf" value="${x.uid}" ${k < COOP_MAX - 1 ? 'checked' : ''}>${esc(dn(x.farm))}</label>`).join('')}</div>`;
@@ -3847,7 +3906,7 @@ function openCoop() {
 async function coopNew(i) {
   const L = levelOf(S.my.exp).L, o = coopOffers(S.uid, L)[i]; if (!o) return;
   await refreshCoops();
-  if ((S.coops || []).some(c => c.owner === S.uid && coopLive(c))) return toast('你已經有一張進行中的合作訂單了');
+  if ((S.coops || []).some(c => coopBlocking(c, S.uid))) return toast(S.coops.some(c => c.owner === S.uid && c.done) ? '等所有好友都領完上一張的獎勵，才能發起下一張' : '你已經有一張進行中的合作訂單了');
   const sel = [...document.querySelectorAll('.cf:checked')].map(x => x.value).filter(u => S.friends.some(x => x.uid === u)).slice(0, COOP_MAX - 1);
   if (!sel.length) return toast('至少要邀請 1 位好友一起完成');
   const nm = myName(), names = {[S.uid]:nm}; for (const u of sel) names[u] = dn(S.friends.find(x => x.uid === u).farm);
@@ -3877,6 +3936,7 @@ async function coopGive(id) {
   const back = r2.abort ? r1.took : r2.back;
   if (Object.keys(back || {}).length) await txMe(f => { for (const [k, n] of Object.entries(back)) f.wh[k] = (f.wh[k] || 0) + n; return {}; });
   if (r2.abort) { await refreshCoops(); rerenderModal(); return toast(r2.msg); }
+  if (r2.done) { const nm = myName(); for (const u of c.members) if (u !== S.uid) B.tx(u, f => { addLog(f, `🎉 合作訂單「${c.n}」由 ${nm} 交齊完成了！到「🤝 合作」領獎吧`); return {}; }).catch(() => {}); }
   toast(r2.done ? '🎉 合作訂單完成了！大家都可以領獎囉' : `📦 交了 ${r2.used} 份，謝謝你的幫忙！`); Music.sfx(r2.done ? 'coin' : 'pop');
   await refreshCoops(); rerenderModal(); renderTop();
 }
@@ -3885,7 +3945,7 @@ async function coopClaim(id) {
   try { r = await B.txCoop(id, d => { if (!d.done) return ab('還沒完成'); if ((d.claimed || []).includes(S.uid)) return ab('你已經領過了'); if (!coopMine(d, S.uid)) return ab('你沒有交貨，不能領獎喔'); d.claimed = [...(d.claimed || []), S.uid]; return {rw:coopReward(d, S.uid), n:d.n}; }); }
   catch (e) { return toast(e.message); }
   if (r.abort) return toast(r.msg);
-  const g = await txMe(f => { f.coins += r.rw.c; bump(f, 'coop'); return {up:gainExp(f, r.rw.e)}; });
+  const g = await txMe(f => { f.coins += r.rw.c; bump(f, 'coop'); addLog(f, `🤝 領到合作訂單「${r.n}」獎勵：💰${r.rw.c} + ${r.rw.e} 經驗（貢獻 ${Math.round(r.rw.sh * 100)}%）`); addTrade(f, `合作訂單「${r.n}」獎勵`, r.rw.c); return {up:gainExp(f, r.rw.e)}; });
   toast(`🤝 「${r.n}」獎勵：💰${r.rw.c} + ${r.rw.e} 經驗（貢獻 ${Math.round(r.rw.sh * 100)}%）`); Music.sfx('coin'); lvToast(g.up);
   await refreshCoops(); rerenderModal(); renderTop();
 }
@@ -4098,7 +4158,7 @@ const ACT = {
   buyMach(d) { return run(() => buyMach(d.k)); }, startProc(d) { return run(() => startProc(d.k, d.r)); }, collectMach(d) { return run(() => collectMach(d.k)); }, helpMach(d) { return run(() => helpMach(d.k)); },
   collectAll() { return run(collectAll); }, machShop() { openShop('mach'); },
   goMach(d) { closeModal(); if (!isOwn()) goHome(); S.scene = 'factory'; setCam('factory'); renderTools(); renderScene(); openMachine(+d.i); },
-  async sellProc() { const r = await txMe(f => { let g = 0; for (const id of Object.keys(PROC)) { const n = f.wh[id] || 0; if (n) { g += n * sellOf(id); f.wh[id] = 0; } } if (!g) return ab('倉庫裡沒有加工品'); bump(f, 'sell'); return {g}; }); if (r.abort) return toast(r.msg); toast(`加工品全部賣出，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); },
+  sellProc() { return sellGroup(Object.keys(PROC), '加工品', '倉庫裡沒有加工品'); },
   spin() { return run(doSpin); },
   gift(d) { openGift(d.uid); }, sendGift(d) { return run(() => sendGift(d.id, +d.n)); },
   async takeGift(d) { const g = await B.takeGift(d.id); if (!g) { toast('這份禮物已經收過了'); return refreshFriends(); } await txMe(f => { f.wh[g.item] = (f.wh[g.item] || 0) + g.n; dexAdd(f, g.item, g.n); return {}; }); S.gifts = S.gifts.filter(x => x.id !== d.id); toast(`🎁 收下了 ${g.n} 個${itemInfo(g.item).n}！`); Music.sfx('coin'); rerenderModal(); renderTop(); },
@@ -4126,7 +4186,7 @@ const ACT = {
   seaCat(d) { S.seaCat = d.c; openShop('sea'); }, pickSeaCat(d) { S.seaCat = d.c; openFryPicker(S.pendingPond); },
   async pickFry(d) { const c = SEA[d.id]; if (!(S.my.fry[d.id] > 0) && S.my.coins < c.cost) return toast(`金幣不夠買${c.n}苗`); S.fry = d.id; S.tool = 'stock'; closeModal(); renderTools(); const i = S.pendingPond; S.pendingPond = -1; if (i >= 0 && isOwn()) run(() => stockPond(i)); else toast(`已選擇${c.n}苗，點空魚池放養`); },
   async buyFry(d) { const c = SEA[d.id], n = +d.n; const r = await txMe(f => { if (f.coins < c.cost * n) return ab('金幣不夠'); f.coins -= c.cost * n; f.fry[d.id] = (f.fry[d.id] || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 份${c.n}苗`); },
-  async sellSeafood() { const r = await txMe(f => { let g = 0; for (const id of Object.keys(SEA)) { const n = f.wh[id] || 0; if (n) { g += n * sellOf(id); f.wh[id] = 0; } } if (!g) return ab('倉庫裡沒有海鮮'); bump(f, 'sell'); return {g}; }); if (r.abort) return toast(r.msg); toast(`海鮮全部賣出，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); },
+  sellSeafood() { return sellGroup(Object.keys(SEA), '海鮮', '倉庫裡沒有海鮮'); },
   async claim(d) { const T = TASKS[d.k]; const r = await txMe(f => { const dd = daily(f); if (dd.cl.includes(d.k)) return ab('已經領過了'); if ((dd.t[d.k] || 0) < T.need) return ab('還沒完成'); dd.cl.push(d.k); f.coins += T.c; return {up:gainExp(f, T.e)}; }); if (r.abort) return toast(r.msg); toast(`✅ 任務獎勵：${T.c} 金幣 + ${T.e} 經驗`); Music.sfx('coin'); lvToast(r.up); },
   async claimBonus() { const r = await txMe(f => { const dd = daily(f); if (dd.bonus) return ab('已經領過了'); if (dd.cl.length < 5) return ab('還有任務沒完成'); dd.bonus = true; f.coins += 100; f.fert = (f.fert || 0) + 2; f.feed = (f.feed || 0) + 10; return {}; }); toast(r.abort ? r.msg : '🎁 大獎到手：100 金幣、化肥×2、飼料×10！'); },
   async setGender(d) { const first = S.charFirst; await txMe(f => { f.gender = d.g; return {}; }); S.charFirst = false; beat(); if (W.scene) W.peopleKey = null; closeModal(); toast(d.g === 'girl' ? '👧 換成女生主角了！' : '👦 換成男生主角了！'); setTimeout(() => greet(first), 600); if (first && typeof S.my.tut === 'number' && !TS.on) setTimeout(() => startTut(S.my.tut), 6200); else if (TS.on) $('#tutAv').src = thumbURL('char', d.g); },
@@ -4156,9 +4216,10 @@ const ACT = {
   async sellPet(d) { const P = PETS[d.k]; if (!confirm(`確定要把${P.n}賣掉嗎？只能拿回一半的錢：${Math.floor(P.price / 2)} 金幣（親密度也會歸零）`)) return; const r = await txMe(f => { if (!f.pets.includes(d.k)) return ab('沒有這隻寵物'); f.pets = f.pets.filter(k => k !== d.k); if (f.petx) delete f.petx[d.k]; if (f.pet === d.k) f.pet = f.pets[0] || ''; f.coins += Math.floor(P.price / 2); return {}; }); toast(r.abort ? r.msg : `👋 ${P.n}找到新主人了，拿回 ${Math.floor(P.price / 2)} 金幣`); },
   async setPet(d) { await txMe(f => { if (!f.pets.includes(d.k)) return ab('還沒有這隻寵物'); f.pet = d.k; return {}; }); toast(`${PETS[d.k].n}負責顧家了！`); },
   buyPlot() { return run(buyPlot); },
-  async sell(d) { const want = Math.floor(+($('#sq_' + d.id)?.value || 0)); if (!(want > 0)) return toast('請輸入要賣的數量'); const r = await txMe(f => { const have = f.wh[d.id] || 0; if (!have) return ab('沒有可以賣的'); const n = Math.min(want, have), g = n * sellOf(d.id); f.coins += g; f.wh[d.id] = have - n; bump(f, 'sell'); return {n, g}; }); if (r.abort) return toast(r.msg); toast(`賣出 ${r.n} 個${itemInfo(d.id).n}，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); },
-  async sellAll() { const r = await txMe(f => { let g = 0; for (const [id, n] of Object.entries(f.wh || {})) { if (id === 'grass' || id === 'manure' || !n || !isItem(id)) continue; g += n * sellOf(id); f.wh[id] = 0; } if (!g) return ab('沒有可以賣的'); bump(f, 'sell'); return {g}; }); if (r.abort) return toast(r.msg); toast(`全部賣出，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); },
-  async sellProducts() { const r = await txMe(f => { let g = 0; for (const id of Object.keys(PROD)) { if (id === 'manure') continue; const n = f.wh[id] || 0; if (n) { g += n * sellOf(id); f.wh[id] = 0; } } if (!g) return ab('倉庫裡沒有動物產品'); bump(f, 'sell'); return {g}; }); if (r.abort) return toast(r.msg); toast(`動物產品全部賣出，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); },
+  sell(d) { const want = Math.floor(+($('#sq_' + d.id)?.value || 0)); if (!(want > 0)) return toast('請輸入要賣的數量');
+    return fast(f => { const have = f.wh[d.id] || 0; if (!have) return ab('沒有可以賣的'); const n = Math.min(want, have), g = n * sellOf(d.id); f.coins += g; f.wh[d.id] = have - n; bump(f, 'sell'); addTrade(f, `倉庫賣出 ${itemInfo(d.id).n} ×${n}`, g); return {n, g}; }, r => { toast(`賣出 ${r.n} 個${itemInfo(d.id).n}，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); }); },
+  sellAll() { return sellGroup(Object.keys(S.my.wh || {}).filter(id => id !== 'grass' && id !== 'manure' && isItem(id)), '', '沒有可以賣的'); },
+  sellProducts() { return sellGroup(Object.keys(PROD).filter(id => id !== 'manure'), '動物產品', '倉庫裡沒有動物產品'); },
   addFriend, async addUid(d) { await sendFriendReq(d.uid, d.n); },
   async accept(d) { const r = S.reqs.find(x => x.id === d.id); if (!r) return; S.reqs = S.reqs.filter(x => x.id !== d.id); showReqPop(); await acceptReq(r); },
   async reject(d) { S.reqLater.delete(d.id); S.reqs = S.reqs.filter(x => x.id !== d.id); showReqPop(); await B.delReq(d.id); toast('已拒絕'); await refreshFriends(); },
@@ -4231,7 +4292,7 @@ function watchHere() {
 function cleanup() { for (const k of ['unsubMy', 'unsubView', 'unsubHere', 'unsubReq']) { S[k] && S[k](); S[k] = null; } }
 async function onAuth(u) {
   cleanup(); closeModal();
-  S.reqSeen = new Set(); S.reqLater = new Set(); S.selfAdded = new Set(); S.friendIds = null; if ($('#reqPop')) $('#reqPop').hidden = true;
+  S.pend = []; S.myRev = 0; S.reqSeen = new Set(); S.reqLater = new Set(); S.selfAdded = new Set(); S.friendIds = null; if ($('#reqPop')) $('#reqPop').hidden = true;
   if (!u) { S.uid = S.my = S.view = S.viewUid = null; S.friends = []; S.reqs = []; S.gifts = []; S.giftsInit = false; $('#game').hidden = true; $('#auth').hidden = false; $('#aPass').value = ''; $('#aPass2').value = ''; return; }
   S.uid = u.uid;
   await sleep(0); if (B.settle) await B.settle();
@@ -4246,7 +4307,7 @@ async function onAuth(u) {
   S.loginAt = Date.now();
   if (B.watchReq) S.unsubReq = B.watchReq(S.uid, list => onReqs(list));
   S.unsubMy = B.watch(S.uid, nf => {
-    if (!nf) return; S.my = normalize(nf); if (isOwn()) S.view = S.my;
+    if (!nf) return; S.my = applyPending(nf); if (isOwn()) S.view = S.my;
     const key = (nf.friends || []).join(','); if (key !== S.lastFriendKey) { S.lastFriendKey = key; refreshFriends(); }
     renderAll(); rerenderModal();
   });
