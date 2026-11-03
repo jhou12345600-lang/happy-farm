@@ -67,6 +67,16 @@ button{font-family:inherit;cursor:pointer;border:none}
 #raceEnd{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25);pointer-events:auto}#raceEnd[hidden]{display:none}
 #raceEnd .rc{background:#fffaf0;border:4px solid #ff9800;border-radius:20px;padding:16px 22px;text-align:center;color:#5d4037;font-size:15px;line-height:1.7;animation:rqin2 .4s cubic-bezier(.2,1.5,.4,1)}#raceEnd .rc .big{font-size:58px;line-height:1.1}#raceEnd .rc .b{margin-top:8px}
 @keyframes rqin2{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.qbox{text-align:center;padding:10px 0}.qtube{position:relative;width:74px;height:120px;margin:10px auto 0;background:linear-gradient(90deg,#8d4a1d,#c0712f,#8d4a1d);border-radius:10px 10px 14px 14px;border:3px solid #5d2e0c}
+.qtube b{position:absolute;left:50%;top:50%;transform:translate(-50%,-30%);background:#c62828;color:#ffd54f;font-size:20px;padding:4px 7px;border-radius:6px}.qtube i{position:absolute;bottom:100%;width:6px;height:38px;background:#e0b56a;border-radius:3px 3px 0 0;left:calc(12px + var(--k,0) * 12px)}
+.qtube i:nth-child(1){--k:0;height:30px}.qtube i:nth-child(2){--k:1;height:40px}.qtube i:nth-child(3){--k:2;height:34px}.qtube i:nth-child(4){--k:3;height:42px}.qtube i:nth-child(5){--k:4;height:31px}
+.shake2{animation:qsh .22s ease-in-out infinite}@keyframes qsh{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg) translateY(-4px)}}
+.qstick{display:inline-block;margin-top:-140px;position:relative;background:#e0b56a;color:#5d2e0c;font-weight:900;padding:30px 8px;writing-mode:vertical-rl;border-radius:4px;border:2px solid #a1702a;animation:qpop .8s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes qpop{from{transform:translateY(60px) rotate(0);opacity:0}to{transform:translate(70px,-10px) rotate(18deg);opacity:1}}
+.qpaper{background:linear-gradient(#fff8e1,#ffecb3);border:3px solid #c62828;border-radius:10px;padding:12px;text-align:center;color:#4e342e;box-shadow:inset 0 0 0 4px #fff8e1,inset 0 0 0 6px #e57373;animation:rqin2 .4s ease-out}
+.qh{display:flex;justify-content:space-between;align-items:center;font-weight:900;color:#b71c1c;font-size:15px;border-bottom:2px dashed #e57373;padding-bottom:6px}.qlv{display:inline-block;color:#fff;font-weight:900;font-size:22px;padding:3px 18px;border-radius:20px;margin:10px 0 6px;letter-spacing:4px}
+.qpoem{display:flex;flex-direction:row-reverse;justify-content:center;gap:10px;margin:6px 0 10px}.qpoem span{writing-mode:vertical-rl;font-size:19px;font-weight:900;letter-spacing:3px;color:#3e2723;font-family:serif}
+.qex{font-size:14px;text-align:left;background:#fff;border-radius:8px;padding:7px 9px;margin-bottom:6px}.qef{font-size:13.5px;font-weight:800;color:#c62828;margin-bottom:6px}
 .mgbox{text-align:center}.mgd{color:#8d6e63;font-size:13px;margin-bottom:10px}.mgtip{color:#8d6e63;font-weight:800;margin:8px 0}.mgres{font-size:16px;line-height:1.7;margin:10px 0;color:#5d4037}.mgres small{color:#8d6e63}.mgbtn{margin:10px 0}
 .mg3{display:flex;justify-content:center;gap:12px;margin:8px 0}.mgi{position:relative;width:88px;height:104px;border-radius:18px;border:3px solid #d7b98e;background:linear-gradient(#fffdf5,#ffeccc);font-size:52px;cursor:pointer;animation:mgfl 2s ease-in-out infinite}
 .mgi:nth-child(2){animation-delay:.3s}.mgi:nth-child(3){animation-delay:.6s}.mgi:disabled{cursor:default;color:inherit}.mgi.sel{border-color:#ff9800;box-shadow:0 0 0 3px #ffe0b2}
@@ -895,7 +905,47 @@ function nextFests(n = 6, day = twDay()) {
   for (const F of FESTS) { const o = [...festSched(Y), ...festSched(Y + 1)].find(x => x.F === F && x.s > day); if (o) out.push(o); }
   return out.sort((a, b) => a.s < b.s ? -1 : 1).slice(0, n);
 }
-const festBonus = k => activeFests().some(o => o.F.bonus === k);
+
+/* ----- 廟宇：三座殿＋每日參拜抽籤 ----- */
+const HALLS = [
+  {id:'tudi', n:'土地公廟', god:'土地公', em:'👴', d:'保佑五穀豐收、農場平安', need:{coin:1500, wheat:10, egg:6}, x:-7.4, z:-2.4},
+  {id:'caishen', n:'財神殿', god:'財神爺', em:'💰', d:'保佑財源廣進、生意興隆', need:{coin:5000, corn:20, milk:8, honey:6}, x:0, z:-3.2},
+  {id:'yuelao', n:'月老殿', god:'月老', em:'💞', d:'保佑人緣好、好友和村民都喜歡你', need:{coin:8000, tulip:20, strawberry:15, rose:10}, x:7.4, z:-2.4},
+];
+const HALL = Object.fromEntries(HALLS.map((H, i) => [H.id, {...H, i}]));
+const templeOf = f => { f.town ??= {}; const t = f.town.tp ??= {}; t.lv ??= 0; t.got ??= {}; t.by ??= {}; return t; };
+const templeView = f => f?.town?.tp || {lv:0, got:{}, by:{}};
+const tpW = k => k === 'coin' ? 1 : Math.max(1, itemInfo(k).sell);
+function tpProg(t) { const H = HALLS[t.lv]; if (!H) return 1; let a = 0, b = 0; for (const [k, n] of Object.entries(H.need)) { a += Math.min(n, t.got?.[k] || 0) * tpW(k); b += n * tpW(k); } return a / b; }
+const QIAN_LV = [{n:'上上吉', w:10, c:'#d32f2f'}, {n:'上吉', w:25, c:'#e65100'}, {n:'中吉', w:35, c:'#f9a825'}, {n:'下籤', w:20, c:'#6d4c41'}, {n:'下下籤', w:10, c:'#455a64'}];
+// 原創籤詩：[四句, 解曰]
+const QIAN_POEM = [
+  [['春雷一響萬物生', '田園處處喜相逢', '五穀豐登倉滿溢', '福星高照步步升'], '大吉大利！今天種什麼都豐收，做什麼都順利。'],
+  [['紅日當空照福田', '金銀滿屋笑開顏', '貴人相助財源廣', '好運連連喜事添'], '財運亨通，有貴人相助，喜事一件接一件。'],
+  [['月圓花好喜事臨', '良緣天定兩知心', '親朋好友常相聚', '歡聲笑語滿園林'], '人緣極佳，和好友、村民都特別合得來。'],
+  [['細雨春風潤嫩苗', '耕耘有成福自高', '莫嫌今日收成少', '明朝定見穗如濤'], '努力就有收穫，今天的辛苦明天會開花結果。'],
+  [['東風送暖柳絲青', '門前喜鵲報佳音', '勤勞自有天公助', '積少成多聚寶盆'], '小財不斷，勤勞的人老天爺最照顧。'],
+  [['雲開見月照前程', '貴人指路好前行', '但將真心待鄰里', '自有溫情滿屋生'], '真心待人，好人緣自然會來。'],
+  [['平平穩穩過一天', '不求大富也安然', '田間雜草勤拔去', '自有清風送心田'], '平安就是福，記得照顧好你的作物。'],
+  [['半晴半雨半陰天', '順其自然莫心煩', '今日播下希望種', '來日自有好收成'], '凡事不用急，今天播種，改天收成。'],
+  [['路遠不怕腳步慢', '水長自有魚兒還', '且將耐心當肥料', '花開自有那一天'], '耐心等待，好事慢慢來。'],
+  [['烏雲遮月夜微涼', '小心田邊有野狼', '出門記得鎖好門', '莫讓菜苗被偷光'], '小心偷菜賊！記得常回農場看看。'],
+  [['風吹落葉滿地黃', '凡事三思莫慌張', '小財出門須謹慎', '留得青山好收糧'], '花錢要小心，三思而後行。'],
+  [['河邊行船遇淺灘', '暫且停槳莫逞強', '退一步來天地闊', '明日再出又何妨'], '今天先休息一下，明天再出發。'],
+  [['屋漏偏逢連夜雨', '船遲又遇打頭風', '添些香油求化解', '明日轉運又成功'], '添點香油錢化解厄運，明天一定轉運！'],
+  [['雞飛狗跳亂紛紛', '菜園蟲多愁煞人', '且向神明誠心拜', '雨過天青又逢春'], '雖然有點小亂，誠心拜拜就會雨過天青。'],
+  [['出門踩到牛糞堆', '回頭又被大鵝追', '莫急莫慌笑一笑', '衰運過去好運回'], '今天有點衰，笑一笑，衰運很快就過去！'],
+];
+const QIAN_BUFF = {tudi:[['yield', 'exp'], ['exp']], caishen:[['sell', 'order'], ['sell']], yuelao:[['love', 'exp'], ['love']]};
+const BUFF_N = k => k === 'love' ? '村民好感 ×2' : BONUS_N[k];
+const qianToday = f => { const q = f?.town?.qian; return q && q.d === twDay() ? q : null; };
+const qianBonus = k => { const q = qianToday(S.my); return !!q && q.lv <= 1 && (QIAN_BUFF[q.h]?.[q.lv] || []).includes(k); };
+function qianEffect(q) {
+  if (q.lv <= 1) return `今天的好運加成：${(QIAN_BUFF[q.h][q.lv] || []).map(BUFF_N).join('、')}${q.lv === 0 ? '，還有紅包 💰200' : ''}`;
+  if (q.lv === 2) return `小小獎勵：${q.t || '💰100'}`;
+  return q.lv === 3 ? '小小處罰：掉了 💰50（破財消災）' : '小小處罰：添香油錢 💰100 化解厄運';
+}
+const festBonus = k => activeFests().some(o => o.F.bonus === k) || qianBonus(k);
 const FEST_VIS = {xmas:'❄️ 下雪', winter:'❄️ 下雪', newyear:'🎆 白天晚上放煙火 · 👋 到好友家說新年快樂', cny:'🎆 白天晚上放煙火 · 👋 到好友家說新年快樂', valentine:'🫧 滿滿粉紅泡泡', qixi:'🫧 粉紅泡泡', moon:'🍖 大家一起烤肉 · 🌕 超大月亮', dragon:'🐉 池塘龍舟', halloween:'🎃 南瓜燈', lantern:'🏮 滿滿燈籠', national:'🎇 晚上煙火'};
 // 一整年的節日表：每個節日取「進行中或下一次」，照開始日期排
 function festYear(day = twDay()) { const Y = +day.slice(0, 4), all = [...festSched(Y), ...festSched(Y + 1)], out = []; for (const F of FESTS) { const o = all.find(x => x.F === F && x.e >= day); if (o) out.push(o); } return out.sort((a, b) => a.s < b.s ? -1 : 1); }
@@ -1078,6 +1128,7 @@ function vilToday(f, uid) { const V = f.vil || {}; return V.d === twDay() ? V.re
 function vilEnsure(f, uid) { f.vil ??= {}; const V = f.vil; V.p ??= {}; if (V.d !== twDay()) { V.d = twDay(); V.req = vilGen(f, uid); V.chat = {}; V.gift = {}; } return V; }
 // 加好感；跨過門檻時送解鎖禮物（家具），回傳升級訊息
 function vilAddPts(f, id, n) {
+  if (festBonus('love')) n *= 2;
   const V = f.vil, b = vilHeart(f, id); V.p[id] = Math.min(VIL_HEART * VIL_MAX, (V.p[id] || 0) + n); const a = vilHeart(f, id), out = [];
   if (a > b) {
     out.push(`💕 和${VIL[id].n}的好感升到 ${a} 顆心！`);
@@ -1867,8 +1918,8 @@ const itemIcon = id => icon(CROPS[id] ? 'crop' : SEA[id] ? 'sea' : PROC[id] ? 'p
 
 /* ================= 3D：世界 ================= */
 const W = {};
-const FARM_T = new THREE.Vector3(0, 0, .8), RANCH_T = new THREE.Vector3(24, 0, .8), FISH_T = new THREE.Vector3(-30, 0, .8), TOWN_T = new THREE.Vector3(76, 0, .8), GREEN_T = new THREE.Vector3(-52, 0, .8);
-const SCENE_T = {farm:FARM_T, ranch:RANCH_T, fish:FISH_T, factory:new THREE.Vector3(50, 0, .8), town:TOWN_T, green:GREEN_T};
+const FARM_T = new THREE.Vector3(0, 0, .8), RANCH_T = new THREE.Vector3(24, 0, .8), FISH_T = new THREE.Vector3(-30, 0, .8), TOWN_T = new THREE.Vector3(76, 0, .8), GREEN_T = new THREE.Vector3(-52, 0, .8), TEMPLE_T = new THREE.Vector3(101, 0, -.6);
+const SCENE_T = {farm:FARM_T, ranch:RANCH_T, fish:FISH_T, factory:new THREE.Vector3(50, 0, .8), town:TOWN_T, green:GREEN_T, temple:TEMPLE_T};
 const pondXZ = i => { const r = Math.floor(i / 4), c = i % 4; return [-30 + (c - 1.5) * 4.3, (r - .5) * 4.6 + .4]; };
 const plotXZ = i => { const r = Math.floor(i / 6), c = i % 6; return [(c - 2.5) * 2.75, (r - 1) * 2.75 - .3]; };
 const aniHome = i => { const r = Math.floor(i / 4), c = i % 4; return [24 + (c - 1.5) * 3.5, .3 + (r - 1.5) * 2.7]; };
@@ -1915,7 +1966,7 @@ function makeSign(x, z) {
 function setSign(g, title, sub) { const k = title + '|' + sub; if (g.userData.txt === k) return; g.userData.txt = k; const m = g.userData.face.material; m.map?.dispose(); m.map = signTexture(title, sub); m.needsUpdate = true; }
 
 /* ================= 3D：真實農場背景 ================= */
-function terrainH(x, z) { const d = Math.hypot((x - 12) / 1.3, z); if (d <= 58) return 0; const k = d - 58; return Math.max(0, k * .14 * (1 + Math.sin(x * .05) * .5 + Math.cos(z * .07) * .4) + Math.sin(x * .11 + z * .07) * 1.5 * Math.min(1, k / 10)); }
+function terrainH(x, z) { const d = Math.hypot((x - 12) / 1.3, z); if (d <= 58) return 0; const k = d - 58, fl = Math.min(1, Math.hypot(Math.max(0, Math.abs(x - 101) - 13), Math.max(0, Math.abs(z) - 10)) / 9); return fl * Math.max(0, k * .14 * (1 + Math.sin(x * .05) * .5 + Math.cos(z * .07) * .4) + Math.sin(x * .11 + z * .07) * 1.5 * Math.min(1, k / 10)); }
 const FT = {};
 function fieldTex(kind) {
   if (FT[kind]) return FT[kind];
@@ -2482,6 +2533,78 @@ function syncDeco(f) {
     free.forEach(([x, z], i) => { o.position.set(x, .06, z); o.scale.set(1.05, .02, 1.05); o.updateMatrix(); m.setMatrixAt(i, o.matrix); }); m.userData.cells = free; m.traverse(x => x.userData.hit = {type:'cell'}); W.decoG.add(m); W.decoGrid = m; } else W.decoGrid = null;
 }
 
+/* ================= 廟宇 3D ================= */
+function godModel(kind) {
+  const robe = {tudi:'#f9a825', caishen:'#c62828', yuelao:'#d32f2f'}[kind];
+  const g = grp(M(gBucket(), robe, [.36, .55, .3], [0, .28, 0], [Math.PI, 0, 0]), ball(robe, [.36, .22, .32], [0, .58, 0]), ball(robe, [.12, .3, .12], [.3, .45, .08], [0, 0, .5]), ball(robe, [.12, .3, .12], [-.3, .45, .08], [0, 0, -.5]),
+    ball(SKIN, U(.2), [0, .84, 0]), ball('#3e2723', U(.025), [.07, .88, .18]), ball('#3e2723', U(.025), [-.07, .88, .18]), ball('#ffb4a2', [.03, .02, .02], [.1, .82, .17]), ball('#ffb4a2', [.03, .02, .02], [-.1, .82, .17]));
+  if (kind === 'tudi') g.add(ball('#fafafa', [.15, .17, .1], [0, .72, .14]), blk('#fafafa', [.08, .02, .02], [.07, .93, .18]), blk('#fafafa', [.08, .02, .02], [-.07, .93, .18]), rod('#4e342e', [.24, .1, .24], [0, 1.03, 0]), ball('#4e342e', [.12, .07, .12], [0, 1.1, 0]),
+    rod('#8d6e63', [.03, 1.15, .03], [.42, .55, .15]), ball('#ffb300', [.07, .09, .07], [.42, 1.15, .15]), ball('#ffb300', U(.05), [.42, 1.25, .15]));
+  else if (kind === 'caishen') g.add(blk('#212121', [.32, .18, .28], [0, 1.05, -.02]), blk('#212121', [.62, .04, .06], [0, 1.08, -.12]), blk('#ffca28', [.1, .06, .02], [0, 1.03, .13]), rod('#212121', [.03, .28, .03], [0, .6, .18]),
+    rod('#212121', [.02, .2, .02], [.05, .64, .17], [0, 0, .2]), rod('#212121', [.02, .2, .02], [-.05, .64, .17], [0, 0, -.2]), ball('#ffca28', [.2, .08, .12], [0, .48, .28]), ball('#ffca28', U(.07), [0, .54, .28]));
+  else g.add(ball('#fafafa', [.13, .28, .09], [0, .66, .14]), ball('#fafafa', [.22, .12, .22], [0, 1, -.02]), ball('#fafafa', U(.09), [0, 1.08, -.1]), ball('#e53935', U(.1), [.38, .42, .2]), rod('#e53935', [.01, .5, .01], [.2, .45, .3], [0, 0, 1.2]),
+    rod('#8d6e63', [.03, 1.1, .03], [-.42, .55, .15]), blk('#fff8e1', [.16, .2, .04], [-.42, 1.12, .17]));
+  g.traverse(o => { if (o.isMesh) o.castShadow = false; }); return g;
+}
+function hallModel(kind) {
+  const big = kind === 'caishen', w = big ? 5 : 3.6, d = big ? 3.6 : 2.8, h = big ? 2.6 : 2.1, y0 = .4, R = '#c62828', OR = '#e65100';
+  const g = grp(blk('#9e9e9e', [w + 1, y0, d + 1.6], [0, y0 / 2, .3]), blk('#bdbdbd', [w * .5, .2, .7], [0, .1, d / 2 + 1.4]), blk('#8d6e63', [w - .2, .04, d - .2], [0, y0 + .02, 0]),
+    blk(R, [w, h, .2], [0, y0 + h / 2, -d / 2]), blk(R, [.2, h, d], [-w / 2, y0 + h / 2, 0]), blk(R, [.2, h, d], [w / 2, y0 + h / 2, 0]),
+    blk('#b71c1c', [w * .2, h, .16], [-w / 2 + w * .1, y0 + h / 2, d / 2]), blk('#b71c1c', [w * .2, h, .16], [w / 2 - w * .1, y0 + h / 2, d / 2]), blk('#b71c1c', [w, .35, .16], [0, y0 + h - .17, d / 2]),
+    ...[-.36, .36].map(k => rod('#d32f2f', [.15, h, .15], [w * k, y0 + h / 2, d / 2 + .4])), ...[-.36, .36].map(k => rod('#ffca28', [.17, .12, .17], [w * k, y0 + h - .06, d / 2 + .4])),
+    blk('#b71c1c', [w * .55, .7, .6], [0, y0 + .35, -d / 2 + .6]), blk('#ffca28', [w * .56, .06, .62], [0, y0 + .7, -d / 2 + .6]),
+    ...[-1, 1].map(s => rod('#d7ccc8', [.05, .25, .05], [s * w * .2, y0 + .86, -d / 2 + .75])), ...[-1, 1].map(s => ball('#ffeb3b', U(.04), [s * w * .2, y0 + 1.02, -d / 2 + .75])),
+    blk(OR, [w + 1.1, .18, d + .8], [0, y0 + h + .08, 0]), blk('#d84315', [w * .72, .5, d * .65], [0, y0 + h + .4, 0]), blk(OR, [w * .98, .16, d * .9], [0, y0 + h + .72, 0]), blk('#2e7d32', [w * .85, .14, .16], [0, y0 + h + .86, 0]),
+    ball('#ffca28', U(.16), [0, y0 + h + 1.05, 0]), cone('#2e7d32', [.1, .45, .1], [w * .42, y0 + h + 1.02, 0], [0, 0, -.6]), cone('#2e7d32', [.1, .45, .1], [-w * .42, y0 + h + 1.02, 0], [0, 0, .6]),
+    ...[[1, 1], [-1, 1], [1, -1], [-1, -1]].map(([sx, sz]) => cone(OR, [.09, .5, .09], [sx * (w / 2 + .5), y0 + h + .3, sz * (d / 2 + .4)], [sz * -.4, 0, sx * -.9])),
+    ...[-1, 1].map(s => grp(rod('#4e342e', [.02, .3, .02], [0, .15, 0]), ball('#e53935', [.17, .22, .17], [0, -.12, 0]), rod('#ffca28', [.17, .04, .17], [0, .1, 0])).translateX(s * w * .36).translateY(y0 + h - .4).translateZ(d / 2 + .55)));
+  g.add(blk('#b71c1c', [1.1, .5, .8], [0, y0 + .25, d / 2 + .55]), blk('#ffca28', [1.15, .06, .85], [0, y0 + .52, d / 2 + .55]));
+  const god = godModel(kind); god.position.set(0, y0 + .55, d / 2 + .5); god.scale.setScalar(big ? 1.45 : 1.2); g.add(god);
+  return g;
+}
+function scaffoldModel(kind, prog) {
+  const big = kind === 'caishen', w = big ? 5 : 3.6, d = big ? 3.6 : 2.8, h = (big ? 2.6 : 2.1) * (.25 + .75 * prog), W2 = '#a1887f';
+  const g = grp(blk('#9e9e9e', [w + 1, .4, d + 1], [0, .2, 0]));
+  if (prog > .15) g.add(blk('#c62828', [w, Math.max(.1, h * .8), .2], [0, .4 + h * .4, -d / 2]), blk('#c62828', [.2, Math.max(.1, h * .8), d], [-w / 2, .4 + h * .4, 0]), blk('#c62828', [.2, Math.max(.1, h * .8), d], [w / 2, .4 + h * .4, 0]));
+  for (const x of [-w / 2 - .3, 0, w / 2 + .3]) for (const z of [-d / 2 - .3, d / 2 + .3]) g.add(rod(W2, [.06, h + .8, .06], [x, .4 + (h + .8) / 2, z]));
+  for (let y = .9; y < h + 1.1; y += .8) { g.add(blk(W2, [w + .7, .06, .06], [0, .4 + y, d / 2 + .3]), blk(W2, [w + .7, .06, .06], [0, .4 + y, -d / 2 - .3])); g.add(blk('#8d6e63', [w + .6, .04, .4], [0, .4 + y - .05, d / 2 + .5])); }
+  g.add(blk('#ffeb3b', [.9, .5, .06], [0, .9, d / 2 + .75]), blk('#212121', [.8, .06, .07], [0, .9, d / 2 + .76]));
+  for (let k = 0; k < 4; k++) g.add(blk(['#d7ccc8', '#bcaaa4', '#a1887f', '#c62828'][k], [.5, .3, .5], [w / 2 + .9, .55 + k * .3, d / 2 - k * .1]));
+  return g;
+}
+function buildTemple(S3) {
+  const X = TEMPLE_T.x;
+  S3.add(blk('#d7ccc8', [22, .06, 15], [X, .03, .4]), blk('#bcaaa4', [3, .07, 9], [X, .04, 3.2]), blk('#d2b07a', [30, .05, 2], [X - 6, .03, 9.6]));
+  for (let i = 0; i < 24; i++) S3.add(blk(i % 2 ? '#cfc2bc' : '#c2b4ad', [1.3, .08, 1.3], [X - 9 + (i % 8) * 2.6, .045, -6.2 + Math.floor(i / 8) * 0]));
+  // 外牆、牌樓
+  for (const sx of [-1, 1]) S3.add(blk('#b71c1c', [.4, 1.2, 13], [X + sx * 10.8, .6, -.2]), blk('#e65100', [.7, .16, 13.2], [X + sx * 10.8, 1.25, -.2]));
+  S3.add(blk('#b71c1c', [22, 1.2, .4], [X, .6, -6.9]), blk('#e65100', [22.2, .16, .7], [X, 1.25, -6.9]));
+  const gate = grp(rod('#c62828', [.32, 3.6, .32], [-2.2, 1.8, 0]), rod('#c62828', [.32, 3.6, .32], [2.2, 1.8, 0]), blk('#c62828', [5.2, .4, .4], [0, 3.2, 0]), blk('#1b5e20', [2.4, .7, .1], [0, 2.75, .22]), blk('#ffca28', [2.5, .08, .12], [0, 3.12, .22]),
+    blk('#e65100', [6.2, .18, 1.1], [0, 3.55, 0]), blk('#d84315', [4.4, .35, .8], [0, 3.8, 0]), blk('#e65100', [5.4, .14, 1], [0, 4.02, 0]), ball('#ffca28', U(.18), [0, 4.25, 0]), cone('#e65100', [.09, .45, .09], [3.2, 3.75, 0], [0, 0, -.9]), cone('#e65100', [.09, .45, .09], [-3.2, 3.75, 0], [0, 0, .9]));
+  gate.position.set(X, 0, 8.2); gate.scale.setScalar(.9); S3.add(gate);
+  const lion = s => grp(blk('#9e9e9e', [.8, .5, .8], [0, .25, 0]), ball('#bdbdbd', [.35, .42, .35], [0, .85, 0]), ball('#bdbdbd', U(.3), [.1, 1.3, .1]), ball('#9e9e9e', [.36, .2, .36], [.05, 1.42, .05]), ball('#212121', U(.04), [.25, 1.35, .28]), ball('#bdbdbd', U(.12), [.2, .5, .35]));
+  S3.add(lion(1).translateX(X - 3.2).translateZ(8.3), lion(-1).translateX(X + 3.2).translateZ(8.3));
+  for (const [x, z] of [[X - 9.5, 4.5], [X + 9.5, 4.5], [X - 9.5, -5.5], [X + 9.5, -5.5]]) S3.add(grp(rod('#6d4c41', [.35, 2.4, .35], [0, 1.2, 0]), ball('#2e7d32', [1.7, 1.3, 1.7], [0, 3, 0]), ball('#388e3c', [1.1, .9, 1.1], [.5, 3.6, .3])).translateX(x).translateZ(z));
+  for (const x of [X - 3.4, X + 3.4]) S3.add(grp(rod('#424242', [.12, 1.6, .12], [0, .8, 0]), blk('#9e9e9e', [.5, .5, .5], [0, 1.8, 0]), blk('#ffe082', [.35, .35, .52], [0, 1.8, 0]), cone('#9e9e9e', [.4, .3, .4], [0, 2.2, 0])).translateX(x).translateZ(2.6));
+  // 香爐
+  const burner = grp(rod('#6d4c41', [.07, .4, .07], [.35, .2, .2]), rod('#6d4c41', [.07, .4, .07], [-.35, .2, .2]), rod('#6d4c41', [.07, .4, .07], [0, .2, -.4]), M(gBucket(), '#8d6e63', [.55, .5, .55], [0, .6, 0]), ring('#ffca28', [.56, .56, .4], [0, .85, 0], [Math.PI / 2, 0, 0]),
+    ...[-.12, 0, .12].map(x => rod('#d7ccc8', [.025, .4, .025], [x, 1.05, 0])), ...[-.12, 0, .12].map(x => ball('#ff7043', U(.03), [x, 1.26, 0])));
+  burner.position.set(X, 0, 2.6); burner.scale.setScalar(1.3); S3.add(burner);
+  W.tSmoke = []; for (let i = 0; i < 5; i++) { const s = new THREE.Mesh(gS(), new THREE.MeshLambertMaterial({color:'#e0e0e0', transparent:true, opacity:.4, depthWrite:false})); S3.add(s); W.tSmoke.push({m:s, x:X, z:2.6, y:1.7, ph:i / 5}); }
+  W.templeSign = makeSign(X - 7, 7.2); S3.add(W.templeSign);
+}
+function templeTick(t) { for (const sm of W.tSmoke || []) { const k = (t * .35 + sm.ph) % 1; sm.m.position.set(sm.x + Math.sin(t * .8 + sm.ph * 6) * .3 * k, sm.y + k * 2.4, sm.z); sm.m.scale.setScalar(.1 + k * .4); sm.m.material.opacity = .45 * (1 - k); } }
+function syncTemple(f, own) {
+  if (!W.templeG) return;
+  const T = templeView(f), key = T.lv + ':' + Math.round(tpProg(T) * 10);
+  if (W.templeKey !== key) {
+    W.templeKey = key; W.templeG.clear();
+    HALLS.forEach((H, i) => { const m = i < T.lv ? hallModel(H.id) : i === T.lv ? scaffoldModel(H.id, tpProg(T)) : grp(blk('#bdbdbd', [H.id === 'caishen' ? 6 : 4.6, .3, H.id === 'caishen' ? 4.6 : 3.8], [0, .15, 0]));
+      m.position.set(TEMPLE_T.x + H.x, 0, H.z); m.scale.setScalar(1.3); m.traverse(o => o.userData.hit = {type:'hall', i}); W.templeG.add(m); });
+  }
+  HALLS.forEach((H, i) => ov('hall' + i, i < T.lv ? `${H.em} ${H.n}` : i === T.lv ? `🔨 ${H.n} 建造中 ${Math.floor(tpProg(T) * 100)}%` : `🔒 ${H.n}`, v => v.set(TEMPLE_T.x + H.x, H.id === 'caishen' ? 6.3 : 5.2, H.z), i === T.lv ? 'bub' : 'tag'));
+}
+
 /* ================= 溫室 ================= */
 
 const GH_MAX = 6, GH_START = 2, GH_PRICE = [0, 0, 1500, 3000, 5000, 8000], GH_SPEED = .8;
@@ -2546,6 +2669,115 @@ function syncGreen(f, own) {
   }
   for (let i = 0; i < (G.n || GH_START); i++) { const p = (G.plots || [])[i], [x, z] = ghXZ(i); if (p?.s === 'grow' && CROPS[p.c]) ov('gp' + i, ghMature(p) ? '✨ 可以收成' : `${CROPS[p.c].n} ${Math.floor(ghProg(p) * 100)}%`, v => v.set(x, 1.6, z), ghMature(p) ? 'bub' : 'tag'); }
   const q = G.pump; ov('gpump', q?.s === 'grow' ? `🎃 巨大南瓜 ${pumpKg(q)} kg${pumpMature(q) ? ' ✨可以收成' : ''}` : own ? '🎃 南瓜大賽（點我）' : '🎃 南瓜大賽', v => v.set(PUMP_XZ[0], q?.s === 'grow' ? 2.6 + Math.min(2.4, pumpKg(q) / 60) : 1.4, PUMP_XZ[1]), q?.s === 'grow' && pumpMature(q) ? 'bub' : 'tag');
+}
+
+/* ----- 廟宇介面 ----- */
+function openTemple() {
+  S.modal = () => {
+    const f = S.view, own = isOwn(), T = templeView(f), q = qianToday(S.my);
+    let body = `<div class="popbox">🏯 <b>${own ? '我的廟' : esc(dn(f)) + '的廟'}</b>：大家一起捐材料蓋廟，蓋好的殿每天都可以參拜抽籤！<br><small>上上吉、上吉有一整天的好運加成；中吉有小獎勵；下籤、下下籤會有小小處罰。好友來你家也能幫忙捐。</small></div>`;
+    if (q) body += `<div class="mgres">📜 今天在${HALL[q.h].god}前抽到 <b style="color:${QIAN_LV[q.lv].c}">${QIAN_LV[q.lv].n}</b><br><small>${qianEffect(q)}</small><br><button class="b o" data-act="qianShow">看今天的籤詩</button></div>`;
+    body += HALLS.map((H, i) => { const st = i < T.lv ? 'done' : i === T.lv ? 'build' : 'lock';
+      return `<div class="item ${st === 'lock' ? 'dim' : ''}"><div class="pic" style="font-size:32px">${H.em}</div><div class="info"><div class="t">${H.n} <small>供奉${H.god}</small></div><div class="d">${H.d}<br>${st === 'done' ? '✅ 已落成' : st === 'build' ? `🔨 建造中 ${Math.floor(tpProg(T) * 100)}%` : `🔒 先蓋好${HALLS[i - 1].n}`}<br>抽到上上吉／上吉：${QIAN_BUFF[H.id][0].map(BUFF_N).join('、')}</div></div>
+        <div class="acts">${st === 'done' ? (q ? '<button class="b g" disabled>今天抽過了</button>' : `<button class="b o" data-act="pray" data-i="${i}">🙏 參拜抽籤</button>`) : st === 'build' ? `<button class="b o" data-act="hall" data-i="${i}">🧱 捐材料</button>` : ''}</div></div>`; }).join('');
+    const by = Object.entries(T.by || {}).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    if (by.length) body += `<div class="sec">🙏 功德榜</div>` + by.map(([n, v], k) => `<div class="log"><span style="width:30px">${['🥇', '🥈', '🥉'][k] || k + 1}</span><span style="flex:1">${esc(n)}</span><small>功德 ${v}</small></div>`).join('');
+    openModal('🏯 廟宇', body);
+  };
+  S.modal();
+}
+function openHall(i) {
+  const T = templeView(S.view), H = HALLS[i]; if (!H) return;
+  if (i < T.lv) { const q = qianToday(S.my); if (q) return openQian(); return startPray(i); }
+  if (i > T.lv) return toast(`🔒 先把${HALLS[T.lv].n}蓋好喔`);
+  S.modal = () => {
+    const f = S.view, T2 = templeView(f), H2 = HALLS[T2.lv]; if (!H2) return openTemple();
+    let body = `<div class="popbox">${H2.em} <b>${H2.n}</b> 建造中（供奉${H2.god}）<div class="bar" style="margin-top:6px"><i style="width:${tpProg(T2) * 100}%"></i></div><small>進度 ${Math.floor(tpProg(T2) * 100)}% · 捐東西可以得到功德經驗${isOwn() ? '，好友來玩也能幫你捐' : ''}</small></div>`;
+    body += Object.entries(H2.need).map(([k, n]) => { const got = T2.got?.[k] || 0, left = Math.max(0, n - got), have = k === 'coin' ? S.my.coins : S.my.wh[k] || 0;
+      const opts = k === 'coin' ? [100, 500, 1000] : [1, 5, 99];
+      return `<div class="item ${left ? '' : 'done'}"><div class="pic">${k === 'coin' ? '💰' : itemIcon(k)}</div><div class="info"><div class="t">${k === 'coin' ? '香油錢' : itemInfo(k).n} ${Math.min(got, n)}/${n}</div><div class="d">${left ? `還差 ${left} · 我有 ${have}` : '✅ 夠了'}</div></div>
+        <div class="acts">${left ? opts.map(o => { const m = Math.min(o, left, have); return `<button class="b ${m > 0 ? 'o' : 'g'}" data-act="tpGive" data-k="${k}" data-n="${o}" ${m > 0 ? '' : 'disabled'}>${o === 99 ? '全部' : '捐 ' + o}</button>`; }).join('') : ''}</div></div>`; }).join('');
+    openModal(`🧱 蓋${H2.n}`, body);
+  };
+  S.modal();
+}
+async function tpGive(k, want) {
+  const uid = S.viewUid, own = isOwn(), T = templeView(S.view), H = HALLS[T.lv]; if (!H || !uid) return toast('廟已經全部蓋好了');
+  const left = H.need[k] - (T.got?.[k] || 0), have = k === 'coin' ? S.my.coins : S.my.wh[k] || 0, n = Math.min(want, left, have); if (n <= 0) return toast(have ? '這個已經夠了' : '你沒有這個東西');
+  const val = n * tpW(k), e = Math.max(1, Math.round(val / 25)), lab = k === 'coin' ? `香油錢 💰${n}` : `${itemInfo(k).n}×${n}`;
+  const apply = (f, mine) => { const t = templeOf(f), H2 = HALLS[t.lv]; if (!H2 || H2.id !== H.id) return ab('廟的進度變了，再看一次吧'); const l2 = H2.need[k] - (t.got[k] || 0); if (l2 < n) return ab('這個已經有人捐夠了');
+    t.got[k] = (t.got[k] || 0) + n; t.by[mine] = (t.by[mine] || 0) + val; if (!own) addLog(f, `🙏 ${mine} 捐了${lab}幫你蓋${H2.n}！`);
+    const done = Object.entries(H2.need).every(([kk, nn]) => (t.got[kk] || 0) >= nn); if (done) { t.lv++; t.got = {}; addLog(f, `🏯 ${H2.n}落成了！${H2.god}會保佑大家，快去參拜抽籤吧～`); } return {done}; };
+  const pay = f => { if (k === 'coin') { if (f.coins < n) return ab('金幣不夠'); f.coins -= n; } else { if ((f.wh[k] || 0) < n) return ab('倉庫裡不夠'); f.wh[k] -= n; } return {up:gainExp(f, e)}; };
+  if (own) {
+    const r = await txMe(f => { const p = pay(f); if (p.abort) return p; const a = apply(f, myName()); if (a.abort) return a; return {...a, up:p.up}; });
+    if (r.abort) return toast(r.msg); done2(r);
+  } else {
+    const r1 = await txMe(f => { const p = pay(f); if (p.abort) return p; addLog(f, `🙏 你捐了${lab}幫 ${dn(S.view)} 蓋${H.n}（功德 +${e} 經驗）`); return p; }); if (r1.abort) return toast(r1.msg);
+    const r2 = await B.tx(uid, f => apply(f, myName())).catch(er => ({abort:1, msg:'捐獻失敗：' + er.message}));
+    if (r2.abort) { await txMe(f => { if (k === 'coin') f.coins += n; else f.wh[k] = (f.wh[k] || 0) + n; addLog(f, `↩️ 捐獻沒成功，${lab}已退回`); return {}; }).catch(() => {}); return toast(r2.msg); }
+    done2({...r2, up:r1.up});
+  }
+  function done2(r) { toast(r.done ? `🏯 ${H.n}落成了！快去參拜抽籤吧` : `🙏 捐了${lab}，功德 +${e} 經驗`); Music.sfx(r.done ? 'coin' : 'pop'); if (r.done) Music.sparkle(); lvToast(r.up); const x = TEMPLE_T.x + H.x; fx3(x, 2.2, H.z + 1.5, `🙏 ${lab}`, '#c62828'); }
+}
+// 參拜：主角走到殿前、拿香拜三拜，然後抽籤
+function startPray(i) {
+  const H = HALLS[i]; if (!H || !W.scene) return; if (qianToday(S.my)) return openQian();
+  closeModal(); if (S.scene !== 'temple') { S.scene = 'temple'; setCam('temple'); renderTools(); }
+  S.myPos = {x:TEMPLE_T.x + H.x, z:H.z + (H.id === 'caishen' ? 4.6 : 4), sc:'temple'}; S.pray = {i, ph:'walk', t0:performance.now() / 1000};
+  B.setPresence(S.uid, {pos:S.myPos, t:now()}); renderScene();
+}
+function prayTick(t, P) {
+  const R = S.pray; if (!R || !P) return false; const u = P.m.userData;
+  if (R.ph === 'walk') { if (t - R.t0 > 8) { S.pray = null; return false; } if (Math.hypot(P.m.position.x - S.myPos.x, P.m.position.z - S.myPos.z) < .12) { R.ph = 'bow'; R.t1 = t; P.prayAt = now(); B.setPresence(S.uid, {pray:now(), t:now()}); Music.babble(myGender(), '拜託保佑'); } return false; }
+  return false;
+}
+function bowPose(P, t, age) {
+  const u = P.m.userData, b = .5 * (1 - Math.cos(Math.PI * 2 * Math.min(3, age))); P.m.rotation.y = Math.PI / 2; P.m.rotation.z = -.45 * b;
+  if (u.armL && u.armR) { u.armL.rotation.set(0, 0, 1.25 + b * .3); u.armR.rotation.set(0, 0, 1.25 + b * .3); u.legL.rotation.z = u.legR.rotation.z = 0; }
+  if (!P.incense) { P.incense = grp(...[-.06, 0, .06].map(z => rod('#a1887f', [.02, .5, .02], [0, .2, z])), ...[-.06, 0, .06].map(z => ball('#ff5722', U(.03), [0, .46, z]))); P.incense.position.set(.42, .7, 0); P.m.add(P.incense); }
+  if (Math.floor(age) !== P.bowN) { P.bowN = Math.floor(age); if (age < 3) fx3(P.m.position.x, 2.7, P.m.position.z, '🙏', '#c62828'); }
+}
+function endBow(P) { P.m.rotation.z = 0; if (P.incense) { P.m.remove(P.incense); P.incense = null; } P.bowN = -1; const u = P.m.userData; if (u.armL) { u.armL.rotation.set(0, 0, 0); u.armR.rotation.set(0, 0, 0); } }
+function openQian(h) {
+  const q = qianToday(S.my);
+  S.qv = q ? {ph:'poem'} : {h, ph:'shake'};
+  S.modal = () => {
+    const q2 = qianToday(S.my), V = S.qv;
+    let body;
+    if (V.ph === 'shake') body = `<div class="qbox"><div class="qtube shake2"><i></i><i></i><i></i><i></i><i></i><b>籤</b></div><div class="mgtip">誠心搖籤筒…… 🙏</div></div>`;
+    else if (V.ph === 'stick' && q2) body = `<div class="qbox"><div class="qtube"><i></i><i></i><i></i><i></i><b>籤</b></div><div class="qstick">第${q2.num}籤</div><div class="mgtip">掉出一支籤！</div></div>`;
+    else if (q2) { const P = QIAN_POEM[q2.p], L = QIAN_LV[q2.lv];
+      body = `<div class="qpaper"><div class="qh"><span>${HALL[q2.h].god}靈籤</span><b>第${q2.num}籤</b></div><div class="qlv" style="background:${L.c}">${L.n}</div><div class="qpoem">${P[0].map(s => `<span>${s}</span>`).join('')}</div><div class="qex"><b>解曰：</b>${P[1]}</div><div class="qef">${qianEffect(q2)}</div><small>每天可以參拜抽籤一次，明天再來！</small></div>`; }
+    else body = '<div class="empty">今天還沒抽籤</div>';
+    openModal('🏮 抽籤', body);
+  };
+  S.modal();
+  if (!q) qianDraw(h);
+}
+async function qianDraw(h) {
+  let r = Math.random() * 100, lv = 0; for (; lv < 4; lv++) { if (r < QIAN_LV[lv].w) break; r -= QIAN_LV[lv].w; }
+  const p = lv * 3 + ri(0, 2), num = ri(1, 60), small = rnd([['fert', 1, '🧪化肥×1'], ['feed', 10, '🌾飼料×10'], ['petfood', 1, '🦴寵物零食×1']]);
+  for (let k = 0; k < 6; k++) { await sleep(260); Music.sfx('pop'); }
+  const res = await txMe(f => { f.town ??= {}; if (f.town.qian?.d === twDay()) return ab('今天已經抽過籤了');
+    let t = '';
+    if (lv === 0) f.coins += 200; else if (lv === 2) { f.coins += 100; f[small[0]] = (f[small[0]] || 0) + small[1]; t = `💰100、${small[2]}`; } else if (lv === 3) f.coins = Math.max(0, f.coins - 50); else if (lv === 4) f.coins = Math.max(0, f.coins - 100);
+    f.town.qian = {d:twDay(), h, lv, p, num, t}; addLog(f, `🏮 在${HALL[h].god}前抽到第${num}籤「${QIAN_LV[lv].n}」：${qianEffect(f.town.qian)}`); return {}; }).catch(e => ({abort:1, msg:e.message}));
+  if (res.abort) { toast(res.msg); S.qv = {ph:'poem'}; return S.modal && S.modal(); }
+  S.qv = {ph:'stick'}; if (S.modal) S.modal(); Music.sfx('ding');
+  await sleep(1200); S.qv = {ph:'poem'}; if (S.modal) S.modal();
+  if (lv <= 1) { Music.sfx('coin'); Music.sparkle(); } else if (lv >= 3) Music.sfx('bad'); renderAll();
+}
+// 點地面走過去
+const WALK_BOX = {farm:[-12, 12], ranch:[-12, 12], fish:[-12, 12], factory:[-12, 12], town:[-11, 11], green:[-8, 8], temple:[-10, 10]};
+function walkTap(cx, cy) {
+  if (!W.scene || W.race || S.decoMode || !S.my) return;
+  const r = W.renderer.domElement.getBoundingClientRect(); W.ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1); W.ray.setFromCamera(W.ndc, W.camera);
+  const o = W.ray.ray.origin, d = W.ray.ray.direction; if (d.y > -.01) return; const k = -o.y / d.y, x = o.x + d.x * k, z = o.z + d.z * k;
+  const base = (SCENE_T[S.scene] || FARM_T).x, bx = WALK_BOX[S.scene] || [-12, 12];
+  const tx = Math.max(base + bx[0], Math.min(base + bx[1], x)), tz = Math.max(-6, Math.min(11, z));
+  S.myPos = {x:+tx.toFixed(2), z:+tz.toFixed(2), sc:S.scene}; S.pray = null;
+  B.setPresence(S.uid, {pos:S.myPos, t:now()}); fx3(tx, .4, tz, '👣', '#6d4c41'); renderScene();
 }
 
 /* ----- 溫室介面 ----- */
@@ -2835,9 +3067,9 @@ function buildWorld() {
   // 窗戶晚上會亮
   W.winMat = new THREE.MeshLambertMaterial({color:'#bbdefb', emissive:'#000000'});
   const glass = mat('#bbdefb'); S3.traverse(o => { if (o.isMesh && o.material === glass) o.material = W.winMat; });
-  buildScenery(S3); buildFactory(S3); buildTown(S3); buildGreen(S3); buildEnv(S3);
+  buildScenery(S3); buildFactory(S3); buildTown(S3); buildGreen(S3); buildTemple(S3); buildEnv(S3);
   mergeStatic(S3);
-  W.vilG = new THREE.Group(); W.decoG = new THREE.Group(); W.greenG = new THREE.Group(); S3.add(W.vilG, W.decoG, W.greenG);
+  W.vilG = new THREE.Group(); W.decoG = new THREE.Group(); W.greenG = new THREE.Group(); W.templeG = new THREE.Group(); S3.add(W.vilG, W.decoG, W.greenG, W.templeG);
   W.stallG = stallModel(); W.stallGoods = new THREE.Group(); W.stallG.add(W.stallGoods); W.stallG.position.set(TOWN_T.x - 3.4, 0, -.6); W.stallG.traverse(o => o.userData.hit = {type:'stall'}); S3.add(W.stallG);
 }
 
@@ -2863,7 +3095,7 @@ function init3D() {
   // 點擊（與拖曳區分）
   let down = null; const cv = renderer.domElement;
   cv.addEventListener('pointerdown', e => { down = {x:e.clientX, y:e.clientY, t:now()}; Music.kick(); Voice.unlock(); });
-  cv.addEventListener('pointerup', e => { if (!down) return; const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); if (moved < 8 && now() - down.t < 600) { const h = pick(e.clientX, e.clientY); if (h) clickHit(h); } down = null; });
+  cv.addEventListener('pointerup', e => { if (!down) return; const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); if (moved < 8 && now() - down.t < 600) { const h = pick(e.clientX, e.clientY); if (h) clickHit(h); else walkTap(e.clientX, e.clientY); } down = null; });
   cv.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return; hoverAt(e.clientX, e.clientY); });
   cv.addEventListener('pointerleave', () => { S.hover = null; $('#tip').style.display = 'none'; W.hoverRing.visible = false; });
   $('#loading').remove();
@@ -2879,7 +3111,7 @@ function setCam(scene, instant) {
 function pick(cx, cy) {
   const r = W.renderer.domElement.getBoundingClientRect(); W.ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1);
   W.ray.setFromCamera(W.ndc, W.camera);
-  const roots = [...(W.greenG ? [W.greenG] : []), ...(W.stallG ? [W.stallG] : []), ...(W.decoGrid ? [W.decoGrid] : []), ...(W.santaGift ? [W.santaGift.g] : []), ...(W.vilG ? [W.vilG] : []), ...(W.decoG ? [W.decoG] : []), ...W.people.map(p => p.m), ...W.plots.map(p => p.g), ...W.animals.map(a => a.g), ...W.poops.filter(p => p.visible), W.trough, ...W.ponds.map(p => p.g), ...W.machs.map(p => p.g), ...W.pets.map(p => p.m)];
+  const roots = [...(W.templeG ? [W.templeG] : []), ...(W.greenG ? [W.greenG] : []), ...(W.stallG ? [W.stallG] : []), ...(W.decoGrid ? [W.decoGrid] : []), ...(W.santaGift ? [W.santaGift.g] : []), ...(W.vilG ? [W.vilG] : []), ...(W.decoG ? [W.decoG] : []), ...W.people.map(p => p.m), ...W.plots.map(p => p.g), ...W.animals.map(a => a.g), ...W.poops.filter(p => p.visible), W.trough, ...W.ponds.map(p => p.g), ...W.machs.map(p => p.g), ...W.pets.map(p => p.m)];
   const hits = W.ray.intersectObjects(roots, true);
   for (const h of hits) { if (h.object.visible === false) continue; let o = h.object; while (o && !o.userData.hit) o = o.parent; if (o) return o.userData.hit.type === 'cell' ? {type:'cell', c:o.userData.cells[h.instanceId]} : o.userData.hit; }
   return null;
@@ -2901,6 +3133,7 @@ function hoverAt(cx, cy) {
   else if (h.type === 'trough') { ring.position.set(TROUGH_XZ[0], .06, TROUGH_XZ[1]); ring.scale.setScalar(1.1); }
   else if (h.type === 'pond') { const [x3, z3] = pondXZ(h.i); ring.position.set(x3, .55, z3); ring.scale.setScalar(1.55); }
   else if (h.type === 'mach') { const [x4, z4] = facXZ(h.i); ring.position.set(x4, .2, z4); ring.scale.setScalar(1.55); }
+  else if (h.type === 'hall') { const H = HALLS[h.i]; ring.position.set(TEMPLE_T.x + H.x, .6, H.z); ring.scale.setScalar(H.id === 'caishen' ? 3.3 : 2.6); }
   else if (h.type === 'gplot') { const [x, z] = ghXZ(h.i); ring.position.set(x, .4, z); ring.scale.setScalar(1.4); }
   else if (h.type === 'gpump') { ring.position.set(PUMP_XZ[0], .4, PUMP_XZ[1]); ring.scale.setScalar(1.8); }
   else if (h.type === 'stall') { ring.position.set(TOWN_T.x - 3.4, .06, -.6); ring.scale.setScalar(1.6); }
@@ -3071,8 +3304,9 @@ function syncPeople(list) {
   }
   const base = (SCENE_T[S.scene] || FARM_T).x;
   W.people.forEach((P, k) => {
-    const x = base + [-3.2, 3.2, -6, 6, -1.6, 1.6, -8, 8][k % 8], z = 7.6 + (k >= 8 ? 1.2 : 0); P.tx = x; P.tz = z;
-    const p = list[k]; const say = p.say && now() - p.say.t < (p.say.d || 9000) ? p.say.m : '';
+    const p = list[k], pos = p.uid === S.uid ? S.myPos : p.pos && now() - (p.t || 0) < 180000 ? p.pos : null;
+    if (pos && pos.sc === S.scene) { P.tx = pos.x; P.tz = pos.z; } else { P.tx = base + [-3.2, 3.2, -6, 6, -1.6, 1.6, -8, 8][k % 8]; P.tz = 7.6 + (k >= 8 ? 1.2 : 0); }
+    if (p.uid !== S.uid && p.pray && p.pray !== P.prayAt && now() - p.pray < 3000) P.prayAt = p.pray; const say = p.say && now() - p.say.t < (p.say.d || 9000) ? p.say.m : '';
     ov('pn' + p.uid, esc(p.n) + (p.uid === S.uid ? '（我）' : p.uid === S.viewUid ? ' 🏠' : ''), v => v.copy(P.m.position).setY(2.25), p.vil ? 'vil' : '');
     if (say) ov('ps' + p.uid, esc(say), v => v.copy(P.m.position).setY(2.9), 'bub');
     if (p.wave && p.wave !== P.waveAt && now() - p.wave < 4000) { P.waveAt = p.wave; P.waveTo = p.waveTo || ''; }
@@ -3095,7 +3329,7 @@ function loop() {
   W.controls.update();
   const dt = Math.min(.1, t - (W.lastT || t)); W.lastT = t;
   const tg = W.controls.target; W.sun.position.set(tg.x + 18, 38, tg.z + 22); W.sun.target.position.set(tg.x, 0, tg.z);
-  applyEnv(dt, t); animMachines(t); santaTick(t, dt); animVils(t); for (const s2 of W.decoSpin || []) s2.rotation.x = t * 1.6;
+  applyEnv(dt, t); animMachines(t); santaTick(t, dt); templeTick(t); animVils(t); for (const s2 of W.decoSpin || []) s2.rotation.x = t * 1.6;
   W.blades.rotation.z = -t * .9;
   for (const c of W.clouds) { c.position.x += .012; if (c.position.x > 90) c.position.x = -70; }
   W.ripples.forEach((r, i) => { const k = (t * .35 + i / 3) % 1; r.scale.setScalar(.4 + k * 2.6); r.material.opacity = .55 * (1 - k); });
@@ -3171,10 +3405,20 @@ function loop() {
       if (age - (CH.sw || 0) > .55) { CH.sw = age; fx3(P.m.position.x, 2.6, P.m.position.z, rnd(['💦', '😱', '💦💦']), '#1e88e5'); }
       continue;
     }
-    P.m.position.x += (P.tx - P.m.position.x) * .08; P.m.position.z += (P.tz - P.m.position.z) * .08; P.m.position.y = Math.abs(Math.sin(t * 2 + P.k)) * .05; P.m.rotation.y = -Math.PI / 2 + Math.sin(t * .7 + P.k) * .3;
+    const me = P.uid === S.uid; if (me) prayTick(t, P);
+    const pa = P.prayAt ? (now() - P.prayAt) / 1000 : 99;
+    if (pa < 3.3) { bowPose(P, t, pa); continue; }
+    if (P.incense || P.bowN >= 0) { endBow(P); if (me && S.pray?.ph === 'bow') { const h = HALLS[S.pray.i].id; S.pray = null; openQian(h); } }
+    { const dx = P.tx - P.m.position.x, dz = P.tz - P.m.position.z, dist = Math.hypot(dx, dz), sp = P.veh ? 7.5 : 3.4;
+      if (dist > 30) { P.m.position.x = P.tx; P.m.position.z = P.tz; P.walking = false; }
+      else if (dist > .06) { const st = Math.min(dist, sp * dt); P.m.position.x += dx / dist * st; P.m.position.z += dz / dist * st; let dd = Math.atan2(-dz, dx) - P.m.rotation.y; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y += dd * Math.min(1, dt * 10); P.walkT = (P.walkT || 0) + dt * 11; P.walking = true; P.m.position.y = P.veh ? 0 : Math.abs(Math.sin(P.walkT)) * .08; }
+      else { P.walking = false; let dd = -Math.PI / 2 + Math.sin(t * .7 + P.k) * .3 - P.m.rotation.y; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y += dd * Math.min(1, dt * 4); P.m.position.y = P.veh ? 0 : Math.abs(Math.sin(t * 2 + P.k)) * .05; } }
     if (u.head) u.head.rotation.x = Math.sin(t * 1.1 + P.k) * .1;
     const wa = P.waveAt ? now() - P.waveAt : 1e9, waving = wa < 3800;
-    if (u.armR) { u.armR.rotation.x = waving ? -2.6 + Math.sin(t * 12) * .5 : Math.sin(t * 1.3 + P.k) * .08; u.armL.rotation.x = waving && wa > 1200 && wa < 2600 ? 2.6 + Math.sin(t * 12 + 1) * .5 : Math.sin(t * 1.3 + P.k + 1) * .08; u.legL.rotation.z = u.legR.rotation.z = 0; }
+    if (u.armR) { u.armR.rotation.x = waving ? -2.6 + Math.sin(t * 12) * .5 : Math.sin(t * 1.3 + P.k) * .08; u.armL.rotation.x = waving && wa > 1200 && wa < 2600 ? 2.6 + Math.sin(t * 12 + 1) * .5 : Math.sin(t * 1.3 + P.k + 1) * .08;
+      if (P.veh) { u.legL.rotation.z = u.legR.rotation.z = 1.35; u.armL.rotation.z = u.armR.rotation.z = waving ? 0 : 1.1; }
+      else if (P.walking) { const sw = Math.sin(P.walkT); u.legL.rotation.z = sw * .7; u.legR.rotation.z = -sw * .7; u.armL.rotation.z = waving ? 0 : -sw * .6; u.armR.rotation.z = waving ? 0 : sw * .6; }
+      else { u.legL.rotation.z = u.legR.rotation.z = 0; u.armL.rotation.z = u.armR.rotation.z = 0; } }
     if (waving) { const T2 = P.waveTo && W.people.find(q => q.uid === P.waveTo); if (T2) { const a2 = Math.atan2(-(T2.m.position.z - P.m.position.z), T2.m.position.x - P.m.position.x), ac = -Math.PI / 2; let dd = a2 - ac; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y = ac + dd * .6; } else P.m.rotation.y = -Math.PI / 2; if (u.head) u.head.rotation.z = Math.sin(t * 5) * .15; if (wa < 1400) P.m.position.y = Math.abs(Math.sin(wa / 1400 * Math.PI * 2)) * .45; const pop = wa < 300 ? wa / 300 : wa > 3400 ? (3800 - wa) / 400 : 1; P.m.scale.setScalar(1.25 * (1 + .22 * pop)); if (!P.hiFx || now() - P.hiFx > 1300) { P.hiFx = now(); fx3(P.m.position.x, 3.3, P.m.position.z, rnd(['👋', '👋✨', '💕']), '#e91e63'); } }
     else if (P.m.scale.x !== 1.25) P.m.scale.setScalar(1.25);
   }
@@ -3325,7 +3569,8 @@ function renderTools() {
   else if (S.scene === 'ranch') T = own ? [['hand','✋','收集'], ['feedAll','🌾','餵食', 1], ['buyAni','🛒','買動物', 1], ['sellProducts','💰','賣產品', 1]]
                                    : [['hand','✋','偷產品'], ['feedFriend','🌾','幫餵食', 1], ['cleanTip','🧹','幫清便便', 1]];
   else if (S.scene === 'green') T = own ? [['hand','✋','手'], ['pump','🎃','南瓜大賽', 1], ['ghBuy','➕','擴建溫室', 1]] : [['hand','✋','參觀'], ['pump','🎃','南瓜大賽', 1]];
-  else if (S.scene === 'town') T = own ? [['hand','✋','手'], ['vilList','📋','村民委託', 1], ['stall','🏪','我的攤位', 1]] : [['hand','✋','逛逛'], ['stall','🏪','逛攤位', 1]];
+  else if (S.scene === 'temple') T = [['hand','✋','手'], ['templeInfo','🏯','廟宇', 1], ['qianShow','📜','今日籤詩', 1], ['toTown','🏘️','回小鎮', 1]];
+  else if (S.scene === 'town') T = own ? [['hand','✋','手'], ['vilList','📋','村民委託', 1], ['stall','🏪','我的攤位', 1], ['toTemple','🏯','去廟裡', 1]] : [['hand','✋','逛逛'], ['stall','🏪','逛攤位', 1]];
   else if (S.decoMode && own) T = [['decoDone','✅','完成', 1], ['decoTool','🪑','換裝飾', 1]];
   else T = own ? [['hand','✋','手'], ['plant','🌱', S.seed ? CROPS[S.seed].n : '播種'], ['water','💧','澆水'], ['weed','🌿','除草'], ['bug','🐞','除蟲'], ['fert','🧪','施肥'], ['plow','⛏️','翻地'], ['decoTool','🪑','裝飾', 1]]
                : [['hand','✋','偷菜'], ['water','💧','幫澆水'], ['weed','🌿','幫拔草'], ['bug','🐞','幫除蟲'], ['pbug','🐛','放蟲'], ['pweed','🌾','種草']];
@@ -3348,7 +3593,8 @@ function renderScene() {
   if (f) {
     BUD = performance.now() + 10; BUILT = 0; W.syncPending = false;
     const order = {farm:[syncField, syncDeco, syncPets, syncRanch, syncFish, syncFactory, syncTown], ranch:[syncRanch, syncPets, syncField, syncDeco, syncFish, syncFactory, syncTown], fish:[syncFish, syncPets, syncField, syncDeco, syncRanch, syncFactory, syncTown], factory:[syncFactory, syncPets, syncField, syncDeco, syncRanch, syncFish, syncTown], green:[syncGreen, syncPets, syncField, syncDeco, syncRanch, syncFish, syncFactory, syncTown], town:[syncTown, syncStall, syncPets, syncField, syncDeco, syncRanch, syncFish, syncFactory]}[S.scene] || [syncField, syncDeco, syncRanch, syncFish, syncPets, syncFactory, syncTown];
-    for (const fn of order) fn(f, own); if (S.scene !== 'green') syncGreen(f, own); syncFest();
+    for (const fn of order) fn(f, own); if (S.scene !== 'green') syncGreen(f, own); syncTemple(f, own); syncFest();
+    { const T = templeView(f); setSign(W.templeSign, own ? '我的廟宇' : `${dn(f)}的廟`, T.lv >= HALLS.length ? '三座殿都蓋好了 🙏' : `${HALLS[T.lv].n} 建造中 ${Math.floor(tpProg(T) * 100)}%`); }
     setSign(W.greenSign, own ? '我的溫室' : `${dn(f)}的溫室`, `花圃 ${greenView(f).n || GH_START}/${GH_MAX} · 🎃南瓜大賽`); if (S.scene !== 'town') syncStall(f, own);
     ov('stallL', own ? '🏪 我的攤位' : `🏪 ${esc(dn(f))}的攤位`, v => v.set(TOWN_T.x - 3.4, 3.1, -.6), 'tag');
     setSign(W.townSign, own ? '我的小鎮' : `${dn(f)}的小鎮`, own ? `今天的委託 ${vilPending(S.my)}/${VIL_REQ}` : '村民們都在這裡');
@@ -3357,7 +3603,7 @@ function renderScene() {
     setSign(W.ranchSign, own ? '我的牧場' : `${dn(f)}的牧場`, `動物 ${f.ranch.animals.length}/${ranchCap(levelOf(f.exp).L)}`);
     setSign(W.fishSign, own ? '我的魚塭' : `${dn(f)}的魚塭`, `魚池 ${f.fish.n}/${MAXPOND}`);
   }
-  document.querySelectorAll('#sceneTabs button').forEach(b => b.classList.toggle('on', b.dataset.s === S.scene));
+  document.querySelectorAll('#sceneTabs button').forEach(b => b.classList.toggle('on', b.dataset.s === (S.scene === 'temple' ? 'town' : S.scene)));
   $('#visitBar').hidden = own; if (!own && f) $('#visitName').textContent = dn(f);
   const list = hereList();
   if (!own && f && !list.some(p => p.uid === S.viewUid)) { const nw = W.npc?.uid === S.viewUid ? W.npc : {}; list.push({uid:S.viewUid, n:dn(f), g:f.gender || genderOf({uid:S.viewUid}), lv:levelOf(f.exp).L, npc:true, t:now(), say:nw.say, wave:nw.wave, waveTo:nw.wave ? S.uid : '', back:true}); }
@@ -3419,6 +3665,7 @@ function pondText(i) {
   return t;
 }
 function tipFor(h) {
+  if (h.type === 'hall') { const H = HALLS[h.i], T = templeView(S.view); return `<b>${H.em} ${H.n}</b>（${H.god}）<br>${h.i < T.lv ? (qianToday(S.my) ? '今天已經抽過籤了，點一下看籤詩' : '點一下參拜抽籤 🙏') : h.i === T.lv ? `建造中 ${Math.floor(tpProg(T) * 100)}%，點一下捐材料` : '還沒開始蓋'}`; }
   if (h.type === 'gplot') { const G = greenView(S.view), p = (G.plots || [])[h.i]; if (h.i >= (G.n || GH_START)) return h.i === (G.n || GH_START) && isOwn() ? `🔒 點一下花 ${GH_PRICE[G.n || GH_START]} 金幣擴建` : '🔒 還沒擴建'; if (!p || p.s !== 'grow' || !CROPS[p.c]) return isOwn() ? '空花圃，點一下種東西' : '空花圃'; return `<b>${CROPS[p.c].gh ? '🌱 ' : ''}${CROPS[p.c].n}</b><br>${ghMature(p) ? '✨ 成熟了！點一下收成' : `還要 ${fmtDur(p.p + ghMs(p.c) - now())}`}`; }
   if (h.type === 'gpump') { const q = greenView(S.view).pump; return q?.s === 'grow' ? `<b>🎃 巨大南瓜</b> 約 ${pumpKg(q)} kg<br>${pumpMature(q) ? '可以收成了！' : '點一下照顧它'}` : '<b>🎃 巨大南瓜大賽</b><br>每兩週一期，點一下看看'; }
   if (h.type === 'stall') { const sl = stallView(S.view).sl.filter(s => (s.s || 0) < s.n); return `<b>🏪 ${isOwn() ? '我的' : esc(dn(S.view)) + '的'}市集攤位</b><br>${sl.length ? sl.map(s => `${itemInfo(s.id).n} ${s.p}💰`).join('、') : '目前沒有東西'}<br>點一下${isOwn() ? '管理攤位' : '逛逛'}`; }
@@ -3450,6 +3697,7 @@ function clickHit(h) {
   if (h.type === 'stall') return openStall();
   if (h.type === 'gplot') { if (S.scene !== 'green') { S.scene = 'green'; setCam('green'); renderTools(); } return clickGh(h.i); }
   if (h.type === 'gpump') return openPump();
+  if (h.type === 'hall') { if (S.scene !== 'temple') { S.scene = 'temple'; setCam('temple'); renderTools(); } return openHall(h.i); }
   if (h.type === 'cell') { if (!S.decoMode?.k) return toast('先從「🪑 換裝飾」選一個要擺的裝飾'); return run(() => decoPut(h.c)); }
   if (h.type === 'deco') { if (S.decoMode && isOwn()) return decoMenu(h.i); const d = S.view?.deco?.at?.[h.i]; if (d) fx3(d.x, 1.6, d.z, `${DECO[d.k].n} ⭐+${DECO[d.k].pop}`, '#ef6c00'); return; }
   if (h.type === 'vil') { if (!isOwn()) { const v = VIL[h.id]; S.vilSay = null; return toast(`${v.n}：「${rnd(v.chat)}」`); } return openVil(h.id); }
@@ -4047,6 +4295,7 @@ function renderWx() {
   const wx = weather(), [ic, nm] = WX_N[wx], night = isNight();
   let html = `<button data-act="wxInfo">${night ? '🌙' : ic} ${night ? '夜晚' : nm}${night && wx === 'rain' ? '🌧️' : ''} ${hh}</button>`;
   for (const o of activeFests()) html += `<button class="fest" data-act="fest">${o.F.em} ${esc(o.F.n)}</button>`;
+  { const q = qianToday(S.my); if (q) html += `<button class="fest" data-act="qianShow" style="color:${QIAN_LV[q.lv].c}">🏮 ${QIAN_LV[q.lv].n}</button>`; }
   if (el._h !== html) { el.innerHTML = html; el._h = html; }
 }
 function wxInfo() {
@@ -4857,7 +5106,7 @@ let authMode = 'login';
 const ACT = {
   authTab(d) { authMode = d.t; document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === d.t)); $('#aPass2Wrap').hidden = d.t !== 'reg'; $('#aGo').textContent = d.t === 'reg' ? '註冊並開始' : '開始種田'; $('#aPass').autocomplete = d.t === 'reg' ? 'new-password' : 'current-password'; $('#authErr').textContent = ''; },
   tool(d) { if (d.t === 'plant' && (!S.seed || S.tool === 'plant')) { S.tool = 'plant'; renderTools(); return openSeedPicker(-1); } if (d.t === 'stock' && (!S.fry || S.tool === 'stock')) { S.tool = 'stock'; renderTools(); return openFryPicker(-1); } S.tool = d.t; renderTools(); },
-  scene(d) { if (W.zoomed) { W.zoomed = false; clearTimeout(W.zoomT); const o = (W.camAnim?.off1 || W.camera.position.clone().sub(W.controls.target)).clone().multiplyScalar(1 / .42); W.camAnim = null; W.camera.position.copy(W.controls.target).add(o); } S.scene = d.s; S.tool = 'hand'; S.hover = null; $('#tip').style.display = 'none'; setCam(d.s); renderTools(); renderScene(); },
+  scene(d) { if (W.zoomed) { W.zoomed = false; clearTimeout(W.zoomT); const o = (W.camAnim?.off1 || W.camera.position.clone().sub(W.controls.target)).clone().multiplyScalar(1 / .42); W.camAnim = null; W.camera.position.copy(W.controls.target).add(o); } S.scene = d.s; S.tool = 'hand'; S.hover = null; S.myPos = null; S.pray = null; $('#tip').style.display = 'none'; setCam(d.s); renderTools(); renderScene(); },
   feedAll() { return run(feedAll); }, feedFriend() { return run(feedFriend); },
   buyAni() { openShop('ani'); }, cleanTip() { toast('點牧場上的 💩 就能幫好友清掉，拿經驗！'); },
   close: closeModal,
@@ -4869,6 +5118,8 @@ const ACT = {
   more: openMore, wxInfo, dex(d) { openDex(d.t); }, claimAch(d) { return run(() => claimAch(d.id)); },
   pets: openPets, petPat(d) { return run(() => petPat(d.k)); }, petFeed(d) { return run(() => petFeed(d.k)); }, petGift(d) { return run(() => petGift(d.k)); },
   async buyPetfood(d) { const n = +d.n; const r = await txMe(f => { if (f.coins < PETFOOD_PRICE * n) return ab('金幣不夠'); f.coins -= PETFOOD_PRICE * n; f.petfood = (f.petfood || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 個寵物零食 🦴`); },
+  templeInfo: openTemple, hall(d) { openHall(+d.i); }, pray(d) { startPray(+d.i); }, tpGive(d) { return run(() => tpGive(d.k, +d.n)); }, qianShow() { if (qianToday(S.my)) openQian(); else { toast('今天還沒抽籤，去廟裡參拜吧 🙏'); if (S.scene !== 'temple') ACT.toTemple(); } },
+  toTemple() { ACT.scene({s:'temple'}); }, toTown() { ACT.scene({s:'town'}); },
   pump: openPump, pumpPlant() { return run(pumpPlant); }, pumpCare(d) { return run(() => pumpCare(d.k)); }, pumpHarvest() { return run(pumpHarvest); }, pumpClaim() { return run(pumpClaim); }, ghPlant(d) { return run(() => ghPlant(d.id)); }, ghBuy() { return run(ghBuy); },
   expPick(d) { openExp(d.k); }, expGo(d) { return run(() => expGo(d.k, d.d)); }, expBack(d) { return run(() => expBack(d.k)); },
   stall: openStall, stallOn(d) { return run(() => stallOn(d.k)); }, stallOff(d) { return run(() => stallOff(+d.i)); }, stallBuy(d) { return run(() => stallBuy(+d.i)); },
@@ -5041,9 +5292,10 @@ async function onAuth(u) {
   else if (!r.abort && f.lastSign !== today()) toast(isNew ? '🎉 歡迎來到 3D 農場！' : `☀️ 每日簽到 +${SIGN_COINS} 金幣，記得看看今天的任務和訂單 📋`);
   refreshFriends();
 }
-function goHome() { unZoom(); S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; renderAll(); beat(); watchHere(); }
+function goHome() { S.myPos = null; S.pray = null; unZoom(); S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; renderAll(); beat(); watchHere(); }
 function visit(uid) {
   if (uid === S.uid) return goHome();
+  S.myPos = null; S.pray = null;
   unZoom(); clearSanta(); S.decoMode = null; S.thief = null; S.unsubView && S.unsubView();
   S.viewUid = uid; const fr = S.friends.find(x => x.uid === uid); S.view = fr ? fr.farm : null; S.tool = 'hand'; renderAll(); beat(); watchHere();
   setTimeout(() => { if (S.viewUid === uid) waveAt(uid, fr ? dn(fr.farm) : '', false, true); }, 1200);
