@@ -668,7 +668,7 @@ const FESTS = [
     r:[{n:'國慶野餐', em:'🧺', need:{tomato:2, lettuce:2, egg:2}}, {n:'國慶大餐', em:'🍽️', need:{bass:2, rice:3, broccoli:1}}]},
   {id:'halloween', n:'萬聖節', em:'🎃', th:'pumpkin', at:Y => ymd(Y, 10, 31), from:-3, len:7, bonus:'yield', gift:{c:300, seed:6}, d:'不給糖就搗蛋！南瓜燈晚上會發光。',
     r:[{n:'搗蛋糖果', em:'🍬', need:{carrot:3, corn:2}}, {n:'南瓜派', em:'🥧', need:{pumpkin:2, egg:2, wheat:2}}]},
-  {id:'winter', n:'冬至', em:'🍡', th:'lantern', snow:1, at:Y => ymd(Y, 12, 22), from:-3, len:7, bonus:'exp', gift:{c:300, feed:20}, d:'下雪了！吃湯圓長一歲。',
+  {id:'winter', n:'冬至', em:'🍡', th:'lantern', snow:1, mg:'tangyuan', at:Y => ymd(Y, 12, 22), from:-3, len:7, bonus:'exp', gift:{c:300, feed:20}, d:'下雪了！吃湯圓長一歲，抽湯圓有獎！',
     r:[{n:'暖暖蔬菜湯', em:'🍲', need:{radish:3, cabbage:2}}, {n:'冬至湯圓', em:'🍡', need:{rice:4, honey:1}}]},
   {id:'xmas', n:'聖誕節', em:'🎄', th:'xmas', snow:1, mg:'santa', at:Y => ymd(Y, 12, 25), from:-3, len:7, bonus:'order', gift:{c:1225, seed:6, fert:3}, d:'農場下雪了！聖誕老公公每天會來送禮物。',
     r:[{n:'聖誕餅乾', em:'🍪', need:{wheat:3, egg:2}}, {n:'聖誕大蛋糕', em:'🎂', need:{strawberry:4, egg:3, wheat:3, milk:2}}]},
@@ -793,26 +793,57 @@ const WX_N = {sun:['☀️', '晴天'], cloud:['⛅', '多雲'], rain:['🌧️'
 
 /* ----- 節日 ----- */
 function festOcc(F, Y) { const main = F.at(Y); if (!main) return null; const s = addDays(main, F.from); return {F, s, m:main, e:addDays(s, F.len - 1), key:F.id + ':' + main.slice(0, 4)}; }
+// 節日排程：每個節日原本 7 天，碰在一起時自動調整，保證不重疊
+const FEST_PRI = {cny:10, xmas:9, moon:9, dragon:9, newyear:8, lantern:8, halloween:7, winter:7, valentine:6, qixi:6, national:6, mother:5, father:5, kids:5, tree:5, teacher:4, chongyang:4, ghost:4};
+const dayN = d => Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) / 864e5;
+const _fsch = {};
+function festSched(Y) {
+  if (_fsch[Y]) return _fsch[Y];
+  const L = []; for (const y of [Y - 1, Y, Y + 1]) for (const F of FESTS) { const o = festOcc(F, y); if (o) L.push(o); }
+  const pri = o => FEST_PRI[o.F.id] || 5, len = (a, b) => a <= b ? dayN(b) - dayN(a) + 1 : 0;
+  const outside = (x, c) => {   // x 讓開 c（春節）：留在 c 前面或後面，選有正日的那一邊，不行就挑長的一邊，都太短就排在 c 後面 3 天
+    const bS = x.s, bE = x.e < c.s ? x.e : addDays(c.s, -1), aS = x.s > c.e ? x.s : addDays(c.e, 1), aE = x.e;
+    let s2, e2;
+    if (x.m < c.s && len(bS, bE)) [s2, e2] = [bS, bE]; else if (x.m > c.e && len(aS, aE)) [s2, e2] = [aS, aE];
+    else if (Math.max(len(bS, bE), len(aS, aE)) >= 2) [s2, e2] = len(bS, bE) > len(aS, aE) ? [bS, bE] : [aS, aE];
+    else [s2, e2] = [addDays(c.e, 1), addDays(c.e, 3)];
+    x.s = s2; x.e = e2;
+  };
+  for (let pass = 0; pass < 8; pass++) {
+    L.sort((a, b) => a.s < b.s ? -1 : a.s > b.s ? 1 : pri(b) - pri(a)); let ch = false;
+    for (let i = 0; i + 1 < L.length; i++) {
+      const a = L[i], b = L[i + 1]; if (a.e < b.s) continue; ch = true;
+      if (a.F.id === 'cny' || b.F.id === 'cny') { const c = a.F.id === 'cny' ? a : b; outside(c === a ? b : a, c); continue; }
+      const [p, q] = a.m <= b.m ? [a, b] : [b, a];
+      if (p.m === q.m) { const [hi, lo] = pri(p) >= pri(q) ? [p, q] : [q, p]; hi.e = hi.m; lo.s = addDays(hi.m, 1); if (lo.e < lo.s) lo.e = addDays(lo.s, 2); continue; }
+      const ex = dayN(q.m) - dayN(p.m) - 1, give = Math.floor(ex / 2) + (ex % 2 && pri(p) > pri(q) ? 1 : 0), cut = addDays(p.m, give);
+      if (p.e > cut) p.e = cut; if (q.s <= p.e) q.s = addDays(p.e, 1);
+    }
+    if (!ch) break;
+  }
+  L.sort((a, b) => a.s < b.s ? -1 : 1);
+  return _fsch[Y] = L;
+}
 let _af = {k:'', v:[]};
 function activeFests(day = twDay()) {
   if (_af.k === day) return _af.v;
   let out = [];
   const tf = OVR && QS.get('fest') && FESTS.find(x => x.id === QS.get('fest'));
   if (tf) out = [{F:tf, s:day, m:day, e:day, key:tf.id + ':' + day.slice(0, 4)}];
-  else { const Y = +day.slice(0, 4); for (const F of FESTS) for (const y of [Y - 1, Y, Y + 1]) { const o = festOcc(F, y); if (o && o.s <= day && day <= o.e) out.push(o); } }
+  else out = festSched(+day.slice(0, 4)).filter(o => o.s <= day && day <= o.e);
   const dd = o => Math.abs(Date.UTC(+o.m.slice(0, 4), +o.m.slice(5, 7) - 1, +o.m.slice(8, 10)) - Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10)));
   out.sort((a, b) => dd(a) - dd(b) || (a.m < b.m ? 1 : -1));
   _af = {k:day, v:out}; return out;
 }
 function nextFests(n = 6, day = twDay()) {
   const Y = +day.slice(0, 4), out = [];
-  for (const F of FESTS) for (const y of [Y, Y + 1]) { const o = festOcc(F, y); if (o && o.s > day) { out.push(o); break; } }
+  for (const F of FESTS) { const o = [...festSched(Y), ...festSched(Y + 1)].find(x => x.F === F && x.s > day); if (o) out.push(o); }
   return out.sort((a, b) => a.s < b.s ? -1 : 1).slice(0, n);
 }
 const festBonus = k => activeFests().some(o => o.F.bonus === k);
 const FEST_VIS = {xmas:'❄️ 下雪', winter:'❄️ 下雪', newyear:'🎆 白天晚上放煙火 · 👋 到好友家說新年快樂', cny:'🎆 白天晚上放煙火 · 👋 到好友家說新年快樂', valentine:'🫧 滿滿粉紅泡泡', qixi:'🫧 粉紅泡泡', moon:'🍖 大家一起烤肉 · 🌕 超大月亮', dragon:'🐉 池塘龍舟', halloween:'🎃 南瓜燈', lantern:'🏮 滿滿燈籠', national:'🎇 晚上煙火'};
 // 一整年的節日表：每個節日取「進行中或下一次」，照開始日期排
-function festYear(day = twDay()) { const Y = +day.slice(0, 4), out = []; for (const F of FESTS) for (const y of [Y - 1, Y, Y + 1]) { const o = festOcc(F, y); if (o && o.e >= day) { out.push(o); break; } } return out.sort((a, b) => a.s < b.s ? -1 : 1); }
+function festYear(day = twDay()) { const Y = +day.slice(0, 4), all = [...festSched(Y), ...festSched(Y + 1)], out = []; for (const F of FESTS) { const o = all.find(x => x.F === F && x.e >= day); if (o) out.push(o); } return out.sort((a, b) => a.s < b.s ? -1 : 1); }
 const daysTo = s => Math.round((Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10)) - Date.UTC(...twDay().split('-').map((v, i) => i === 1 ? v - 1 : +v))) / 864e5);
 const festRecipeOk = (R, L) => Object.keys(R.need).every(id => itemLv(id) <= L);
 function festLeft(f, key, R) { const got = f.fest?.[key]?.got?.[R.id] || {}; return Object.entries(R.need).map(([id, n]) => [id, n - (got[id] || 0)]).filter(([, n]) => n > 0); }
@@ -826,6 +857,7 @@ const MG = {
   riddle:{n:'猜燈謎', em:'🏮', d:'每天一題燈謎（每天題目不一樣），只有一次機會，猜對有獎！'},
   tree:{n:'植樹尋寶', em:'🌳', d:'三棵樹只有一棵藏著禮物，每天只能搖一次！', it:'🌳', none:'🍃'},
   candy:{n:'糖果抽抽樂', em:'🍬', d:'三顆糖果只有一顆有獎，每天只能抽一次！', it:'🍬', none:'💨'},
+  tangyuan:{n:'抽湯圓', em:'🥣', d:'三碗湯圓只有一碗包著禮物，每天只能抽一次！', it:'🥣', none:'💨'},
   skewer:{n:'中秋肉串抽抽樂', em:'🍢', d:'三支肉串只有一支有獎，每天只能抽一次！', it:'🍢', none:'💨'},
   boat:{n:'好友龍舟賽', em:'🐉', d:'和好友一起划龍舟比賽！第一名拿大獎，其他名次也有 2 個化肥。每天一場。'},
 };
@@ -1628,7 +1660,7 @@ function thumbURL(kind, id) {
   } catch (e) { console.warn(e); THUMB[key] = ''; }
   return THUMB[key];
 }
-if (QS.has('debug')) window.__hf = {act:(k, d = {}) => ACT[k](d), clickHit:h => clickHit(h), riddleToday, thumbURL, PETS, ANIMALS, CROPS, PROD, SEA, PROC, MACH, activeFests, weather, twNow, scr(kind, i) { let p; if (kind === 'mach') { const [x, z] = facXZ(i); p = new THREE.Vector3(x, 1, z); } else if (kind === 'pet') p = W.pets[i].m.position.clone().setY(.5); else if (kind === 'plot') { const [x, z] = plotXZ(i); p = new THREE.Vector3(x, .4, z); } else if (kind === 'ani') p = W.animals[i].g.position.clone().setY(.5); else if (kind === 'poop') p = new THREE.Vector3(POOP_XZ[i][0], .2, POOP_XZ[i][1]); else if (kind === 'pond') { const [x, z] = pondXZ(i); p = new THREE.Vector3(x, .45, z); } else p = new THREE.Vector3(TROUGH_XZ[0], .5, TROUGH_XZ[1]); p.project(W.camera); const r = W.renderer.domElement.getBoundingClientRect(); return [r.left + (p.x * .5 + .5) * r.width, r.top + (-p.y * .5 + .5) * r.height]; }, S:() => S, get W() { return W; }};
+if (QS.has('debug')) window.__hf = {festSched, act:(k, d = {}) => ACT[k](d), clickHit:h => clickHit(h), riddleToday, thumbURL, PETS, ANIMALS, CROPS, PROD, SEA, PROC, MACH, activeFests, weather, twNow, scr(kind, i) { let p; if (kind === 'mach') { const [x, z] = facXZ(i); p = new THREE.Vector3(x, 1, z); } else if (kind === 'pet') p = W.pets[i].m.position.clone().setY(.5); else if (kind === 'plot') { const [x, z] = plotXZ(i); p = new THREE.Vector3(x, .4, z); } else if (kind === 'ani') p = W.animals[i].g.position.clone().setY(.5); else if (kind === 'poop') p = new THREE.Vector3(POOP_XZ[i][0], .2, POOP_XZ[i][1]); else if (kind === 'pond') { const [x, z] = pondXZ(i); p = new THREE.Vector3(x, .45, z); } else p = new THREE.Vector3(TROUGH_XZ[0], .5, TROUGH_XZ[1]); p.project(W.camera); const r = W.renderer.domElement.getBoundingClientRect(); return [r.left + (p.x * .5 + .5) * r.width, r.top + (-p.y * .5 + .5) * r.height]; }, S:() => S, get W() { return W; }};
 const icon = (kind, id) => { const u = thumbURL(kind, id); return u ? `<img src="${u}" alt="">` : '🌱'; };
 const itemIcon = id => icon(CROPS[id] ? 'crop' : SEA[id] ? 'sea' : PROC[id] ? 'proc' : 'prod', id);
 
@@ -3620,7 +3652,7 @@ function openFest() {
           <div class="acts">${done ? '<button class="b g" disabled>今天完成了 ✅</button>' : !ok ? `<button class="b g" disabled>Lv.${Math.max(...Object.keys(R.need).map(itemLv))} 才能做</button>` : can ? `<button class="b o" data-act="festDeliver" data-k="${o.key}" data-r="${R.id}">📦 交貨</button>` : '<button class="b g" disabled>還沒有材料</button>'}</div></div>`;
       }).join('');
     }
-    body += `<div class="sec">📅 節日活動表（每個節日 7 天，每年自動舉辦，台灣時間）</div>` + festYear().map(o => { const on = act.some(x => x.key === o.key), M = o.F.mg ? MG[o.F.mg] : null;
+    body += `<div class="sec">📅 節日活動表（每個節日 7 天，日期太近的會自動錯開；每年自動舉辦，台灣時間）</div>` + festYear().map(o => { const on = act.some(x => x.key === o.key), M = o.F.mg ? MG[o.F.mg] : null;
       return `<div class="frow ${on ? 'on' : ''}"><div class="fl"><span class="fe">${o.F.em}</span><b>${o.F.n}</b>${on ? '<i>進行中</i>' : ''}</div><div class="fd">${md(o.s)}～${md(o.e)}</div>
         <div class="fs">${M ? `<b class="fm">${M.em} ${M.n}</b> · ` : ''}${FEST_VIS[o.F.id] ? FEST_VIS[o.F.id] + ' · ' : ''}✨ ${BONUS_N[o.F.bonus]}<br><span class="fw">${on ? `進行中，還有 ${daysTo(o.e) + 1} 天` : `${daysTo(o.s)} 天後開始`}</span></div></div>`; }).join('');
     openModal('🎉 節日活動', body);
@@ -3662,13 +3694,13 @@ function openMG(key) {
     const M = MG[o.F.mg], st = mgSt(S.my, o), done = st?.d === twDay(), G = S.mg, kind = o.F.mg;
     let body = `<div class="mgbox"><div class="mgd">${M.d}</div>`;
     const tomorrow = festLeftDays(o) > 0 ? '明天再來玩！' : '今天是節日最後一天，明年見！';
-    if (kind === 'tree' || kind === 'candy' || kind === 'skewer') {
+    if (kind === 'tree' || kind === 'candy' || kind === 'skewer' || kind === 'tangyuan') {
       const live = G.ph !== 'pick' && G.ph;
       if (done && !live) body += `<div class="mgres">${st.w ? `🎉 今天中獎了：<b>${st.t}</b>` : '😢 今天沒抽中…'}<br><small>${tomorrow}</small></div>`;
       else {
         body += `<div class="mg3">${[0, 1, 2].map(i => { const sel = G.i === i, rev = G.ph === 'reveal';
           return `<button class="mgi ${sel ? 'sel' : ''} ${G.ph === 'shake' && sel ? 'shake' : ''} ${rev ? (i === G.at ? 'win' : 'lose') : ''}" data-act="mgPick" data-i="${i}" ${G.ph !== 'pick' ? 'disabled' : ''}><span>${M.it}</span>${rev ? `<em>${i === G.at ? '🎁' : M.none}</em>` : ''}</button>`; }).join('')}</div>`;
-        body += G.ph === 'pick' ? `<div class="mgtip">👆 選一個${kind === 'tree' ? '搖搖看' : kind === 'candy' ? '剝開看看' : '咬一口看看'}！</div>` : G.ph === 'shake' ? '<div class="mgtip">…… 🤞</div>'
+        body += G.ph === 'pick' ? `<div class="mgtip">👆 選一個${kind === 'tree' ? '搖搖看' : kind === 'candy' ? '剝開看看' : kind === 'tangyuan' ? '吃一口看看' : '咬一口看看'}！</div>` : G.ph === 'shake' ? '<div class="mgtip">…… 🤞</div>'
           : `<div class="mgres">${G.win ? `🎉 中獎了！獲得 <b>${G.t}</b>` : `😢 這個沒有獎品…禮物藏在第 ${G.at + 1} 個！`}<br><small>${tomorrow}</small></div>`;
       }
     } else if (kind === 'redenv') {
