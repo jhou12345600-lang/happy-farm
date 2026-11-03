@@ -77,6 +77,8 @@ button{font-family:inherit;cursor:pointer;border:none}
 .qh{display:flex;justify-content:space-between;align-items:center;font-weight:900;color:#b71c1c;font-size:15px;border-bottom:2px dashed #e57373;padding-bottom:6px}.qlv{display:inline-block;color:#fff;font-weight:900;font-size:22px;padding:3px 18px;border-radius:20px;margin:10px 0 6px;letter-spacing:4px}
 .qpoem{display:flex;flex-direction:row-reverse;justify-content:center;gap:10px;margin:6px 0 10px}.qpoem span{writing-mode:vertical-rl;font-size:19px;font-weight:900;letter-spacing:3px;color:#3e2723;font-family:serif}
 .qex{font-size:14px;text-align:left;background:#fff;border-radius:8px;padding:7px 9px;margin-bottom:6px}.qef{font-size:13.5px;font-weight:800;color:#c62828;margin-bottom:6px}
+.wd{display:flex;gap:10px;align-items:center}.wd img{width:112px;height:112px;background:#fff8e1;border-radius:16px;border:2px solid #e0c99d;flex:none}.sws{display:flex;flex-wrap:wrap;gap:6px}.sw{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px #d7b98e;cursor:pointer}.sw.on{box-shadow:0 0 0 3px #ff9800}
+.hats{display:flex;flex-wrap:wrap;gap:6px}.hats .b.on2{background:#ff9800;color:#fff;box-shadow:0 0 0 3px #ffe0b2}
 .mgbox{text-align:center}.mgd{color:#8d6e63;font-size:13px;margin-bottom:10px}.mgtip{color:#8d6e63;font-weight:800;margin:8px 0}.mgres{font-size:16px;line-height:1.7;margin:10px 0;color:#5d4037}.mgres small{color:#8d6e63}.mgbtn{margin:10px 0}
 .mg3{display:flex;justify-content:center;gap:12px;margin:8px 0}.mgi{position:relative;width:88px;height:104px;border-radius:18px;border:3px solid #d7b98e;background:linear-gradient(#fffdf5,#ffeccc);font-size:52px;cursor:pointer;animation:mgfl 2s ease-in-out infinite}
 .mgi:nth-child(2){animation-delay:.3s}.mgi:nth-child(3){animation-delay:.6s}.mgi:disabled{cursor:default;color:inherit}.mgi.sel{border-color:#ff9800;box-shadow:0 0 0 3px #ffe0b2}
@@ -1817,6 +1819,89 @@ function machineModel(k) {
   G.traverse(o => { if (o.isMesh) o.castShadow = true; }); Object.assign(G.userData, ud); return G;
 }
 
+/* ================= 角色服裝、交通工具 ================= */
+const LOOK_DEF = {boy:{top:'#f3ead8', bot:'#3f7d4e', hat:'straw', hc:'#b98a56'}, girl:{top:'#f6c531', bot:'#f6c531', hat:'knit', hc:'#f6c531'}};
+const HATS = {straw:'🌾 草帽', knit:'🧶 毛線漁夫帽', cap:'🧢 棒球帽', beanie:'🎿 毛帽', flower:'🌼 花圈', cowboy:'🤠 牛仔帽', crown:'👑 皇冠', none:'🙆 不戴帽子'};
+const HAT_PRICE = {cowboy:800, crown:3000};
+const CLOTH_COL = ['#f3ead8', '#ffffff', '#f6c531', '#ff8a65', '#e53935', '#ec407a', '#ab47bc', '#5c6bc0', '#29b6f6', '#26a69a', '#3f7d4e', '#8d6e63', '#424242'];
+const lookOf = (g, lk) => ({...LOOK_DEF[g === 'girl' ? 'girl' : 'boy'], ...(lk || {})});
+const lookKey = lk => lk ? [lk.top, lk.bot, lk.hat, lk.hc].join(',') : '';
+const charArgs = id => { const [g, top, bot, hat, hc] = String(id).split('|'); return [g, '', top ? {top, bot, hat, hc} : null]; };
+const lighten = (c, k) => '#' + new THREE.Color(c).lerp(new THREE.Color('#ffffff'), k).getHexString();
+const darken = (c, k) => '#' + new THREE.Color(c).lerp(new THREE.Color('#000000'), k).getHexString();
+function hatOn(head, style, c) {
+  if (style === 'straw') head.add(rod(c, [.58, .03, .58], [-.02, .2, 0], [0, 0, .08]), rod(c, [.3, .2, .3], [-.03, .32, 0]), rod('#c0392b', [.305, .06, .305], [-.03, .26, 0]), ball(lighten(c, .3), U(.04), [.05, .41, .08]));
+  else if (style === 'knit') { head.add(M(gBucket(), c, [.46, .1, .46], [-.01, .15, 0], [Math.PI, 0, 0]), ball(c, [.36, .25, .36], [-.02, .22, 0]), ball(lighten(c, .2), U(.1), [-.02, .49, 0])); for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; head.add(ball(lighten(c, .2), U(.045), [-.02 + Math.cos(a) * .3, .27, Math.sin(a) * .3])); } }
+  else if (style === 'cap') head.add(ball(c, [.35, .2, .35], [-.03, .19, 0]), blk(c, [.28, .03, .3], [.27, .15, 0]), ball(lighten(c, .4), U(.04), [-.03, .39, 0]), rod('#ffffff', [.352, .04, .352], [-.03, .13, 0]));
+  else if (style === 'beanie') head.add(ball(c, [.36, .3, .36], [-.03, .17, 0]), rod(darken(c, .2), [.37, .09, .37], [-.03, .1, 0]), ball('#ffffff', U(.09), [-.03, .48, 0]));
+  else if (style === 'flower') { for (let k = 0; k < 9; k++) { const a = k / 9 * Math.PI * 2; head.add(ball(['#ff80ab', '#ffeb3b', '#ffffff', '#ba68c8'][k % 4], U(.06), [-.02 + Math.cos(a) * .31, .19, Math.sin(a) * .31]), ball('#66bb6a', [.06, .02, .03], [-.02 + Math.cos(a + .35) * .32, .17, Math.sin(a + .35) * .32])); } }
+  else if (style === 'cowboy') head.add(rod(c, [.7, .03, .7], [-.02, .19, 0]), blk(c, [.6, .03, .14], [-.02, .24, .33], [-.7, 0, 0]), blk(c, [.6, .03, .14], [-.02, .24, -.33], [.7, 0, 0]), rod(c, [.26, .24, .26], [-.03, .33, 0]), rod('#5d4037', [.265, .05, .265], [-.03, .25, 0]), blk(darken(c, .15), [.25, .03, .06], [-.03, .45, 0]));
+  else if (style === 'crown') { head.add(rod('#ffca28', [.24, .12, .24], [-.03, .29, 0])); for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2; head.add(cone('#ffca28', [.05, .13, .05], [-.03 + Math.cos(a) * .2, .41, Math.sin(a) * .2]), ball(['#e53935', '#1e88e5', '#43a047'][k % 3], U(.03), [-.03 + Math.cos(a) * .24, .29, Math.sin(a) * .24])); } }
+}
+const VEH_LIST = [
+  ['scooter', '🛵 橘色速克達', 3, 3000, '輕巧好騎的城市小綿羊'],
+  ['vespa', '🛵 黃色偉士牌', 5, 5000, '圓滾滾的復古偉士牌'],
+  ['vespa2', '🛵 銀灰紅座偉士牌', 7, 8000, '銀灰車身配紅色坐墊，超有型'],
+  ['sport', '🏍️ 紫白重機跑車', 10, 15000, '流線造型的大型跑車'],
+  ['cruiser', '🏍️ 黑色美式重機', 12, 20000, '鍍鉻引擎的美式巡航重機'],
+  ['convert', '🚗 酒紅敞篷車', 15, 30000, '吹著風兜風的敞篷車'],
+  ['roadster', '🏎️ 紅色經典跑車', 18, 45000, '長車頭的經典跑車'],
+  ['vintage', '🚙 復古老爺車', 20, 60000, '紅色輪框的古董老爺車'],
+];
+const VEH = Object.fromEntries(VEH_LIST.map(([k, n, lv, c, d]) => [k, {n, lv, c, d}]));
+const vehOf = f => { f.veh ??= {own:{}, ride:null}; f.veh.own ??= {}; return f.veh; };
+const rideOf = f => { const r = f?.veh?.ride; return r && VEH[r] && f.veh.own?.[r] ? r : null; };
+function wheel(r, w, rim, pos, spoke) { const p = new THREE.Group(); p.position.set(...pos); p.add(rod('#212121', [r, w, r], [0, 0, 0], [Math.PI / 2, 0, 0]), rod(rim, [r * .62, w + .01, r * .62], [0, 0, 0], [Math.PI / 2, 0, 0]), rod(darken(rim, .3), [r * .2, w + .02, r * .2], [0, 0, 0], [Math.PI / 2, 0, 0]));
+  if (spoke) for (let k = 0; k < spoke; k++) p.add(blk(rim, [r * 1.15, .015, .02], [0, 0, 0], [0, 0, k / spoke * Math.PI]).translateZ(w / 2 + .005), blk(rim, [r * 1.15, .015, .02], [0, 0, 0], [0, 0, k / spoke * Math.PI]).translateZ(-w / 2 - .005));
+  return p; }
+function vehModel(k) {
+  const g = new THREE.Group(), W = [];
+  const add = (...a) => g.add(...a), wh = (...a) => { const w = wheel(...a); W.push(w); g.add(w); return w; };
+  let seat = [0, .55, 0];
+  if (k === 'scooter') { const O = '#f08c2e', D2 = '#c96a1a';
+    wh(.2, .1, '#bdbdbd', [.62, .2, 0], 5); wh(.2, .12, '#bdbdbd', [-.55, .2, 0], 5);
+    add(blk(O, [.55, .1, .34], [.05, .26, 0]), blk(O, [.18, .7, .32], [.42, .55, 0], [0, 0, -.35]), blk(D2, [.12, .5, .24], [.5, .5, 0], [0, 0, -.35]), ball(O, [.42, .25, .2], [-.38, .45, 0]), blk('#333', [.5, .1, .24], [-.25, .62, 0]),
+      blk('#9e9e9e', [.4, .12, .1], [-.45, .24, .12]), blk('#c62828', [.05, .08, .16], [-.78, .5, 0]), ball(O, [.18, .14, .14], [.62, .38, 0]), rod('#333', [.025, .4, .025], [.55, .95, 0], [0, 0, -.3]), rod('#333', [.025, .44, .025], [.6, 1.12, 0], [Math.PI / 2, 0, 0]), ball(D2, [.1, .08, .1], [.62, 1.12, 0]), rod('#333', [.012, .22, .012], [.58, 1.28, .16]), ball('#212121', [.05, .04, .02], [.58, 1.39, .16]));
+    seat = [-.22, .5, 0]; }
+  else if (k === 'vespa' || k === 'vespa2') { const B = k === 'vespa' ? '#f6b82a' : '#78909c', S2 = k === 'vespa' ? '#333' : '#c62828', C = '#e0e0e0';
+    wh(.18, .1, C, [.62, .18, 0], 0); wh(.18, .12, C, [-.5, .18, 0], 0);
+    add(ball(B, [.5, .3, .26], [-.38, .42, 0]), blk(B, [.5, .06, .3], [.08, .25, 0]), blk(B, [.1, .75, .34], [.42, .6, 0], [0, 0, -.2]), ball(B, [.2, .1, .14], [.62, .38, 0]), blk(S2, [.6, .1, .26], [-.32, .7, 0]),
+      blk(darken(B, .2), [.04, .04, .32], [-.38, .52, 0]), blk('#c62828', [.04, .07, .12], [-.86, .45, 0]), rod(C, [.03, .38, .03], [.5, 1.05, 0], [0, 0, -.2]), rod(B, [.04, .5, .04], [.55, 1.24, 0], [Math.PI / 2, 0, 0]), ball(C, U(.07), [.66, 1.2, 0]), ball('#fff59d', [.02, .05, .05], [.72, 1.2, 0]),
+      rod(C, [.012, .2, .012], [.55, 1.36, .2], [-.3, 0, 0]), ball(C, [.03, .05, .05], [.55, 1.47, .23]), rod(C, [.012, .2, .012], [.55, 1.36, -.2], [.3, 0, 0]), ball(C, [.03, .05, .05], [.55, 1.47, -.23]), blk(darken(B, .3), [.1, .06, .02], [.47, .6, .17]));
+    seat = [-.3, .6, 0]; }
+  else if (k === 'sport') { const Wt = '#eeeeee', P = '#9c27b0';
+    wh(.26, .14, '#9e9e9e', [.72, .26, 0], 5); wh(.26, .18, '#9e9e9e', [-.68, .26, 0], 5);
+    add(blk(Wt, [.7, .38, .3], [.3, .55, 0], [0, 0, -.25]), blk(P, [.5, .08, .31], [.3, .45, 0], [0, 0, -.25]), blk(Wt, [.6, .25, .28], [-.25, .6, 0], [0, 0, .12]), blk('#424242', [.42, .3, .2], [-.05, .38, 0]), blk('#212121', [.45, .06, .24], [-.22, .76, 0]),
+      blk(P, [.3, .2, .26], [-.6, .72, 0], [0, 0, .35]), rod('#212121', [.08, .5, .08], [-.55, .42, .16], [0, 0, Math.PI / 2 - .2]), blk('#7e57c2', [.2, .22, .04], [.6, .86, 0], [0, 0, -.6]), rod('#424242', [.025, .3, .025], [.52, .8, .14], [Math.PI / 2, 0, 0]), rod('#424242', [.025, .3, .025], [.52, .8, -.14], [Math.PI / 2, 0, 0]),
+      rod('#bdbdbd', [.03, .5, .03], [.68, .48, 0], [0, 0, .35]), blk(P, [.15, .06, .3], [.72, .48, 0]));
+    seat = [-.2, .72, 0]; }
+  else if (k === 'cruiser') { const Bk = '#212121', Cr = '#cfd8dc';
+    wh(.27, .12, Cr, [.85, .27, 0], 12); wh(.29, .16, Cr, [-.7, .29, 0], 12);
+    add(ball(Bk, [.32, .16, .2], [.2, .72, 0]), blk('#d4a373', [.42, .1, .26], [-.2, .62, 0], [0, 0, .08]), blk(Bk, [.3, .12, .26], [-.6, .58, 0], [0, 0, .25]), rod(Cr, [.12, .3, .12], [.08, .4, .08]), rod(Cr, [.12, .3, .12], [.08, .4, -.08]), blk('#9e9e9e', [.4, .2, .22], [0, .32, 0]),
+      rod(Cr, [.045, .9, .045], [-.35, .27, .17], [0, 0, Math.PI / 2 - .08]), rod(Cr, [.045, .9, .045], [-.35, .2, .17], [0, 0, Math.PI / 2 - .05]), rod(Cr, [.03, .7, .03], [.65, .6, .1], [0, 0, .5]), rod(Cr, [.03, .7, .03], [.65, .6, -.1], [0, 0, .5]),
+      rod(Bk, [.025, .55, .025], [.48, 1.02, 0], [Math.PI / 2, 0, 0]), rod(Cr, [.02, .2, .02], [.48, 1.06, .26]), rod(Cr, [.02, .2, .02], [.48, 1.06, -.26]), blk('#5e35b1', [.03, .28, .3], [.62, 1.06, 0], [0, 0, -.3]), ball(Cr, U(.09), [.72, .82, 0]), ball('#fff59d', [.02, .06, .06], [.8, .82, 0]));
+    seat = [-.22, .64, 0]; }
+  else if (k === 'convert' || k === 'roadster') { const B = k === 'convert' ? '#8e3b46' : '#c0392b', L = 2.6, rd = k === 'roadster';
+    for (const [x, z] of [[.85, .42], [.85, -.42], [-.85, .42], [-.85, -.42]]) wh(.22, .14, rd ? '#f5f5f5' : '#cfd8dc', [x, .22, z], rd ? 8 : 5);
+    add(blk(B, [L, .3, .82], [0, .38, 0]), blk(B, [rd ? 1.1 : .9, .14, .8], [rd ? .7 : .75, .58, 0]), ball(B, [rd ? .55 : .3, .2, .4], [rd ? 1.15 : 1.2, .45, 0]), blk(B, [.8, .16, .8], [-.85, .56, 0]), blk('#212121', [.06, .1, .7], [1.32, .4, 0]), blk('#fff59d', [.03, .07, .12], [1.33, .48, .3]), blk('#fff59d', [.03, .07, .12], [1.33, .48, -.3]),
+      blk('#c62828', [.03, .08, .14], [-1.31, .5, .3]), blk('#c62828', [.03, .08, .14], [-1.31, .5, -.3]), blk('#b3e5fc', [.04, .32, .76], [.22, .78, 0], [0, 0, rd ? -.6 : -.45]), blk('#212121', [.3, .28, .3], [-.42, .68, .2]), blk('#212121', [.3, .28, .3], [-.42, .68, -.2]), blk('#4e342e', [.5, .05, .7], [-.15, .52, 0]),
+      rod('#212121', [.02, .28, .02], [.05, .7, .2], [0, 0, -.7]), ball('#212121', [.05, .14, .14], [.12, .76, .2]));
+    if (rd) add(blk('#e0e0e0', [.08, .05, .86], [1.3, .3, 0]), blk('#e0e0e0', [.08, .05, .86], [-1.3, .3, 0]));
+    seat = [-.42, .3, .2]; }
+  else { const B = '#3f4f72', R = '#c62828';
+    for (const [x, z] of [[.95, .42], [.95, -.42], [-.85, .42], [-.85, -.42]]) wh(.28, .1, '#eeeeee', [x, .28, z], 10).children.forEach((c, i) => { if (i === 1) c.material = mat(R); });
+    add(blk(B, [1.9, .4, .74], [-.1, .55, 0]), blk(B, [.9, .32, .6], [.95, .55, 0]), blk('#212121', [.08, .4, .5], [1.42, .6, 0]), ...[-.18, -.06, .06, .18].map(z => blk('#9e9e9e', [.09, .34, .02], [1.43, .6, z])), ball('#cfd8dc', U(.08), [1.44, .9, 0]),
+      blk(B, [.5, .06, .2], [.95, .33, .45], [0, 0, -.15]), blk(B, [.5, .06, .2], [.95, .33, -.45], [0, 0, -.15]), blk(B, [.9, .06, .22], [-.2, .25, .46]), blk(B, [.9, .06, .22], [-.2, .25, -.46]), blk(B, [.45, .06, .2], [-.95, .33, .45], [0, 0, .2]), blk(B, [.45, .06, .2], [-.95, .33, -.45], [0, 0, .2]),
+      blk('#5d4037', [1.9, .05, .74], [-.1, .76, 0]), rod('#9e9e9e', [.025, .55, .025], [.42, 1.0, .3]), rod('#9e9e9e', [.025, .55, .025], [.42, 1.0, -.3]), blk('#b3e5fc', [.02, .4, .6], [.42, 1.05, 0]), rod('#9e9e9e', [.02, .25, .02], [1.15, .85, .32]), ball('#cfd8dc', [.08, .08, .08], [1.2, .98, .32]),
+      blk('#212121', [.32, .32, .32], [-.45, .85, .18]), blk('#212121', [.32, .32, .32], [-.45, .85, -.18]), ball(R, U(.05), [.6, .95, .32]), rod('#212121', [.02, .25, .02], [.25, .9, .18], [0, 0, -.6]), ball('#212121', [.05, .14, .14], [.33, .97, .18]));
+    seat = [-.42, .52, .18]; }
+  g.traverse(o => { if (o.isMesh) o.castShadow = true; }); g.userData.wheels = W; g.userData.seat = seat; return g;
+}
+function riderModel(g, uid, lk, vk) {
+  const V = vehModel(vk), ch = charModel(g, uid, lk); ch.scale.setScalar(1); const [x, y, z] = V.userData.seat; ch.position.set(x, y - .42, z); V.add(ch);
+  const u = ch.userData; u.legL.rotation.z = u.legR.rotation.z = 1.35; Object.assign(V.userData, {head:u.head, armL:u.armL, armR:u.armR, legL:u.legL, legR:u.legR, rider:ch}); return V;
+}
+
 /* ================= 3D：Q 版主角（男生／女生） ================= */
 const SKIN = '#ffdcc0';
 function chibiHead(hair, hairStyle) {
@@ -1830,31 +1915,27 @@ function chibiHead(hair, hairStyle) {
 }
 function chibiArm(z, sleeve, hand, extra) { const a = pivot(0, .9, z, rod(sleeve, [.06, .24, .06], [0, -.12, 0]), ball(hand, U(.065), [0, -.27, 0])); if (extra) a.add(extra); return a; }
 function chibiLeg(z, c, sock, shoe) { const l = pivot(0, .42, z, rod(c, [.07, .3, .07], [0, -.15, 0])); if (sock) l.add(rod(sock, [.075, .07, .075], [0, -.26, 0])); l.add(ball(shoe, [.11, .07, .09], [.03, -.33, 0])); return l; }
-function charModel(g, uid = '') {
-  const G = new THREE.Group(), girl = g === 'girl';
+function charModel(g, uid = '', lk = null) {
+  const G = new THREE.Group(), girl = g === 'girl', L = lookOf(g, lk);
   if (!girl) {
     const fork = grp(rod('#8d5a2b', [.022, 1.15, .022], [.02, -.15, 0]), blk('#90a4ae', [.03, .04, .18], [.02, .44, 0]), ...[-.07, 0, .07].map(z => rod('#b0bec5', [.012, .2, .012], [.02, .55, z])));
-    const legL = chibiLeg(.09, '#3f7d4e', null, '#6d4c41'), legR = chibiLeg(-.09, '#3f7d4e', null, '#6d4c41');
-    const armR = chibiArm(.23, '#f3ead8', SKIN), armL = chibiArm(-.23, '#f3ead8', SKIN, fork);
-    G.add(legL, legR, armR, armL, rod('#3f7d4e', [.2, .24, .17], [0, .54, 0]), rod('#f3ead8', [.19, .22, .16], [0, .79, 0]),
-      blk('#3f7d4e', [.05, .2, .2], [.16, .73, 0]), blk('#356b43', [.02, .08, .09], [.19, .68, 0]), blk('#3f7d4e', [.04, .24, .04], [.1, .82, .1]), blk('#3f7d4e', [.04, .24, .04], [.1, .82, -.1]),
+    const legL = chibiLeg(.09, L.bot, null, '#6d4c41'), legR = chibiLeg(-.09, L.bot, null, '#6d4c41');
+    const armR = chibiArm(.23, L.top, SKIN), armL = chibiArm(-.23, L.top, SKIN, fork);
+    G.add(legL, legR, armR, armL, rod(L.bot, [.2, .24, .17], [0, .54, 0]), rod(L.top, [.19, .22, .16], [0, .79, 0]),
+      blk(L.bot, [.05, .2, .2], [.16, .73, 0]), blk(darken(L.bot, .15), [.02, .08, .09], [.19, .68, 0]), blk(L.bot, [.04, .24, .04], [.1, .82, .1]), blk(L.bot, [.04, .24, .04], [.1, .82, -.1]),
       ball('#f6c531', U(.025), [.19, .83, .08]), ball('#f6c531', U(.025), [.19, .83, -.08]),
       rod('#d84339', [.17, .05, .17], [0, .91, 0]), cone('#d84339', [.13, .17, .05], [.16, .83, 0], [Math.PI, 0, 0]));
-    const head = chibiHead('#7b4a2a', 'boy');
-    head.add(rod('#b98a56', [.58, .03, .58], [-.02, .2, 0], [0, 0, .08]), rod('#b98a56', [.3, .2, .3], [-.03, .32, 0]), rod('#c0392b', [.305, .06, .305], [-.03, .26, 0]), ball('#d8ad78', U(.04), [.05, .41, .08]));
+    const head = chibiHead('#7b4a2a', 'boy'); hatOn(head, L.hat, L.hc);
     head.scale.setScalar(1.12); G.add(head); Object.assign(G.userData, {head, armL, armR, legL, legR});
   } else {
-    const legL = chibiLeg(.08, SKIN, '#f6c531', '#8d5a2b'), legR = chibiLeg(-.08, SKIN, '#f6c531', '#8d5a2b');
-    const armR = chibiArm(.22, '#f6c531', SKIN), armL = chibiArm(-.22, '#f6c531', SKIN);
-    const dress = M(gBucket(), '#f6c531', [.26, .44, .24], [0, .64, 0], [Math.PI, 0, 0]);
-    G.add(legL, legR, armR, armL, dress, ring('#e6ac1c', [.26, .26, .3], [0, .43, 0], [Math.PI / 2, 0, 0]), rod('#f6c531', [.16, .08, .16], [0, .89, 0]));
-    for (let k = 0; k < 14; k++) { const a = k / 14 * Math.PI * 2, y = .5 + (k % 2) * .16, r = .25 - (y - .5) * .35; G.add(ball('#f9d04a', U(.035), [Math.cos(a) * r, y, Math.sin(a) * r])); }
+    const legL = chibiLeg(.08, SKIN, L.bot, '#8d5a2b'), legR = chibiLeg(-.08, SKIN, L.bot, '#8d5a2b');
+    const armR = chibiArm(.22, L.top, SKIN), armL = chibiArm(-.22, L.top, SKIN);
+    const dress = M(gBucket(), L.top, [.26, .44, .24], [0, .64, 0], [Math.PI, 0, 0]);
+    G.add(legL, legR, armR, armL, dress, ring(darken(L.top, .1), [.26, .26, .3], [0, .43, 0], [Math.PI / 2, 0, 0]), rod(L.top, [.16, .08, .16], [0, .89, 0]));
+    for (let k = 0; k < 14; k++) { const a = k / 14 * Math.PI * 2, y = .5 + (k % 2) * .16, r = .25 - (y - .5) * .35; G.add(ball(lighten(L.top, .3), U(.035), [Math.cos(a) * r, y, Math.sin(a) * r])); }
     G.add(ball('#a1673b', U(.035), [.17, .84, .04]), ball('#a1673b', U(.035), [.17, .84, -.04]), rod('#a1673b', [.008, .14, .008], [.18, .76, .03], [.4, 0, 0]), rod('#a1673b', [.008, .14, .008], [.18, .76, -.03], [-.4, 0, 0]),
       ball('#5aa832', [.02, .05, .12], [.2, .55, .12], [.6, 0, 0]), ball('#5aa832', [.02, .05, .12], [.2, .55, -.12], [-.6, 0, 0]));
-    const head = chibiHead('#3e2a1e', 'girl');
-    const brim = M(gBucket(), '#f6c531', [.46, .1, .46], [-.01, .15, 0], [Math.PI, 0, 0]);
-    head.add(brim, ball('#f6c531', [.36, .25, .36], [-.02, .22, 0]), ball('#f9d04a', U(.1), [-.02, .49, 0]));
-    for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; head.add(ball('#f9d04a', U(.045), [-.02 + Math.cos(a) * .3, .27, Math.sin(a) * .3])); }
+    const head = chibiHead('#3e2a1e', 'girl'); hatOn(head, L.hat, L.hc);
     head.scale.setScalar(1.12); G.add(head); Object.assign(G.userData, {head, armL, armR, legL, legR});
   }
   G.scale.setScalar(1.25); G.traverse(o => { if (o.isMesh) o.castShadow = true; });
@@ -1902,8 +1983,8 @@ function thumbURL(kind, id) {
       const s = new THREE.Scene(); s.add(new THREE.HemisphereLight('#ffffff', '#a1887f', 1.6)); const d = new THREE.DirectionalLight('#ffffff', 1.6); d.position.set(3, 6, 5); s.add(d);
       TR = {r, s, c:new THREE.PerspectiveCamera(30, 1, .01, 100)};
     }
-    const obj = kind === 'crop' ? cropPlant(id, true) : kind === 'ani' ? animalModel(id) : kind === 'pet' ? petModel(id) : kind === 'sea' ? seaModel(id) : kind === 'proc' ? procModel(id) : kind === 'mach' ? machineModel(id) : kind === 'char' ? charModel(id) : kind === 'vil' ? vilModel(id) : kind === 'deco' ? decoModel(id) : prodModel(id);
-    if (kind === 'ani' || kind === 'pet' || kind === 'sea' || kind === 'mach') obj.rotation.y = -.6; if (kind === 'char' || kind === 'vil') obj.rotation.y = -1.2; if (kind === 'deco') obj.rotation.y = -.5;
+    const obj = kind === 'crop' ? cropPlant(id, true) : kind === 'ani' ? animalModel(id) : kind === 'pet' ? petModel(id) : kind === 'sea' ? seaModel(id) : kind === 'proc' ? procModel(id) : kind === 'mach' ? machineModel(id) : kind === 'char' ? charModel(...charArgs(id)) : kind === 'veh' ? vehModel(id) : kind === 'vil' ? vilModel(id) : kind === 'deco' ? decoModel(id) : prodModel(id);
+    if (kind === 'ani' || kind === 'pet' || kind === 'sea' || kind === 'mach' || kind === 'veh') obj.rotation.y = -.6; if (kind === 'char' || kind === 'vil') obj.rotation.y = -1.2; if (kind === 'deco') obj.rotation.y = -.5;
     TR.s.add(obj);
     const sph = new THREE.Box3().setFromObject(obj).getBoundingSphere(new THREE.Sphere());
     const dir = new THREE.Vector3(.35, .45, 1).normalize(), dist = sph.radius / Math.sin(15 * Math.PI / 180) * 1.02;
@@ -1912,7 +1993,7 @@ function thumbURL(kind, id) {
   } catch (e) { console.warn(e); THUMB[key] = ''; }
   return THUMB[key];
 }
-if (QS.has('debug')) window.__hf = {get pumpKg() { return pumpKg; }, get ghXZ() { return ghXZ; }, EXP, expLoot, stallSim, VIL, DECO, DECO_CELLS, vilToday, festSched, act:(k, d = {}) => ACT[k](d), clickHit:h => clickHit(h), riddleToday, thumbURL, PETS, ANIMALS, CROPS, PROD, SEA, PROC, MACH, activeFests, weather, twNow, scr(kind, i) { let p; if (kind === 'mach') { const [x, z] = facXZ(i); p = new THREE.Vector3(x, 1, z); } else if (kind === 'pet') p = W.pets[i].m.position.clone().setY(.5); else if (kind === 'plot') { const [x, z] = plotXZ(i); p = new THREE.Vector3(x, .4, z); } else if (kind === 'ani') p = W.animals[i].g.position.clone().setY(.5); else if (kind === 'poop') p = new THREE.Vector3(POOP_XZ[i][0], .2, POOP_XZ[i][1]); else if (kind === 'pond') { const [x, z] = pondXZ(i); p = new THREE.Vector3(x, .45, z); } else p = new THREE.Vector3(TROUGH_XZ[0], .5, TROUGH_XZ[1]); p.project(W.camera); const r = W.renderer.domElement.getBoundingClientRect(); return [r.left + (p.x * .5 + .5) * r.width, r.top + (-p.y * .5 + .5) * r.height]; }, S:() => S, get W() { return W; }};
+if (QS.has('debug')) window.__hf = {THREE, vehModel:k => vehModel(k), riderModel:(...a) => riderModel(...a), charModel:(...a) => charModel(...a), get pumpKg() { return pumpKg; }, get ghXZ() { return ghXZ; }, EXP, expLoot, stallSim, VIL, DECO, DECO_CELLS, vilToday, festSched, act:(k, d = {}) => ACT[k](d), clickHit:h => clickHit(h), riddleToday, thumbURL, PETS, ANIMALS, CROPS, PROD, SEA, PROC, MACH, activeFests, weather, twNow, scr(kind, i) { let p; if (kind === 'mach') { const [x, z] = facXZ(i); p = new THREE.Vector3(x, 1, z); } else if (kind === 'pet') p = W.pets[i].m.position.clone().setY(.5); else if (kind === 'plot') { const [x, z] = plotXZ(i); p = new THREE.Vector3(x, .4, z); } else if (kind === 'ani') p = W.animals[i].g.position.clone().setY(.5); else if (kind === 'poop') p = new THREE.Vector3(POOP_XZ[i][0], .2, POOP_XZ[i][1]); else if (kind === 'pond') { const [x, z] = pondXZ(i); p = new THREE.Vector3(x, .45, z); } else p = new THREE.Vector3(TROUGH_XZ[0], .5, TROUGH_XZ[1]); p.project(W.camera); const r = W.renderer.domElement.getBoundingClientRect(); return [r.left + (p.x * .5 + .5) * r.width, r.top + (-p.y * .5 + .5) * r.height]; }, S:() => S, get W() { return W; }};
 const icon = (kind, id) => { const u = thumbURL(kind, id); return u ? `<img src="${u}" alt="">` : '🌱'; };
 const itemIcon = id => icon(CROPS[id] ? 'crop' : SEA[id] ? 'sea' : PROC[id] ? 'proc' : 'prod', id);
 
@@ -3295,12 +3376,15 @@ function syncPets(f) {
   W.pets.forEach((P, i) => ov('pet' + i, `${P.guard ? '🛡️' : ''}${PETS[P.k].n} Lv${petLv(f, P.k)}`, v => v.copy(P.m.position).setY(P.m.userData.top || 1.3), 'tag'));
 }
 function syncPeople(list) {
-  const key = list.map(p => p.uid + ':' + p.n + ':' + (p.vil || genderOf(p))).join(',');
+  const lkOf = p => p.uid === S.uid ? S.my?.look || null : p.lk || null, vhOf = p => p.vil ? '' : p.uid === S.uid ? rideOf(S.my) || '' : VEH[p.vh] ? p.vh : '';
+  const mk = p => (p.vil ? 'v' + p.vil : genderOf(p)) + '|' + lookKey(lkOf(p)) + '|' + vhOf(p);
+  const key = list.map(p => p.uid + ':' + p.n + ':' + mk(p)).join(',');
   if (W.peopleKey !== key) {
     if (!take()) return;
-    const old = new Map(W.people.map(P => [P.uid + ':' + P.g, P]));
+    const old = new Map(W.people.map(P => [P.uid + ':' + P.mk, P]));
     W.peopleKey = key; W.peopleG.clear(); W.people = [];
-    list.forEach((p, k) => { const g = p.vil ? 'v' + p.vil : genderOf(p), o = old.get(p.uid + ':' + g); const m = o ? o.m : p.vil ? vilModel(p.vil) : charModel(g, p.uid); if (!o && p.vil) m.position.set((SCENE_T[S.scene] || FARM_T).x + 12, 0, 7.6); m.traverse(x => x.userData.hit = {type:'person', uid:p.uid}); W.peopleG.add(m); W.people.push(o ? Object.assign(o, {k}) : {m, uid:p.uid, k, g, sayT:p.say?.t || 0, waveAt:p.wave || 0}); });
+    list.forEach((p, k) => { const g = p.vil ? 'v' + p.vil : genderOf(p), key2 = mk(p), vh = vhOf(p), o = old.get(p.uid + ':' + key2); const prev = !o && W.people0?.find(P => P.uid === p.uid);
+      const m = o ? o.m : p.vil ? vilModel(p.vil) : vh ? riderModel(g, p.uid, lkOf(p), vh) : charModel(g, p.uid, lkOf(p)); if (!o && prev) { m.position.copy(prev.m.position); m.rotation.y = prev.m.rotation.y; } if (!o && p.vil) m.position.set((SCENE_T[S.scene] || FARM_T).x + 12, 0, 7.6); m.traverse(x => x.userData.hit = {type:'person', uid:p.uid}); W.peopleG.add(m); W.people.push(o ? Object.assign(o, {k}) : {m, uid:p.uid, k, g, mk:key2, veh:vh, sayT:p.say?.t || 0, waveAt:p.wave || 0}); }); W.people0 = W.people;
   }
   const base = (SCENE_T[S.scene] || FARM_T).x;
   W.people.forEach((P, k) => {
@@ -3411,8 +3495,8 @@ function loop() {
     if (P.incense || P.bowN >= 0) { endBow(P); if (me && S.pray?.ph === 'bow') { const h = HALLS[S.pray.i].id; S.pray = null; openQian(h); } }
     { const dx = P.tx - P.m.position.x, dz = P.tz - P.m.position.z, dist = Math.hypot(dx, dz), sp = P.veh ? 7.5 : 3.4;
       if (dist > 30) { P.m.position.x = P.tx; P.m.position.z = P.tz; P.walking = false; }
-      else if (dist > .06) { const st = Math.min(dist, sp * dt); P.m.position.x += dx / dist * st; P.m.position.z += dz / dist * st; let dd = Math.atan2(-dz, dx) - P.m.rotation.y; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y += dd * Math.min(1, dt * 10); P.walkT = (P.walkT || 0) + dt * 11; P.walking = true; P.m.position.y = P.veh ? 0 : Math.abs(Math.sin(P.walkT)) * .08; }
-      else { P.walking = false; let dd = -Math.PI / 2 + Math.sin(t * .7 + P.k) * .3 - P.m.rotation.y; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y += dd * Math.min(1, dt * 4); P.m.position.y = P.veh ? 0 : Math.abs(Math.sin(t * 2 + P.k)) * .05; } }
+      else if (dist > .06) { const st = Math.min(dist, sp * dt); P.m.position.x += dx / dist * st; P.m.position.z += dz / dist * st; let dd = Math.atan2(-dz, dx) - P.m.rotation.y; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y += dd * Math.min(1, dt * 10); P.walkT = (P.walkT || 0) + dt * 11; P.walking = true; P.m.position.y = P.veh ? 0 : Math.abs(Math.sin(P.walkT)) * .08; if (P.veh) for (const w2 of P.m.userData.wheels || []) w2.rotation.z -= st * 4; }
+      else { P.walking = false; let dd = (P.veh ? -.55 : -Math.PI / 2) + Math.sin(t * .7 + P.k) * (P.veh ? .08 : .3) - P.m.rotation.y; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y += dd * Math.min(1, dt * 4); P.m.position.y = P.veh ? 0 : Math.abs(Math.sin(t * 2 + P.k)) * .05; } }
     if (u.head) u.head.rotation.x = Math.sin(t * 1.1 + P.k) * .1;
     const wa = P.waveAt ? now() - P.waveAt : 1e9, waving = wa < 3800;
     if (u.armR) { u.armR.rotation.x = waving ? -2.6 + Math.sin(t * 12) * .5 : Math.sin(t * 1.3 + P.k) * .08; u.armL.rotation.x = waving && wa > 1200 && wa < 2600 ? 2.6 + Math.sin(t * 12 + 1) * .5 : Math.sin(t * 1.3 + P.k + 1) * .08;
@@ -4001,8 +4085,13 @@ function openShop(tab = 'seed') {
   S.shopTab = tab;
   S.modal = () => {
     const f = S.my, Lv = levelOf(f.exp).L, n = f.plotCount + 1, cap = ranchCap(Lv), cnt = f.ranch.animals.length;
-    let body = `<div class="mtabs">${[['seed','🌱 種子'],['sea','🐟 魚苗'],['ani','🐔 動物'],['pet','🐶 寵物'],['mach','🏭 機器'],['item','🧰 道具']].map(([k, t]) => `<button class="${tab === k ? 'on' : ''}" data-act="shopTab" data-t="${k}">${t}</button>`).join('')}</div>`;
-    if (tab === 'seed') body += seedRows('shop');
+    let body = `<div class="mtabs">${[['seed','🌱 種子'],['sea','🐟 魚苗'],['ani','🐔 動物'],['pet','🐶 寵物'],['mach','🏭 機器'],['item','🧰 道具'],['veh','🛵 載具']].map(([k, t]) => `<button class="${tab === k ? 'on' : ''}" data-act="shopTab" data-t="${k}">${t}</button>`).join('')}</div>`;
+    if (tab === 'veh') { const V = ({own:{}, ...(f.veh || {})}), ride = rideOf(f);
+      body += `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">買了交通工具，主角就能騎著在農場、小鎮跑來跑去（點地面就會騎過去），好友也看得到！在「個人資料 → 換裝＆交通工具」可以換車或下車。</p>` + VEH_LIST.map(([k, n, lv, c, d]) => { const own = V.own[k], lock = Lv < lv;
+        return `<div class="item ${lock ? 'dim' : ''}"><div class="pic" style="width:64px;height:64px"><img src="${thumbURL('veh', k)}" alt="" style="width:64px;height:64px"></div><div class="info"><div class="t">${n}</div><div class="d">${d}${own ? '' : ` · 💰${c}`}</div></div>
+          <div class="acts">${own ? (ride === k ? '<button class="b g" data-act="ride" data-k="">🚶 下車</button>' : `<button class="b" data-act="ride" data-k="${k}">騎上去</button>`) : lock ? `<button class="b g" disabled>Lv.${lv} 解鎖</button>` : `<button class="b o" data-act="buyVeh" data-k="${k}">買 ${c}💰</button>`}</div></div>`; }).join('');
+    }
+    else if (tab === 'seed') body += seedRows('shop');
     else if (tab === 'sea') body += `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">共 ${Object.keys(SEA).length} 種魚蝦貝類，養大之後可以賣，也能煮成海鮮料理完成訂單！魚池 ${f.fish.n}/${MAXPOND} 個。</p>` + fryRows('shop');
     else if (tab === 'ani') {
       body += `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">牧場空位：${cnt}/${cap}（升級可以養更多）。動物要吃牧草或飼料，吃飽才會生產；產品好友也能來偷！</p>`;
@@ -4244,7 +4333,7 @@ function openProfile() {
   S.modal = () => {
     const f = S.my, lv = levelOf(f.exp);
     openModal('👤 個人資料', `<div class="prof"><div class="av" style="background:${colorOf(f.username)}">${esc([...dn(f)][0])}</div><div><div class="t" style="font-size:20px;font-weight:900">${esc(dn(f))}</div><div class="d" style="color:#8d6e63;font-size:13px">登入帳號：${esc(f.username)}（好友用這個加你）</div></div></div>
-      <button class="b o" style="width:100%;margin-bottom:6px" data-act="char">🧑‍🌾 更換主角（現在是${S.my.gender === 'girl' ? '女生' : '男生'}）</button>
+      <button class="b o" style="width:100%;margin-bottom:6px" data-act="char">👗 換主角、換衣服、交通工具（現在是${S.my.gender === 'girl' ? '女生' : '男生'}）</button>
       <div class="sec">✏️ 改名字（顯示給大家看的暱稱）</div><div class="row"><input id="nickIn" maxlength="10" placeholder="1～10 個字" value="${esc(f.nick || '')}"><button class="b" data-act="saveNick">儲存</button></div>
       <div class="stats"><div><b>Lv.${lv.L}</b>等級</div><div><b>${f.coins.toLocaleString()}</b>金幣</div><div><b>${(f.friends || []).length}</b>好友</div><div><b>${f.plotCount}</b>塊田</div><div><b>${f.ranch.animals.length}</b>隻動物</div><div><b>${f.ordersDone || 0}</b>張訂單</div></div>
       <div class="sec">🐾 我的寵物（全部會在農場巡邏）</div>${f.pets.length ? `<button class="b o" style="width:100%;margin-bottom:8px" data-act="pets">🐾 寵物養成（摸摸、餵食、技能）</button>` + f.pets.map(k => `<div class="item"><div class="pic">${icon('pet', k)}</div><div class="info"><div class="t">${PETS[k].n} <small style="color:#e65100">Lv.${petLv(f, k)}</small></div><div class="d">${PETS[k].d}</div></div><div class="acts">${f.pet === k ? '<button class="b g" disabled>顧家中</button>' : `<button class="b" data-act="setPet" data-k="${k}">派去顧家</button>`}</div></div>`).join('') : '<div class="empty">還沒有寵物，去商店「寵物」看看吧</div>'}`);
@@ -5161,8 +5250,8 @@ const ACT = {
   sellSeafood() { return sellGroup(Object.keys(SEA), '海鮮', '倉庫裡沒有海鮮'); },
   async claim(d) { const T = TASKS[d.k]; const r = await txMe(f => { const dd = daily(f); if (dd.cl.includes(d.k)) return ab('已經領過了'); if ((dd.t[d.k] || 0) < T.need) return ab('還沒完成'); dd.cl.push(d.k); f.coins += T.c; return {up:gainExp(f, T.e)}; }); if (r.abort) return toast(r.msg); toast(`✅ 任務獎勵：${T.c} 金幣 + ${T.e} 經驗`); Music.sfx('coin'); lvToast(r.up); },
   async claimBonus() { const r = await txMe(f => { const dd = daily(f); if (dd.bonus) return ab('已經領過了'); if (dd.cl.length < 5) return ab('還有任務沒完成'); dd.bonus = true; f.coins += 100; f.fert = (f.fert || 0) + 2; f.feed = (f.feed || 0) + 10; return {}; }); toast(r.abort ? r.msg : '🎁 大獎到手：100 金幣、化肥×2、飼料×10！'); },
-  async setGender(d) { const first = S.charFirst; await txMe(f => { f.gender = d.g; return {}; }); S.charFirst = false; beat(); if (W.scene) W.peopleKey = null; closeModal(); toast(d.g === 'girl' ? '👧 換成女生主角了！' : '👦 換成男生主角了！'); setTimeout(() => greet(first), 600); if (first && typeof S.my.tut === 'number' && !TS.on) setTimeout(() => startTut(S.my.tut), 6200); else if (TS.on) $('#tutAv').src = thumbURL('char', d.g); },
-  char() { openChar(false); },
+  async setGender(d) { const first = S.charFirst; await txMe(f => { if (f.gender !== d.g) f.look = null; f.gender = d.g; return {}; }); S.charFirst = false; beat(); if (W.scene) W.peopleKey = null; if (d.keep) { renderScene(); return S.modal && S.modal(); } closeModal(); toast(d.g === 'girl' ? '👧 換成女生主角了！' : '👦 換成男生主角了！'); setTimeout(() => greet(first), 600); if (first && typeof S.my.tut === 'number' && !TS.on) setTimeout(() => startTut(S.my.tut), 6200); else if (TS.on) $('#tutAv').src = thumbURL('char', d.g); },
+  char() { openChar(false); }, lookSet(d) { return run(() => lookSet(d.p, d.v)); }, lookReset() { return run(async () => { await txMe(f => { f.look = null; return {}; }); beat(); if (W.scene) { W.peopleKey = null; renderScene(); } }); }, ride(d) { return run(() => rideSet(d.k)); }, buyVeh(d) { return run(() => buyVeh(d.k)); }, shopVeh() { openShop('veh'); },
   tutNext() { return nextTut(); }, tutStep() { TS.ok = true; nextTut(); },
   tutSkip() { if (confirm('確定要跳過新手教學嗎？（跳過就拿不到新手禮包，之後可以在「☰ 更多」再看）')) finishTut(false); },
   tut() { closeModal(); startTut(0); },
@@ -5224,7 +5313,7 @@ $('#authForm').addEventListener('submit', async e => {
   $('#aGo').disabled = true;
   try { authMode === 'reg' ? await B.register(name, pass) : await B.login(name, pass); } catch (ex) { err.textContent = ex.message; } finally { $('#aGo').disabled = false; }
 });
-function beat() { if (S.my && S.uid) B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), at:S.viewUid || S.uid, t:now(), off:false}); }
+function beat() { if (S.my && S.uid) B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), lk:S.my.look || null, vh:rideOf(S.my), at:S.viewUid || S.uid, t:now(), off:false}); }
 const myGender = () => S.my?.gender === 'girl' ? 'girl' : 'boy';
 function greet(first, force) {
   if (!S.my) return;
@@ -5246,7 +5335,37 @@ function unZoom() {
   const o0 = (W.camAnim?.off1 || W.camera.position.clone().sub(W.controls.target)).clone();
   W.camAnim = {from:W.controls.target.clone(), to:(SCENE_T[S.scene] || FARM_T).clone(), t0:performance.now(), dur:900, off0:o0, off1:o0.clone().multiplyScalar(1 / .42)};
 }
+function openWardrobe() {
+  S.modal = () => {
+    const f = S.my, g = myGender(), L = lookOf(g, f.look), id = [g, L.top, L.bot, L.hat, L.hc].join('|'), V = ({own:{}, ...(f.veh || {})}), own = Object.keys(V.own).filter(k => VEH[k]), ride = rideOf(f);
+    const sw = (part, cur) => `<div class="sws">${CLOTH_COL.map(c => `<button class="sw ${c === cur ? 'on' : ''}" style="background:${c}" data-act="lookSet" data-p="${part}" data-v="${c}" aria-label="${c}"></button>`).join('')}</div>`;
+    let body = `<div class="wd"><img src="${thumbURL('char', id)}" alt=""><div><div class="mtabs" style="margin:0 0 6px">${[['boy', '👦 男生'], ['girl', '👧 女生']].map(([k, t]) => `<button class="${g === k ? 'on' : ''}" data-act="setGender" data-g="${k}" data-keep="1">${t}</button>`).join('')}</div><small>點下面的顏色和帽子就會馬上換上，好友也看得到！</small><br><button class="b g" data-act="lookReset" style="margin-top:6px">↩️ 換回預設</button></div></div>`;
+    body += `<div class="sec">👕 ${g === 'girl' ? '洋裝' : '上衣'}顏色</div>${sw('top', L.top)}<div class="sec">👖 ${g === 'girl' ? '襪子' : '吊帶褲'}顏色</div>${sw('bot', L.bot)}`;
+    body += `<div class="sec">🎩 帽子</div><div class="hats">${Object.entries(HATS).map(([k, n]) => { const pr = HAT_PRICE[k], got = !pr || f.hats?.[k]; return `<button class="b ${L.hat === k ? 'on2' : got ? '' : 'o'}" data-act="lookSet" data-p="hat" data-v="${k}">${n}${got ? '' : ` ${pr}💰`}</button>`; }).join('')}</div><div class="sec">🎨 帽子顏色</div>${sw('hc', L.hc)}`;
+    body += `<div class="sec">🛵 我的交通工具</div>` + (own.length ? `<div class="hats">${own.map(k => `<button class="b ${ride === k ? 'on2' : ''}" data-act="ride" data-k="${k}">${VEH[k].n}${ride === k ? '（騎乘中）' : ''}</button>`).join('')}${ride ? '<button class="b g" data-act="ride" data-k="">🚶 下車走路</button>' : ''}</div>` : '<div class="empty">還沒有交通工具，到「🏪 商店 → 🛵 載具」買一台吧！</div>') + '<div style="text-align:center;margin-top:6px"><button class="b o" data-act="shopVeh">🏪 去看交通工具</button></div>';
+    openModal('👗 換裝＆交通工具', body);
+  };
+  S.modal();
+}
+async function lookSet(part, v) {
+  const g = myGender();
+  if (part === 'hat' && HAT_PRICE[v] && !S.my.hats?.[v]) { if (!confirm(`花 ${HAT_PRICE[v]} 金幣買${HATS[v]}嗎？`)) return; }
+  const r = await txMe(f => { const L = lookOf(g, f.look); if (part === 'hat' && HAT_PRICE[v] && !f.hats?.[v]) { if (f.coins < HAT_PRICE[v]) return ab('金幣不夠'); f.coins -= HAT_PRICE[v]; (f.hats ??= {})[v] = 1; addTrade(f, `買${HATS[v]}`, -HAT_PRICE[v]); }
+    L[part] = v; f.look = {top:L.top, bot:L.bot, hat:L.hat, hc:L.hc}; return {}; });
+  if (r.abort) return toast(r.msg); beat(); if (W.scene) { W.peopleKey = null; renderScene(); } Music.sfx('pop');
+}
+async function rideSet(k) {
+  const r = await txMe(f => { const V = vehOf(f); if (k && !V.own[k]) return ab('還沒有這台車'); V.ride = k || null; return {}; });
+  if (r.abort) return toast(r.msg); beat(); if (W.scene) { W.peopleKey = null; renderScene(); } toast(k ? `${VEH[k].n} 出發！點地面就會騎過去 🛣️` : '🚶 下車走路囉'); Music.sfx(k ? 'coin' : 'pop');
+}
+async function buyVeh(k) {
+  const v = VEH[k]; if (!v) return; if (levelOf(S.my.exp).L < v.lv) return toast(`Lv.${v.lv} 才能買`);
+  if (!confirm(`花 ${v.c} 金幣買${v.n}嗎？`)) return;
+  const r = await txMe(f => { const V = vehOf(f); if (V.own[k]) return ab('已經有這台了'); if (f.coins < v.c) return ab('金幣不夠'); f.coins -= v.c; V.own[k] = 1; V.ride = k; addTrade(f, `買${v.n}`, -v.c); return {}; });
+  if (r.abort) return toast(r.msg); beat(); if (W.scene) { W.peopleKey = null; renderScene(); } toast(`🎉 買了${v.n}！已經騎上去了，點地面就能騎著走`); Music.sfx('coin'); Music.sparkle();
+}
 function openChar(first) {
+  if (!first && S.my.gender) return openWardrobe();
   S.modal = () => { const g = S.my.gender;
     openModal(first ? '🧑‍🌾 選擇你的主角' : '🧑‍🌾 更換主角', `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px;text-align:center">選一個喜歡的主角，好友來你家、你去好友家都會看到這個 3D 小人！之後也可以在「個人資料」更換。</p>
       <div class="grid" style="grid-template-columns:1fr 1fr">${[['boy', '👦 男生', '草帽小農夫'], ['girl', '👧 女生', '黃色毛帽小農夫']].map(([k, t, d]) => `<div class="item" style="flex-direction:column;text-align:center;${g === k ? 'border-color:#43a047;background:#f1f8e9' : ''}"><div class="pic" style="width:110px;height:110px"><img src="${thumbURL('char', k)}" style="width:110px;height:110px" alt=""></div><div class="t">${t}</div><div class="d">${d}</div><button class="b ${g === k ? 'g' : 'o'}" data-act="setGender" data-g="${k}" ${g === k ? 'disabled' : ''}>${g === k ? '使用中' : '選這個'}</button></div>`).join('')}</div>`); };
