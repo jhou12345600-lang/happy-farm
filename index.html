@@ -788,6 +788,19 @@ function fmtDur(ms) { const s = Math.max(0, Math.ceil(ms / 1000)), h = Math.floo
 function fmtTime(t) { const d = new Date(t); const p = n => String(n).padStart(2, '0'); return `${d.getMonth()+1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`; }
 function colorOf(s) { let h = 0; for (const c of String(s)) h = (h * 37 + c.charCodeAt(0)) % 360; return `hsl(${h} 65% 52%)`; }
 const dn = f => (f && (f.nick || f.username)) || '？';
+// 指定玩家的更新獎勵：名單裡的帳號下次登入會自動收到一次，並寫進消息欄
+const GRANTS = [
+  {id:'upd20261104', n:'更新獎勵', c:500, fert:10, users:['Asd123', 'jtrn193', '偷偷偷摸摸', '游家的魚', 'qq666', 'tg12300']},
+];
+async function giveGrants() {
+  const f = S.my; if (!f) return; const me = nameKey(f.username || '');
+  for (const G of GRANTS) {
+    if (!G.users.some(u => nameKey(u) === me) || f.grant?.[G.id]) continue;
+    const r = await txMe(g => { g.grant ??= {}; if (g.grant[G.id]) return ab(''); g.grant[G.id] = now(); g.coins += G.c; g.fert = (g.fert || 0) + G.fert;
+      addLog(g, `🎁 ${G.n}已發放：💰金幣 ${G.c}＋🧪化肥 ×${G.fert}，謝謝你一起玩歡樂偷菜農場！`); addTrade(g, G.n, G.c); return {}; }).catch(() => ({abort:1}));
+    if (!r.abort) { toast(`🎁 收到${G.n}：💰${G.c}＋化肥×${G.fert}！到「📜 消息」看看`); Music.sfx('coin'); Music.sparkle(); }
+  }
+}
 const itemInfo = id => CROPS[id] || PROD[id] || SEA[id] || PROC[id] || {n:id, sell:0};
 const isItem = id => !!(CROPS[id] || PROD[id] || SEA[id] || PROC[id]);
 const sellOf = id => Math.round(itemInfo(id).sell * (festBonus('sell') ? 1.2 : 1));
@@ -5512,6 +5525,7 @@ async function onAuth(u) {
   if (rebuilt) toast('🌱 你的農場資料不見了，已經幫你重新建好一座新農場');
   else if (!r.abort && f.lastSign !== today()) toast(isNew ? '🎉 歡迎來到 3D 農場！' : `☀️ 每日簽到 +${SIGN_COINS} 金幣，記得看看今天的任務和訂單 📋`);
   refreshFriends();
+  setTimeout(() => { if (S.my && S.uid === u.uid) giveGrants(); }, 6500);
 }
 function goHome() { S.myPos = null; S.pray = null; unZoom(); S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; renderAll(); beat(); watchHere(); }
 function visit(uid) {
