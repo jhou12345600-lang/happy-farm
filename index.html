@@ -3690,7 +3690,7 @@ function renderScene() {
   document.querySelectorAll('#sceneTabs button').forEach(b => b.classList.toggle('on', b.dataset.s === (S.scene === 'temple' ? 'town' : S.scene)));
   $('#visitBar').hidden = own; if (!own && f) $('#visitName').textContent = dn(f);
   const list = hereList();
-  if (!own && f && !list.some(p => p.uid === S.viewUid)) { const nw = W.npc?.uid === S.viewUid ? W.npc : {}; list.push({uid:S.viewUid, n:dn(f), g:f.gender || genderOf({uid:S.viewUid}), lv:levelOf(f.exp).L, npc:true, t:now(), say:nw.say, wave:nw.wave, waveTo:nw.wave ? S.uid : '', back:true}); }
+  if (!own && f && !list.some(p => p.uid === S.viewUid)) { const nw = W.npc?.uid === S.viewUid ? W.npc : {}; list.push({uid:S.viewUid, n:dn(f), g:f.gender || genderOf({uid:S.viewUid}), lk:f.look || null, vh:rideOf(f), lv:levelOf(f.exp).L, npc:true, t:now(), say:nw.say, wave:nw.wave, waveTo:nw.wave ? S.uid : '', back:true}); }
   if (own && f && S.scene === 'farm') {
     if (S.thief) list.push({uid:'vil:th', n:VIL[S.thief.v].n, vil:S.thief.v, npc:true, t:now(), say:{m:S.thief.pk && now() - S.thief.t0 > 2000 ? '救命呀～！😱' : '嘿嘿嘿……偷偷摘一點……', t:S.thief.pk && now() - S.thief.t0 > 2000 ? S.thief.t0 + 2200 : S.thief.t0, d:5000}});
     else if (!S.decoMode) for (const q of vilToday(S.my, S.uid).filter(q => !q.done).slice(0, 2)) list.push({uid:'vil:' + q.v, n:VIL[q.v].n + ' ❗', vil:q.v, npc:true, t:now()});
