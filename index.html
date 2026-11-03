@@ -312,7 +312,7 @@ button{font-family:inherit;cursor:pointer;border:none}
     <div id="ovl"></div>
     <div id="sceneTabs"><button data-act="scene" data-s="farm" class="on">🌾 農場</button><button data-act="scene" data-s="ranch">🐮 牧場</button><button data-act="scene" data-s="fish">🐟 魚塭</button><button data-act="scene" data-s="factory">🏭 工廠</button><button data-act="scene" data-s="green">🌱 溫室<em class="badge" id="bdH"></em></button><button data-act="scene" data-s="town">🏘️ 小鎮<em class="badge" id="bdV"></em></button></div>
     <div id="wx"></div>
-    <div id="visitBar" hidden><span>👀 在 <b id="visitName"></b> 的家</span><button data-act="like">👍 按讚</button><button data-act="home">🏠 回家</button></div>
+    <div id="visitBar" hidden><span>👀 在 <b id="visitName"></b> 的家</span><button data-act="home">🏠 回家</button></div>
     <div id="hereBox" hidden></div>
     <div id="race" hidden><div class="rtitle">🐉 端午龍舟賽</div><div id="raceRank"></div><div id="raceCd"></div><div id="raceLbl"></div><div id="raceEnd" hidden></div></div>
     <div id="hint">🖱️ 拖曳旋轉視角、滾輪縮放</div>
@@ -1157,8 +1157,7 @@ const DECO_LIST = [
 const DECO = Object.fromEntries(DECO_LIST.map(([id, n, lv, cost, pop, vil]) => [id, {n, lv, cost, pop, vil}]));
 // 可以擺裝飾的空地（農場前面的草地、農田右邊、左邊）
 const DECO_AREAS = [[-8.4, 8.4, 11, 13.4], [10.4, 13.8, -4.8, 6.4], [-12.6, -10.4, -4.4, 4.6]], DECO_STEP = 1.2, DECO_MAX = 40;
-const decoPop = f => (f?.deco?.at || []).reduce((s, d) => s + (DECO[d.k]?.pop || 0), 0) + (f?.deco?.likes || 0);
-const decoBonus = f => Math.min(.2, Math.floor(decoPop(f) / 20) * .01);   // 每 20 人氣訂單金幣 +1%，最多 +20%
+const decoPop = f => (f?.deco?.at || []).reduce((s, d) => s + (DECO[d.k]?.pop || 0), 0);
 function decoCells() { const out = []; for (const [x0, x1, z0, z1] of DECO_AREAS) for (let x = x0; x <= x1 + .01; x += DECO_STEP) for (let z = z0; z <= z1 + .01; z += DECO_STEP) out.push([+x.toFixed(2), +z.toFixed(2)]); return out; }
 const DECO_CELLS = decoCells();
 const decoAt = (f, x, z) => (f.deco?.at || []).findIndex(d => Math.abs(d.x - x) < .1 && Math.abs(d.z - z) < .1);
@@ -2692,20 +2691,25 @@ const GH_MAX = 6, GH_START = 2, GH_PRICE = [0, 0, 1500, 3000, 5000, 8000], GH_SP
 const ghXZ = i => [GREEN_T.x - 3.8 + (i % 3) * 3.8, -3.4 + Math.floor(i / 3) * 3.6];
 const PUMP_XZ = [GREEN_T.x, 4.6], PUMP_LV = 4, PUMP_COST = 500, PUMP_H = 20;
 const PUMP_CARE = {water:{n:'澆水', em:'💧', iv:2, kg:3}, fert:{n:'施肥', em:'🧪', iv:4, kg:6}, sing:{n:'唱歌給它聽', em:'🎵', iv:3, kg:2}};
-const greenOf = f => { f.green ??= {}; const g = f.green; g.n ??= GH_START; g.plots ??= []; while (g.plots.length < GH_MAX) g.plots.push({s:'empty'}); g.pump ??= {s:'empty'}; g.best ??= {}; return g; };
-const greenView = f => f?.green || {n:GH_START, plots:[], pump:{s:'empty'}, best:{}};
+const greenOf = f => { f.green ??= {}; const g = f.green; g.n ??= GH_START; g.plots ??= []; while (g.plots.length < GH_MAX) g.plots.push({s:'empty'}); g.pump ??= {s:'empty'}; g.bag ??= []; g.ent ??= {}; return g; };
+const greenView = f => f?.green || {n:GH_START, plots:[], pump:{s:'empty'}, bag:[], ent:{}};
 const ghMs = c => CROPS[c].t * 1000 / SPEED * GH_SPEED;
 const ghMature = p => p && p.s === 'grow' && CROPS[p.c] && now() >= p.p + ghMs(p.c);
 const ghProg = p => p && p.s === 'grow' && CROPS[p.c] ? Math.min(1, (now() - p.p) / ghMs(p.c)) : 0;
-// 南瓜大賽：每兩週一期（台灣時間）
-const pumpPer = (day = twDay()) => Math.floor(dayN(day) / 14);
-const perStart = per => { const d = new Date(per * 14 * 864e5); return d.toISOString().slice(0, 10); };
-const perRange = per => `${md(perStart(per))}～${md(addDays(perStart(per), 13))}`;
+// 南瓜大賽：每週一次（台灣時間）。週日～週五可以挑一顆報名，週五晚上 12 點截止，週六公布排名
+const wkOf = (day = twDay()) => Math.floor((dayN(day) + 4) / 7);
+const dowOf = (day = twDay()) => (dayN(day) + 4) % 7;   // 0 週日 … 6 週六
+const wkStart = w => new Date((w * 7 - 4) * 864e5).toISOString().slice(0, 10);
+const wkRange = w => `${md(wkStart(w))}（日）～${md(addDays(wkStart(w), 5))}（五）`;
+const pumpOpen = () => dowOf() <= 5;
+const pumpResWk = () => dowOf() === 6 ? wkOf() : wkOf() - 1;   // 最近一次公布排名的那一週
 const pumpMs = () => PUMP_H * 3600000 / SPEED;
 const pumpMature = q => q && q.s === 'grow' && now() >= q.p + pumpMs();
 function pumpKg(q, final) { if (!q || q.s !== 'grow') return 0; const R = seededR(strHash('pump:' + q.p)), luck = Math.floor(R() * 31), pr = final ? 1 : Math.min(1, (now() - q.p) / pumpMs()); return Math.round((40 + (q.care || 0) + luck) * (.15 + .85 * pr) * 10) / 10; }
-const PUMP_RW = [{c:3000, g:3}, {c:1500, g:2}, {c:800, g:1}];
-function pumpRank(per) { const me = {uid:S.uid, n:myName(), kg:greenView(S.my).best?.[per] || 0}; const all = [me, ...S.friends.map(x => ({uid:x.uid, n:dn(x.farm), kg:greenView(x.farm).best?.[per] || 0}))].filter(x => x.kg > 0); return all.sort((a, b) => b.kg - a.kg); }
+const PUMP_RW = [{c:500, fert:10}, {c:500, fert:10}, {c:500, fert:10}, {c:100, fert:5}];
+const pumpEnt = (f, w) => greenView(f).ent?.[w] || 0;
+function pumpRank(w) { const all = [{uid:S.uid, n:myName(), kg:pumpEnt(S.my, w)}, ...S.friends.map(x => ({uid:x.uid, n:dn(x.farm), kg:pumpEnt(x.farm, w)}))].filter(x => x.kg > 0); return all.sort((a, b) => b.kg - a.kg); }
+function pumpClaimable(f) { const w = pumpResWk(), G = greenView(f); if (!G.ent?.[w] || (G.cl || 0) >= w) return null; const k = pumpRank(w).findIndex(x => x.uid === S.uid); return k >= 0 && PUMP_RW[k] ? {w, k, rw:PUMP_RW[k]} : null; }
 
 function buildGreen(S3) {
   const X = GREEN_T.x;
@@ -2903,8 +2907,8 @@ function clickGh(i) {
 }
 function openPump() {
   S.modal = () => {
-    const own = isOwn(), f = own ? S.my : S.view, G = greenView(f), q = G.pump || {s:'empty'}, per = pumpPer(), L = levelOf(S.my.exp).L, mine = greenView(S.my);
-    let body = `<div class="popbox">🎃 <b>巨大南瓜大賽</b>（每兩週一期）<br><small>本期：${perRange(per)} · 種出最重的南瓜，在好友之間比名次！第 1 名 💰${PUMP_RW[0].c}＋🎰×${PUMP_RW[0].g}、第 2 名 💰${PUMP_RW[1].c}＋🎰×${PUMP_RW[1].g}、第 3 名 💰${PUMP_RW[2].c}＋🎰×${PUMP_RW[2].g}，其他有參加 💰300</small></div>`;
+    const own = isOwn(), f = own ? S.my : S.view, G = greenView(f), q = G.pump || {s:'empty'}, wk = wkOf(), open = pumpOpen(), L = levelOf(S.my.exp).L, mine = greenView(S.my);
+    let body = `<div class="popbox">🎃 <b>巨大南瓜大賽</b>（每週一次）<br><small>週日～週五挑一顆自己種的巨大南瓜報名，<b>週五晚上 12 點截止，週六公布排名</b>，在好友之間比誰最重！<br>第 1～3 名：💰500＋🧪化肥×10 · 第 4 名：💰100＋🧪化肥×5 · 其他名次沒有獎勵</small></div>`;
     if (own) {
       if (q.s !== 'grow') body += L < PUMP_LV ? `<div class="empty">Lv.${PUMP_LV} 才能參加南瓜大賽</div>` : `<div class="mgbtn"><button class="b o" data-act="pumpPlant">🎃 種一顆巨大南瓜（${PUMP_COST}💰，${fmtDur(pumpMs())}長大）</button></div>`;
       else {
@@ -2913,10 +2917,15 @@ function openPump() {
         else body += `<div class="mgbtn" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">${Object.entries(PUMP_CARE).map(([k, C]) => { const w = (q.last?.[k] || 0) + C.iv * 3600000 / SPEED - now(); return w > 0 ? `<button class="b g" disabled>${C.em}${C.n} ${fmtDur(w)}</button>` : `<button class="b o" data-act="pumpCare" data-k="${k}">${C.em}${C.n} +${C.kg}kg${k === 'fert' ? '（用 1 化肥）' : ''}</button>`; }).join('')}</div>`;
       }
     }
-    const rk = pumpRank(per);
-    body += `<div class="sec">🏆 本期排行（${perRange(per)}）</div>` + (rk.length ? rk.map((x, k) => `<div class="log"><span style="width:32px">${['🥇', '🥈', '🥉'][k] || k + 1}</span><span style="flex:1">${esc(x.n)}${x.uid === S.uid ? '（我）' : ''}</span><b>${x.kg} kg</b></div>`).join('') : '<div class="empty">本期還沒有人收成巨大南瓜，搶第一名吧！</div>');
-    const prev = per - 1, myPrev = mine.best?.[prev];
-    if (own && myPrev && (mine.cl || 0) < prev) { const pr = pumpRank(prev), k = pr.findIndex(x => x.uid === S.uid); body += `<div class="sec">🎁 上一期（${perRange(prev)}）</div><div class="mgres">你種出 ${myPrev} kg，第 ${k + 1} 名！</div><div class="mgbtn"><button class="b o" data-act="pumpClaim">領上一期獎勵</button></div>`; }
+    if (own) {
+      const bag = mine.bag || [], ent = mine.ent?.[wk] || 0;
+      body += `<div class="sec">🎃 我的巨大南瓜（收成後會留在這裡，挑一顆報名）</div>` + (bag.length ? bag.map((b, i) => `<div class="log"><span style="flex:1">🎃 ${b.kg} kg <small style="color:#8d6e63">${md(new Date(b.t + 8 * 3600000).toISOString().slice(0, 10))} 收成</small></span>${ent === b.kg && mine.entI === i ? '<b style="color:#2e7d32">✅ 本週參賽中</b>' : open ? `<button class="b o" data-act="pumpEnter" data-i="${i}">${ent ? '換這顆比賽' : '報名這顆'}</button>` : ''}</div>`).join('') : '<div class="empty">還沒有巨大南瓜，先種一顆吧！</div>');
+    }
+    if (open) body += `<div class="sec">📝 本週比賽（${wkRange(wk)}）</div><div class="mgres">${own ? (mine.ent?.[wk] ? `你報名了 <b>${mine.ent[wk]} kg</b> 的南瓜（週五晚上 12 點前都可以換）` : '你還沒報名喔！') : ''}<br><small>已經有 ${pumpRank(wk).length} 人報名 · 週五晚上 12 點截止，週六公布排名</small></div>`;
+    const rw = pumpResWk(), rk = pumpRank(rw);
+    body += `<div class="sec">🏆 ${dowOf() === 6 ? '本週' : '上週'}排名（${wkRange(rw)}）</div>` + (rk.length ? rk.map((x, k) => `<div class="log"><span style="width:32px">${['🥇', '🥈', '🥉'][k] || k + 1}</span><span style="flex:1">${esc(x.n)}${x.uid === S.uid ? '（我）' : ''}</span><b>${x.kg} kg</b>${PUMP_RW[k] ? `<small style="margin-left:6px;color:#e65100">💰${PUMP_RW[k].c}＋化肥×${PUMP_RW[k].fert}</small>` : ''}</div>`).join('') : '<div class="empty">這一週沒有人報名</div>');
+    const cl = own && pumpClaimable(S.my);
+    if (cl) body += `<div class="mgbtn"><button class="b o" data-act="pumpClaim">🎁 領第 ${cl.k + 1} 名獎勵（💰${cl.rw.c}＋化肥×${cl.rw.fert}）</button></div>`;
     if (mine.rec) body += `<div class="d" style="text-align:center;margin-top:6px">🏅 我的最重紀錄：${mine.rec} kg</div>`;
     openModal('🎃 巨大南瓜大賽', body);
   };
@@ -2934,16 +2943,20 @@ async function pumpCare(k) {
     () => { fx3(PUMP_XZ[0], 2.4, PUMP_XZ[1], `${C.em} +${C.kg} kg`, '#e65100'); if (k === 'sing') Music.babble(myGender(), '南瓜快長大'); else Music.sfx('pop'); });
 }
 async function pumpHarvest() {
-  await fast(f => { const G = greenOf(f), q = G.pump; if (!pumpMature(q)) return ab('還沒長大'); const kg = pumpKg(q, true), per = pumpPer(); G.best[per] = Math.max(G.best[per] || 0, kg); G.rec = Math.max(G.rec || 0, kg);
-    f.wh.pumpkin = (f.wh.pumpkin || 0) + 8; dexAdd(f, 'pumpkin', 8); const up = gainExp(f, 60); G.pump = {s:'empty'}; for (const k of Object.keys(G.best)) if (+k < per - 2) delete G.best[k];
-    addLog(f, `🎃 收成一顆 ${kg} kg 的巨大南瓜！（南瓜大賽成績）`); return {kg, up, best:G.best[per]}; },
-    r => { toast(`🎃 哇！${r.kg} kg 的巨大南瓜！本期最佳 ${r.best} kg，還拿到南瓜×8`); Music.sfx('coin'); Music.sparkle(); lvToast(r.up); });
+  await fast(f => { const G = greenOf(f), q = G.pump; if (!pumpMature(q)) return ab('還沒長大'); const kg = pumpKg(q, true); G.rec = Math.max(G.rec || 0, kg);
+    G.bag.unshift({kg, t:now()}); if (G.entI != null) G.entI++; if (G.bag.length > 8) { G.bag.length = 8; if (G.entI >= 8) G.entI = null; }
+    f.wh.pumpkin = (f.wh.pumpkin || 0) + 8; dexAdd(f, 'pumpkin', 8); const up = gainExp(f, 60); G.pump = {s:'empty'};
+    addLog(f, `🎃 收成一顆 ${kg} kg 的巨大南瓜！`); return {kg, up}; },
+    r => { toast(`🎃 哇！${r.kg} kg 的巨大南瓜！${pumpOpen() ? '記得挑一顆報名本週比賽' : '週日開始就能報名比賽'}，另外拿到南瓜×8`); Music.sfx('coin'); Music.sparkle(); lvToast(r.up); });
+}
+async function pumpEnter(i) {
+  await fast(f => { if (!pumpOpen()) return ab('週六是公布排名的日子，明天（週日）開始報名下一週'); const G = greenOf(f), b = G.bag[i]; if (!b) return ab('找不到這顆南瓜'); const w = wkOf(); G.ent[w] = b.kg; G.entI = i; for (const k of Object.keys(G.ent)) if (+k < w - 3) delete G.ent[k]; return {kg:b.kg}; },
+    r => { toast(`📝 報名成功！${r.kg} kg 的巨大南瓜參加本週比賽`); Music.sfx('pop'); });
 }
 async function pumpClaim() {
-  const prev = pumpPer() - 1, pr = pumpRank(prev), k = pr.findIndex(x => x.uid === S.uid); if (k < 0) return;
-  const rw = PUMP_RW[k] || {c:300, g:0};
-  await fast(f => { const G = greenOf(f); if ((G.cl || 0) >= prev) return ab('已經領過了'); if (!G.best[prev]) return ab('上一期沒有成績'); G.cl = prev; f.coins += rw.c; f.gacha = (f.gacha || 0) + rw.g; addLog(f, `🏆 南瓜大賽第 ${k + 1} 名！獎勵 💰${rw.c}${rw.g ? `＋抽抽樂券×${rw.g}` : ''}`); addTrade(f, `南瓜大賽第 ${k + 1} 名`, rw.c); return {}; },
-    () => { toast(`🏆 南瓜大賽第 ${k + 1} 名！💰${rw.c}${rw.g ? `＋抽抽樂券×${rw.g}` : ''}`); Music.sfx('coin'); Music.sparkle(); });
+  const cl = pumpClaimable(S.my); if (!cl) return toast('沒有可以領的獎勵');
+  await fast(f => { const G = greenOf(f); if ((G.cl || 0) >= cl.w) return ab('已經領過了'); G.cl = cl.w; f.coins += cl.rw.c; f.fert = (f.fert || 0) + cl.rw.fert; addLog(f, `🏆 南瓜大賽第 ${cl.k + 1} 名！獎勵 💰${cl.rw.c}＋化肥×${cl.rw.fert}`); addTrade(f, `南瓜大賽第 ${cl.k + 1} 名`, cl.rw.c); return {}; },
+    () => { toast(`🏆 南瓜大賽第 ${cl.k + 1} 名！💰${cl.rw.c}＋化肥×${cl.rw.fert}`); Music.sfx('coin'); Music.sparkle(); });
 }
 
 function syncFest() {
@@ -3643,7 +3656,7 @@ function renderTop() {
   const unread = (f.log || []).filter(l => l.t > (f.logSeen || 0)).length + S.gifts.length;
   const set = (id, n) => { $(id).textContent = n; $(id).classList.toggle('on', n > 0); };
   set('#bdM', unread); set('#bdF', S.reqs.length); set('#bdT', taskClaimable(f)); set('#bdO', orderReady(f)); set('#bdG', f.gacha || 0);
-  set('#bdV', vilPending(f)); { const G = greenView(f); set('#bdH', (G.plots || []).slice(0, G.n || GH_START).filter(ghMature).length + (pumpMature(G.pump) ? 1 : 0)); } set('#bdC', coopReady(f)); set('#bdE', festReady(f)); set('#bdX', achClaimable(f) + petGiftReady(f));
+  set('#bdV', vilPending(f)); { const G = greenView(f); set('#bdH', (G.plots || []).slice(0, G.n || GH_START).filter(ghMature).length + (pumpMature(G.pump) ? 1 : 0) + (pumpClaimable(f) ? 1 : 0)); } set('#bdC', coopReady(f)); set('#bdE', festReady(f)); set('#bdX', achClaimable(f) + petGiftReady(f));
 }
 function renderTools() {
   const own = isOwn(), f = S.my; let T;
@@ -3751,7 +3764,7 @@ function pondText(i) {
 function tipFor(h) {
   if (h.type === 'hall') { const H = HALLS[h.i], T = templeView(S.view); return `<b>${H.em} ${H.n}</b>（${H.god}）<br>${h.i < T.lv ? (qianToday(S.my) ? '今天已經抽過籤了，點一下看籤詩' : '點一下參拜抽籤 🙏') : h.i === T.lv ? `建造中 ${Math.floor(tpProg(T) * 100)}%，點一下捐材料` : '還沒開始蓋'}`; }
   if (h.type === 'gplot') { const G = greenView(S.view), p = (G.plots || [])[h.i]; if (h.i >= (G.n || GH_START)) return h.i === (G.n || GH_START) && isOwn() ? `🔒 點一下花 ${GH_PRICE[G.n || GH_START]} 金幣擴建` : '🔒 還沒擴建'; if (!p || p.s !== 'grow' || !CROPS[p.c]) return isOwn() ? '空花圃，點一下種東西' : '空花圃'; return `<b>${CROPS[p.c].gh ? '🌱 ' : ''}${CROPS[p.c].n}</b><br>${ghMature(p) ? '✨ 成熟了！點一下收成' : `還要 ${fmtDur(p.p + ghMs(p.c) - now())}`}`; }
-  if (h.type === 'gpump') { const q = greenView(S.view).pump; return q?.s === 'grow' ? `<b>🎃 巨大南瓜</b> 約 ${pumpKg(q)} kg<br>${pumpMature(q) ? '可以收成了！' : '點一下照顧它'}` : '<b>🎃 巨大南瓜大賽</b><br>每兩週一期，點一下看看'; }
+  if (h.type === 'gpump') { const q = greenView(S.view).pump; return q?.s === 'grow' ? `<b>🎃 巨大南瓜</b> 約 ${pumpKg(q)} kg<br>${pumpMature(q) ? '可以收成了！' : '點一下照顧它'}` : '<b>🎃 巨大南瓜大賽</b><br>每週一次，週五晚上 12 點截止、週六公布排名'; }
   if (h.type === 'stall') { const sl = stallView(S.view).sl.filter(s => (s.s || 0) < s.n); return `<b>🏪 ${isOwn() ? '我的' : esc(dn(S.view)) + '的'}市集攤位</b><br>${sl.length ? sl.map(s => `${itemInfo(s.id).n} ${s.p}💰`).join('、') : '目前沒有東西'}<br>點一下${isOwn() ? '管理攤位' : '逛逛'}`; }
   if (h.type === 'vil') { const v = VIL[h.id], q = isOwn() && vilToday(S.my, S.uid).find(r => r.v === h.id && !r.done); return `<b>${v.n}</b> ${v.role}${isOwn() ? `<br>${'❤️'.repeat(vilHeart(S.my, h.id)) || '🤍'} 好感 ${vilHeart(S.my, h.id)}/${VIL_MAX}` : ''}${q ? '<br>❗ 有委託，點一下幫忙' : '<br>點一下聊聊'}`; }
   if (h.type === 'deco') { const d = S.view?.deco?.at?.[h.i]; return d ? `<b>${DECO[d.k].n}</b><br>⭐ 人氣 +${DECO[d.k].pop}${S.decoMode && isOwn() ? '<br>點一下旋轉、移動或收起' : ''}` : ''; }
@@ -4752,7 +4765,7 @@ function openDeco(tab = S.decoTab || 'mine') {
   S.decoTab = tab;
   S.modal = () => {
     const f = S.my, d = f.deco || {}, L = levelOf(f.exp).L, pop = decoPop(f), inv = Object.entries(d.inv || {}).filter(([k, n]) => n > 0 && DECO[k]);
-    let body = `<div class="popbox">⭐ 人氣 <b>${pop}</b>（擺飾 ${pop - (d.likes || 0)} + 好友按讚 ${d.likes || 0}）<br><small>每 20 人氣，料理訂單金幣 +1%（最多 +20%）· 現在 <b>+${Math.round(decoBonus(f) * 100)}%</b> · 已擺 ${(d.at || []).length}/${DECO_MAX} 個</small></div>`;
+    let body = `<div class="popbox">⭐ 農場人氣 <b>${pop}</b>（裝飾越多越漂亮，好友來玩都看得到）<br><small>已擺 ${(d.at || []).length}/${DECO_MAX} 個</small></div>`;
     body += `<div class="mtabs">${[['mine', '🪑 我的裝飾'], ['shop', '🛒 家具店']].map(([k, t]) => `<button class="${tab === k ? 'on' : ''}" data-act="decoTab" data-t="${k}">${t}</button>`).join('')}</div>`;
     if (tab === 'mine') {
       body += inv.length ? inv.map(([k, n]) => `<div class="item"><div class="pic">${icon('deco', k)}</div><div class="info"><div class="t">${DECO[k].n} × ${n}</div><div class="d">人氣 +${DECO[k].pop}${DECO[k].vil ? ` · ${VIL[DECO[k].vil].n}送的專屬裝飾` : ''}</div></div><div class="acts"><button class="b o" data-act="decoPlace" data-k="${k}">📍 擺到農場</button></div></div>`).join('')
@@ -5209,7 +5222,7 @@ const ACT = {
   async buyPetfood(d) { const n = +d.n; const r = await txMe(f => { if (f.coins < PETFOOD_PRICE * n) return ab('金幣不夠'); f.coins -= PETFOOD_PRICE * n; f.petfood = (f.petfood || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 個寵物零食 🦴`); },
   templeInfo: openTemple, hall(d) { openHall(+d.i); }, pray(d) { startPray(+d.i); }, tpGive(d) { return run(() => tpGive(d.k, +d.n)); }, qianShow() { if (qianToday(S.my)) openQian(); else { toast('今天還沒抽籤，去廟裡參拜吧 🙏'); if (S.scene !== 'temple') ACT.toTemple(); } },
   toTemple() { ACT.scene({s:'temple'}); }, toTown() { ACT.scene({s:'town'}); },
-  pump: openPump, pumpPlant() { return run(pumpPlant); }, pumpCare(d) { return run(() => pumpCare(d.k)); }, pumpHarvest() { return run(pumpHarvest); }, pumpClaim() { return run(pumpClaim); }, ghPlant(d) { return run(() => ghPlant(d.id)); }, ghBuy() { return run(ghBuy); },
+  pump: openPump, pumpPlant() { return run(pumpPlant); }, pumpCare(d) { return run(() => pumpCare(d.k)); }, pumpHarvest() { return run(pumpHarvest); }, pumpClaim() { return run(pumpClaim); }, pumpEnter(d) { return run(() => pumpEnter(+d.i)); }, ghPlant(d) { return run(() => ghPlant(d.id)); }, ghBuy() { return run(ghBuy); },
   expPick(d) { openExp(d.k); }, expGo(d) { return run(() => expGo(d.k, d.d)); }, expBack(d) { return run(() => expBack(d.k)); },
   stall: openStall, stallOn(d) { return run(() => stallOn(d.k)); }, stallOff(d) { return run(() => stallOff(+d.i)); }, stallBuy(d) { return run(() => stallBuy(+d.i)); },
   vilList: openVils, vil(d) { S.vilSay = null; S.vilStory = null; openVil(d.id); }, vilDo(d) { return run(() => vilDo(d.id)); }, vilChat(d) { return run(() => vilChat(d.id)); }, vilGiftPick(d) { openVil(d.id, S.vilView === 'gift' ? '' : 'gift'); }, vilGift(d) { return run(() => vilGift(d.id, d.k)); }, vilStory(d) { S.vilStory = S.vilStory === d.id + d.k ? null : d.id + d.k; S.modal && S.modal(); },
@@ -5230,7 +5243,7 @@ const ACT = {
       let moved = 0; for (const [id, n] of orderLeft(x)) { const give = Math.min(n, f.wh[id] || 0); if (give > 0) { f.wh[id] -= give; x.got[id] = (x.got[id] || 0) + give; moved += give; } }
       if (!moved) return ab('倉庫裡沒有這張訂單需要的東西');
       if (orderLeft(x).length) return {moved, done:false};
-      const rw0 = recipeReward(x.r), rw = {c:Math.round((festBonus('order') ? rw0.c * 1.5 : rw0.c) * (1 + decoBonus(f))), e:rw0.e}, R = RECIPES[x.r]; dexAdd(f, 'r:' + x.r); f.coins += rw.c; const up = gainExp(f, rw.e); f.orders.splice(i, 1); f.ordersDone = (f.ordersDone || 0) + 1; bump(f, 'order'); fillOrders(f); return {moved, done:true, rw, up, n:R.n};
+      const rw0 = recipeReward(x.r), rw = {c:Math.round(festBonus('order') ? rw0.c * 1.5 : rw0.c), e:rw0.e}, R = RECIPES[x.r]; dexAdd(f, 'r:' + x.r); f.coins += rw.c; const up = gainExp(f, rw.e); f.orders.splice(i, 1); f.ordersDone = (f.ordersDone || 0) + 1; bump(f, 'order'); fillOrders(f); return {moved, done:true, rw, up, n:R.n};
     }, r => {
       if (r.done) { toast(`🍳 ${r.n}完成！獲得 💰${r.rw.c} + ${r.rw.e} 經驗`); Music.sfx('coin'); lvToast(r.up); }
       else { toast(`📦 交了 ${r.moved} 份材料，繼續收集吧！`); Music.sfx('pop'); }
