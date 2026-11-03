@@ -8,9 +8,9 @@ service cloud.firestore {
     match /farms/{uid} {
       allow read: if request.auth != null;
       allow create, update: if request.auth != null && request.auth.uid == uid;
-      // 別人的家：只能動田地、牧場、魚塭、加工廠（偷、幫忙、餵食、加速、惡作劇）、留言紀錄、好友名單
+      // 別人的家：只能動田地、牧場、魚塭、加工廠（偷、幫忙、餵食、加速、惡作劇）、留言紀錄、好友名單、裝飾（按讚）、小鎮（市集購買、捐獻蓋廟）
       allow update: if request.auth != null
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['plots', 'log', 'friends', 'ranch', 'fish', 'fac']);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['plots', 'log', 'friends', 'ranch', 'fish', 'fac', 'deco', 'town']);
     }
     match /requests/{id} {
       allow read, delete: if request.auth != null && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid);
