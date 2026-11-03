@@ -1819,13 +1819,19 @@ function machineModel(k) {
 }
 
 /* ================= 角色服裝、交通工具 ================= */
-const LOOK_DEF = {boy:{top:'#f3ead8', bot:'#3f7d4e', hat:'straw', hc:'#b98a56'}, girl:{top:'#f6c531', bot:'#f6c531', hat:'knit', hc:'#f6c531'}};
+const LOOK_DEF = {boy:{top:'#f3ead8', bot:'#3f7d4e', hat:'straw', hc:'#b98a56', st:'overall', ac:'none'}, girl:{top:'#f6c531', bot:'#f6c531', hat:'knit', hc:'#f6c531', st:'dress', ac:'none'}};
+const STYLES = {boy:{overall:'👨‍🌾 吊帶褲', tee:'👕 T恤短褲', hoodie:'🧥 帽T', sport:'🏃 運動服', suit:'🤵 西裝', robe:'🥋 古裝長袍'}, girl:{dress:'👗 毛線洋裝', skirt:'👚 上衣短裙', pinafore:'🎽 吊帶裙', hoodie:'🧥 帽T', sport:'🏃 運動服', gown:'👸 公主禮服', robe:'🥋 古裝長袍'}};
+const ST_PRICE = {suit:1000, gown:2000, robe:1500};
+const ACCS = {none:'🙅 不戴', glasses:'👓 眼鏡', shades:'🕶️ 墨鏡', scarf:'🧣 圍巾', bag:'🎒 小背包', bow:'🎀 蝴蝶結', cape:'🦸 披風', wings:'👼 天使翅膀'};
+const AC_PRICE = {cape:1500, wings:5000};
+const partPrice = (part, v) => part === 'hat' ? HAT_PRICE[v] : part === 'st' ? ST_PRICE[v] : part === 'ac' ? AC_PRICE[v] : 0;
+const partKey = (part, v) => part === 'hat' ? v : part + ':' + v;
 const HATS = {straw:'🌾 草帽', knit:'🧶 毛線漁夫帽', cap:'🧢 棒球帽', beanie:'🎿 毛帽', flower:'🌼 花圈', cowboy:'🤠 牛仔帽', crown:'👑 皇冠', none:'🙆 不戴帽子'};
 const HAT_PRICE = {cowboy:800, crown:3000};
 const CLOTH_COL = ['#f3ead8', '#ffffff', '#f6c531', '#ff8a65', '#e53935', '#ec407a', '#ab47bc', '#5c6bc0', '#29b6f6', '#26a69a', '#3f7d4e', '#8d6e63', '#424242'];
-const lookOf = (g, lk) => ({...LOOK_DEF[g === 'girl' ? 'girl' : 'boy'], ...(lk || {})});
-const lookKey = lk => lk ? [lk.top, lk.bot, lk.hat, lk.hc].join(',') : '';
-const charArgs = id => { const [g, top, bot, hat, hc] = String(id).split('|'); return [g, '', top ? {top, bot, hat, hc} : null]; };
+const lookOf = (g, lk) => { const gg = g === 'girl' ? 'girl' : 'boy', L = {...LOOK_DEF[gg], ...(lk || {})}; if (!STYLES[gg][L.st]) L.st = LOOK_DEF[gg].st; if (!ACCS[L.ac]) L.ac = 'none'; return L; };
+const lookKey = lk => lk ? [lk.top, lk.bot, lk.hat, lk.hc, lk.st || '', lk.ac || ''].join(',') : '';
+const charArgs = id => { const [g, top, bot, hat, hc, st, ac] = String(id).split('|'); return [g, '', top ? {top, bot, hat, hc, st, ac} : null]; };
 const lighten = (c, k) => '#' + new THREE.Color(c).lerp(new THREE.Color('#ffffff'), k).getHexString();
 const darken = (c, k) => '#' + new THREE.Color(c).lerp(new THREE.Color('#000000'), k).getHexString();
 function hatOn(head, style, c) {
@@ -1846,6 +1852,15 @@ const VEH_LIST = [
   ['convert', '🚗 酒紅敞篷車', 15, 30000, '吹著風兜風的敞篷車'],
   ['roadster', '🏎️ 紅色經典跑車', 18, 45000, '長車頭的經典跑車'],
   ['vintage', '🚙 復古老爺車', 20, 60000, '紅色輪框的古董老爺車'],
+  ['bike', '🚲 小綠腳踏車', 1, 800, '環保又健康，邊騎邊踩'],
+  ['kick', '🛴 電動滑板車', 2, 1500, '站著滑，輕鬆又可愛'],
+  ['tractor', '🚜 鐵牛拖拉機', 4, 4000, '農夫最愛的大輪子拖拉機'],
+  ['truck', '🛻 農用發財車', 6, 7000, '後斗載滿蔬菜的小貨車'],
+  ['atv', '🏁 沙灘越野車', 8, 10000, '四輪大胎，哪裡都能衝'],
+  ['taxi', '🚕 黃色計程車', 11, 18000, '車頂有 TAXI 燈的小黃'],
+  ['jeep', '🚙 叢林吉普車', 14, 26000, '有防滾架和備胎的越野吉普'],
+  ['icecream', '🍦 冰淇淋車', 16, 35000, '車頂有大冰淇淋的粉紅餐車'],
+  ['f1', '🏎️ 方程式賽車', 22, 80000, '超低車身的賽道王者'],
 ];
 const VEH = Object.fromEntries(VEH_LIST.map(([k, n, lv, c, d]) => [k, {n, lv, c, d}]));
 const vehOf = f => { f.veh ??= {own:{}, ride:null}; f.veh.own ??= {}; return f.veh; };
@@ -1887,6 +1902,51 @@ function vehModel(k) {
       rod('#212121', [.02, .28, .02], [.05, .7, .2], [0, 0, -.7]), ball('#212121', [.05, .14, .14], [.12, .76, .2]));
     if (rd) add(blk('#e0e0e0', [.08, .05, .86], [1.3, .3, 0]), blk('#e0e0e0', [.08, .05, .86], [-1.3, .3, 0]));
     seat = [-.42, .3, .2]; }
+  else if (k === 'bike') { const G2 = '#43a047';
+    wh(.26, .04, '#e0e0e0', [.55, .26, 0], 10); wh(.26, .04, '#e0e0e0', [-.55, .26, 0], 10);
+    add(rod(G2, [.035, .62, .035], [0, .45, 0], [0, 0, 1.2]), rod(G2, [.035, .48, .035], [.32, .48, 0], [0, 0, .45]), rod(G2, [.035, .5, .035], [-.3, .42, 0], [0, 0, -.6]), rod(G2, [.035, .42, .035], [-.12, .5, 0], [0, 0, .15]), rod(G2, [.03, .55, .03], [-.36, .26, 0], [0, 0, Math.PI / 2]),
+      blk('#5d4037', [.22, .06, .12], [-.15, .76, 0]), rod('#424242', [.025, .42, .025], [.44, .82, 0], [Math.PI / 2, 0, 0]), rod('#bdbdbd', [.08, .03, .08], [0, .26, .05], [Math.PI / 2, 0, 0]), blk('#a1887f', [.25, .18, .3], [.62, .7, 0]), blk('#8d6e63', [.26, .02, .32], [.62, .79, 0]));
+    g.userData.pedal = 1; seat = [-.15, .74, 0]; }
+  else if (k === 'kick') { const C = '#26c6da';
+    wh(.11, .06, '#424242', [.42, .11, 0], 0); wh(.11, .06, '#424242', [-.42, .11, 0], 0);
+    add(blk(C, [.85, .06, .2], [0, .16, 0]), blk('#212121', [.75, .02, .18], [0, .195, 0]), rod(C, [.035, .95, .035], [.43, .62, 0], [0, 0, -.12]), rod('#212121', [.03, .42, .03], [.48, 1.08, 0], [Math.PI / 2, 0, 0]), ball('#fff59d', [.03, .05, .05], [.5, .9, 0]), blk('#e53935', [.03, .04, .1], [-.43, .22, 0]));
+    g.userData.stand = 1; seat = [-.05, .62, 0]; }
+  else if (k === 'tractor') { const G2 = '#2e7d32', Y = '#fbc02d';
+    wh(.42, .2, Y, [-.45, .42, .38], 8); wh(.42, .2, Y, [-.45, .42, -.38], 8); wh(.22, .14, Y, [.7, .22, .32], 6); wh(.22, .14, Y, [.7, .22, -.32], 6);
+    add(blk(G2, [.95, .4, .42], [.35, .48, 0]), blk('#1b5e20', [.95, .06, .44], [.35, .7, 0]), blk('#212121', [.04, .3, .34], [.84, .48, 0]), blk(G2, [.6, .2, .6], [-.45, .5, 0]), blk('#424242', [.28, .08, .3], [-.42, .66, 0]), blk('#424242', [.06, .3, .28], [-.6, .82, 0]),
+      rod('#424242', [.05, .55, .05], [.55, .95, .14]), rod('#757575', [.07, .05, .07], [.55, 1.24, .14]), rod('#424242', [.025, .3, .025], [-.05, .8, 0], [0, 0, -.6]), rod('#212121', [.11, .02, .11], [.05, .92, 0], [0, 0, -.6]), blk(Y, [.06, .35, .7], [-.45, .62, 0]));
+    seat = [-.42, .7, 0]; }
+  else if (k === 'truck' || k === 'icecream') { const ic = k === 'icecream', B = ic ? '#f8bbd0' : '#1e88e5';
+    for (const [x, z] of [[.85, .42], [.85, -.42], [-.8, .42], [-.8, -.42]]) wh(.22, .14, '#bdbdbd', [x, .22, z], 5);
+    add(blk('#424242', [2.3, .12, .8], [0, .32, 0]), blk(B, [.8, .5, .82], [.72, .62, 0]), blk(B, [.8, .08, .84], [.72, 1.55, 0]), ...[[1.1, .4], [1.1, -.4], [.34, .4], [.34, -.4]].map(([x, z]) => blk(B, [.07, .95, .07], [x, 1.08, z])), blk('#b3e5fc', [.03, .5, .7], [1.12, 1.12, 0], [0, 0, -.12]),
+      blk('#fff59d', [.03, .08, .14], [1.13, .65, .28]), blk('#fff59d', [.03, .08, .14], [1.13, .65, -.28]), blk('#212121', [.05, .08, .82], [1.13, .4, 0]));
+    if (ic) { add(blk('#ffffff', [1.2, 1.05, .84], [-.38, .9, 0]), blk('#f48fb1', [1.2, .12, .86], [-.38, 1.46, 0]), blk('#ff80ab', [1.22, .1, .86], [-.38, .55, 0]), blk('#212121', [.6, .4, .02], [-.38, 1.0, .43]), blk('#f8bbd0', [.7, .05, .2], [-.38, .78, .5]),
+      cone('#d7a35b', [.16, .4, .16], [-.38, 1.75, 0], [Math.PI, 0, 0]), ball('#f8bbd0', U(.17), [-.38, 2.0, 0]), ball('#fff8e1', U(.13), [-.38, 2.18, 0]), ball('#e53935', U(.05), [-.38, 2.33, 0]), ...[0, 1, 2, 3, 4].map(i => ball(['#e53935', '#ffeb3b', '#4caf50', '#2196f3', '#ff9800'][i], U(.04), [-.7 + i * .16, .65, .44]))); }
+    else add(blk('#8d6e63', [1.25, .06, .8], [-.4, .4, 0]), blk('#8d6e63', [1.25, .3, .05], [-.4, .55, .4]), blk('#8d6e63', [1.25, .3, .05], [-.4, .55, -.4]), blk('#8d6e63', [.05, .3, .8], [-1.02, .55, 0]),
+      blk('#d7a35b', [.38, .26, .3], [-.7, .56, .18]), blk('#d7a35b', [.38, .26, .3], [-.25, .56, -.18]), ...[[-.7, .18, '#e53935'], [-.6, .12, '#ff9800'], [-.25, -.18, '#43a047'], [-.15, -.12, '#7cb342']].map(([x, z, c]) => ball(c, U(.1), [x, .74, z])));
+    seat = [.62, .45, -.18]; }
+  else if (k === 'atv') { const R = '#e53935';
+    for (const [x, z] of [[.6, .4], [.6, -.4], [-.55, .4], [-.55, -.4]]) wh(.27, .22, '#616161', [x, .27, z], 0);
+    add(blk('#424242', [1.3, .2, .5], [0, .42, 0]), blk(R, [.5, .2, .9], [.55, .62, 0]), blk(R, [.5, .2, .9], [-.55, .62, 0]), blk(R, [.6, .3, .45], [.05, .65, 0]), blk('#212121', [.5, .1, .36], [-.15, .82, 0]),
+      rod('#212121', [.03, .7, .03], [.35, .95, 0], [Math.PI / 2, 0, 0]), rod('#424242', [.03, .3, .03], [.32, .82, 0], [0, 0, -.4]), ball('#fff59d', [.03, .07, .07], [.82, .66, .2]), ball('#fff59d', [.03, .07, .07], [.82, .66, -.2]), blk('#424242', [.3, .05, .5], [-.7, .78, 0]));
+    seat = [-.15, .8, 0]; }
+  else if (k === 'taxi') { const Y = '#fdd835';
+    for (const [x, z] of [[.85, .42], [.85, -.42], [-.85, .42], [-.85, -.42]]) wh(.22, .14, '#bdbdbd', [x, .22, z], 5);
+    add(blk(Y, [2.5, .36, .82], [0, .42, 0]), blk(Y, [1.1, .08, .78], [-.25, 1.55, 0]), ...[[.3, .38], [.3, -.38], [-.8, .38], [-.8, -.38]].map(([x, z]) => blk(Y, [.07, .95, .06], [x, 1.08, z])), blk('#b3e5fc', [.03, .45, .7], [.32, 1.08, 0], [0, 0, -.35]),
+      blk('#212121', [2.52, .08, .84], [0, .52, 0]), ...[0, 1, 2, 3, 4, 5].map(i => blk(i % 2 ? '#212121' : Y, [.18, .07, .02], [-.7 + i * .18, .52, .425])), blk('#ffffff', [.36, .15, .2], [-.25, 1.67, 0]), blk('#212121', [.37, .05, .21], [-.25, 1.67, 0]),
+      blk('#fff59d', [.03, .08, .14], [1.26, .5, .28]), blk('#fff59d', [.03, .08, .14], [1.26, .5, -.28]), blk('#c62828', [.03, .08, .14], [-1.26, .5, .28]), blk('#c62828', [.03, .08, .14], [-1.26, .5, -.28]), blk('#4e342e', [.9, .05, .72], [-.3, .62, 0]));
+    seat = [-.3, .42, .2]; }
+  else if (k === 'jeep') { const G2 = '#6b8e23';
+    for (const [x, z] of [[.85, .45], [.85, -.45], [-.8, .45], [-.8, -.45]]) wh(.3, .2, '#5d4037', [x, .3, z], 0);
+    add(blk(G2, [2.3, .45, .9], [0, .6, 0]), blk('#556b2f', [.8, .12, .88], [.75, .88, 0]), blk('#212121', [.05, .3, .6], [1.16, .65, 0]), ...[-.2, 0, .2].map(z => blk('#9e9e9e', [.06, .25, .04], [1.17, .66, z])), ball('#fff59d', [.03, .09, .09], [1.17, .78, .33]), ball('#fff59d', [.03, .09, .09], [1.17, .78, -.33]),
+      rod('#424242', [.04, .75, .04], [-.35, 1.2, .42]), rod('#424242', [.04, .75, .04], [-.35, 1.2, -.42]), rod('#424242', [.04, .88, .04], [-.35, 1.57, 0], [Math.PI / 2, 0, 0]), blk('#b3e5fc', [.03, .35, .8], [.32, 1.05, 0]), blk('#212121', [.3, .32, .3], [-.5, .95, .2]), blk('#212121', [.3, .32, .3], [-.5, .95, -.2]),
+      rod('#212121', [.26, .14, .26], [-1.2, .75, 0], [0, 0, Math.PI / 2]), rod('#5d4037', [.12, .15, .12], [-1.2, .75, 0], [0, 0, Math.PI / 2]));
+    seat = [-.48, .78, .2]; }
+  else if (k === 'f1') { const R = '#d32f2f';
+    for (const [x, z] of [[.95, .5], [.95, -.5], [-.85, .5], [-.85, -.5]]) wh(.27, .26, '#424242', [x, .27, z], 0);
+    add(blk(R, [2.4, .22, .42], [0, .3, 0]), cone(R, [.22, .9, .16], [1.45, .28, 0], [0, 0, -Math.PI / 2]), blk('#212121', [.3, .04, 1.2], [1.6, .2, 0]), blk(R, [.3, .06, 1.2], [1.55, .25, 0]), blk('#212121', [.3, .3, .06], [-1.15, .65, .35]), blk('#212121', [.3, .3, .06], [-1.15, .65, -.35]),
+      blk(R, [.4, .06, 1.0], [-1.15, .82, 0]), blk('#ffffff', [.4, .02, 1.02], [-1.15, .86, 0]), blk(R, [.8, .25, .7], [-.3, .4, 0]), blk('#212121', [.4, .12, .3], [-.1, .52, 0]), blk('#ffffff', [.2, .02, .43], [.6, .42, 0]), rod('#212121', [.05, .1, .05], [.25, .55, 0]));
+    seat = [-.15, .25, 0]; }
   else { const B = '#3f4f72', R = '#c62828';
     for (const [x, z] of [[.95, .42], [.95, -.42], [-.85, .42], [-.85, -.42]]) wh(.28, .1, '#eeeeee', [x, .28, z], 10).children.forEach((c, i) => { if (i === 1) c.material = mat(R); });
     add(blk(B, [1.9, .4, .74], [-.1, .55, 0]), blk(B, [.9, .32, .6], [.95, .55, 0]), blk('#212121', [.08, .4, .5], [1.42, .6, 0]), ...[-.18, -.06, .06, .18].map(z => blk('#9e9e9e', [.09, .34, .02], [1.43, .6, z])), ball('#cfd8dc', U(.08), [1.44, .9, 0]),
@@ -1898,7 +1958,7 @@ function vehModel(k) {
 }
 function riderModel(g, uid, lk, vk) {
   const V = vehModel(vk), ch = charModel(g, uid, lk); ch.scale.setScalar(1); const [x, y, z] = V.userData.seat; ch.position.set(x, y - .42, z); V.add(ch);
-  const u = ch.userData; u.legL.rotation.z = u.legR.rotation.z = 1.35; Object.assign(V.userData, {head:u.head, armL:u.armL, armR:u.armR, legL:u.legL, legR:u.legR, rider:ch}); return V;
+  const u = ch.userData; u.legL.rotation.z = u.legR.rotation.z = V.userData.stand ? 0 : 1.35; Object.assign(V.userData, {head:u.head, armL:u.armL, armR:u.armR, legL:u.legL, legR:u.legR, rider:ch}); return V;
 }
 
 /* ================= 3D：Q 版主角（男生／女生） ================= */
@@ -1914,29 +1974,56 @@ function chibiHead(hair, hairStyle) {
 }
 function chibiArm(z, sleeve, hand, extra) { const a = pivot(0, .9, z, rod(sleeve, [.06, .24, .06], [0, -.12, 0]), ball(hand, U(.065), [0, -.27, 0])); if (extra) a.add(extra); return a; }
 function chibiLeg(z, c, sock, shoe) { const l = pivot(0, .42, z, rod(c, [.07, .3, .07], [0, -.15, 0])); if (sock) l.add(rod(sock, [.075, .07, .075], [0, -.26, 0])); l.add(ball(shoe, [.11, .07, .09], [.03, -.33, 0])); return l; }
+function outfitBody(G, girl, L, fork) {
+  const st = L.st, T = L.top, Bt = L.bot, add = (...a) => G.add(...a);
+  let legL, legR, armR, armL;
+  const arms = (sl, wide) => { armR = chibiArm(girl ? .22 : .23, sl, SKIN); armL = chibiArm(girl ? -.22 : -.23, sl, SKIN, fork); if (wide) for (const a of [armR, armL]) a.add(rod(sl, [.1, .16, .1], [0, -.18, 0])); };
+  const legs = (c, sock, shoe) => { legL = chibiLeg(girl ? .08 : .09, c, sock, shoe); legR = chibiLeg(girl ? -.08 : -.09, c, sock, shoe); };
+  if (st === 'overall') { legs(Bt, null, '#6d4c41'); arms(T);
+    add(rod(Bt, [.2, .24, .17], [0, .54, 0]), rod(T, [.19, .22, .16], [0, .79, 0]), blk(Bt, [.05, .2, .2], [.16, .73, 0]), blk(darken(Bt, .15), [.02, .08, .09], [.19, .68, 0]), blk(Bt, [.04, .24, .04], [.1, .82, .1]), blk(Bt, [.04, .24, .04], [.1, .82, -.1]),
+      ball('#f6c531', U(.025), [.19, .83, .08]), ball('#f6c531', U(.025), [.19, .83, -.08]), rod('#d84339', [.17, .05, .17], [0, .91, 0]), cone('#d84339', [.13, .17, .05], [.16, .83, 0], [Math.PI, 0, 0])); }
+  else if (st === 'dress') { legs(SKIN, Bt, '#8d5a2b'); arms(T);
+    add(M(gBucket(), T, [.26, .44, .24], [0, .64, 0], [Math.PI, 0, 0]), ring(darken(T, .1), [.26, .26, .3], [0, .43, 0], [Math.PI / 2, 0, 0]), rod(T, [.16, .08, .16], [0, .89, 0]));
+    for (let k = 0; k < 14; k++) { const a = k / 14 * Math.PI * 2, y = .5 + (k % 2) * .16, r = .25 - (y - .5) * .35; add(ball(lighten(T, .3), U(.035), [Math.cos(a) * r, y, Math.sin(a) * r])); }
+    add(ball('#a1673b', U(.035), [.17, .84, .04]), ball('#a1673b', U(.035), [.17, .84, -.04]), rod('#a1673b', [.008, .14, .008], [.18, .76, .03], [.4, 0, 0]), rod('#a1673b', [.008, .14, .008], [.18, .76, -.03], [-.4, 0, 0]),
+      ball('#5aa832', [.02, .05, .12], [.2, .55, .12], [.6, 0, 0]), ball('#5aa832', [.02, .05, .12], [.2, .55, -.12], [-.6, 0, 0])); }
+  else if (st === 'tee') { legs(SKIN, '#ffffff', '#1e88e5'); for (const l of [legL, legR]) l.add(rod(Bt, [.08, .13, .08], [0, -.05, 0])); armR = chibiArm(girl ? .22 : .23, SKIN, SKIN); armL = chibiArm(girl ? -.22 : -.23, SKIN, SKIN, fork); for (const a of [armR, armL]) a.add(rod(T, [.07, .09, .07], [0, -.04, 0]));
+    add(rod(Bt, [.2, .12, .17], [0, .48, 0]), rod(T, [.2, .34, .17], [0, .72, 0]), rod(T, [.16, .05, .16], [0, .9, 0]), ...[[0, .06], [.05, -.03], [-.05, -.03]].map(([y, z]) => ball('#ffeb3b', U(.03), [.2, .74 + y, z]))); }
+  else if (st === 'suit') { legs(Bt, null, '#212121'); arms(T);
+    add(rod(Bt, [.2, .14, .17], [0, .5, 0]), rod(T, [.21, .38, .18], [0, .7, 0]), blk('#ffffff', [.02, .2, .1], [.2, .8, 0]), blk('#c62828', [.02, .17, .04], [.215, .76, 0]), blk('#c62828', [.02, .04, .06], [.215, .86, 0]),
+      ball('#212121', U(.022), [.21, .64, .05]), ball('#212121', U(.022), [.21, .56, .05]), blk(darken(T, .2), [.02, .14, .05], [.205, .8, .08], [.3, 0, 0]), blk(darken(T, .2), [.02, .14, .05], [.205, .8, -.08], [-.3, 0, 0])); }
+  else if (st === 'hoodie') { legs(Bt, null, '#ffffff'); arms(T);
+    add(rod(Bt, [.2, .12, .17], [0, .5, 0]), rod(T, [.22, .38, .19], [0, .7, 0]), ball(T, [.13, .16, .22], [-.2, .97, 0]), blk(darken(T, .15), [.03, .1, .16], [.2, .6, 0]), rod('#ffffff', [.008, .12, .008], [.21, .83, .04]), rod('#ffffff', [.008, .12, .008], [.21, .83, -.04]), ball('#ffffff', U(.018), [.21, .76, .04]), ball('#ffffff', U(.018), [.21, .76, -.04])); }
+  else if (st === 'sport') { legs(Bt, null, '#ffffff'); for (const l of [legL, legR]) l.add(blk('#ffffff', [.075, .26, .015], [0, -.14, l.position.z > 0 ? .036 : -.036])); arms(T); for (const a of [armR, armL]) a.add(blk('#ffffff', [.065, .22, .012], [0, -.12, a.position.z > 0 ? .032 : -.032]));
+    add(rod(Bt, [.2, .12, .17], [0, .5, 0]), rod(T, [.2, .36, .17], [0, .71, 0]), blk('#ffffff', [.02, .3, .03], [.2, .72, 0]), rod('#ffffff', [.16, .05, .16], [0, .9, 0])); }
+  else if (st === 'skirt') { legs(SKIN, '#ffffff', '#e53935'); arms(T, true);
+    add(rod(T, [.18, .24, .16], [0, .77, 0]), M(gBucket(), Bt, [.27, .2, .25], [0, .55, 0], [Math.PI, 0, 0]), ring(darken(Bt, .15), [.27, .27, .3], [0, .45, 0], [Math.PI / 2, 0, 0]), ball('#ffffff', [.05, .04, .14], [.17, .88, 0]), ball('#e53935', U(.03), [.2, .8, 0])); }
+  else if (st === 'pinafore') { legs(SKIN, '#ffffff', '#8d5a2b'); arms(T);
+    add(rod(T, [.17, .24, .15], [0, .78, 0]), M(gBucket(), Bt, [.26, .26, .24], [0, .58, 0], [Math.PI, 0, 0]), blk(Bt, [.04, .18, .16], [.16, .72, 0]), blk(Bt, [.03, .22, .03], [.1, .82, .08]), blk(Bt, [.03, .22, .03], [.1, .82, -.08]), ball('#ffeb3b', U(.025), [.19, .78, .06]), ball('#ffeb3b', U(.025), [.19, .78, -.06]), blk(lighten(Bt, .3), [.02, .06, .08], [.19, .64, 0])); }
+  else if (st === 'gown') { legs(SKIN, null, '#f8bbd0'); arms(T);
+    add(M(gBucket(), T, [.36, .52, .34], [0, .45, 0], [Math.PI, 0, 0]), ...[.22, .36, .5].map((y, i) => ring(lighten(T, .35), [.34 - i * .05, .34 - i * .05, .3], [0, y, 0], [Math.PI / 2, 0, 0])), rod(T, [.15, .2, .14], [0, .8, 0]),
+      ball(lighten(T, .2), U(.09), [0, .87, .2]), ball(lighten(T, .2), U(.09), [0, .87, -.2]), ball('#ffffff', [.04, .05, .1], [.16, .86, 0]), ball('#fff59d', U(.03), [.18, .7, 0])); }
+  else { legs(Bt, null, '#4e342e'); arms(T, true);
+    add(M(gBucket(), T, [.29, .5, .27], [0, .5, 0], [Math.PI, 0, 0]), rod(T, [.18, .24, .16], [0, .8, 0]), rod(Bt, [.2, .07, .2], [0, .62, 0]), blk('#ffffff', [.02, .2, .03], [.18, .82, .04], [.5, 0, 0]), blk('#ffffff', [.02, .2, .03], [.18, .82, -.04], [-.5, 0, 0]), blk(Bt, [.02, .2, .05], [.2, .5, 0])); }
+  add(legL, legR, armR, armL);
+  return {legL, legR, armR, armL};
+}
+function accOn(G, head, ac) {
+  if (ac === 'glasses' || ac === 'shades') { const c = ac === 'shades' ? '#111' : '#5d4037';
+    for (const z of [.12, -.12]) head.add(ac === 'shades' ? rod('#111', [.085, .02, .085], [.335, .02, z], [0, 0, Math.PI / 2]) : ring(c, [.075, .075, .2], [.335, .02, z], [0, Math.PI / 2, 0]));
+    head.add(blk(c, [.015, .015, .08], [.34, .03, 0]), blk(c, [.25, .015, .015], [.21, .03, .2]), blk(c, [.25, .015, .015], [.21, .03, -.2])); }
+  else if (ac === 'scarf') G.add(rod('#e53935', [.19, .08, .19], [0, .92, 0]), blk('#e53935', [.03, .2, .07], [.15, .8, .08], [.2, 0, 0]), ...[0, 1, 2].map(i => blk('#ffffff', [.035, .02, .075], [.155, .74 + i * .06, .085])));
+  else if (ac === 'bag') G.add(blk('#8d6e63', [.12, .26, .24], [-.19, .72, 0]), blk('#6d4c41', [.13, .08, .25], [-.19, .8, 0]), blk('#ffca28', [.02, .04, .04], [-.25, .75, 0]), blk('#6d4c41', [.22, .03, .03], [-.05, .82, .1], [0, 0, -.5]), blk('#6d4c41', [.22, .03, .03], [-.05, .82, -.1], [0, 0, -.5]));
+  else if (ac === 'bow') head.add(ball('#e91e63', [.05, .08, .1], [-.05, .27, .2], [.4, 0, 0]), ball('#e91e63', [.05, .08, .1], [-.05, .2, .32], [-.6, 0, 0]), ball('#c2185b', U(.04), [-.05, .24, .26]));
+  else if (ac === 'cape') G.add(blk('#7b1fa2', [.03, .62, .34], [-.17, .6, 0], [0, 0, -.14]), blk('#7b1fa2', [.03, .5, .2], [-.21, .58, .2], [-.25, 0, -.14]), blk('#7b1fa2', [.03, .5, .2], [-.21, .58, -.2], [.25, 0, -.14]), rod('#ffca28', [.19, .05, .19], [0, .92, 0]));
+  else if (ac === 'wings') { for (const sz of [1, -1]) G.add(ball('#ffffff', [.04, .3, .17], [-.24, .88, sz * .18], [sz * .55, 0, -.2]), ball('#f5f5f5', [.04, .2, .12], [-.24, .66, sz * .2], [sz * .9, 0, -.2])); head.add(ring('#ffd54f', [.17, .17, .2], [-.02, .47, 0], [Math.PI / 2, 0, 0])); }
+}
 function charModel(g, uid = '', lk = null) {
   const G = new THREE.Group(), girl = g === 'girl', L = lookOf(g, lk);
-  if (!girl) {
-    const fork = grp(rod('#8d5a2b', [.022, 1.15, .022], [.02, -.15, 0]), blk('#90a4ae', [.03, .04, .18], [.02, .44, 0]), ...[-.07, 0, .07].map(z => rod('#b0bec5', [.012, .2, .012], [.02, .55, z])));
-    const legL = chibiLeg(.09, L.bot, null, '#6d4c41'), legR = chibiLeg(-.09, L.bot, null, '#6d4c41');
-    const armR = chibiArm(.23, L.top, SKIN), armL = chibiArm(-.23, L.top, SKIN, fork);
-    G.add(legL, legR, armR, armL, rod(L.bot, [.2, .24, .17], [0, .54, 0]), rod(L.top, [.19, .22, .16], [0, .79, 0]),
-      blk(L.bot, [.05, .2, .2], [.16, .73, 0]), blk(darken(L.bot, .15), [.02, .08, .09], [.19, .68, 0]), blk(L.bot, [.04, .24, .04], [.1, .82, .1]), blk(L.bot, [.04, .24, .04], [.1, .82, -.1]),
-      ball('#f6c531', U(.025), [.19, .83, .08]), ball('#f6c531', U(.025), [.19, .83, -.08]),
-      rod('#d84339', [.17, .05, .17], [0, .91, 0]), cone('#d84339', [.13, .17, .05], [.16, .83, 0], [Math.PI, 0, 0]));
-    const head = chibiHead('#7b4a2a', 'boy'); hatOn(head, L.hat, L.hc);
-    head.scale.setScalar(1.12); G.add(head); Object.assign(G.userData, {head, armL, armR, legL, legR});
-  } else {
-    const legL = chibiLeg(.08, SKIN, L.bot, '#8d5a2b'), legR = chibiLeg(-.08, SKIN, L.bot, '#8d5a2b');
-    const armR = chibiArm(.22, L.top, SKIN), armL = chibiArm(-.22, L.top, SKIN);
-    const dress = M(gBucket(), L.top, [.26, .44, .24], [0, .64, 0], [Math.PI, 0, 0]);
-    G.add(legL, legR, armR, armL, dress, ring(darken(L.top, .1), [.26, .26, .3], [0, .43, 0], [Math.PI / 2, 0, 0]), rod(L.top, [.16, .08, .16], [0, .89, 0]));
-    for (let k = 0; k < 14; k++) { const a = k / 14 * Math.PI * 2, y = .5 + (k % 2) * .16, r = .25 - (y - .5) * .35; G.add(ball(lighten(L.top, .3), U(.035), [Math.cos(a) * r, y, Math.sin(a) * r])); }
-    G.add(ball('#a1673b', U(.035), [.17, .84, .04]), ball('#a1673b', U(.035), [.17, .84, -.04]), rod('#a1673b', [.008, .14, .008], [.18, .76, .03], [.4, 0, 0]), rod('#a1673b', [.008, .14, .008], [.18, .76, -.03], [-.4, 0, 0]),
-      ball('#5aa832', [.02, .05, .12], [.2, .55, .12], [.6, 0, 0]), ball('#5aa832', [.02, .05, .12], [.2, .55, -.12], [-.6, 0, 0]));
-    const head = chibiHead('#3e2a1e', 'girl'); hatOn(head, L.hat, L.hc);
-    head.scale.setScalar(1.12); G.add(head); Object.assign(G.userData, {head, armL, armR, legL, legR});
-  }
+  const fork = girl ? null : grp(rod('#8d5a2b', [.022, 1.15, .022], [.02, -.15, 0]), blk('#90a4ae', [.03, .04, .18], [.02, .44, 0]), ...[-.07, 0, .07].map(z => rod('#b0bec5', [.012, .2, .012], [.02, .55, z])));
+  const parts = outfitBody(G, girl, L, fork);
+  const head = chibiHead(girl ? '#3e2a1e' : '#7b4a2a', girl ? 'girl' : 'boy'); hatOn(head, L.hat, L.hc); accOn(G, head, L.ac);
+  head.scale.setScalar(1.12); G.add(head); Object.assign(G.userData, {head, ...parts});
   G.scale.setScalar(1.25); G.traverse(o => { if (o.isMesh) o.castShadow = true; });
   return G;
 }
@@ -3513,7 +3600,7 @@ function loop() {
     if (u.head) u.head.rotation.x = Math.sin(t * 1.1 + P.k) * .1;
     const wa = P.waveAt ? now() - P.waveAt : 1e9, waving = wa < 3800;
     if (u.armR) { u.armR.rotation.x = waving ? -2.6 + Math.sin(t * 12) * .5 : Math.sin(t * 1.3 + P.k) * .08; u.armL.rotation.x = waving && wa > 1200 && wa < 2600 ? 2.6 + Math.sin(t * 12 + 1) * .5 : Math.sin(t * 1.3 + P.k + 1) * .08;
-      if (P.veh) { u.legL.rotation.z = u.legR.rotation.z = 1.35; u.armL.rotation.z = u.armR.rotation.z = waving ? 0 : 1.1; }
+      if (P.veh) { const vu = P.m.userData; if (vu.stand) u.legL.rotation.z = u.legR.rotation.z = 0; else if (vu.pedal && P.walking) { const sw = Math.sin(P.walkT * 1.2); u.legL.rotation.z = 1.1 + sw * .45; u.legR.rotation.z = 1.1 - sw * .45; } else u.legL.rotation.z = u.legR.rotation.z = 1.35; u.armL.rotation.z = u.armR.rotation.z = waving ? 0 : 1.1; }
       else if (P.walking) { const sw = Math.sin(P.walkT); u.legL.rotation.z = sw * .7; u.legR.rotation.z = -sw * .7; u.armL.rotation.z = waving ? 0 : -sw * .6; u.armR.rotation.z = waving ? 0 : sw * .6; }
       else { u.legL.rotation.z = u.legR.rotation.z = 0; u.armL.rotation.z = u.armR.rotation.z = 0; } }
     if (waving) { const T2 = P.waveTo && W.people.find(q => q.uid === P.waveTo); if (T2) { const a2 = Math.atan2(-(T2.m.position.z - P.m.position.z), T2.m.position.x - P.m.position.x), ac = -Math.PI / 2; let dd = a2 - ac; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y = ac + dd * .6; } else P.m.rotation.y = -Math.PI / 2; if (u.head) u.head.rotation.z = Math.sin(t * 5) * .15; if (wa < 1400) P.m.position.y = Math.abs(Math.sin(wa / 1400 * Math.PI * 2)) * .45; const pop = wa < 300 ? wa / 300 : wa > 3400 ? (3800 - wa) / 400 : 1; P.m.scale.setScalar(1.25 * (1 + .22 * pop)); if (!P.hiFx || now() - P.hiFx > 1300) { P.hiFx = now(); fx3(P.m.position.x, 3.3, P.m.position.z, rnd(['👋', '👋✨', '💕']), '#e91e63'); } }
@@ -4100,7 +4187,7 @@ function openShop(tab = 'seed') {
     const f = S.my, Lv = levelOf(f.exp).L, n = f.plotCount + 1, cap = ranchCap(Lv), cnt = f.ranch.animals.length;
     let body = `<div class="mtabs">${[['seed','🌱 種子'],['sea','🐟 魚苗'],['ani','🐔 動物'],['pet','🐶 寵物'],['mach','🏭 機器'],['item','🧰 道具'],['veh','🛵 載具']].map(([k, t]) => `<button class="${tab === k ? 'on' : ''}" data-act="shopTab" data-t="${k}">${t}</button>`).join('')}</div>`;
     if (tab === 'veh') { const V = ({own:{}, ...(f.veh || {})}), ride = rideOf(f);
-      body += `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">買了交通工具，主角就能騎著在農場、小鎮跑來跑去（點地面就會騎過去），好友也看得到！在「個人資料 → 換裝＆交通工具」可以換車或下車。</p>` + VEH_LIST.map(([k, n, lv, c, d]) => { const own = V.own[k], lock = Lv < lv;
+      body += `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">買了交通工具，主角就能騎著在農場、小鎮跑來跑去（點地面就會騎過去），好友也看得到！在「個人資料 → 換裝＆交通工具」可以換車或下車。</p>` + [...VEH_LIST].sort((a, b) => a[2] - b[2]).map(([k, n, lv, c, d]) => { const own = V.own[k], lock = Lv < lv;
         return `<div class="item ${lock ? 'dim' : ''}"><div class="pic" style="width:64px;height:64px"><img src="${thumbURL('veh', k)}" alt="" style="width:64px;height:64px"></div><div class="info"><div class="t">${n}</div><div class="d">${d}${own ? '' : ` · 💰${c}`}</div></div>
           <div class="acts">${own ? (ride === k ? '<button class="b g" data-act="ride" data-k="">🚶 下車</button>' : `<button class="b" data-act="ride" data-k="${k}">騎上去</button>`) : lock ? `<button class="b g" disabled>Lv.${lv} 解鎖</button>` : `<button class="b o" data-act="buyVeh" data-k="${k}">買 ${c}💰</button>`}</div></div>`; }).join('');
     }
@@ -5350,11 +5437,12 @@ function unZoom() {
 }
 function openWardrobe() {
   S.modal = () => {
-    const f = S.my, g = myGender(), L = lookOf(g, f.look), id = [g, L.top, L.bot, L.hat, L.hc].join('|'), V = ({own:{}, ...(f.veh || {})}), own = Object.keys(V.own).filter(k => VEH[k]), ride = rideOf(f);
+    const f = S.my, g = myGender(), L = lookOf(g, f.look), id = [g, L.top, L.bot, L.hat, L.hc, L.st, L.ac].join('|'), V = ({own:{}, ...(f.veh || {})}), own = Object.keys(V.own).filter(k => VEH[k]), ride = rideOf(f);
     const sw = (part, cur) => `<div class="sws">${CLOTH_COL.map(c => `<button class="sw ${c === cur ? 'on' : ''}" style="background:${c}" data-act="lookSet" data-p="${part}" data-v="${c}" aria-label="${c}"></button>`).join('')}</div>`;
     let body = `<div class="wd"><img src="${thumbURL('char', id)}" alt=""><div><div class="mtabs" style="margin:0 0 6px">${[['boy', '👦 男生'], ['girl', '👧 女生']].map(([k, t]) => `<button class="${g === k ? 'on' : ''}" data-act="setGender" data-g="${k}" data-keep="1">${t}</button>`).join('')}</div><small>點下面的顏色和帽子就會馬上換上，好友也看得到！</small><br><button class="b g" data-act="lookReset" style="margin-top:6px">↩️ 換回預設</button></div></div>`;
-    body += `<div class="sec">👕 ${g === 'girl' ? '洋裝' : '上衣'}顏色</div>${sw('top', L.top)}<div class="sec">👖 ${g === 'girl' ? '襪子' : '吊帶褲'}顏色</div>${sw('bot', L.bot)}`;
-    body += `<div class="sec">🎩 帽子</div><div class="hats">${Object.entries(HATS).map(([k, n]) => { const pr = HAT_PRICE[k], got = !pr || f.hats?.[k]; return `<button class="b ${L.hat === k ? 'on2' : got ? '' : 'o'}" data-act="lookSet" data-p="hat" data-v="${k}">${n}${got ? '' : ` ${pr}💰`}</button>`; }).join('')}</div><div class="sec">🎨 帽子顏色</div>${sw('hc', L.hc)}`;
+    const opt = (part, map) => `<div class="hats">${Object.entries(map).map(([k, n]) => { const pr = partPrice(part, k), got = !pr || f.hats?.[partKey(part, k)]; return `<button class="b ${L[part] === k ? 'on2' : got ? '' : 'o'}" data-act="lookSet" data-p="${part}" data-v="${k}">${n}${got ? '' : ` ${pr}💰`}</button>`; }).join('')}</div>`;
+    body += `<div class="sec">👔 服裝款式</div>${opt('st', STYLES[g])}<div class="sec">🎨 衣服顏色</div>${sw('top', L.top)}<div class="sec">👖 ${['dress', 'tee', 'skirt'].includes(L.st) ? (L.st === 'dress' ? '襪子' : '褲子／裙子') : '褲子／腰帶'}顏色</div>${sw('bot', L.bot)}`;
+    body += `<div class="sec">🎩 帽子</div>${opt('hat', HATS)}<div class="sec">🎨 帽子顏色</div>${sw('hc', L.hc)}<div class="sec">🎒 配件</div>${opt('ac', ACCS)}`;
     body += `<div class="sec">🛵 我的交通工具</div>` + (own.length ? `<div class="hats">${own.map(k => `<button class="b ${ride === k ? 'on2' : ''}" data-act="ride" data-k="${k}">${VEH[k].n}${ride === k ? '（騎乘中）' : ''}</button>`).join('')}${ride ? '<button class="b g" data-act="ride" data-k="">🚶 下車走路</button>' : ''}</div>` : '<div class="empty">還沒有交通工具，到「🏪 商店 → 🛵 載具」買一台吧！</div>') + '<div style="text-align:center;margin-top:6px"><button class="b o" data-act="shopVeh">🏪 去看交通工具</button></div>';
     openModal('👗 換裝＆交通工具', body);
   };
@@ -5362,9 +5450,10 @@ function openWardrobe() {
 }
 async function lookSet(part, v) {
   const g = myGender();
-  if (part === 'hat' && HAT_PRICE[v] && !S.my.hats?.[v]) { if (!confirm(`花 ${HAT_PRICE[v]} 金幣買${HATS[v]}嗎？`)) return; }
-  const r = await txMe(f => { const L = lookOf(g, f.look); if (part === 'hat' && HAT_PRICE[v] && !f.hats?.[v]) { if (f.coins < HAT_PRICE[v]) return ab('金幣不夠'); f.coins -= HAT_PRICE[v]; (f.hats ??= {})[v] = 1; addTrade(f, `買${HATS[v]}`, -HAT_PRICE[v]); }
-    L[part] = v; f.look = {top:L.top, bot:L.bot, hat:L.hat, hc:L.hc}; return {}; });
+  const pr = partPrice(part, v), pk = partKey(part, v), nm = part === 'hat' ? HATS[v] : part === 'st' ? STYLES[g][v] : ACCS[v];
+  if (pr && !S.my.hats?.[pk]) { if (!confirm(`花 ${pr} 金幣買${nm}嗎？`)) return; }
+  const r = await txMe(f => { const L = lookOf(g, f.look); if (pr && !f.hats?.[pk]) { if (f.coins < pr) return ab('金幣不夠'); f.coins -= pr; (f.hats ??= {})[pk] = 1; addTrade(f, `買${nm}`, -pr); }
+    L[part] = v; f.look = {top:L.top, bot:L.bot, hat:L.hat, hc:L.hc, st:L.st, ac:L.ac}; return {}; });
   if (r.abort) return toast(r.msg); beat(); if (W.scene) { W.peopleKey = null; renderScene(); } Music.sfx('pop');
 }
 async function rideSet(k) {
