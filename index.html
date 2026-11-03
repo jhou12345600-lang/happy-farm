@@ -100,7 +100,8 @@ button{font-family:inherit;cursor:pointer;border:none}
 #sceneTabs button{padding:6px 12px;border-radius:10px;background:transparent;color:#6b3f1d;font-weight:900;font-size:14px}
 #sceneTabs button.on{background:#ffb74d;color:#5d3a12}
 #sceneTabs{max-width:calc(100% - 16px);overflow-x:auto;scrollbar-width:none}#sceneTabs::-webkit-scrollbar{display:none}#sceneTabs button{position:relative;white-space:nowrap;flex:none}#sceneTabs .badge{top:-3px;right:-3px}
-@media (max-width:520px){#sceneTabs{gap:2px;padding:3px;left:6px}#sceneTabs button{padding:6px 6px;font-size:12.5px;letter-spacing:-.3px}}
+@media (max-width:520px){#sceneTabs{gap:1px;padding:3px;left:4px;max-width:calc(100% - 8px)}#sceneTabs button{padding:6px 4px;font-size:12px;letter-spacing:-.5px}}
+@media (max-width:385px){#stage #sceneTabs button{padding:6px 3px;font-size:11.5px;letter-spacing:-.6px}}
 .hearts{letter-spacing:-2px;font-size:13px}.vilhead{display:flex;gap:12px;align-items:center;margin-bottom:6px}.pic.big{width:84px;height:84px}.pic.big img{width:84px;height:84px}
 .vilsay{background:#fff;border:2px solid #d7b98e;border-radius:14px;padding:8px 12px;margin:6px 0;color:#5d4037;font-weight:700;line-height:1.5}
 .vilstory{background:#fffde7;border-left:4px solid #ffb300;padding:8px 10px;margin:2px 0 8px;color:#5d4037;line-height:1.7;font-size:14px;border-radius:6px}
@@ -260,7 +261,7 @@ button{font-family:inherit;cursor:pointer;border:none}
   #tools{gap:4px;padding-left:4px;padding-right:4px}
   .fr{width:58px}
   .fr .av{width:36px;height:36px;font-size:15px}
-  #sceneTabs button{padding:5px 6px;font-size:12px}
+  #sceneTabs button{padding:5px 4px;font-size:12px;letter-spacing:-.5px}
   #wx{top:44px;max-width:74%}
   #wx button{font-size:11px;padding:2px 7px}
   #visitBar{top:72px;font-size:13px}
@@ -310,7 +311,7 @@ button{font-family:inherit;cursor:pointer;border:none}
   <div id="stage">
     <div id="loading">🚜 正在載入 3D 農場…</div>
     <div id="ovl"></div>
-    <div id="sceneTabs"><button data-act="scene" data-s="farm" class="on">🌾 農場</button><button data-act="scene" data-s="ranch">🐮 牧場</button><button data-act="scene" data-s="fish">🐟 魚塭</button><button data-act="scene" data-s="factory">🏭 工廠</button><button data-act="scene" data-s="green">🌱 溫室<em class="badge" id="bdH"></em></button><button data-act="scene" data-s="town">🏘️ 小鎮<em class="badge" id="bdV"></em></button></div>
+    <div id="sceneTabs"><button data-act="scene" data-s="farm" class="on">🌾 農場</button><button data-act="scene" data-s="ranch">🐮 牧場</button><button data-act="scene" data-s="fish">🐟 魚塭</button><button data-act="scene" data-s="factory">🏭 工廠</button><button data-act="scene" data-s="green">🌱 溫室<em class="badge" id="bdH"></em></button><button data-act="scene" data-s="town">🏘️ 小鎮<em class="badge" id="bdV"></em></button><button data-act="scene" data-s="temple">🏯 廟宇</button></div>
     <div id="wx"></div>
     <div id="visitBar" hidden><span>👀 在 <b id="visitName"></b> 的家</span><button data-act="home">🏠 回家</button></div>
     <div id="hereBox" hidden></div>
@@ -3767,7 +3768,7 @@ function renderTools() {
                                    : [['hand','✋','偷產品'], ['feedFriend','🌾','幫餵食', 1], ['cleanTip','🧹','幫清便便', 1]];
   else if (S.scene === 'green') T = own ? [['hand','✋','手'], ['pump','🎃','南瓜大賽', 1], ['ghBuy','➕','擴建溫室', 1]] : [['hand','✋','參觀'], ['pump','🎃','南瓜大賽', 1]];
   else if (S.scene === 'temple') T = [['hand','✋','手'], ['templeInfo','🏯','廟宇', 1], ['qianShow','📜','今日籤詩', 1], ['toTown','🏘️','回小鎮', 1]];
-  else if (S.scene === 'town') T = own ? [['hand','✋','手'], ['vilList','📋','村民委託', 1], ['stall','🏪','我的攤位', 1], ['toTemple','🏯','去廟裡', 1]] : [['hand','✋','逛逛'], ['stall','🏪','逛攤位', 1]];
+  else if (S.scene === 'town') T = own ? [['hand','✋','手'], ['vilList','📋','村民委託', 1], ['stall','🏪','我的攤位', 1], ['toTemple','🏯','去廟裡', 1]] : [['hand','✋','逛逛'], ['stall','🏪','逛攤位', 1], ['toTemple','🏯','去廟裡', 1]];
   else if (S.decoMode && own) T = [['decoDone','✅','完成', 1], ['decoTool','🪑','換裝飾', 1]];
   else T = own ? [['hand','✋','手'], ['plant','🌱', S.seed ? CROPS[S.seed].n : '播種'], ['water','💧','澆水'], ['weed','🌿','除草'], ['bug','🐞','除蟲'], ['fert','🧪','施肥'], ['plow','⛏️','翻地'], ['decoTool','🪑','裝飾', 1]]
                : [['hand','✋','偷菜'], ['water','💧','幫澆水'], ['weed','🌿','幫拔草'], ['bug','🐞','幫除蟲'], ['pbug','🐛','放蟲'], ['pweed','🌾','種草']];
@@ -3800,7 +3801,7 @@ function renderScene() {
     setSign(W.ranchSign, own ? '我的牧場' : `${dn(f)}的牧場`, `動物 ${f.ranch.animals.length}/${ranchCap(levelOf(f.exp).L)}`);
     setSign(W.fishSign, own ? '我的魚塭' : `${dn(f)}的魚塭`, `魚池 ${f.fish.n}/${MAXPOND}`);
   }
-  document.querySelectorAll('#sceneTabs button').forEach(b => b.classList.toggle('on', b.dataset.s === (S.scene === 'temple' ? 'town' : S.scene)));
+  document.querySelectorAll('#sceneTabs button').forEach(b => b.classList.toggle('on', b.dataset.s === S.scene));
   $('#visitBar').hidden = own; if (!own && f) $('#visitName').textContent = dn(f);
   const list = hereList();
   if (!own && f && !list.some(p => p.uid === S.viewUid)) { const nw = W.npc?.uid === S.viewUid ? W.npc : {}; list.push({uid:S.viewUid, n:dn(f), g:f.gender || genderOf({uid:S.viewUid}), lk:f.look || null, vh:rideOf(f), lv:levelOf(f.exp).L, npc:true, t:now(), say:nw.say, wave:nw.wave, waveTo:nw.wave ? S.uid : '', back:true}); }
