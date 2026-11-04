@@ -14,6 +14,7 @@ button{font-family:inherit;cursor:pointer;border:none}
 [hidden]{display:none!important}
 
 #auth{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:linear-gradient(#6ec6ff 0 45%,#9ad85f 45% 100%);z-index:30}
+#auth .lnk{background:none;color:#8d5a2b;font-weight:800;font-size:14px;text-decoration:underline;padding:4px}#forgotBox{margin-top:8px;padding:10px;border:2px dashed #e0c99d;border-radius:14px;background:#fffdf5}#fgMsg{margin-top:8px;font-size:13.5px;color:#5d4037;line-height:1.6}
 #auth::before{content:"";position:absolute;left:-10%;right:-10%;top:38%;height:18%;background:#7cc35a;border-radius:50% 50% 0 0}
 .card{position:relative;width:100%;max-width:360px;background:#fffaf0;border:4px solid #8d5a2b;border-radius:22px;padding:22px 22px 18px;box-shadow:0 10px 0 #6b3f1d,0 18px 40px rgba(0,0,0,.25)}
 .logo{text-align:center;margin-bottom:14px}
@@ -280,12 +281,14 @@ button{font-family:inherit;cursor:pointer;border:none}
     <div class="logo"><div class="big">🥕🐔🌻🐷🍎</div><h1>歡樂偷菜農場 3D</h1><p>種菜、養動物、養狗貓、煮料理、半夜去好友家偷菜！</p></div>
     <div class="tabs"><button class="on" data-act="authTab" data-t="login">登入</button><button data-act="authTab" data-t="reg">註冊新帳號</button></div>
     <form id="authForm" autocomplete="on">
-      <div class="field"><label>帳號（2～10 個字，可用中文）</label><input id="aName" autocomplete="username" maxlength="10" required></div>
+      <div class="field"><label>帳號（2～10 個字，可用中文）</label><input id="aName" autocomplete="username" maxlength="60" placeholder="帳號（綁定過 Email 也可以用 Email 登入）" required></div>
       <div class="field"><label>密碼（至少 6 個字）</label><input id="aPass" type="password" autocomplete="current-password" required></div>
       <div class="field" id="aPass2Wrap" hidden><label>再輸入一次密碼</label><input id="aPass2" type="password" autocomplete="new-password"></div>
       <button class="go" id="aGo" type="submit" disabled>載入中…</button>
     </form>
     <div id="authErr"></div>
+    <div style="text-align:center;margin-top:8px"><button type="button" class="lnk" data-act="forgot">🔑 忘記密碼？</button></div>
+    <div id="forgotBox" hidden><div class="field"><label>輸入你的帳號，我們會寄重設密碼信到你綁定的 Email</label><input id="fgName" maxlength="60" autocomplete="username" placeholder="帳號或綁定的 Email"></div><button type="button" class="go" data-act="forgotGo" style="font-size:16px">📧 寄重設密碼信</button><div id="fgMsg"></div></div>
     <div id="modeNote"></div>
   </div>
 </div>
@@ -789,6 +792,7 @@ function fmtDur(ms) { const s = Math.max(0, Math.ceil(ms / 1000)), h = Math.floo
 function fmtTime(t) { const d = new Date(t); const p = n => String(n).padStart(2, '0'); return `${d.getMonth()+1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`; }
 function colorOf(s) { let h = 0; for (const c of String(s)) h = (h * 37 + c.charCodeAt(0)) % 360; return `hsl(${h} 65% 52%)`; }
 const dn = f => (f && (f.nick || f.username)) || '？';
+const maskMail = m => { const [a, b] = String(m).split('@'); return (a.length <= 2 ? a[0] + '*' : a.slice(0, 2) + '*'.repeat(Math.min(6, a.length - 2))) + '@' + (b || ''); };
 // 指定玩家的更新獎勵：名單裡的帳號下次登入會自動收到一次，並寫進消息欄
 const GRANTS = [
   {id:'upd20261104', n:'更新獎勵', c:500, fert:10, users:['Asd123', 'jtrn193', '偷偷偷摸摸', '游家的魚', 'qq666', 'tg12300']},
@@ -1319,6 +1323,13 @@ function makeLocal() {
     onAuth(cb) { authCb = cb; const u = store.getItem(SK); cb(u && db.users[u] ? {uid:u} : null); },
     async register(name, pass) { db = load(); const k = nameKey(name); if (db.names[k]) throw new Error('這個帳號已經有人用了'); const uid = 'u' + Math.random().toString(36).slice(2, 10); db.users[uid] = {pass:await sha(pass)}; db.names[k] = uid; db.farms[uid] = newFarm(name.trim()); save(); store.setItem(SK, uid); authCb({uid}); },
     async login(name, pass) { db = load(); const uid = db.names[nameKey(name)]; if (!uid) throw new Error('帳號不存在'); if (db.users[uid].pass !== await sha(pass)) throw new Error('密碼錯誤'); store.setItem(SK, uid); authCb({uid}); },
+    async loginMail(mail, pass) { db = load(); const uid = Object.keys(db.users).find(u => db.users[u].mail === mail); if (!uid || db.users[uid].pass !== await sha(pass)) throw new Error('Email 或密碼錯誤'); store.setItem(SK, uid); authCb({uid}); },
+    async resetPass(name) { db = load(); const uid = db.names[nameKey(name)]; if (!uid) throw new Error('帳號不存在'); const m = db.users[uid].mail; if (!m) throw new Error('NOMAIL'); db.users[uid].pass = await sha('123456'); save(); return maskMail(m) + '（單機測試版：密碼已重設為 123456）'; },
+    mailNow() { db = load(); const uid = store.getItem(SK); return (uid && db.users[uid]?.mail) || ''; },
+    async syncMail() { return this.mailNow(); },
+    async reauth(pass) { db = load(); const uid = store.getItem(SK); if (db.users[uid].pass !== await sha(pass)) throw new Error('密碼錯誤'); },
+    async bindMail(pass, mail) { await this.reauth(pass); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) throw new Error('Email 格式不對'); db = load(); db.users[store.getItem(SK)].mail = mail; save(); },
+    async changePass(oldPass, newPass) { await this.reauth(oldPass); db = load(); db.users[store.getItem(SK)].pass = await sha(newPass); save(); },
     async logout() { store.removeItem(SK); authCb(null); },
     async findUid(name) { db = load(); return db.names[nameKey(name)] || null; },
     async getFarm(uid) { db = load(); return db.farms[uid] ? clone(db.farms[uid]) : null; },
@@ -1353,7 +1364,7 @@ async function makeFirebase(cfg) {
   const fref = uid => F.doc(db, 'farms', uid);
   const MSG = {'auth/invalid-credential':'帳號或密碼錯誤', 'auth/wrong-password':'帳號或密碼錯誤', 'auth/user-not-found':'帳號不存在',
     'auth/invalid-login-credentials':'帳號或密碼錯誤', 'auth/email-already-in-use':'這個帳號已經有人用了', 'auth/weak-password':'密碼至少要 6 個字',
-    'auth/too-many-requests':'嘗試太多次，請稍後再試', 'auth/network-request-failed':'網路連線失敗',
+    'auth/too-many-requests':'嘗試太多次，請稍後再試', 'auth/requires-recent-login':'請重新登入後再試一次', 'auth/missing-password':'請輸入密碼', 'auth/network-request-failed':'網路連線失敗',
     'auth/operation-not-allowed':'Firebase 還沒開啟「電子郵件/密碼」登入', 'permission-denied':'資料庫拒絕存取（請檢查 Firestore 規則）'};
   const wrap = e => new Error(MSG[e.code] || e.message);
   let regP = null;
@@ -1371,7 +1382,24 @@ async function makeFirebase(cfg) {
         await F.setDoc(fref(cred.user.uid), newFarm(name.trim()));
       } catch (e) { throw e.code ? wrap(e) : e; }
     },
-    async login(name, pass) { try { await A.signInWithEmailAndPassword(auth, email(name), pass); } catch (e) { throw wrap(e); } },
+    async login(name, pass) {
+      let mail = ''; try { const d = await F.getDoc(F.doc(db, 'usernames', nameKey(name))); if (!d.exists()) throw Object.assign(new Error(''), {code:'auth/user-not-found'}); mail = d.data().mail || ''; } catch (e) { if (e.code === 'auth/user-not-found') throw wrap(e); }
+      try { await A.signInWithEmailAndPassword(auth, mail || email(name), pass); }
+      catch (e) { if (!mail) throw wrap(e); try { await A.signInWithEmailAndPassword(auth, email(name), pass); } catch (e2) { throw wrap(e); } }
+    },
+    async loginMail(mail, pass) { try { await A.signInWithEmailAndPassword(auth, mail, pass); } catch (e) { throw wrap(e); } },
+    async resetPass(name) {
+      if (name.includes('@')) { try { A.useDeviceLanguage(auth); await A.sendPasswordResetEmail(auth, name); } catch (e) { throw wrap(e); } return maskMail(name); }
+      const d = await F.getDoc(F.doc(db, 'usernames', nameKey(name))); if (!d.exists()) throw new Error('帳號不存在');
+      const mail = d.data().mail; if (!mail) throw new Error('NOMAIL');
+      try { A.useDeviceLanguage(auth); await A.sendPasswordResetEmail(auth, mail); } catch (e) { throw wrap(e); } return maskMail(mail);
+    },
+    mailNow() { const m = auth.currentUser?.email || ''; return /@hfarm\.game$/.test(m) ? '' : m; },
+    async syncMail(name) { const u = auth.currentUser; if (!u) return ''; await u.reload().catch(() => {}); const m = this.mailNow(); if (!m) return '';
+      const ref = F.doc(db, 'usernames', nameKey(name)), d = await F.getDoc(ref).catch(() => null); if (d?.exists() && d.data().uid === u.uid && d.data().mail !== m) await F.updateDoc(ref, {mail:m}).catch(e => console.warn(e)); return m; },
+    async reauth(pass) { const u = auth.currentUser; try { await A.reauthenticateWithCredential(u, A.EmailAuthProvider.credential(u.email, pass)); } catch (e) { throw wrap(e); } },
+    async bindMail(pass, mail) { await this.reauth(pass); try { A.useDeviceLanguage(auth); await A.verifyBeforeUpdateEmail(auth.currentUser, mail); } catch (e) { throw new Error(e.code === 'auth/invalid-email' ? 'Email 格式不對' : e.code === 'auth/email-already-in-use' ? '這個 Email 已經被別的帳號綁定了' : wrap(e).message); } },
+    async changePass(oldPass, newPass) { await this.reauth(oldPass); try { await A.updatePassword(auth.currentUser, newPass); } catch (e) { throw wrap(e); } },
     async logout() { await A.signOut(auth); },
     async findUid(name) { const s = await F.getDoc(F.doc(db, 'usernames', nameKey(name))); return s.exists() ? s.data().uid : null; },
     async getFarm(uid) { const s = await F.getDoc(fref(uid)); return s.exists() ? s.data() : null; },
@@ -4443,10 +4471,47 @@ function openMsgs() {
     + `<div class="sec">💰 交易紀錄</div>` + ((S.my.trade || []).length ? [...S.my.trade].reverse().map(l => `<div class="log"><time>${fmtTime(l.t)}</time><span style="flex:1">${esc(l.m)}</span>${l.c ? `<b style="color:${l.c > 0 ? '#2e7d32' : '#c62828'};white-space:nowrap">${l.c > 0 ? '+' : ''}${l.c}💰</b>` : ''}</div>`).join('') : '<div class="empty">還沒有交易，賣東西、市集成交都會記在這裡</div>'));
   S.modal(); txMe(f => { f.logSeen = now(); return {}; }).catch(() => {});
 }
+/* ----- 帳號安全：綁定 Email、忘記密碼、改密碼 ----- */
+const mailPend = () => { try { return store.getItem('hf_mailpend_' + S.uid) || ''; } catch { return ''; } };
+function openMailBind() {
+  S.modal = () => openModal('📧 綁定 Email', `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">綁定之後，忘記密碼時可以在登入畫面按「🔑 忘記密碼？」收重設密碼信。綁定後一樣用原本的帳號登入。<br>Email 只用來找回密碼，不會顯示給其他玩家。</p>
+    <div class="field"><label>你的 Email</label><input id="mbMail" type="email" autocomplete="email" placeholder="例如 abc@gmail.com"></div><div class="field"><label>目前的密碼（確認是你本人）</label><input id="mbPass" type="password" autocomplete="current-password"></div>
+    <button class="b o" style="width:100%" data-act="mailBindGo">📧 寄驗證信</button><div id="mbMsg" class="d" style="margin-top:8px"></div>`);
+  S.modal();
+}
+async function mailBindGo() {
+  const mail = $('#mbMail').value.trim(), pass = $('#mbPass').value; if (!mail || !pass) return toast('請輸入 Email 和目前的密碼');
+  $('#mbMsg').textContent = '寄送中…';
+  try { await B.bindMail(pass, mail); } catch (e) { $('#mbMsg').textContent = '❌ ' + e.message; return; }
+  try { store.setItem('hf_mailpend_' + S.uid, mail); } catch {}
+  if (B.mode === 'local') { S.mailB = mail; toast('📧 綁定完成！'); return openProfile(); }
+  S.modal = null; openModal('📧 驗證信已寄出', `<div class="mgres">驗證信已經寄到 <b>${esc(mail)}</b><br>打開信，點裡面的連結就完成綁定！<br><small>沒看到的話記得看「垃圾郵件」資料夾。點完連結後回到遊戲重新整理，個人資料會顯示「已綁定」。</small></div>`);
+  Music.sfx('ding');
+}
+function openPassChg() {
+  S.modal = () => openModal('🔑 修改密碼', `<div class="field"><label>目前的密碼</label><input id="pcOld" type="password" autocomplete="current-password"></div><div class="field"><label>新密碼（至少 6 個字）</label><input id="pcNew" type="password" autocomplete="new-password"></div><div class="field"><label>再輸入一次新密碼</label><input id="pcNew2" type="password" autocomplete="new-password"></div>
+    <button class="b o" style="width:100%" data-act="passChgGo">✅ 修改密碼</button><div id="pcMsg" class="d" style="margin-top:8px"></div>`);
+  S.modal();
+}
+async function passChgGo() {
+  const o = $('#pcOld').value, n = $('#pcNew').value, n2 = $('#pcNew2').value;
+  if (n.length < 6) return ($('#pcMsg').textContent = '❌ 新密碼至少要 6 個字'); if (n !== n2) return ($('#pcMsg').textContent = '❌ 兩次輸入的新密碼不一樣');
+  $('#pcMsg').textContent = '修改中…';
+  try { await B.changePass(o, n); } catch (e) { $('#pcMsg').textContent = '❌ ' + e.message; return; }
+  closeModal(); toast('🔑 密碼改好了，下次用新密碼登入'); Music.sfx('ding');
+}
+async function forgotGo() {
+  const name = $('#fgName').value.trim(), msg = $('#fgMsg'); if (!name) return (msg.textContent = '請先輸入帳號');
+  if (!B) return (msg.textContent = '還在連線，請稍等一下再試');
+  msg.textContent = '處理中…';
+  try { const m = await B.resetPass(name); msg.innerHTML = `✅ 重設密碼信已寄到 <b>${esc(m)}</b><br>打開信點連結設定新密碼，再回來用新密碼登入。沒看到記得看「垃圾郵件」。`; }
+  catch (e) { msg.innerHTML = e.message === 'NOMAIL' ? '😢 這個帳號還沒有綁定 Email，沒辦法自己重設密碼。<br>請聯絡遊戲管理員幫忙重設。<br><small>想起密碼登入後，記得到「個人資料 → 🔐 帳號安全」綁定 Email。</small>' : '❌ ' + esc(e.message); }
+}
 function openProfile() {
   S.modal = () => {
     const f = S.my, lv = levelOf(f.exp);
     openModal('👤 個人資料', `<div class="prof"><div class="av" style="background:${colorOf(f.username)}">${esc([...dn(f)][0])}</div><div><div class="t" style="font-size:20px;font-weight:900">${esc(dn(f))}</div><div class="d" style="color:#8d6e63;font-size:13px">登入帳號：${esc(f.username)}（好友用這個加你）</div></div></div>
+      <div class="sec">🔐 帳號安全</div><div class="item"><div class="pic">📧</div><div class="info"><div class="t">${S.mailB ? `已綁定 ${esc(maskMail(S.mailB))}` : mailPend() ? `驗證信已寄到 ${esc(maskMail(mailPend()))}` : '還沒綁定 Email'}</div><div class="d">${S.mailB ? '忘記密碼時，可以在登入畫面按「忘記密碼？」收重設信' : mailPend() ? '到信箱點驗證連結後重新整理遊戲就完成（也可以重寄或換 Email）' : '⚠️ 沒綁定的話，忘記密碼就救不回來，建議現在綁定！'}</div></div><div class="acts"><button class="b ${S.mailB ? '' : 'o'}" data-act="mailBind">${S.mailB ? '換 Email' : '綁定 Email'}</button><button class="b" data-act="passChg">🔑 改密碼</button></div></div>
       <button class="b o" style="width:100%;margin-bottom:6px" data-act="char">👗 換主角、換衣服、交通工具（現在是${S.my.gender === 'girl' ? '女生' : '男生'}）</button>
       <div class="sec">✏️ 改名字（顯示給大家看的暱稱）</div><div class="row"><input id="nickIn" maxlength="10" placeholder="1～10 個字" value="${esc(f.nick || '')}"><button class="b" data-act="saveNick">儲存</button></div>
       <div class="stats"><div><b>Lv.${lv.L}</b>等級</div><div><b>${f.coins.toLocaleString()}</b>金幣</div><div><b>${(f.friends || []).length}</b>好友</div><div><b>${f.plotCount}</b>塊田</div><div><b>${f.ranch.animals.length}</b>隻動物</div><div><b>${f.ordersDone || 0}</b>張訂單</div></div>
@@ -5307,6 +5372,7 @@ async function finishTut(done) {
 /* ================= 按鈕 ================= */
 let authMode = 'login';
 const ACT = {
+  forgot() { const b = $('#forgotBox'); b.hidden = !b.hidden; if (!b.hidden) { $('#fgName').value = $('#aName').value; $('#fgMsg').textContent = ''; $('#fgName').focus(); } }, forgotGo() { return forgotGo(); }, mailBind: openMailBind, mailBindGo() { return mailBindGo(); }, passChg: openPassChg, passChgGo() { return passChgGo(); },
   authTab(d) { authMode = d.t; document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === d.t)); $('#aPass2Wrap').hidden = d.t !== 'reg'; $('#aGo').textContent = d.t === 'reg' ? '註冊並開始' : '開始種田'; $('#aPass').autocomplete = d.t === 'reg' ? 'new-password' : 'current-password'; $('#authErr').textContent = ''; },
   tool(d) { if (d.t === 'plant' && (!S.seed || S.tool === 'plant')) { S.tool = 'plant'; renderTools(); return openSeedPicker(-1); } if (d.t === 'stock' && (!S.fry || S.tool === 'stock')) { S.tool = 'stock'; renderTools(); return openFryPicker(-1); } S.tool = d.t; renderTools(); },
   scene(d) { if (W.zoomed) { W.zoomed = false; clearTimeout(W.zoomT); const o = (W.camAnim?.off1 || W.camera.position.clone().sub(W.controls.target)).clone().multiplyScalar(1 / .42); W.camAnim = null; W.camera.position.copy(W.controls.target).add(o); } S.scene = d.s; S.tool = 'hand'; S.hover = null; S.myPos = null; S.pray = null; $('#tip').style.display = 'none'; setCam(d.s); renderTools(); renderScene(); },
@@ -5421,11 +5487,12 @@ document.addEventListener('keydown', e => {
 $('#authForm').addEventListener('submit', async e => {
   e.preventDefault(); if (!B) return;
   const name = $('#aName').value.trim(), pass = $('#aPass').value, err = $('#authErr'); err.textContent = '';
-  if (!/^[A-Za-z0-9_㐀-鿿]{2,10}$/.test(name)) return err.textContent = '帳號要 2～10 個字，只能用中英文、數字或底線';
+  const byMail = authMode !== 'reg' && name.includes('@');
+  if (!byMail && !/^[A-Za-z0-9_㐀-鿿]{2,10}$/.test(name)) return err.textContent = '帳號要 2～10 個字，只能用中英文、數字或底線';
   if (pass.length < 6) return err.textContent = '密碼至少要 6 個字';
   if (authMode === 'reg' && pass !== $('#aPass2').value) return err.textContent = '兩次輸入的密碼不一樣';
   $('#aGo').disabled = true;
-  try { authMode === 'reg' ? await B.register(name, pass) : await B.login(name, pass); } catch (ex) { err.textContent = ex.message; } finally { $('#aGo').disabled = false; }
+  try { authMode === 'reg' ? await B.register(name, pass) : byMail ? await B.loginMail(name, pass) : await B.login(name, pass); } catch (ex) { err.textContent = ex.message; } finally { $('#aGo').disabled = false; }
 });
 function beat() { if (S.my && S.uid) B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), lk:S.my.look || null, vh:rideOf(S.my), at:S.viewUid || S.uid, t:now(), off:false}); }
 const myGender = () => S.my?.gender === 'girl' ? 'girl' : 'boy';
@@ -5527,6 +5594,7 @@ async function onAuth(u) {
   else if (!r.abort && f.lastSign !== today()) toast(isNew ? '🎉 歡迎來到 3D 農場！' : `☀️ 每日簽到 +${SIGN_COINS} 金幣，記得看看今天的任務和訂單 📋`);
   refreshFriends();
   setTimeout(() => { if (S.my && S.uid === u.uid) giveGrants(); }, 6500);
+  S.mailB = ''; B.syncMail?.(S.my.username).then(m => { if (S.uid !== u.uid) return; S.mailB = m || ''; if (m && mailPend()) { toast('📧 Email 綁定完成！忘記密碼時可以收重設信'); try { store.removeItem('hf_mailpend_' + S.uid); } catch {} } }).catch(() => {});
 }
 function goHome() { S.myPos = null; S.pray = null; unZoom(); S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; renderAll(); beat(); watchHere(); }
 function visit(uid) {

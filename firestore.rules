@@ -2,8 +2,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /usernames/{name} {
-      allow read: if true;
+      // 只能用帳號名稱查單一筆（不能整批列出），避免綁定的 Email 被大量撈走
+      allow get: if true;
       allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      // 綁定 Email：只能改自己帳號的 mail 欄位
+      allow update: if request.auth != null && resource.data.uid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['mail']);
     }
     match /farms/{uid} {
       allow read: if request.auth != null;
