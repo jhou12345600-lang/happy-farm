@@ -59,6 +59,13 @@ button{font-family:inherit;cursor:pointer;border:none}
 #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;font-weight:900;color:#5d3a12;background:linear-gradient(#bfe6ff,#9ad85f);z-index:3;font-size:16px}
 #ovl{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}
 #stage.racing #ovl,#stage.racing #sceneTabs,#stage.racing #chatBtn,#stage.racing #wx,#stage.racing #visitBar,#stage.racing #hereBox,#stage.racing #hint{visibility:hidden}
+#fishUI{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:5;width:min(94%,420px);background:rgba(255,250,240,.96);border:3px solid #8d6e63;border-radius:18px;padding:10px 12px;box-shadow:0 6px 16px rgba(0,0,0,.25);text-align:center;user-select:none;-webkit-user-select:none;touch-action:none}#fishUI[hidden]{display:none}
+#fishUI .ft{font-weight:800;color:#5d4037;font-size:14.5px;margin-bottom:8px}#fishUI .ft.bite{color:#d32f2f;font-size:17px;animation:cdpop .5s infinite alternate}#fishUI .fm{font-size:13.5px;color:#6d4c41;margin-bottom:8px;font-weight:700}
+#fishUI .fb{display:flex;gap:8px;justify-content:center}#fishUI .b.big{font-size:17px;padding:11px 18px;flex:1}#fishUI .b.pulse{animation:cdpop .45s infinite alternate}#fishUI .hold.on{transform:scale(.96);filter:brightness(.92)}
+#fishUI .fbar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:12.5px;font-weight:800;color:#5d4037}#fishUI .fbar>div{flex:1;height:14px;background:#efebe9;border-radius:7px;position:relative;overflow:hidden}#fishUI .fbar i{position:absolute;left:0;top:0;bottom:0;border-radius:7px}#fishUI .fbar.ten s{position:absolute;left:85%;top:0;bottom:0;width:2px;background:#d32f2f}
+#fishUI .fcatch{display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:8px}#fishUI .fcatch .fe{font-size:46px;animation:cdpop .6s}#fishUI .fcatch b{font-size:18px;color:#4e342e}#fishUI .fcatch .cm{font-size:26px;font-weight:900;color:#e65100}#fishUI .fcatch small{color:#8d6e63}
+.rare{display:inline-block;color:#fff;font-size:11px;font-weight:800;padding:1px 7px;border-radius:9px;vertical-align:middle}.fcres>div{padding:4px 8px;border-radius:8px;font-size:13.5px}.fcres>div.me{background:#fff3c4;font-weight:800}
+#stage.racing #fishUI{display:none}
 #race{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden}#race[hidden]{display:none}
 #race .rtitle{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:linear-gradient(#e53935,#b71c1c);color:#fff;font-weight:900;font-size:18px;padding:6px 18px;border-radius:16px;border:3px solid #fdd835;box-shadow:0 4px 10px rgba(0,0,0,.25)}
 #raceRank{position:absolute;top:56px;left:10px;background:rgba(255,250,240,.92);border:2px solid #8d6e63;border-radius:12px;padding:5px 9px;font-weight:800;font-size:13px;color:#5d4037;min-width:110px}#raceRank .me{color:#d84315}
@@ -331,10 +338,11 @@ button{font-family:inherit;cursor:pointer;border:none}
   <div id="stage">
     <div id="loading">🚜 正在載入 3D 農場…</div>
     <div id="ovl"></div>
-    <div id="sceneTabs"><button data-act="scene" data-s="farm" class="on">🌾<span class="tl"> 農場</span></button><button data-act="scene" data-s="ranch">🐮<span class="tl"> 牧場</span></button><button data-act="scene" data-s="stable">🐎<span class="tl"> 馬場</span><em class="badge" id="bdS"></em></button><button data-act="scene" data-s="fish">🐟<span class="tl"> 魚塭</span></button><button data-act="scene" data-s="factory">🏭<span class="tl"> 工廠</span></button><button data-act="scene" data-s="green">🌱<span class="tl"> 溫室</span><em class="badge" id="bdH"></em></button><button data-act="scene" data-s="town">🏘️<span class="tl"> 小鎮</span><em class="badge" id="bdV"></em></button><button data-act="scene" data-s="temple">🏯<span class="tl"> 廟宇</span></button></div>
+    <div id="sceneTabs"><button data-act="scene" data-s="farm" class="on">🌾<span class="tl"> 農場</span></button><button data-act="scene" data-s="ranch">🐮<span class="tl"> 牧場</span></button><button data-act="scene" data-s="stable">🐎<span class="tl"> 馬場</span><em class="badge" id="bdS"></em></button><button data-act="scene" data-s="fish">🐟<span class="tl"> 魚塭</span></button><button data-act="scene" data-s="factory">🏭<span class="tl"> 工廠</span></button><button data-act="scene" data-s="green">🌱<span class="tl"> 溫室</span><em class="badge" id="bdH"></em></button><button data-act="scene" data-s="town">🏘️<span class="tl"> 小鎮</span><em class="badge" id="bdV"></em></button><button data-act="scene" data-s="temple">🏯<span class="tl"> 廟宇</span></button><button data-act="map" id="mapTab">🗺️<span class="tl"> 出門</span><em class="badge" id="bdP"></em></button></div>
     <div id="wx"></div>
     <div id="visitBar" hidden><span>👀 在 <b id="visitName"></b> 的家</span><button data-act="trophies" class="tb">🏆</button><button data-act="home">🏠 回家</button></div>
     <div id="hereBox" hidden></div>
+    <div id="fishUI" hidden></div>
     <div id="race" hidden><div class="rtitle">🐉 端午龍舟賽</div><div id="raceRank"></div><div id="raceCd"></div><div id="raceLbl"></div><div id="raceEnd" hidden></div></div>
     <div id="hint">🖱️ 拖曳旋轉視角、滾輪縮放</div>
     <button id="chatBtn" data-act="chat" title="說話">💬</button>
@@ -1334,6 +1342,7 @@ function tickOwn(f, msgs) {
   if (f.town?.stall && stallSim(f, msgs)) ch = true;
   if (!f.horse) { f.horse = horseStarter(f); addLog(f, '🐎 新的「馬場」開幕了！送你 3 匹馬：2 匹公馬、1 匹母馬，快去馬場看看吧'); msgs?.push('🐎 新設施「馬場」開幕！送你 3 匹馬'); ch = true; }
   if (hBirth(f, msgs)) ch = true;
+  if (aqSim(f, msgs)) ch = true;
   return ch;
 }
 
@@ -1728,8 +1737,8 @@ function catModel(sp) {
 function petModel(k) { const P = PETS[k]; const m = P.kind === 'dog' ? dogModel(P.sp) : catModel(P.sp); m.scale.multiplyScalar(1.6); return m; }
 
 /* ================= 3D：魚蝦貝類 ================= */
-function seaModel(k) {
-  const sp = SEA[k].m, G = new THREE.Group(), c = sp.c, c2 = sp.c2 || '#ffffff';
+function seaModel(k, mm) {
+  const sp = mm || SEA[k].m, G = new THREE.Group(), c = sp.c, c2 = sp.c2 || '#ffffff';
   const eyes = (x, y, z) => [ball('#ffffff', U(.035), [x, y, z]), ball('#111111', U(.02), [x + .015, y, z + Math.sign(z) * .012]), ball('#ffffff', U(.035), [x, y, -z]), ball('#111111', U(.02), [x + .015, y, -z - Math.sign(z) * .012])];
   switch (sp.t) {
     case 'fish': {
@@ -2157,7 +2166,8 @@ const itemIcon = id => icon(CROPS[id] ? 'crop' : SEA[id] ? 'sea' : PROC[id] ? 'p
 /* ================= 3D：世界 ================= */
 const W = {};
 const FARM_T = new THREE.Vector3(0, 0, .8), RANCH_T = new THREE.Vector3(24, 0, .8), FISH_T = new THREE.Vector3(-30, 0, .8), TOWN_T = new THREE.Vector3(76, 0, .8), GREEN_T = new THREE.Vector3(-52, 0, .8), TEMPLE_T = new THREE.Vector3(101, 0, -.6), STABLE_T = new THREE.Vector3(-80, 0, -1.2);
-const SCENE_T = {farm:FARM_T, ranch:RANCH_T, fish:FISH_T, factory:new THREE.Vector3(50, 0, .8), town:TOWN_T, green:GREEN_T, temple:TEMPLE_T, stable:STABLE_T};
+const DOCK_T = new THREE.Vector3(-114, 0, -3.6);
+const SCENE_T = {dock:DOCK_T, farm:FARM_T, ranch:RANCH_T, fish:FISH_T, factory:new THREE.Vector3(50, 0, .8), town:TOWN_T, green:GREEN_T, temple:TEMPLE_T, stable:STABLE_T};
 const pondXZ = i => { const r = Math.floor(i / 4), c = i % 4; return [-30 + (c - 1.5) * 4.3, (r - .5) * 4.6 + .4]; };
 const plotXZ = i => { const r = Math.floor(i / 6), c = i % 6; return [(c - 2.5) * 2.75, (r - 1) * 2.75 - .3]; };
 const aniHome = i => { const r = Math.floor(i / 4), c = i % 4; return [24 + (c - 1.5) * 3.5, .3 + (r - 1.5) * 2.7]; };
@@ -2204,9 +2214,10 @@ function makeSign(x, z) {
 function setSign(g, title, sub) { const k = title + '|' + sub; if (g.userData.txt === k) return; g.userData.txt = k; const m = g.userData.face.material; m.map?.dispose(); m.map = signTexture(title, sub); m.needsUpdate = true; }
 
 /* ================= 3D：真實農場背景 ================= */
-const FLAT_PADS = [[101, 0, 13, 10], [-80, 0, 15, 12], [128, 0, 14, 11], [-110, 0, 16, 13]];   // 廟宇、馬場、夜市、釣魚碼頭
+const FLAT_PADS = [[101, 0, 13, 10], [-80, 0, 15, 12], [128, 0, 14, 11], [-114, 0, 16, 13]];   // 廟宇、馬場、夜市、釣魚碼頭
 const padDist = (x, z) => Math.min(...FLAT_PADS.map(([cx, cz, hx, hz]) => Math.hypot(Math.max(0, Math.abs(x - cx) - hx), Math.max(0, Math.abs(z - cz) - hz))));
-function terrainH(x, z) { const d = Math.hypot((x - 12) / 1.3, z); if (d <= 58) return 0; const k = d - 58, fl = Math.min(1, padDist(x, z) / 9); return fl * Math.max(0, k * .14 * (1 + Math.sin(x * .05) * .5 + Math.cos(z * .07) * .4) + Math.sin(x * .11 + z * .07) * 1.5 * Math.min(1, k / 10)); }
+const inLake = (x, z) => x > -133.5 && x < -94.5 && z < -.4 && z > -22;
+function terrainH(x, z) { if (inLake(x, z)) return -.6; const d = Math.hypot((x - 12) / 1.3, z); if (d <= 58) return 0; const k = d - 58, fl = Math.min(1, padDist(x, z) / 9); return fl * Math.max(0, k * .14 * (1 + Math.sin(x * .05) * .5 + Math.cos(z * .07) * .4) + Math.sin(x * .11 + z * .07) * 1.5 * Math.min(1, k / 10)); }
 const FT = {};
 function fieldTex(kind) {
   if (FT[kind]) return FT[kind];
@@ -2314,7 +2325,7 @@ function buildScenery(S3) {
   // 遠山樹林：闊葉樹、檳榔樹、竹子
   const trunk = [], crown = [], pine = [];
   for (let i = 0; i < 480; i++) {
-    const a = R() * Math.PI * 2, r = 64 + R() * 70, x = 12 + Math.cos(a) * r * 1.3, z = Math.sin(a) * r; if ((Math.abs(z) < 8 && x > 0) || padDist(x, z) < 4) continue;
+    const a = R() * Math.PI * 2, r = 64 + R() * 70, x = 12 + Math.cos(a) * r * 1.3, z = Math.sin(a) * r; if ((Math.abs(z) < 8 && x > 0) || padDist(x, z) < 4 || inLake(x - 2, z) || inLake(x + 2, z - 2)) continue;
     const y = terrainH(x, z), s = .9 + R() * 1.1, k = R();
     if (k < .3) { const h = 3.8 * s; palmT.push([x, y + h / 2, z, .12 * s, h, .12 * s]); palmC.push([x, y + h + .15, z, .6 * s, .45 * s, .6 * s]); for (let f = 0; f < 4; f++) palmF.push([x, y + h + .05, z, 1.6 * s, .1, .28 * s, f * .8]); }
     else if (k < .45) pine.push([x, y + 1.4 * s, z, 1.1 * s, 2.8 * s, 1.1 * s]);
@@ -3120,6 +3131,349 @@ function startHorseRace(rid) {
   toast('🏇 賽馬大賽開始囉！');
 }
 
+/* ================= 🎣 釣魚碼頭（大家共用的地方） ================= */
+const PLACES = {dock:{n:'釣魚碼頭', em:'🎣'}, market:{n:'夜市', em:'🏮'}};
+const hereAt = () => S.place ? '@' + S.place : (S.viewUid || S.uid);
+const DOCK_X = -114, DOCK_BAIT = 10, AQ_MAX = 20;
+const DOCK_SPOTS = [[-119, -10.7, 1], [-116.6, -10.7, 1], [-114.2, -10.7, 1], [-111.8, -10.7, 1], [-109.4, -10.7, 1], [-115.5, -5.5, 2], [-112.5, -5.5, 0]];   // x, z, 面向（0 右、1 前、2 左）
+const SPOT_DIR = [[1, 0], [0, -1], [-1, 0]];
+const RARE_N = {1:'常見', 2:'少見', 3:'稀有', 4:'超稀有', 5:'傳說'}, RARE_C = {1:'#78909c', 2:'#43a047', 3:'#1e88e5', 4:'#8e24aa', 5:'#ff6f00'};
+const DOCK_LIST = [
+  ['d_tilapia', '吳郭魚', '🐟', 1, [18, 38], 12, 'any', 'any', {t:'fish', c:'#7d8c74', c2:'#d5dcc4', fin:'#5f6e58', len:.5, h:.22}],
+  ['d_jack', '竹筴魚', '🐟', 1, [15, 32], 10, 'any', 'any', {t:'fish', c:'#6f8fa6', c2:'#e8eef2', stripe:'#e0c060', len:.55, h:.17}],
+  ['d_milk', '虱目魚', '🐟', 1, [25, 52], 15, 'day', 'any', {t:'fish', c:'#9fb3bf', c2:'#eef3f6', len:.62, h:.17}],
+  ['d_saury', '秋刀魚', '🐟', 1, [24, 36], 14, 'night', 'any', {t:'fish', c:'#4f6470', c2:'#eceff1', len:.7, h:.12, beak:true}],
+  ['d_mullet', '烏魚', '🐟', 1, [30, 60], 16, 'any', 'rain', {t:'fish', c:'#5d6b73', c2:'#cfd8dc', len:.6, h:.2}],
+  ['d_puffer', '河豚', '🐡', 2, [14, 32], 30, 'any', 'any', {t:'fish', c:'#c9b37a', c2:'#fff8e1', spots:'#5d4037', len:.4, h:.34}],
+  ['d_blackbream', '黑鯛', '🐟', 2, [25, 48], 38, 'any', 'any', {t:'fish', c:'#37474f', c2:'#90a4ae', len:.52, h:.3}],
+  ['d_bass', '鱸魚', '🐟', 2, [35, 85], 45, 'any', 'rain', {t:'fish', c:'#5f7480', c2:'#d4dde2', len:.62, h:.2}],
+  ['d_hairtail', '白帶魚', '🐟', 2, [60, 130], 50, 'night', 'any', {t:'eel', c:'#e0e0e0'}],
+  ['d_cuttle', '花枝', '🦑', 2, [15, 35], 40, 'night', 'any', {t:'squid', c:'#d7b8a8'}],
+  ['d_grouper', '石斑魚', '🐠', 3, [30, 75], 110, 'day', 'any', {t:'fish', c:'#8d6e63', c2:'#d7ccc8', spots:'#4e342e', len:.68, h:.3}],
+  ['d_bream', '嘉鱲魚', '🐠', 3, [30, 62], 100, 'any', 'sun', {t:'fish', c:'#f48fb1', c2:'#fde4ec', fin:'#e57399', len:.52, h:.3}],
+  ['d_mahi', '鬼頭刀', '🐠', 3, [60, 150], 140, 'day', 'sun', {t:'fish', c:'#43a047', c2:'#fdd835', fin:'#1e88e5', len:.8, h:.28}],
+  ['d_eel', '鰻魚', '🐍', 3, [50, 110], 130, 'night', 'rain', {t:'eel', c:'#3e4a3a'}],
+  ['d_tuna', '黑鮪魚', '🐟', 4, [120, 260], 600, 'day', 'any', {t:'fish', c:'#1a3a5c', c2:'#cfd8dc', fin:'#fdd835', len:.85, h:.3}],
+  ['d_marlin', '旗魚', '🐟', 4, [150, 320], 700, 'day', 'sun', {t:'fish', c:'#1a237e', c2:'#90caf9', fin:'#283593', len:.95, h:.24, beak:true}],
+  ['d_sunfish', '曼波魚', '🐡', 4, [100, 280], 650, 'any', 'rain', {t:'fish', c:'#9e9e9e', c2:'#eeeeee', len:.5, h:.55}],
+  ['d_giantg', '龍膽石斑', '🐠', 4, [100, 230], 680, 'night', 'any', {t:'fish', c:'#5d4037', c2:'#d7ccc8', spots:'#ffd54f', len:.8, h:.36}],
+  ['d_oarfish', '皇帶魚', '🐉', 5, [250, 500], 1500, 'night', 'rain', {t:'eel', c:'#eceff1'}],
+];
+const DFISH = {}; for (const [k, n, em, r, cm, base, when, wx, m] of DOCK_LIST) DFISH[k] = {k, n, em, r, cm, base, when, wx, m};
+const DOCK_JUNK = [['舊靴子', '👢'], ['空罐子', '🥫'], ['一團海草', '🌿'], ['破漁網', '🕸️']];
+const WHEN_N = {any:'全天', day:'白天', night:'晚上'}, WX_REQ_N = {any:'', rain:'・下雨', sun:'・晴天／多雲'};
+const fishOk = F => (F.when === 'any' || (F.when === 'night') === isNight()) && (F.wx === 'any' || (F.wx === 'rain') === isRain());
+const fishVal = (k, cm) => { const F = DFISH[k]; return Math.max(5, Math.round(F.base * Math.pow(cm / ((F.cm[0] + F.cm[1]) / 2), 1.3))); };
+const dockOf = f => { const D = f.dock ??= {}; D.aq ??= []; D.ent ??= {}; D.cl ??= {}; D.dex ??= {}; return D; };
+const dockView = f => f?.dock || {aq:[], ent:{}, cl:{}, dex:{}};
+function rollFish() {
+  if (Math.random() < .07) { const [n, em] = rnd(DOCK_JUNK); return {junk:1, n, em}; }
+  const W8 = {1:60, 2:28, 3:10, 4:2.4, 5:.5}, pool = DOCK_LIST.filter(x => fishOk(DFISH[x[0]])).map(x => DFISH[x[0]]);
+  let tot = pool.reduce((s, F) => s + W8[F.r], 0), x = Math.random() * tot, F = pool[0];
+  for (const P of pool) { x -= W8[P.r]; if (x <= 0) { F = P; break; } }
+  const u = Math.pow(Math.random(), 1.6), cm = Math.round((F.cm[0] + (F.cm[1] - F.cm[0]) * u) * 10) / 10;
+  return {k:F.k, n:F.n, em:F.em, r:F.r, cm, v:fishVal(F.k, cm)};
+}
+// ----- 3D 碼頭 -----
+function buildDock(S3) {
+  const X = DOCK_X;
+  const water = new THREE.Mesh(new THREE.PlaneGeometry(40, 23), new THREE.MeshPhongMaterial({color:'#2f8fd8', transparent:true, opacity:.88, shininess:80, specular:'#bbdefb'})); water.rotation.x = -Math.PI / 2; water.position.set(X, -.06, -11); S3.add(water); W.dockWater = water;
+  S3.add(blk('#e8d5a3', [36, .05, 2.2], [X, .02, .3]), blk('#f1e3bd', [36, .05, 8], [X, .015, 5.2]), blk('#d2b07a', [40, .05, 2], [X + 16, .03, 9.6]));
+  // 棧橋
+  const wood = '#a1764a', wood2 = '#8d6239';
+  for (let z = .6; z > -9.2; z -= .55) S3.add(blk(z % 1.1 < .55 ? wood : wood2, [3, .08, .5], [X, .05, z]));
+  for (let x = X - 6; x <= X + 6.01; x += .55) S3.add(blk(Math.round(x * 2) % 2 ? wood : wood2, [.5, .08, 2.6], [x, .05, -10.2]));
+  for (const [x, z] of [[X - 1.5, -2], [X + 1.5, -2], [X - 1.5, -5.5], [X + 1.5, -5.5], [X - 1.5, -8.8], [X + 1.5, -8.8], [X - 6, -11.5], [X - 2, -11.5], [X + 2, -11.5], [X + 6, -11.5]]) S3.add(rod('#6d4c41', [.22, 1.4, .22], [x, -.2, z]), ball('#5d4037', [.14, .06, .14], [x, .52, z]));
+  for (const [x, z, w, d] of [[X - 1.5, -4.4, .08, 9.8], [X + 1.5, -4.4, .08, 9.8], [X, -11.5, 12.1, .08]]) S3.add(blk('#ffffff', [w, .06, d], [x, .55, z]));
+  // 漁具店
+  const hut = grp(blk('#e3f2fd', [4, 2.4, 3], [0, 1.2, 0]), ...gableRoof(4, 3, 2.4, .5, '#1e88e5', '#e3f2fd', {cap:'#1565c0'}), blk('#8d5a2b', [1, 1.7, .1], [-.8, .85, 1.52]), blk('#bbdefb', [1.2, .8, .1], [.8, 1.5, 1.52]), blk('#ffffff', [2.4, .5, .1], [0, 2.15, 1.58]), blk('#ff7043', [4.3, .1, .9], [0, 1.95, 1.9], [.35, 0, 0]));
+  hut.position.set(X + 8.5, 0, 3.2); hut.rotation.y = -.3; S3.add(hut);
+  // 燈塔
+  const lh = grp(rod('#fafafa', [1.1, 6, 1.1], [0, 3, 0]), ring('#e53935', [1.12, 1.12, .7], [0, 1.6, 0], [Math.PI / 2, 0, 0]), ring('#e53935', [1.12, 1.12, .7], [0, 3.8, 0], [Math.PI / 2, 0, 0]), rod('#37474f', [1.3, .2, 1.3], [0, 6.1, 0]), rod('#fff59d', [.8, .8, .8], [0, 6.6, 0]), cone('#e53935', [.95, .8, .95], [0, 7.4, 0]));
+  lh.position.set(X + 12.5, 0, -6.5); S3.add(lh); S3.add(blk('#9e9e9e', [3.2, .5, 3.2], [X + 12.5, .1, -6.5]));
+  { const L = new THREE.Mesh(gS(), new THREE.MeshLambertMaterial({color:'#fff59d', emissive:'#ffee58', emissiveIntensity:.7})); L.scale.setScalar(.5); L.position.set(X + 12.5, 6.6, -6.5); S3.add(L); }
+  // 小船
+  const boat = c => grp(blk(c, [2.6, .5, 1.1], [0, .1, 0]), blk('#ffffff', [2.65, .1, 1.15], [0, .38, 0]), cone(c, [.55, .9, .5], [1.5, .1, 0], [0, 0, -Math.PI / 2]), blk('#8d6e63', [.2, .06, .9], [0, .36, 0]));
+  W.dockBoats = [[X - 9, -5, '#ef5350', .4], [X + 6.5, -4, '#ffca28', -.6]].map(([x, z, c, r]) => { const b = boat(c); b.position.set(x, 0, z); b.rotation.y = r; S3.add(b); return b; });
+  // 魚簍、浮球、救生圈
+  for (const [x, z, c] of [[X - 2.2, .9, '#ff7043'], [X + 2.4, .7, '#ffffff'], [X - 5, -10.9, '#ff7043']]) S3.add(ring(c, [.32, .32, .5], [x, .3, z], [Math.PI / 2, 0, 0]));
+  for (let i = 0; i < 6; i++) S3.add(ball(i % 2 ? '#ff7043' : '#fdd835', U(.18), [X - 8 + i * 3.2, -.02, -12.6]));
+  W.dockSign = makeSign(X - 7, 6.6); S3.add(W.dockSign);
+  // 常駐村民釣客
+  W.dockNpc = [];
+  for (const [id, x, z, ry] of [['hai', X - 7.5, .3, Math.PI / 2], ['tu', X + 4.6, .4, Math.PI / 2]]) { const m = vilModel(id); m.position.set(x, 0, z); m.rotation.y = ry; m.add(fishRod()); S3.add(m); W.dockNpc.push({m, ph:x}); }
+  W.rods = new Map();
+}
+function fishRod() { const g = grp(rod('#5d4037', [.035, 1.7, .035], [0, .85, 0]), ball('#212121', U(.05), [0, .25, 0])); g.position.set(.26, .72, .24); g.rotation.z = -.9; g.userData.rod = 1; return g; }
+const rodTip = new THREE.Vector3(0, 1.7, 0);
+function spotPos(i) { const [x, z, d] = DOCK_SPOTS[i], [dx, dz] = SPOT_DIR[d]; return {x, z, bx:x + dx * 4.4, bz:z + dz * 4.4, ry:Math.atan2(-dz, dx)}; }
+function ensureRod(P, key) {
+  let R = W.rods.get(key); if (R && R.P === P && R.rod.parent === P.m) return R;
+  if (R) { R.rod.parent?.remove(R.rod); W.scene.remove(R.line, R.bob); }
+  const rodM = fishRod(); P.m.add(rodM);
+  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(Array.from({length:10}, () => new THREE.Vector3())), new THREE.LineBasicMaterial({color:'#ffffff', transparent:true, opacity:.85}));
+  const bob = grp(ball('#e53935', [.12, .1, .12], [0, .05, 0]), ball('#ffffff', [.12, .07, .12], [0, -.03, 0]), rod('#e53935', [.02, .16, .02], [0, .16, 0]));
+  line.frustumCulled = false; W.scene.add(line, bob); R = {P, rod:rodM, line, bob}; W.rods.set(key, R); return R;
+}
+function dropRod(key) { const R = W.rods?.get(key); if (!R) return; R.rod.parent?.remove(R.rod); W.scene.remove(R.line, R.bob); W.rods.delete(key); }
+const _tip = new THREE.Vector3(), _bob = new THREE.Vector3();
+function rodFrame(R, sp, ph, t, k) {
+  const P = R.P, u = P.m.userData; if (u.armR) { u.armR.rotation.z = -.9; u.armR.rotation.x = -.3; }
+  P.m.rotation.y = sp.ry; R.rod.updateWorldMatrix(true, false); _tip.copy(rodTip).applyMatrix4(R.rod.matrixWorld);
+  if (ph === 'cast') { const a = Math.min(1, k); _bob.set(_tip.x + (sp.bx - _tip.x) * a, _tip.y + (-.05 - _tip.y) * a + Math.sin(a * Math.PI) * 2.2, _tip.z + (sp.bz - _tip.z) * a); }
+  else if (ph === 'idle' || ph === 'got' || ph === 'lost') _bob.set(_tip.x, _tip.y - .9, _tip.z);
+  else { const dip = ph === 'bite' ? -.22 + Math.sin(t * 30) * .05 : ph === 'reel' ? -.1 + Math.sin(t * 18) * .06 : Math.sin(t * 2.2) * .03 + (S.fishing?.nib && t - S.fishing.nib < .25 ? -.08 : 0); const pull = ph === 'reel' ? (1 - (S.fishing?.prog || 0)) : 1;
+    _bob.set(_tip.x + (sp.bx - _tip.x) * (.15 + .85 * pull), -.04 + dip, _tip.z + (sp.bz - _tip.z) * (.15 + .85 * pull)); if (ph === 'reel') { _bob.x += Math.sin(t * 7) * .25; _bob.z += Math.cos(t * 5) * .2; } }
+  R.bob.position.copy(_bob); R.bob.visible = ph !== 'idle';
+  const pos = R.line.geometry.attributes.position, sag = ph === 'reel' || ph === 'bite' ? .05 : .45;
+  for (let i = 0; i < 10; i++) { const a = i / 9; pos.setXYZ(i, _tip.x + (_bob.x - _tip.x) * a, _tip.y + (_bob.y - _tip.y) * a - Math.sin(a * Math.PI) * sag, _tip.z + (_bob.z - _tip.z) * a); }
+  pos.needsUpdate = true; R.line.visible = ph !== 'idle';
+}
+function fishTick(t, dt) {
+  if (!W.rods) return;
+  if (W.dockWater) W.dockWater.position.y = -.07 + Math.sin(t * .8) * .012;
+  (W.dockBoats || []).forEach((b, i) => { b.position.y = Math.sin(t * 1.2 + i * 2) * .06; b.rotation.z = Math.sin(t + i) * .04; });
+  for (const N of W.dockNpc || []) { const u = N.m.userData; if (u.armR) { u.armR.rotation.z = -.9; u.armR.rotation.x = -.3 + Math.sin(t * .7 + N.ph) * .05; } }
+  aqTick(t);
+  const seen = new Set();
+  if (S.scene === 'dock' && W.people) {
+    for (const P of W.people) {
+      const me = P.uid === S.uid, F = me ? S.fishing : null, p = me ? null : hereList().find(q => q.uid === P.uid);
+      let sp = null, ph = '', k = 0;
+      if (me && F && F.ph !== 'walk') { sp = spotPos(F.sp); ph = F.ph; k = (performance.now() / 1000 - F.t0) / .6; }
+      else if (!me && p?.fh && now() - p.fh.t < 120000 && DOCK_SPOTS[p.fh.sp] && Math.hypot(P.m.position.x - DOCK_SPOTS[p.fh.sp][0], P.m.position.z - DOCK_SPOTS[p.fh.sp][1]) < .4) { sp = spotPos(p.fh.sp); ph = 'wait'; }
+      if (!sp) continue; seen.add(P.uid); rodFrame(ensureRod(P, P.uid), sp, ph, t, k);
+    }
+  }
+  for (const key of [...W.rods.keys()]) if (!seen.has(key)) dropRod(key);
+  const F = S.fishing; if (!F) return;
+  const T = performance.now() / 1000;
+  if (F.ph === 'walk') { const P = W.people?.find(x => x.uid === S.uid), w = F.wp[0];
+    if (P && Math.hypot(P.m.position.x - w[0], P.m.position.z - w[1]) < .12) { F.wp.shift(); if (F.wp.length) { S.myPos = {x:F.wp[0][0], z:F.wp[0][1], sc:'dock'}; B.setPresence(S.uid, {pos:S.myPos, fh:{sp:F.sp, t:now()}, t:now()}); renderScene(); } else { F.ph = 'idle'; fishUI(); } }
+    else if (T - F.t0 > 14) { F.ph = 'idle'; fishUI(); } return; }
+  if (F.ph === 'cast' && T - F.t0 > .6) { F.ph = 'wait'; F.t0 = T; F.bite = T + 2.2 + Math.random() * 5.5; Music.sfx('splash'); fishUI(); }
+  else if (F.ph === 'wait') { if (!F.nibT || T > F.nibT) { F.nibT = T + .8 + Math.random() * 1.6; if (T < F.bite - .5 && Math.random() < .45) { F.nib = T; } } if (T >= F.bite) { F.ph = 'bite'; F.t0 = T; F.catch = rollFish(); Music.sfx('splash'); Music.sfx('pop'); fishUI(); if (navigator.vibrate) try { navigator.vibrate(120); } catch {} } }
+  else if (F.ph === 'bite' && T - F.t0 > 1.4) fishLose('魚咬了一下就跑掉了…下次動作要快一點！');
+  else if (F.ph === 'reel') {
+    const c = F.catch, str = c.junk ? .15 : [0, .28, .45, .65, .85, 1][c.r]; F.surge ??= T + .6;
+    if (T > F.surge) { F.surge = T + .5 + Math.random() * 1.1; F.kick = .35 + Math.random() * .35; }
+    const kick = F.kick || 0; F.kick = Math.max(0, kick - dt * 1.4);
+    if (F.hold) { F.ten += dt * (.3 + str * .35 + kick * .7); F.prog += dt * (.34 - str * .14) * (F.ten < .85 ? 1 : .4); F.idle = 0; }
+    else { F.ten = Math.max(0, F.ten - dt * (1.05 - kick * .5)); F.idle = (F.idle || 0) + dt; F.prog = Math.max(0, F.prog - dt * .05 * str); }
+    if (F.ten >= 1) return fishLose('啪！線被扯斷了 😭 張力太大，要放鬆一下再收');
+    if (F.idle > 3.2) return fishLose('太久沒收線，魚掙脫跑掉了…');
+    if (F.prog >= 1) { F.ph = 'got'; Music.sfx('ding'); fishGot(); }
+    fishUI(true);
+  }
+}
+// ----- 釣魚流程 -----
+function goPlace(pl) {
+  if (pl === 'market' && typeof marketOpen === 'function' && !marketOpen()) return toast('🏮 夜市每週一晚上 6 點到 12 點才開喔');
+  closeModal(); travel(`前往${PLACES[pl].n}ING`);
+  if (!isOwn()) { S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; }
+  unZoom(); clearSanta(); S.place = pl; S.scene = pl; S.tool = 'hand'; S.myPos = null; S.pray = null; S.decoMode = null; S.thief = null; S.fishing = null;
+  setCam(pl); renderAll(); beat(); watchHere();
+  setTimeout(() => { if (S.place !== pl) return; const t = now(), m = pl === 'dock' ? rnd(['大家好～今天魚況怎麼樣？🎣', '我來釣魚囉！', '嗨～有人釣到大魚了嗎？']) : rnd(['夜市好熱鬧！🏮', '來玩遊戲囉～', '嗨～大家晚安！']); S.spokeT = t;
+    B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), lk:S.my.look || null, vh:rideOf(S.my), at:hereAt(), t, off:false, say:{m, t, d:3500}, wave:t, waveTo:'', back:false, arr:true}); Music.babble(myGender(), m); }, 2100);
+}
+function leavePlace() { if (!S.place) return false; S.place = null; fishStop(true); $('#fishUI').hidden = true; if (typeof mkStop === 'function') mkStop(); return true; }
+function fishStart() {
+  if (S.scene !== 'dock') return;
+  if (S.fishing && S.fishing.ph !== 'idle' && S.fishing.ph !== 'walk') return;
+  if (!S.fishing) {
+    const taken = new Set(hereList().filter(p => p.uid !== S.uid && p.fh && now() - p.fh.t < 120000).map(p => p.fh.sp));
+    const P = W.people?.find(x => x.uid === S.uid), mx = P ? P.m.position.x : DOCK_X, mz = P ? P.m.position.z : 0;
+    const free = DOCK_SPOTS.map((s, i) => [i, Math.hypot(s[0] - mx, s[1] - mz)]).filter(([i]) => !taken.has(i)).sort((a, b) => a[1] - b[1]);
+    if (!free.length) return toast('釣魚位置都滿了，等一下再來 😅');
+    const sp = free[0][0], [sx, sz] = DOCK_SPOTS[sp], wp = [];
+    if (Math.abs(mx - DOCK_X) > 1.3 && mz > -9) wp.push([DOCK_X + Math.max(-1, Math.min(1, mx - DOCK_X)), Math.min(1.1, Math.max(mz, -8.6))]);
+    if (sz < -9 && mz > -9) wp.push([DOCK_X + Math.max(-1, Math.min(1, sx - DOCK_X)), -9.9]);
+    wp.push([sx, sz]); S.fishing = {sp, ph:'walk', t0:performance.now() / 1000, wp};
+    S.myPos = {x:wp[0][0], z:wp[0][1], sc:'dock'}; B.setPresence(S.uid, {pos:S.myPos, fh:{sp, t:now()}, t:now()}); renderScene(); fishUI(); return;
+  }
+  fishUI();
+}
+function fishStop(silent) { if (!S.fishing) return; S.fishing = null; if (!silent) { B.setPresence(S.uid, {fh:null, t:now()}); $('#fishUI').hidden = true; } }
+async function fishCast() {
+  const F = S.fishing; if (!F || (F.ph !== 'idle' && F.ph !== 'lost' && F.ph !== 'got')) return;
+  if (S.my.coins < DOCK_BAIT) return toast(`魚餌要 💰${DOCK_BAIT}，金幣不夠了`);
+  F.ph = 'cast'; F.t0 = performance.now() / 1000; F.catch = null; F.saved = 0; F.prog = 0; F.ten = 0; F.hold = false; F.idle = 0; F.kick = 0; F.surge = null; fishUI(); Music.sfx('pop');
+  B.setPresence(S.uid, {fh:{sp:F.sp, t:now()}, t:now()});
+  txMe(f => { if (f.coins < DOCK_BAIT) return ab('金幣不夠'); f.coins -= DOCK_BAIT; return {}; }).then(r => { if (r?.abort) { toast(r.msg); fishLose(''); }}).catch(() => {});
+}
+function fishHook() {
+  const F = S.fishing; if (!F) return;
+  if (F.ph === 'wait') return fishLose('太早收線了，魚被嚇跑了！等浮標「沉下去」再收');
+  if (F.ph === 'bite') { F.ph = 'reel'; F.t0 = performance.now() / 1000; F.prog = .05; F.ten = .2; F.hold = true; fishUI(); Music.sfx('pop'); }
+}
+function fishLose(msg) { const F = S.fishing; if (!F) return; F.ph = 'lost'; F.msg = msg; F.hold = false; if (msg) Music.sfx('bad'); fishUI(); }
+function fishGot() {
+  const F = S.fishing, c = F.catch; F.msg = '';
+  if (!c.junk) { const t = now(), m = `🎣 釣到 ${c.cm}cm 的${c.n}！${c.r >= 3 ? '（' + RARE_N[c.r] + '）' : ''}`; S.spokeT = t; B.setPresence(S.uid, {say:{m, t, d:4000}, t}); if (c.r >= 3) { Music.sparkle(); fx3(DOCK_SPOTS[F.sp][0], 2.6, DOCK_SPOTS[F.sp][1], `${c.em} ${RARE_N[c.r]}！`, RARE_C[c.r]); } }
+  txMe(f => { const D = dockOf(f); if (!c.junk) { D.dex[c.k] = Math.max(D.dex[c.k] || 0, c.cm); D.n = (D.n || 0) + 1; } gainExp(f, c.junk ? 1 : 3 + c.r * 4); return {}; }).catch(() => {});
+  fishUI();
+}
+async function fishKeep(mode) {
+  const F = S.fishing, c = F?.catch; if (!c || F.ph !== 'got' || F.saved) return; F.saved = 1;
+  if (c.junk || mode === 'free') { F.ph = 'idle'; F.msg = c.junk ? '🗑️ 丟進垃圾桶了，愛護海洋 👍' : `🌊 放生了${c.n}，好心有好報！`; fishUI(); if (!c.junk) txMe(f => { gainExp(f, 2); return {}; }).catch(() => {}); return; }
+  const r = await txMe(f => { const D = dockOf(f); if (D.aq.length >= AQ_MAX) return ab(`魚缸滿了（${AQ_MAX} 條），先賣掉或放生一些`); D.aq.push({k:c.k, cm:c.cm, t:now()}); D.last ??= now(); return {}; });
+  if (r.abort) { F.saved = 0; return toast(r.msg); }
+  F.ph = 'idle'; F.msg = `🐠 ${c.n}（${c.cm}cm）放進你農場的超大魚缸了！村民會來看、還會跟你買`; fishUI(); Music.sfx('coin');
+}
+function fishUI(fast) {
+  const el = $('#fishUI'), F = S.fishing; if (!F || S.scene !== 'dock') { el.hidden = true; return; } el.hidden = false;
+  const bait = `💰${DOCK_BAIT}`, c = F.catch;
+  let h = '';
+  if (F.ph === 'walk') h = `<div class="ft">🚶 走到釣魚位置…</div>`;
+  else if (F.ph === 'idle' || F.ph === 'lost') h = `${F.msg ? `<div class="fm">${F.msg}</div>` : `<div class="ft">${isNight() ? '🌙 晚上' : '☀️ 白天'}${isRain() ? '・🌧️ 下雨' : ''}，${isNight() ? '晚上有白帶魚、花枝、龍膽石斑…' : '白天有虱目魚、石斑、鮪魚、旗魚…'}</div>`}<div class="fb"><button class="b o big" data-act="fishCast">🎣 拋竿（魚餌 ${bait}）</button><button class="b g" data-act="fishQuit">離開</button></div>`;
+  else if (F.ph === 'cast') h = `<div class="ft">咻～～ 🎣</div>`;
+  else if (F.ph === 'wait') h = `<div class="ft">⏳ 等魚上鉤……盯著<b>浮標</b>，沉下去再收線！</div><div class="fb"><button class="b big" data-act="fishHook">收線</button></div>`;
+  else if (F.ph === 'bite') h = `<div class="ft bite">❗ 浮標沉下去了！快收線！</div><div class="fb"><button class="b o big pulse" data-act="fishHook">🎣 收線！</button></div>`;
+  else if (F.ph === 'reel') h = `<div class="ft">按住按鈕慢慢收線，<b>張力</b>太高要放開一下！</div>
+      <div class="fbar"><span>進度</span><div><i style="width:${Math.round(F.prog * 100)}%;background:#43a047"></i></div></div>
+      <div class="fbar ten"><span>張力</span><div><i style="width:${Math.round(F.ten * 100)}%;background:${F.ten > .85 ? '#e53935' : F.ten > .6 ? '#fb8c00' : '#29b6f6'}"></i><s></s></div></div>
+      <div class="fb"><button class="b o big hold ${F.hold ? 'on' : ''}" data-hold="1">🎣 按住收線</button></div>`;
+  else if (F.ph === 'got') h = c.junk ? `<div class="fcatch"><div class="fe">${c.em}</div><b>釣到了……${c.n}</b><small>不是魚啦 😂</small></div><div class="fb"><button class="b big" data-act="fishKeep" data-m="free">🗑️ 丟掉</button></div>`
+      : `<div class="fcatch"><div class="fe">${c.em}</div><b>${c.n}</b><span class="rare" style="background:${RARE_C[c.r]}">${RARE_N[c.r]}</span><div class="cm">${c.cm} cm</div><small>價值約 💰${c.v}</small></div><div class="fb"><button class="b o big" data-act="fishKeep" data-m="aq">🐠 放進魚缸</button><button class="b" data-act="fishKeep" data-m="free">🌊 放生</button></div>`;
+  if (fast && el._ph === 'reel' && F.ph === 'reel') { const bars = el.querySelectorAll('.fbar i'); if (bars.length === 2) { bars[0].style.width = Math.round(F.prog * 100) + '%'; bars[1].style.width = Math.round(F.ten * 100) + '%'; bars[1].style.background = F.ten > .85 ? '#e53935' : F.ten > .6 ? '#fb8c00' : '#29b6f6'; el.querySelector('.hold')?.classList.toggle('on', !!F.hold); return; } }
+  el._ph = F.ph; el.innerHTML = h;
+}
+function fishHoldSet(v) { const F = S.fishing; if (F && F.ph === 'reel') F.hold = v; }
+document.addEventListener('pointerdown', e => { if (e.target.closest?.('[data-hold]')) { e.preventDefault(); fishHoldSet(true); } }, {passive:false});
+for (const ev of ['pointerup', 'pointercancel']) document.addEventListener(ev, () => fishHoldSet(false));
+document.addEventListener('keydown', e => { if (e.code === 'Space' && S.fishing?.ph === 'reel') { e.preventDefault(); fishHoldSet(true); } else if (e.code === 'Space' && (S.fishing?.ph === 'wait' || S.fishing?.ph === 'bite')) { e.preventDefault(); fishHook(); } });
+document.addEventListener('keyup', e => { if (e.code === 'Space') fishHoldSet(false); });
+
+// ----- 超大魚缸（在自己的魚塭）：村民來看、會買魚 -----
+const AQ_T = [-30, 11.9];
+function buildAquarium(S3) {
+  const [X, Z] = AQ_T, g = new THREE.Group();
+  g.add(blk('#5d4037', [6.6, .9, 2], [0, .45, 0]), blk('#795548', [6.8, .12, 2.2], [0, .92, 0]), blk('#e6c98f', [6.2, .14, 1.6], [0, 1.02, 0]));
+  const glass = new THREE.Mesh(new THREE.BoxGeometry(6.3, 2.7, 1.7), new THREE.MeshPhongMaterial({color:'#b3e5fc', transparent:true, opacity:.22, shininess:100, specular:'#ffffff', depthWrite:false})); glass.position.set(0, 2.33, 0); g.add(glass);
+  const wat = new THREE.Mesh(new THREE.BoxGeometry(6.2, 2.4, 1.6), new THREE.MeshLambertMaterial({color:'#4fc3f7', transparent:true, opacity:.28, depthWrite:false})); wat.position.set(0, 2.2, 0); g.add(wat);
+  for (const [x, w] of [[-3.15, .1], [3.15, .1]]) g.add(blk('#37474f', [w, 2.8, 1.8], [x, 2.35, 0]));
+  g.add(blk('#37474f', [6.4, .14, 1.8], [0, 3.72, 0]), blk('#37474f', [6.4, .1, .1], [0, 1.05, .86]));
+  for (let i = 0; i < 7; i++) g.add(cone(i % 2 ? '#2e7d32' : '#66bb6a', [.14, .6 + (i % 3) * .3, .14], [-2.6 + i * .85, 1.35 + (i % 3) * .15, -.45 + (i % 2) * .3]));
+  for (const [x, s] of [[-1.6, .35], [1.3, .45], [2.4, .25]]) g.add(ball('#9e9e9e', [s, s * .7, s], [x, 1.15, .1]));
+  g.add(grp(blk('#fdd835', [.4, .5, .4], [0, .25, 0]), cone('#e53935', [.3, .3, .3], [0, .65, 0])).translateX(-.4).translateY(1.08).translateZ(-.3));
+  g.position.set(X, 0, Z); g.traverse(o => o.userData.hit = {type:'aq'}); S3.add(g); W.aqHit = g;
+  W.aqG = new THREE.Group(); S3.add(W.aqG); W.aqFish = []; W.aqBub = [];
+  for (let i = 0; i < 10; i++) { const b = new THREE.Mesh(gS(), new THREE.MeshLambertMaterial({color:'#e1f5fe', transparent:true, opacity:.6})); b.scale.setScalar(.05); S3.add(b); W.aqBub.push({m:b, x:X - 2.6 + (i % 5) * 1.3, z:Z + (i % 2 ? .3 : -.3), ph:i / 10}); }
+  W.aqVis = []; for (const [id, x, z, ry] of [['li', X - 2, Z + 2.1, Math.PI / 2], ['dou', X + 1.8, Z + 2.2, Math.PI / 2 + .3]]) { const m = vilModel(id); m.position.set(x, 0, z); m.rotation.y = ry; m.visible = false; S3.add(m); W.aqVis.push({m, id}); }
+}
+function syncAquarium(f, own) {
+  if (!W.aqG) return;
+  const A = dockView(f).aq || [], key = (S.viewUid || '') + '|' + A.map(a => a.k + a.cm).join(',');
+  if (W.aqKey !== key) {
+    W.aqKey = key; W.aqG.clear(); W.aqFish = [];
+    A.slice(0, AQ_MAX).forEach((a, i) => { const F = DFISH[a.k]; if (!F) return; const m = seaModel(null, F.m), s = Math.min(1.5, .55 + a.cm / 160) * (F.m.t === 'eel' ? .8 : 1);
+      m.scale.setScalar(s); m.traverse(o => { if (o.isMesh) o.castShadow = false; }); W.aqG.add(m); W.aqFish.push({m, ph:i * 1.37, y:1.5 + (i % 4) * .5, z:(i % 3 - 1) * .4, sp:.25 + (i % 5) * .06, half:Math.max(.5, 2.7 - .45 * s)}); });
+  }
+  const n = A.length; W.aqVis.forEach((v, i) => { v.m.visible = n > 0 && (i === 0 || n >= 4) && (Math.floor(now() / 240000) + i) % 3 !== 2; });
+  W.aqVis.forEach((v, i) => { if (v.m.visible) ov('aqv' + i, rnd2(i), x => x.copy(v.m.position).setY(2.8), 'bub'); });
+  ov('aqL', `🐠 ${own ? '我的' : esc(dn(f)) + '的'}超大魚缸 ${n}/${AQ_MAX}`, v => v.set(AQ_T[0], 4.3, AQ_T[1]), 'tag');
+}
+const AQV_SAY = ['哇～這條好大！', '我想買這條回家養 😍', '好漂亮的魚缸！', '這是在碼頭釣的嗎？', '那條紅色的好可愛～'];
+const rnd2 = i => AQV_SAY[(Math.floor(now() / 8000) + i * 2) % AQV_SAY.length];
+function aqTick(t) {
+  const [X, Z] = AQ_T;
+  for (const F of W.aqFish || []) { const a = t * F.sp + F.ph, x = Math.sin(a) * F.half, dx = Math.cos(a); F.m.position.set(X + x, F.y + Math.sin(t * .9 + F.ph) * .12, Z + F.z); F.m.rotation.y = dx >= 0 ? 0 : Math.PI; if (F.m.userData.tail) F.m.userData.tail.rotation.y = Math.sin(t * 8 + F.ph) * .5; }
+  for (const B2 of W.aqBub || []) { const k = (t * .3 + B2.ph) % 1; B2.m.position.set(B2.x + Math.sin(t * 2 + B2.ph * 9) * .05, 1.2 + k * 2.3, B2.z); B2.m.visible = (W.aqFish || []).length > 0; }
+}
+function aqSim(f, msgs) {
+  const D = f.dock; if (!D?.aq?.length) return false; const t = now();
+  if (!D.last) { D.last = t; return true; }
+  const hrs = (t - D.last) * SPEED / 3600000; if (hrs < 1) return false;
+  const R = seededR(strHash((f.username || '') + ':aq:' + D.last)); let k = 0, ch = false;
+  const n = Math.min(6, Math.floor(hrs * .5 + R()));
+  for (let i = 0; i < n && D.aq.length; i++) {
+    const j = Math.floor(R() * D.aq.length), a = D.aq[j], F = DFISH[a.k]; if (!F) { D.aq.splice(j, 1); continue; }
+    const c = fishVal(a.k, a.cm), who = BUYERS[Math.floor(R() * BUYERS.length)]; D.aq.splice(j, 1); f.coins += c; k++;
+    addTrade(f, `${who}來看魚缸，買走 ${F.n}（${a.cm}cm）`, c); msgs?.push(`🐠 ${who}來看你的魚缸，買走了 ${F.n}（${a.cm}cm）+${c}💰`); if (k <= 2) addLog(f, `🐠 ${who}來看你的超大魚缸，買走了 ${a.cm}cm 的${F.n}，賺了 ${c} 金幣`);
+  }
+  D.last = t; ch = true; return ch;
+}
+function openAquarium() {
+  S.modal = () => {
+    const own = isOwn(), f = own ? S.my : S.view, A = dockView(f).aq || [];
+    let body = `<div class="popbox">🐠 <b>${own ? '我的' : esc(dn(f)) + '的'}超大魚缸</b>（${A.length}/${AQ_MAX} 條）<br><small>在「🗺️ 出門 → 🎣 釣魚碼頭」釣到的魚可以放進來。村民會來農場參觀，<b>喜歡的魚會照價買走</b>（大概每 2 小時一條）。週三釣魚大賽也是從魚缸挑魚報名。</small></div>`;
+    body += A.length ? A.map((a, i) => { const F = DFISH[a.k]; if (!F) return ''; return `<div class="item"><div class="pic" style="font-size:28px">${F.em}</div><div class="info"><div class="t">${F.n} <span class="rare" style="background:${RARE_C[F.r]}">${RARE_N[F.r]}</span></div><div class="d"><b>${a.cm} cm</b>${own ? `　價值 💰${fishVal(a.k, a.cm)}` : ''}</div></div>${own ? `<button class="b g" data-act="aqSell" data-i="${i}">賣魚販 💰${Math.round(fishVal(a.k, a.cm) * .7)}</button>` : ''}</div>`; }).join('')
+      : `<div class="empty">${own ? '魚缸還是空的，去碼頭釣魚吧 🎣' : '魚缸還是空的'}</div>`;
+    if (own) body += `<div class="mgbtn"><button class="b o" data-act="goDock">🎣 去釣魚碼頭</button> <button class="b" data-act="fishDex">📖 魚種圖鑑</button></div>`;
+    openModal('🐠 超大魚缸', body);
+  };
+  S.modal();
+}
+async function aqSell(i) {
+  const a = dockView(S.my).aq[i]; if (!a) return; let got = 0;
+  await fast(f => { const D = dockOf(f), b = D.aq[i]; if (!b || b.k !== a.k || b.cm !== a.cm) return ab('魚缸變了，再看一次'); got = Math.round(fishVal(b.k, b.cm) * .7); D.aq.splice(i, 1); f.coins += got; addTrade(f, `賣給魚販 ${DFISH[b.k].n}（${b.cm}cm）`, got); return {}; },
+    () => { toast(`💰 賣給魚販，得到 ${got} 金幣`); Music.sfx('coin'); });
+}
+function openFishDex() {
+  S.modal = () => {
+    const D = dockView(S.my), got = Object.keys(D.dex || {}).length;
+    let body = `<div class="popbox">📖 <b>碼頭魚種圖鑑</b>（${got}/${DOCK_LIST.length}）<br><small>不同時間、天氣會出現不同的魚！現在是 <b>${isNight() ? '🌙 晚上' : '☀️ 白天'}${isRain() ? '・🌧️ 下雨' : ''}</b>，✅ 是現在釣得到的。</small></div>`;
+    body += DOCK_LIST.map(([k]) => { const F = DFISH[k], best = D.dex?.[k]; return `<div class="item ${best ? '' : 'dim'}"><div class="pic" style="font-size:26px">${best ? F.em : '❔'}</div><div class="info"><div class="t">${best ? F.n : '？？？'} <span class="rare" style="background:${RARE_C[F.r]}">${RARE_N[F.r]}</span> ${fishOk(F) ? '✅' : ''}</div><div class="d">${WHEN_N[F.when]}${WX_REQ_N[F.wx]} · ${F.cm[0]}～${F.cm[1]}cm${best ? `　最大紀錄 <b>${best}cm</b>` : ''}</div></div></div>`; }).join('');
+    openModal('📖 魚種圖鑑', body);
+  };
+  S.modal();
+}
+// ----- 週三釣魚大賽 -----
+const FC_FEE = 100, FISH_RW = [{c:5000, tr:1}, {c:3000, tr:2}, {c:1500, tr:3}], FISH_RW_REST = {fert:5};
+const fcNext = d => { let x = d; for (let i = 0; i < 7 && dowOf(x) !== 3; i++) x = addDays(x, 1); return x; };
+const fcOpen = () => { const d = twDay(); return dowOf(d) === 3 ? fcNext(addDays(d, 1)) : fcNext(d); };
+const fcEnt = (f, c) => dockView(f).ent?.[c] || null;
+function fcField(cid) {
+  const ps = [{uid:S.uid, n:myName(), e:fcEnt(S.my, cid), me:1}, ...S.friends.map(x => ({uid:x.uid, n:dn(x.farm), e:fcEnt(x.farm, cid)}))].filter(x => x.e && DFISH[x.e.k]);
+  const out = ps.map(p => ({...p, k:p.e.k, cm:p.e.cm})), R = seededR(strHash('fcnpc:' + cid));
+  for (const n of ['阿海伯', '阿德師', '里長伯', '小豆']) if (out.length < 4) { const F = DFISH[DOCK_LIST[5 + Math.floor(R() * 11)][0]], cm = Math.round((F.cm[0] + (F.cm[1] - F.cm[0]) * (.35 + R() * .55)) * 10) / 10; out.push({uid:'npc:' + n, n, k:F.k, cm, npc:1}); }
+  return out.sort((a, b) => b.cm - a.cm);
+}
+const fcRw = k => FISH_RW[k] || FISH_RW_REST;
+function fcClaimable(f) { const D = dockView(f), d = twDay(); const cid = Object.keys(D.ent || {}).filter(c => c <= d && !D.cl?.[c]).sort()[0]; if (!cid) return null; const fl = fcField(cid), k = fl.findIndex(x => x.me); return k < 0 ? null : {cid, k, rw:fcRw(k), fl}; }
+function openFishCup() {
+  S.modal = () => {
+    const f = S.my, D = dockView(f), cid = fcOpen(), mine = fcEnt(f, cid), cl = fcClaimable(f), left = dayN(cid) - dayN(twDay());
+    let body = `<div class="popbox">🏆 <b>好友釣魚大賽</b>（每週三）<br><small>從魚缸挑一條你覺得最大的魚報名（報名費 💰${FC_FEE}），比誰的魚最長！<b>看不到好友魚的尺寸</b>，週二晚上 12 點截止，週三公布。<br>🥇 ${rwText(FISH_RW[0])}　🥈 ${rwText(FISH_RW[1])}　🥉 ${rwText(FISH_RW[2])}<br>第 4 名～最後一名：${rwText(FISH_RW_REST)}</small></div>`;
+    if (cl) body += `<div class="sec">🎉 ${hrDate(cl.cid)} 釣魚大賽結果出爐！</div><div class="fcres">${cl.fl.map((x, i) => `<div class="${x.me ? 'me' : ''}">${['🥇', '🥈', '🥉'][i] || (i + 1) + '.'} ${esc(x.n)}　${DFISH[x.k].em}${DFISH[x.k].n} <b>${x.cm}cm</b></div>`).join('')}</div><div class="mgbtn"><button class="b o" data-act="fcClaim">🎁 領獎（第 ${cl.k + 1} 名：${rwText(cl.rw)}）</button></div>`;
+    body += `<div class="sec">📅 下一場：${hrDate(cid)}（週三）${left <= 1 ? '· 明天公布' : `· 還有 ${left} 天`}</div>`;
+    if (mine) body += `<div class="mgres">✅ 已經報名：${DFISH[mine.k].em} <b>${DFISH[mine.k].n} ${mine.cm}cm</b><br><small>週三公布名次，祝你好運 🤞</small></div>`;
+    else { const A = (D.aq || []).map((a, i) => [a, i]).sort((x, y) => y[0].cm - x[0].cm);
+      body += A.length ? `<div class="d" style="font-size:12.5px;color:#8d6e63">挑一條報名（報名後魚會離開魚缸去參賽）：</div>` + A.map(([a, i]) => `<div class="item"><div class="pic" style="font-size:26px">${DFISH[a.k]?.em || '🐟'}</div><div class="info"><div class="t">${DFISH[a.k]?.n || ''}</div><div class="d"><b>${a.cm} cm</b></div></div><button class="b o" data-act="fcEnter" data-i="${i}">報名 💰${FC_FEE}</button></div>`).join('')
+        : `<div class="mgres">魚缸還沒有魚，先去碼頭釣魚吧 🎣</div>`; }
+    const fr = S.friends.filter(x => fcEnt(x.farm, cid));
+    body += `<div class="sec">👥 已報名的好友（${fr.length}）</div><div class="d" style="font-size:13px">${fr.length ? fr.map(x => `${esc(dn(x.farm))} 🐟？？cm`).join('、') : '還沒有好友報名'}${fr.length + (mine ? 1 : 0) < 4 ? '<br><small style="color:#8d6e63">報名不到 4 人的話，村民也會拿魚來比（也算名次）</small>' : ''}</div>`;
+    const past = Object.keys(D.cl || {}).sort().slice(-3).reverse();
+    if (past.length) body += `<div class="sec">📜 我的戰績</div><div class="d" style="font-size:13px">${past.map(c => `${hrDate(c)}：第 ${D.cl[c]} 名（${DFISH[D.ent[c]?.k]?.n || ''} ${D.ent[c]?.cm || ''}cm）`).join('<br>')}</div>`;
+    openModal('🏆 釣魚大賽', body);
+  };
+  S.modal();
+}
+async function fcEnter(i) {
+  let msg = '';
+  await fast(f => { const D = dockOf(f), cid = fcOpen(); if (D.ent[cid]) return ab('這週已經報名了'); const a = D.aq[i]; if (!a) return ab('找不到這條魚'); if (f.coins < FC_FEE) return ab('金幣不夠');
+    f.coins -= FC_FEE; addTrade(f, '釣魚大賽報名費', -FC_FEE); D.aq.splice(i, 1); D.ent[cid] = {k:a.k, cm:a.cm, t:now()};
+    const ks = Object.keys(D.ent).sort(); while (ks.length > 6) { const k = ks.shift(); delete D.ent[k]; delete D.cl[k]; }
+    msg = `🏆 ${DFISH[a.k].n}（${a.cm}cm）報名 ${hrDate(cid)} 釣魚大賽！`; return {}; }, () => { toast(msg); Music.sfx('ding'); });
+}
+async function fcClaim() {
+  const c = fcClaimable(S.my); if (!c) return;
+  const r = await txMe(f => { const D = dockOf(f); if (D.cl[c.cid]) return ab('已經領過了'); D.cl[c.cid] = c.k + 1; giveRw(f, c.rw, 'fishing', `${hrDate(c.cid)}・${DFISH[c.fl[c.k].k].n} ${c.fl[c.k].cm}cm`); addLog(f, `🏆 ${hrDate(c.cid)} 釣魚大賽：第 ${c.k + 1} 名，獲得 ${rwText(c.rw)}`); return {}; });
+  if (r.abort) return toast(r.msg); toast(`🎉 第 ${c.k + 1} 名！獲得 ${rwText(c.rw)}`); if (c.k < 3) { Music.sfx('coin'); Music.sparkle(); } else Music.sfx('pop');
+}
+const dockBadge = f => (fcClaimable(f) ? 1 : 0);
+function openMap() {
+  S.modal = () => {
+    const mo = typeof marketOpen === 'function' && marketOpen();
+    openModal('🗺️ 出門去哪裡？', `<div class="popbox"><small>這些地方是<b>大家共用</b>的，好友也在的話會看到彼此，一起玩更熱鬧！</small></div>
+      <div class="item" data-act="goDock" style="cursor:pointer"><div class="pic" style="font-size:34px">🎣</div><div class="info"><div class="t">釣魚碼頭</div><div class="d">真的要拋竿、等浮標、慢慢收線！天氣、白天晚上會出現不同的魚，有超稀有大魚。週三釣魚大賽。</div></div></div>
+      <div class="item" data-act="goMarket" style="cursor:pointer;${mo ? '' : 'opacity:.6'}"><div class="pic" style="font-size:34px">🏮</div><div class="info"><div class="t">夜市 ${mo ? '<span class="rare" style="background:#e53935">營業中</span>' : ''}</div><div class="d">每週一晚上 6 點～12 點開！撈金魚、套圈圈、射氣球、彈珠台，玩分數換獎品，還有「夜市高手」排行。</div></div></div>
+      <div class="item" data-act="mapGo" data-s="town" style="cursor:pointer"><div class="pic" style="font-size:34px">🏘️</div><div class="info"><div class="t">小鎮</div><div class="d">村民委託、市集攤位、賓果。</div></div></div>
+      <div class="item" data-act="mapGo" data-s="temple" style="cursor:pointer"><div class="pic" style="font-size:34px">🏯</div><div class="info"><div class="t">廟宇</div><div class="d">參拜抽籤、和好友一起蓋廟。</div></div></div>`);
+  };
+  S.modal();
+}
+
 /* ================= 溫室 ================= */
 
 const GH_MAX = 6, GH_START = 2, GH_PRICE = [0, 0, 1500, 3000, 5000, 8000], GH_SPEED = .8;
@@ -3294,13 +3648,14 @@ async function qianDraw(h) {
   if (lv <= 1) { Music.sfx('coin'); Music.sparkle(); } else if (lv >= 3) Music.sfx('bad'); renderAll();
 }
 // 點地面走過去
-const WALK_BOX = {farm:[-12, 12], ranch:[-12, 12], fish:[-12, 12], factory:[-12, 12], town:[-11, 11], green:[-8, 8], temple:[-10, 10], stable:[-13, 13]};
+const WALK_BOX = {farm:[-12, 12], ranch:[-12, 12], fish:[-12, 12], factory:[-12, 12], town:[-11, 11], green:[-8, 8], temple:[-10, 10], stable:[-13, 13], dock:[-15, 15]};
 function walkTap(cx, cy) {
   if (!W.scene || W.race || S.decoMode || !S.my) return;
   const r = W.renderer.domElement.getBoundingClientRect(); W.ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1); W.ray.setFromCamera(W.ndc, W.camera);
   const o = W.ray.ray.origin, d = W.ray.ray.direction; if (d.y > -.01) return; const k = -o.y / d.y, x = o.x + d.x * k, z = o.z + d.z * k;
   const base = (SCENE_T[S.scene] || FARM_T).x, bx = WALK_BOX[S.scene] || [-12, 12];
-  const tx = Math.max(base + bx[0], Math.min(base + bx[1], x)), tz = Math.max(-6, Math.min(11, z));
+  let tx = Math.max(base + bx[0], Math.min(base + bx[1], x)), tz = Math.max(S.scene === 'dock' ? -11.2 : -6, Math.min(11, z));
+  if (S.scene === 'dock') { const onStem = Math.abs(tx - DOCK_X) < 1.35 && tz > -9.3, onT = Math.abs(tx - DOCK_X) < 5.9 && tz <= -9.3; if (tz < .9 && !onStem && !onT) tz = .9; if (S.fishing) fishStop(); }
   S.myPos = {x:+tx.toFixed(2), z:+tz.toFixed(2), sc:S.scene}; S.pray = null;
   B.setPresence(S.uid, {pos:S.myPos, t:now()}); fx3(tx, .4, tz, '👣', '#6d4c41'); renderScene();
 }
@@ -3501,7 +3856,7 @@ function buildWorld() {
   gg.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3)); gg.computeVertexNormals();
   const ground = new THREE.Mesh(gg, new THREE.MeshLambertMaterial({vertexColors:true, flatShading:true})); ground.receiveShadow = true; S3.add(ground);
   // 遠山
-  for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2 + .2, r = 130 + (i % 3) * 18, h = 28 + (i * 7) % 22, R = 24 + (i % 4) * 6; const m = grp(cone(i % 2 ? '#4f7f4a' : '#5b8a52', [R, h, R], [0, h / 2, 0]), cone('#3f6e3d', [R * .45, h * .45, R * .45], [R * .25, h * .72, 0])); m.position.set(12 + Math.cos(a) * r, 0, Math.sin(a) * r); m.traverse(o => { o.castShadow = false; }); S3.add(m); }
+  for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2 + .2, h = 28 + (i * 7) % 22, R = 24 + (i % 4) * 6; let r = 130 + (i % 3) * 18; while (padDist(12 + Math.cos(a) * r, Math.sin(a) * r) < R * .95 + 4 && r < 260) r += 6; const m = grp(cone(i % 2 ? '#4f7f4a' : '#5b8a52', [R, h, R], [0, h / 2, 0]), cone('#3f6e3d', [R * .45, h * .45, R * .45], [R * .25, h * .72, 0])); m.position.set(12 + Math.cos(a) * r, 0, Math.sin(a) * r); m.traverse(o => { o.castShadow = false; }); S3.add(m); }
   // 田地、牧場地面、小路
   S3.add(blk('#9c6a3c', [17.6, .12, 9.6], [0, .04, -.3]));
   S3.add(blk('#8fd16a', [17.6, .06, 12.6], [24, .02, .5]));
@@ -3601,7 +3956,7 @@ function buildWorld() {
   // 窗戶晚上會亮
   W.winMat = new THREE.MeshLambertMaterial({color:'#bbdefb', emissive:'#000000'});
   const glass = mat('#bbdefb'); S3.traverse(o => { if (o.isMesh && o.material === glass) o.material = W.winMat; });
-  buildScenery(S3); buildFactory(S3); buildTown(S3); buildGreen(S3); buildTemple(S3); buildStable(S3); buildEnv(S3);
+  buildScenery(S3); buildFactory(S3); buildTown(S3); buildGreen(S3); buildTemple(S3); buildStable(S3); buildDock(S3); buildAquarium(S3); buildEnv(S3);
   mergeStatic(S3);
   W.vilG = new THREE.Group(); W.decoG = new THREE.Group(); W.greenG = new THREE.Group(); W.templeG = new THREE.Group(); S3.add(W.vilG, W.decoG, W.greenG, W.templeG);
   W.stallG = stallModel(); W.stallGoods = new THREE.Group(); W.stallG.add(W.stallGoods); W.stallG.position.set(TOWN_T.x - 3.4, 0, -.6); W.stallG.traverse(o => o.userData.hit = {type:'stall'}); S3.add(W.stallG);
@@ -3645,7 +4000,7 @@ function setCam(scene, instant) {
 function pick(cx, cy) {
   const r = W.renderer.domElement.getBoundingClientRect(); W.ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1);
   W.ray.setFromCamera(W.ndc, W.camera);
-  const roots = [...(W.templeG ? [W.templeG] : []), ...(W.stableG ? [W.stableG] : []), ...(W.greenG ? [W.greenG] : []), ...(W.stallG ? [W.stallG] : []), ...(W.decoGrid ? [W.decoGrid] : []), ...(W.santaGift ? [W.santaGift.g] : []), ...(W.vilG ? [W.vilG] : []), ...(W.decoG ? [W.decoG] : []), ...W.people.map(p => p.m), ...W.plots.map(p => p.g), ...W.animals.map(a => a.g), ...W.poops.filter(p => p.visible), W.trough, ...W.ponds.map(p => p.g), ...W.machs.map(p => p.g), ...W.pets.map(p => p.m)];
+  const roots = [...(W.templeG ? [W.templeG] : []), ...(W.stableG ? [W.stableG] : []), ...(W.aqHit ? [W.aqHit] : []), ...(W.greenG ? [W.greenG] : []), ...(W.stallG ? [W.stallG] : []), ...(W.decoGrid ? [W.decoGrid] : []), ...(W.santaGift ? [W.santaGift.g] : []), ...(W.vilG ? [W.vilG] : []), ...(W.decoG ? [W.decoG] : []), ...W.people.map(p => p.m), ...W.plots.map(p => p.g), ...W.animals.map(a => a.g), ...W.poops.filter(p => p.visible), W.trough, ...W.ponds.map(p => p.g), ...W.machs.map(p => p.g), ...W.pets.map(p => p.m)];
   const hits = W.ray.intersectObjects(roots, true);
   for (const h of hits) { if (h.object.visible === false) continue; let o = h.object; while (o && !o.userData.hit) o = o.parent; if (o) return o.userData.hit.type === 'cell' ? {type:'cell', c:o.userData.cells[h.instanceId]} : o.userData.hit; }
   return null;
@@ -3667,6 +4022,7 @@ function hoverAt(cx, cy) {
   else if (h.type === 'trough') { ring.position.set(TROUGH_XZ[0], .06, TROUGH_XZ[1]); ring.scale.setScalar(1.1); }
   else if (h.type === 'pond') { const [x3, z3] = pondXZ(h.i); ring.position.set(x3, .55, z3); ring.scale.setScalar(1.55); }
   else if (h.type === 'mach') { const [x4, z4] = facXZ(h.i); ring.position.set(x4, .2, z4); ring.scale.setScalar(1.55); }
+  else if (h.type === 'aq') { ring.position.set(AQ_T[0], .06, AQ_T[1]); ring.scale.setScalar(2.6); }
   else if (h.type === 'horse') { const P = W.horses?.find(x => x.id === h.id); if (P) { ring.position.set(P.g.position.x, .08, P.g.position.z); ring.scale.setScalar(.9); } }
   else if (h.type === 'hall') { const H = HALLS[h.i]; ring.position.set(TEMPLE_T.x + H.x, .6, H.z); ring.scale.setScalar(H.id === 'caishen' ? 3.3 : 2.6); }
   else if (h.type === 'gplot') { const [x, z] = ghXZ(h.i); ring.position.set(x, .4, z); ring.scale.setScalar(1.4); }
@@ -3960,6 +4316,7 @@ function loop() {
     if (waving) { const T2 = P.waveTo && W.people.find(q => q.uid === P.waveTo); if (T2) { const a2 = Math.atan2(-(T2.m.position.z - P.m.position.z), T2.m.position.x - P.m.position.x), ac = -Math.PI / 2; let dd = a2 - ac; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y = ac + dd * .6; } else P.m.rotation.y = -Math.PI / 2; if (u.head) u.head.rotation.z = Math.sin(t * 5) * .15; if (wa < 1400) P.m.position.y = Math.abs(Math.sin(wa / 1400 * Math.PI * 2)) * .45; const pop = wa < 300 ? wa / 300 : wa > 3400 ? (3800 - wa) / 400 : 1; P.m.scale.setScalar(1.25 * (1 + .22 * pop)); if (!P.hiFx || now() - P.hiFx > 1300) { P.hiFx = now(); fx3(P.m.position.x, 3.3, P.m.position.z, rnd(['👋', '👋✨', '💕']), '#e91e63'); } }
     else if (P.m.scale.x !== 1.25) P.m.scale.setScalar(1.25);
   }
+  fishTick(t, dt);
   if (W.hoverRing.visible) W.hoverRing.material.opacity = .55 + Math.sin(t * 6) * .3;
   W.renderer.render(W.scene, W.camera);
   for (const o of OV.values()) projectTo(o.el, o.pos(_v.set(0, 0, 0)), w, h);
@@ -4097,16 +4454,17 @@ function renderTop() {
   const unread = (f.log || []).filter(l => l.t > (f.logSeen || 0)).length + S.gifts.length;
   const set = (id, n) => { $(id).textContent = n; $(id).classList.toggle('on', n > 0); };
   set('#bdM', unread); set('#bdF', S.reqs.length); set('#bdT', taskClaimable(f)); set('#bdO', orderReady(f)); set('#bdG', f.gacha || 0);
-  set('#bdV', vilPending(f)); { const G = greenView(f); set('#bdH', (G.plots || []).slice(0, G.n || GH_START).filter(ghMature).length + (pumpMature(G.pump) ? 1 : 0) + (pumpClaimable(f) ? 1 : 0)); } set('#bdC', coopReady(f)); set('#bdS', horseBadge(f)); set('#bdE', festReady(f)); set('#bdX', achClaimable(f) + petGiftReady(f) + (bingoRes(f) && !f.bingo.cl ? 1 : 0));
+  set('#bdV', vilPending(f)); { const G = greenView(f); set('#bdH', (G.plots || []).slice(0, G.n || GH_START).filter(ghMature).length + (pumpMature(G.pump) ? 1 : 0) + (pumpClaimable(f) ? 1 : 0)); } set('#bdC', coopReady(f)); set('#bdS', horseBadge(f)); set('#bdP', dockBadge(f) + (typeof mkBadge === 'function' ? mkBadge(f) : 0)); set('#bdE', festReady(f)); set('#bdX', achClaimable(f) + petGiftReady(f) + (bingoRes(f) && !f.bingo.cl ? 1 : 0));
 }
 function renderTools() {
   const own = isOwn(), f = S.my; let T;
   if (S.scene === 'factory') T = own ? [['hand','✋','手'], ['collectAll','📥','全部收取', 1], ['sellProc','💰','賣加工品', 1], ['machShop','🏗️','蓋機器', 1]] : [['hand','✋','幫加速']];
-  else if (S.scene === 'fish') T = own ? [['hand','✋','手'], ['stock','🐟', S.fry ? SEA[S.fry].n : '放魚苗'], ['sellSea','💰','賣海鮮', 1], ['buyPond','➕','擴建魚池', 1]]
+  else if (S.scene === 'fish') T = own ? [['hand','✋','手'], ['stock','🐟', S.fry ? SEA[S.fry].n : '放魚苗'], ['sellSea','💰','賣海鮮', 1], ['buyPond','➕','擴建魚池', 1], ['aqShow','🐠','魚缸', 1]]
                                   : [['hand','✋','偷撈'], ['cleanTip2','🧹','幫撈垃圾', 1]];
   else if (S.scene === 'ranch') T = own ? [['hand','✋','收集'], ['feedAll','🌾','餵食', 1], ['buyAni','🛒','買動物', 1], ['sellProducts','💰','賣產品', 1]]
                                    : [['hand','✋','偷產品'], ['feedFriend','🌾','幫餵食', 1], ['cleanTip','🧹','幫清便便', 1]];
   else if (S.scene === 'green') T = own ? [['hand','✋','手'], ['pump','🎃','南瓜大賽', 1], ['ghBuy','➕','擴建溫室', 1]] : [['hand','✋','參觀'], ['pump','🎃','南瓜大賽', 1]];
+  else if (S.scene === 'dock') T = [['hand','✋','走走'], ['fishGo','🎣','釣魚', 1], ['aqShow','🐠','我的魚缸', 1], ['fishCup','🏆','釣魚大賽', 1], ['fishDex','📖','魚種圖鑑', 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'stable') T = own ? [['hand','✋','手'], ['horseList','🐎','我的馬', 1], ['horseRace','🏁','賽馬大賽', 1]] : [['hand','✋','參觀'], ['horseList','🐎','看馬', 1], ['horseRace','🏁','賽馬大賽', 1]];
   else if (S.scene === 'temple') T = [['hand','✋','手'], ['templeInfo','🏯','廟宇', 1], ['qianShow','📜','今日籤詩', 1], ['toTown','🏘️','回小鎮', 1]];
   else if (S.scene === 'town') T = own ? [['hand','✋','手'], ['vilList','📋','村民委託', 1], ['stall','🏪','我的攤位', 1], ['toTemple','🏯','去廟裡', 1], ['bingo','🎱','賓果', 1]] : [['hand','✋','逛逛'], ['stall','🏪','逛攤位', 1], ['toTemple','🏯','去廟裡', 1]];
@@ -4132,8 +4490,9 @@ function renderScene() {
   if (f) {
     BUD = performance.now() + 10; BUILT = 0; W.syncPending = false;
     const order = {farm:[syncField, syncDeco, syncPets, syncRanch, syncFish, syncFactory, syncTown], ranch:[syncRanch, syncPets, syncField, syncDeco, syncFish, syncFactory, syncTown], fish:[syncFish, syncPets, syncField, syncDeco, syncRanch, syncFactory, syncTown], factory:[syncFactory, syncPets, syncField, syncDeco, syncRanch, syncFish, syncTown], green:[syncGreen, syncPets, syncField, syncDeco, syncRanch, syncFish, syncFactory, syncTown], town:[syncTown, syncStall, syncPets, syncField, syncDeco, syncRanch, syncFish, syncFactory]}[S.scene] || [syncField, syncDeco, syncRanch, syncFish, syncPets, syncFactory, syncTown];
-    for (const fn of order) fn(f, own); if (S.scene !== 'green') syncGreen(f, own); syncTemple(f, own); syncStable(f, own); syncFest();
+    for (const fn of order) fn(f, own); if (S.scene !== 'green') syncGreen(f, own); syncTemple(f, own); syncStable(f, own); syncAquarium(f, own); syncFest();
     { const T = templeView(f); setSign(W.templeSign, own ? '我的廟宇' : `${dn(f)}的廟`, T.lv >= HALLS.length ? '三座殿都蓋好了 🙏' : `${HALLS[T.lv].n} 建造中 ${Math.floor(tpProg(T) * 100)}%`); }
+    if (S.place === 'dock') setSign(W.dockSign, '🎣 釣魚碼頭', `${isNight() ? '🌙 夜釣時間' : '☀️ 白天'}${isRain() ? '・🌧️ 下雨' : ''} · 現在 ${hereList().length} 人`);
     { const L = horseView(f).list || []; setSign(W.stableSign, own ? '我的馬場' : `${dn(f)}的馬場`, `馬 ${L.length}/${H_MAX} 匹 · 🏁下一場 ${hrDate(hrOpen())}`); }
     setSign(W.greenSign, own ? '我的溫室' : `${dn(f)}的溫室`, `花圃 ${greenView(f).n || GH_START}/${GH_MAX} · 🎃南瓜大賽`); if (S.scene !== 'town') syncStall(f, own);
     ov('stallL', own ? '🏪 我的攤位' : `🏪 ${esc(dn(f))}的攤位`, v => v.set(TOWN_T.x - 3.4, 3.1, -.6), 'tag');
@@ -4143,7 +4502,7 @@ function renderScene() {
     setSign(W.ranchSign, own ? '我的牧場' : `${dn(f)}的牧場`, `動物 ${f.ranch.animals.length}/${ranchCap(levelOf(f.exp).L)}`);
     setSign(W.fishSign, own ? '我的魚塭' : `${dn(f)}的魚塭`, `魚池 ${f.fish.n}/${MAXPOND}`);
   }
-  document.querySelectorAll('#sceneTabs button').forEach(b => b.classList.toggle('on', b.dataset.s === S.scene));
+  document.querySelectorAll('#sceneTabs button').forEach(b => b.classList.toggle('on', b.dataset.s ? b.dataset.s === S.scene : !!S.place));
   $('#visitBar').hidden = own; if (!own && f) $('#visitName').textContent = dn(f);
   const list = hereList();
   if (!own && f && !list.some(p => p.uid === S.viewUid)) { const nw = W.npc?.uid === S.viewUid ? W.npc : {}; list.push({uid:S.viewUid, n:dn(f), g:f.gender || genderOf({uid:S.viewUid}), lk:f.look || null, vh:rideOf(f), lv:levelOf(f.exp).L, npc:true, t:now(), say:nw.say, wave:nw.wave, waveTo:nw.wave ? S.uid : '', back:true}); }
@@ -4205,6 +4564,7 @@ function pondText(i) {
   return t;
 }
 function tipFor(h) {
+  if (h.type === 'aq') { const n = dockView(S.view).aq?.length || 0; return `<b>🐠 超大魚缸</b>（${n}/${AQ_MAX} 條）<br>點一下看魚`; }
   if (h.type === 'horse') { const x = horseView(S.view).list.find(y => y.id === h.id); return x ? `<b>${hSexE(x)} ${esc(x.n)}</b> ${hAgeT(x)}${hStatus(x) ? '<br>' + hStatus(x) : ''}<br>${isOwn() ? '點一下訓練、配種' : '點一下看看'}` : ''; }
   if (h.type === 'hall') { const H = HALLS[h.i], T = templeView(S.view); return `<b>${H.em} ${H.n}</b>（${H.god}）<br>${h.i < T.lv ? (qianToday(S.my) ? '今天已經抽過籤了，點一下看籤詩' : '點一下參拜抽籤 🙏') : h.i === T.lv ? `建造中 ${Math.floor(tpProg(T) * 100)}%，點一下捐材料` : '還沒開始蓋'}`; }
   if (h.type === 'gplot') { const G = greenView(S.view), p = (G.plots || [])[h.i]; if (h.i >= (G.n || GH_START)) return h.i === (G.n || GH_START) && isOwn() ? `🔒 點一下花 ${GH_PRICE[G.n || GH_START]} 金幣擴建` : '🔒 還沒擴建'; if (!p || p.s !== 'grow' || !CROPS[p.c]) return isOwn() ? '空花圃，點一下種東西' : '空花圃'; return `<b>${CROPS[p.c].gh ? '🌱 ' : ''}${CROPS[p.c].n}</b><br>${ghMature(p) ? '✨ 成熟了！點一下收成' : `還要 ${fmtDur(p.p + ghMs(p.c) - now())}`}`; }
@@ -4238,6 +4598,7 @@ function clickHit(h) {
   if (h.type === 'stall') return openStall();
   if (h.type === 'gplot') { if (S.scene !== 'green') { S.scene = 'green'; setCam('green'); renderTools(); } return clickGh(h.i); }
   if (h.type === 'gpump') return openPump();
+  if (h.type === 'aq') return openAquarium();
   if (h.type === 'horse') { if (S.scene !== 'stable') { S.scene = 'stable'; setCam('stable'); renderTools(); } return openHorse(h.id); }
   if (h.type === 'hall') { if (S.scene !== 'temple') { S.scene = 'temple'; setCam('temple'); renderTools(); } return openHall(h.i); }
   if (h.type === 'cell') { if (!S.decoMode?.k) return toast('先從「🪑 換裝飾」選一個要擺的裝飾'); return run(() => decoPut(h.c)); }
@@ -4320,7 +4681,7 @@ function waveAt(uid, name, back, arrive) {
   if (!S.my) return; const t = now(), me = uid === S.uid;
   if (!back && !arrive && S.lastWave && t - S.lastWave < 1500) return; S.lastWave = t;
   const hi = festHello(), m = hi ? (me ? `🎉 大家${hi}` : `👋 ${name ? name + '，' : ''}${hi}`) : arrive ? `嗨～${name || ''}，我來玩囉！👋` : me ? '👋 大家好～' : back ? `👋 嗨，${name}～` : `👋 嗨，${name}！`;
-  S.spokeT = t; B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), at:S.viewUid || S.uid, t, off:false, say:{m, t, d:3500}, wave:t, waveTo:me ? '' : uid, back:!!back, arr:!!arrive});
+  S.spokeT = t; B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), at:hereAt(), t, off:false, say:{m, t, d:3500}, wave:t, waveTo:me ? '' : uid, back:!!back, arr:!!arrive});
   const P = W.people?.find(p => p.uid === S.uid); if (P) { P.waveAt = t; P.waveTo = me ? '' : uid; }
   Music.babble(myGender(), m);
 }
@@ -4334,7 +4695,7 @@ async function caught(x, y, z, petName) {
   });
   const pk = petOf(S.view), kind = PETS[pk]?.kind || 'dog', t0 = now();
   startChase(S.uid, pk); S.spokeT = t0;
-  B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), at:S.viewUid, t:t0, off:false, say:{m:'救命呀～！😱', t:t0, d:5000}, chase:{t:t0, k:pk}});
+  B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), at:hereAt(), t:t0, off:false, say:{m:'救命呀～！😱', t:t0, d:5000}, chase:{t:t0, k:pk}});
   Voice.speak('救命呀～救命呀～', myGender()); Music.voice(kind); setTimeout(() => Music.voice(kind), 1300); setTimeout(() => Music.voice(kind), 2600);
   await sleep(4300);
   fx3(x, y, z, `🚨 被${petName}抓到了！`, '#d32f2f'); Music.sfx('bad');
@@ -4843,7 +5204,7 @@ function openChat() {
 async function say(m) {
   m = String(m || '').trim().slice(0, 24); if (!m) return; closeModal(); const t = now();
   if (m === '👋 揮手打招呼') { const o = hereList().filter(p => p.uid !== S.uid); return o.length ? o.forEach((p, k) => setTimeout(() => waveAt(p.uid, p.n, false), k * 1600)) : waveAt(S.uid, myName()); }
-  await B.setPresence(S.uid, {say:{m, t}, at:S.viewUid, t, n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), off:false});
+  await B.setPresence(S.uid, {say:{m, t}, at:hereAt(), t, n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), off:false});
   if (!(dailyView(S.my).t.chat >= 1)) txMe(f => { bump(f, 'chat'); return {}; }).catch(() => {});
 }
 function openHelp() {
@@ -4853,6 +5214,7 @@ function openHelp() {
     <p>🌱 <b>種菜</b>：共 ${Object.keys(CROPS).length} 種作物，有蔬菜、水果、花、果樹、草穀。選「播種」挑種子，點田地就能種。✋「手」會自動收成、翻地、播種或照顧作物。</p>
     <p>💧🌿🐞 <b>照顧</b>：作物會缺水、長草、長蟲，每個問題減產 10%。</p>
     <p>🐮 <b>牧場</b>：${Object.keys(ANIMALS).filter(k => !ANIMALS[k].gone).length} 種動物，吃<b>牧草</b>或<b>飼料</b>才會生產。產品可以賣錢、煮料理。</p>
+    <p>🎣 <b>釣魚碼頭</b>：點左上「🗺️ 出門」去碼頭，大家都在同一個碼頭！拋竿後等浮標<b>沉下去</b>再收線，然後<b>按住</b>慢慢收，張力太高要放開一下。釣到的魚放進魚塭旁的超大魚缸，村民會來買。每週三有釣魚大賽！</p>
     <p>🐎 <b>馬場</b>：每人有 3 匹馬（2 公 1 母）。每天可以訓練 3 次（用紅蘿蔔或金幣），母馬配種生小馬會遺傳爸媽的天分。每月 15、30 號舉辦<b>賽馬大賽</b>，前一天截止報名，前三名有大獎和獎盃！</p>
     <p>🐟 <b>魚塭</b>：${Object.keys(SEA).length} 種魚蝦貝類（吳郭魚、鮭魚、鮪魚、龍蝦、帝王蟹、牡蠣、海膽、章魚…），放魚苗養大就能撈。水面有垃圾記得撈掉。</p>
     <p>🍳 <b>料理訂單</b>：村民會點菜，把需要的材料<b>慢慢收集、分次交貨</b>，交齊就能拿大獎勵，不能用錢買。</p>
@@ -5750,7 +6112,7 @@ const ACT = {
   forgot() { const b = $('#forgotBox'); b.hidden = !b.hidden; if (!b.hidden) { $('#fgName').value = $('#aName').value; $('#fgMsg').textContent = ''; $('#fgName').focus(); } }, forgotGo() { return forgotGo(); }, mailBind: openMailBind, mailBindGo() { return mailBindGo(); }, passChg: openPassChg, passChgGo() { return passChgGo(); },
   authTab(d) { authMode = d.t; document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === d.t)); $('#aPass2Wrap').hidden = d.t !== 'reg'; $('#aGo').textContent = d.t === 'reg' ? '註冊並開始' : '開始種田'; $('#aPass').autocomplete = d.t === 'reg' ? 'new-password' : 'current-password'; $('#authErr').textContent = ''; },
   tool(d) { if (d.t === 'plant' && (!S.seed || S.tool === 'plant')) { S.tool = 'plant'; renderTools(); return openSeedPicker(-1); } if (d.t === 'stock' && (!S.fry || S.tool === 'stock')) { S.tool = 'stock'; renderTools(); return openFryPicker(-1); } S.tool = d.t; renderTools(); },
-  scene(d) { if (W.zoomed) { W.zoomed = false; clearTimeout(W.zoomT); const o = (W.camAnim?.off1 || W.camera.position.clone().sub(W.controls.target)).clone().multiplyScalar(1 / .42); W.camAnim = null; W.camera.position.copy(W.controls.target).add(o); } S.scene = d.s; S.tool = 'hand'; S.hover = null; S.myPos = null; S.pray = null; $('#tip').style.display = 'none'; setCam(d.s); renderTools(); renderScene(); },
+  scene(d) { if (W.zoomed) { W.zoomed = false; clearTimeout(W.zoomT); const o = (W.camAnim?.off1 || W.camera.position.clone().sub(W.controls.target)).clone().multiplyScalar(1 / .42); W.camAnim = null; W.camera.position.copy(W.controls.target).add(o); } const lp = !PLACES[d.s] && leavePlace(); S.scene = d.s; S.tool = 'hand'; S.hover = null; S.myPos = null; S.pray = null; $('#tip').style.display = 'none'; setCam(d.s); renderTools(); renderScene(); if (lp) { travel('回農場ING', 1100); watchHere(); beat(); } },
   feedAll() { return run(feedAll); }, feedFriend() { return run(feedFriend); },
   buyAni() { openShop('ani'); }, cleanTip() { toast('點牧場上的 💩 就能幫好友清掉，拿經驗！'); },
   close: closeModal,
@@ -5765,7 +6127,10 @@ const ACT = {
   templeInfo: openTemple, hall(d) { openHall(+d.i); }, pray(d) { startPray(+d.i); }, tpGive(d) { return run(() => tpGive(d.k, +d.n)); }, qianShow() { if (qianToday(S.my)) openQian(); else { toast('今天還沒抽籤，去廟裡參拜吧 🙏'); if (S.scene !== 'temple') ACT.toTemple(); } },
   toTemple() { ACT.scene({s:'temple'}); },
   horseList: openHorses, horse(d) { openHorse(+d.id); }, horseRace: openHorseRace, hTrain(d) { return run(() => hTrain(+d.id, d.k)); }, hBreed(d) { return run(() => hBreed(+d.id, d.m)); }, hSell(d) { return run(() => hSell(+d.id)); },
-  hEnter(d) { return run(() => hEnter(+d.id)); }, hRaceGo(d) { startHorseRace(d.r); }, toTown() { ACT.scene({s:'town'}); },
+  hEnter(d) { return run(() => hEnter(+d.id)); },
+  map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, leaveP() { ACT.scene({s:'farm'}); },
+  fishGo: fishStart, fishCast, fishHook, fishQuit() { fishStop(); renderTools(); }, fishKeep(d) { return run(() => fishKeep(d.m)); }, aqShow: openAquarium, aqSell(d) { return run(() => aqSell(+d.i)); }, fishDex: openFishDex, fishCup: openFishCup,
+  fcEnter(d) { return run(() => fcEnter(+d.i)); }, fcClaim() { return run(fcClaim); }, hRaceGo(d) { startHorseRace(d.r); }, toTown() { ACT.scene({s:'town'}); },
   pump: openPump, pumpPlant() { return run(pumpPlant); }, pumpCare(d) { return run(() => pumpCare(d.k)); }, pumpHarvest() { return run(pumpHarvest); }, pumpClaim() { return run(pumpClaim); }, pumpEnter(d) { return run(() => pumpEnter(+d.i)); }, ghPlant(d) { return run(() => ghPlant(d.id)); }, ghBuy() { return run(ghBuy); },
   expPick(d) { openExp(d.k); }, expGo(d) { return run(() => expGo(d.k, d.d)); }, expBack(d) { return run(() => expBack(d.k)); },
   stall: openStall, stallOn(d) { return run(() => stallOn(d.k)); }, stallOff(d) { return run(() => stallOff(+d.i)); }, stallBuy(d) { return run(() => stallBuy(+d.i)); },
@@ -5872,12 +6237,12 @@ $('#authForm').addEventListener('submit', async e => {
   $('#aGo').disabled = true;
   try { authMode === 'reg' ? await B.register(name, pass) : byMail ? await B.loginMail(name, pass) : await B.login(name, pass); } catch (ex) { err.textContent = ex.message; } finally { $('#aGo').disabled = false; }
 });
-function beat() { if (S.my && S.uid) B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), lk:S.my.look || null, vh:rideOf(S.my), at:S.viewUid || S.uid, t:now(), off:false}); }
+function beat() { if (S.my && S.uid) B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), lk:S.my.look || null, vh:rideOf(S.my), at:hereAt(), t:now(), off:false}); }
 const myGender = () => S.my?.gender === 'girl' ? 'girl' : 'boy';
 function greet(first, force) {
   if (!S.my) return;
   const nm = myName(), m = first ? `${nm}，歡迎來到農場！` : `${nm}，歡迎回來農場！`, t = now(), g = myGender();
-  S.spokeT = t; B.setPresence(S.uid, {n:nm, lv:levelOf(S.my.exp).L, g, at:S.viewUid || S.uid, t, off:false, say:{m, t, d:3800}, wave:t, waveTo:'', back:false, arr:false});
+  S.spokeT = t; B.setPresence(S.uid, {n:nm, lv:levelOf(S.my.exp).L, g, at:hereAt(), t, off:false, say:{m, t, d:3800}, wave:t, waveTo:'', back:false, arr:false});
   const P = W.people?.find(p => p.uid === S.uid); if (P) P.waveAt = t;
   setTimeout(focusMe, 250);
   Music.sparkle(); setTimeout(() => Music.babble(g, '哈囉歡迎回來'), 350);
@@ -5933,9 +6298,9 @@ function openChar(first) {
   S.modal(); S.charFirst = !!first;
 }
 function watchHere() {
-  S.unsubHere && S.unsubHere(); S.here = S.here.filter(p => p.uid === S.uid).map(p => ({...p, at:S.viewUid, t:now()})); S.hereIds = new Set(); S.hereInit = false; const at = S.viewUid;
+  S.unsubHere && S.unsubHere(); const at = hereAt(); S.here = S.here.filter(p => p.uid === S.uid).map(p => ({...p, at, t:now()})); S.hereIds = new Set(); S.hereInit = false;
   S.unsubHere = B.watchHere(at, list => {
-    if (S.viewUid !== at) return;
+    if (hereAt() !== at) return;
     const fresh = list.filter(p => !p.off && p.t && now() - p.t < 75000);
     if (at === S.uid && S.hereInit) for (const p of fresh) if (p.uid !== S.uid && !S.hereIds.has(p.uid)) toast(`👋 ${p.n} 來你家玩了！`);
     S.hereIds = new Set(fresh.map(p => p.uid)); S.hereInit = true; S.here = list; renderScene();
@@ -5981,9 +6346,10 @@ function travel(text, ms = 1500) {
   $('#tvText').textContent = text; el.classList.remove('out'); el.hidden = false; Music.sfx('pop');
   clearTimeout(_tvT); _tvT = setTimeout(() => { el.classList.add('out'); _tvT = setTimeout(() => { el.hidden = true; el.classList.remove('out'); }, 350); }, ms);
 }
-function goHome() { S.myPos = null; S.pray = null; unZoom(); S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; renderAll(); beat(); watchHere(); }
+function goHome() { leavePlace(); S.myPos = null; S.pray = null; unZoom(); S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; renderAll(); beat(); watchHere(); }
 function visit(uid) {
   if (uid === S.uid) return goHome();
+  leavePlace();
   { const fr0 = S.friends.find(x => x.uid === uid); travel(`拜訪 ${fr0 ? dn(fr0.farm) : '好友'} 的農場ING`); }
   S.myPos = null; S.pray = null;
   unZoom(); clearSanta(); S.decoMode = null; S.thief = null; S.unsubView && S.unsubView();
