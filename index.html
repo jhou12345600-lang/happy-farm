@@ -84,6 +84,9 @@ button{font-family:inherit;cursor:pointer;border:none}
 .tcup{position:relative;background:linear-gradient(#fffaf0,#f5e6c8);border-radius:10px;padding:8px 4px 6px;text-align:center;box-shadow:0 3px 0 #5d4037}.tcup .cup{font-size:40px;display:block;line-height:1.1}.tcup.r2 .cup{filter:grayscale(1) brightness(1.15)}.tcup.r3 .cup{filter:sepia(1) hue-rotate(-25deg) saturate(1.6) brightness(.85)}
 .tcup .ev{position:absolute;top:4px;right:6px;font-size:18px}.tcup b{display:block;font-size:12px;color:#5d4037}.tcup small{font-size:11px;color:#8d6e63}
 #visitBar .tb{background:#fff3c4;color:#5d4037;padding:6px 10px}
+.bgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}.bgrid button{aspect-ratio:1;border-radius:50%;border:2px solid #e0c99d;background:#fffdf5;font-size:12px;font-weight:800;color:#5d4037;padding:0}.bgrid button.on{background:#e53935;border-color:#b71c1c;color:#fff}
+.bballs,.bmine{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:4px 0}.bballs span,.bmine span{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;background:radial-gradient(circle at 35% 30%,#fff,#ffe082);color:#5d4037;box-shadow:0 2px 0 #c8a24a}.bballs span.new{animation:rqin2 .3s ease-out}
+.bballs span.hit,.bmine span.hit{background:radial-gradient(circle at 35% 30%,#ff8a80,#e53935);color:#fff;box-shadow:0 2px 0 #8e1b14}.bmine span{background:#fff;border:2px solid #e0c99d;box-shadow:none}.bballs .spin{animation:qsh .2s linear infinite}
 .mgbox{text-align:center}.mgd{color:#8d6e63;font-size:13px;margin-bottom:10px}.mgtip{color:#8d6e63;font-weight:800;margin:8px 0}.mgres{font-size:16px;line-height:1.7;margin:10px 0;color:#5d4037}.mgres small{color:#8d6e63}.mgbtn{margin:10px 0}
 .mg3{display:flex;justify-content:center;gap:12px;margin:8px 0}.mgi{position:relative;width:88px;height:104px;border-radius:18px;border:3px solid #d7b98e;background:linear-gradient(#fffdf5,#ffeccc);font-size:52px;cursor:pointer;animation:mgfl 2s ease-in-out infinite}
 .mgi:nth-child(2){animation-delay:.3s}.mgi:nth-child(3){animation-delay:.6s}.mgi:disabled{cursor:default;color:inherit}.mgi.sel{border-color:#ff9800;box-shadow:0 0 0 3px #ffe0b2}
@@ -3813,7 +3816,7 @@ function renderTop() {
   const unread = (f.log || []).filter(l => l.t > (f.logSeen || 0)).length + S.gifts.length;
   const set = (id, n) => { $(id).textContent = n; $(id).classList.toggle('on', n > 0); };
   set('#bdM', unread); set('#bdF', S.reqs.length); set('#bdT', taskClaimable(f)); set('#bdO', orderReady(f)); set('#bdG', f.gacha || 0);
-  set('#bdV', vilPending(f)); { const G = greenView(f); set('#bdH', (G.plots || []).slice(0, G.n || GH_START).filter(ghMature).length + (pumpMature(G.pump) ? 1 : 0) + (pumpClaimable(f) ? 1 : 0)); } set('#bdC', coopReady(f)); set('#bdE', festReady(f)); set('#bdX', achClaimable(f) + petGiftReady(f));
+  set('#bdV', vilPending(f)); { const G = greenView(f); set('#bdH', (G.plots || []).slice(0, G.n || GH_START).filter(ghMature).length + (pumpMature(G.pump) ? 1 : 0) + (pumpClaimable(f) ? 1 : 0)); } set('#bdC', coopReady(f)); set('#bdE', festReady(f)); set('#bdX', achClaimable(f) + petGiftReady(f) + (bingoRes(f) && !f.bingo.cl ? 1 : 0));
 }
 function renderTools() {
   const own = isOwn(), f = S.my; let T;
@@ -3824,7 +3827,7 @@ function renderTools() {
                                    : [['hand','✋','偷產品'], ['feedFriend','🌾','幫餵食', 1], ['cleanTip','🧹','幫清便便', 1]];
   else if (S.scene === 'green') T = own ? [['hand','✋','手'], ['pump','🎃','南瓜大賽', 1], ['ghBuy','➕','擴建溫室', 1]] : [['hand','✋','參觀'], ['pump','🎃','南瓜大賽', 1]];
   else if (S.scene === 'temple') T = [['hand','✋','手'], ['templeInfo','🏯','廟宇', 1], ['qianShow','📜','今日籤詩', 1], ['toTown','🏘️','回小鎮', 1]];
-  else if (S.scene === 'town') T = own ? [['hand','✋','手'], ['vilList','📋','村民委託', 1], ['stall','🏪','我的攤位', 1], ['toTemple','🏯','去廟裡', 1]] : [['hand','✋','逛逛'], ['stall','🏪','逛攤位', 1], ['toTemple','🏯','去廟裡', 1]];
+  else if (S.scene === 'town') T = own ? [['hand','✋','手'], ['vilList','📋','村民委託', 1], ['stall','🏪','我的攤位', 1], ['toTemple','🏯','去廟裡', 1], ['bingo','🎱','賓果', 1]] : [['hand','✋','逛逛'], ['stall','🏪','逛攤位', 1], ['toTemple','🏯','去廟裡', 1]];
   else if (S.decoMode && own) T = [['decoDone','✅','完成', 1], ['decoTool','🪑','換裝飾', 1]];
   else T = own ? [['hand','✋','手'], ['plant','🌱', S.seed ? CROPS[S.seed].n : '播種'], ['water','💧','澆水'], ['weed','🌿','除草'], ['bug','🐞','除蟲'], ['fert','🧪','施肥'], ['plow','⛏️','翻地'], ['decoTool','🪑','裝飾', 1]]
                : [['hand','✋','偷菜'], ['water','💧','幫澆水'], ['weed','🌿','幫拔草'], ['bug','🐞','幫除蟲'], ['pbug','🐛','放蟲'], ['pweed','🌾','種草']];
@@ -4602,6 +4605,52 @@ function wxInfo() {
 }
 
 /* ----- 更多選單 ----- */
+/* ----- 🎱 BINGO 賓果：每週一期，週日～週五下注，週六開獎 ----- */
+const BINGO_DRAW = 25, BINGO_PICK = 10, BINGO_COST = 100;
+const BINGO_RW = [[10, {c:10000}, '全中 10 個'], [8, {c:6000}, '中 8～9 個'], [6, {c:3000}, '中 6～7 個'], [4, {fert:10}, '中 4～5 個']];
+function bingoDraw(w) { const R = _rng(hashStr('bingo:' + w)), a = Array.from({length:100}, (_, i) => i + 1); for (let i = 99; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a.slice(0, BINGO_DRAW); }
+const bingoTier = hit => BINGO_RW.find(([n]) => hit >= n) || null;
+const bingoOpen = () => dowOf() <= 5;
+function bingoRes(f) { const b = f?.bingo; if (!b?.nums) return null; const drawn = b.w < wkOf() || dowOf() === 6; if (!drawn) return null; const D = bingoDraw(b.w), hit = b.nums.filter(n => D.includes(n)).length; return {w:b.w, D, hit, tier:bingoTier(hit)}; }
+function openBingo() {
+  if (!S.bg) S.bg = {pick:[], ph:''};
+  S.modal = () => {
+    const f = S.my, b = f.bingo, wk = wkOf(), mine = b?.w === wk ? b : null, res = bingoRes(f), G = S.bg;
+    let body = `<div class="popbox">🎱 <b>BINGO 賓果</b>（每週一期）<br><small>從 1～100 挑 ${BINGO_PICK} 個號碼，一張 💰${BINGO_COST}，每人每週只能下注一張。<b>週五晚上 12 點截止，週六開獎</b>，電腦隨機抽出 ${BINGO_DRAW} 個號碼。<br>${BINGO_RW.map(([, rw, t]) => `${t}：${rwText(rw)}`).join(' · ')}</small></div>`;
+    if (res && !b.cl && G.ph !== 'done') {
+      const shown = G.ph === 'draw' ? G.k : 0;
+      body += `<div class="sec">🎉 ${wkRange(res.w)} 開獎${G.ph === 'draw' ? '中…' : ''}</div><div class="bballs">${res.D.slice(0, shown).map((n, i) => `<span class="${b.nums.includes(n) ? 'hit' : ''} ${i === shown - 1 ? 'new' : ''}">${n}</span>`).join('')}${G.ph === 'draw' ? '<span class="spin">？</span>' : `<div class="mgres" style="width:100%">🎰 ${BINGO_DRAW} 顆號碼球準備好了！</div>`}</div>`;
+      body += `<div class="sec">🎫 我的號碼</div><div class="bmine">${b.nums.map(n => `<span class="${res.D.slice(0, shown).includes(n) ? 'hit' : ''}">${n}</span>`).join('')}</div>`;
+      body += G.ph === 'draw' ? '<div class="mgtip">搖獎機轉呀轉…… 🎱</div>' : !G.ph ? `<div class="mgbtn"><button class="b o" data-act="bingoShow">🎱 看開獎！</button></div>` : '';
+    } else if (G.ph === 'done' && G.res) {
+      const r = G.res; body += `<div class="sec">🎉 ${wkRange(r.w)} 開獎結果</div><div class="bballs">${r.D.map(n => `<span class="${r.nums.includes(n) ? 'hit' : ''}">${n}</span>`).join('')}</div><div class="mgres">你中了 <b>${r.hit}</b> 個號碼！<br>${r.tier ? `🎉 ${r.tier[2]}，獲得 <b>${rwText(r.tier[1])}</b>` : '😢 這次沒中獎，下週再試試！'}</div>`;
+    }
+    if (mine && !b.cl && !(res && !b.cl)) body += `<div class="sec">🎫 本週我的號碼（${wkRange(wk)}）</div><div class="bmine">${mine.nums.map(n => `<span>${n}</span>`).join('')}</div><div class="mgres"><small>${bingoOpen() ? '已下注！週六開獎，記得回來看 🤞' : '今天週六開獎，按上面看結果！'}</small></div>`;
+    else if (!(res && !b.cl) && bingoOpen()) {
+      body += `<div class="sec">✏️ 挑 ${BINGO_PICK} 個號碼（已選 ${G.pick.length}/${BINGO_PICK}）</div><div class="bgrid">${Array.from({length:100}, (_, i) => i + 1).map(n => `<button class="${G.pick.includes(n) ? 'on' : ''}" data-act="bingoPick" data-n="${n}">${n}</button>`).join('')}</div>
+        <div class="mgbtn"><button class="b" data-act="bingoRand">🎲 電腦幫我選</button> <button class="b ${G.pick.length === BINGO_PICK ? 'o' : 'g'}" data-act="bingoBet" ${G.pick.length === BINGO_PICK ? '' : 'disabled'}>🎫 下注 💰${BINGO_COST}</button></div>`;
+    } else if (!mine && !(res && !b.cl)) body += `<div class="mgres">今天週六開獎日，暫停下注，明天（週日）開始下一期！</div>`;
+    openModal('🎱 BINGO 賓果', body);
+  };
+  S.modal();
+}
+function bingoPick(n) { const G = S.bg, i = G.pick.indexOf(n); if (i >= 0) G.pick.splice(i, 1); else if (G.pick.length < BINGO_PICK) G.pick.push(n); else return toast(`最多挑 ${BINGO_PICK} 個號碼`); S.modal && S.modal(); }
+function bingoRand() { const a = []; while (a.length < BINGO_PICK) { const n = ri(1, 100); if (!a.includes(n)) a.push(n); } S.bg.pick = a.sort((x, y) => x - y); S.modal && S.modal(); Music.sfx('pop'); }
+async function bingoBet() {
+  const nums = [...S.bg.pick].sort((a, b) => a - b); if (nums.length !== BINGO_PICK) return;
+  await fast(f => { if (!bingoOpen()) return ab('週六開獎日不能下注'); const w = wkOf(); if (f.bingo?.w === w) return ab('這週已經下注過了'); if (f.bingo?.nums && !f.bingo.cl && bingoRes(f)) return ab('先看上一期的開獎結果喔'); if (f.coins < BINGO_COST) return ab('金幣不夠');
+    f.coins -= BINGO_COST; f.bingo = {w, nums, t:now()}; addLog(f, `🎱 買了一張賓果（${nums.join('、')}），週六開獎`); addTrade(f, '賓果下注', -BINGO_COST); return {}; },
+    () => { S.bg.pick = []; toast('🎫 下注成功！週六開獎，祝你好運 🤞'); Music.sfx('coin'); });
+}
+async function bingoShow() {
+  const f = S.my, res = bingoRes(f); if (!res || f.bingo.cl) return; const G = S.bg; if (G.ph) return;
+  G.ph = 'draw'; G.k = 0;
+  for (let k = 1; k <= res.D.length; k++) { await sleep(320); G.k = k; if (S.modal) S.modal(); Music.sfx(f.bingo.nums.includes(res.D[k - 1]) ? 'ding' : 'pop'); }
+  const nums = f.bingo.nums;
+  await txMe(g => { const b = g.bingo; if (!b || b.cl) return ab(''); b.cl = 1; if (res.tier) giveRw(g, res.tier[1], 'bingo', wkRange(res.w)); addLog(g, `🎱 賓果開獎：中了 ${res.hit} 個號碼${res.tier ? `，獲得 ${rwText(res.tier[1])}` : '，下週再加油'}`); return {}; }).catch(() => {});
+  G.ph = 'done'; G.res = {...res, nums}; if (S.modal) S.modal(); if (res.tier) { Music.sfx('coin'); Music.sparkle(); } else Music.sfx('bad');
+}
+const bingoBadge = f => (bingoRes(f) && !f.bingo.cl) || (bingoOpen() && f.bingo?.w !== wkOf() && !bingoRes(f)) ? 1 : 0;
 function openTrophies() {
   S.modal = () => {
     const own = isOwn(), f = own ? S.my : S.view, T = (f?.trophy || []).slice().reverse(), cnt = r => T.filter(x => x.r === r).length;
@@ -4618,6 +4667,7 @@ function openMore() {
     openModal('☰ 更多', `<div class="menu">
       <button data-act="dex" data-t="ach">🎖️ 成就${a ? `<em class="badge on">${a}</em>` : ''}</button>
       <button data-act="trophies">🏆 我的獎盃櫃</button>
+      <button data-act="bingo">🎱 BINGO 賓果${bingoBadge(f) ? '<em class="badge on">1</em>' : ''}</button>
       <button data-act="dex" data-t="crop">📖 圖鑑</button>
       <button data-act="pets">🐾 我的寵物${g ? `<em class="badge on">${g}</em>` : ''}</button>
       <button data-act="fest">📅 節日行事曆</button>
@@ -5476,6 +5526,7 @@ const ACT = {
   tut() { closeModal(); startTut(0); },
   async saveNick() { const v = ($('#nickIn')?.value || '').trim(); if ([...v].length > 10) return toast('名字最多 10 個字'); if (/[<>]/.test(v)) return toast('名字不能有 < 或 >'); await txMe(f => { f.nick = v; return {}; }); beat(); toast(v ? `名字改成「${v}」了！` : '已改回用帳號當名字'); },
   async logout() { if (!confirm('確定要登出嗎？')) return; if (TS.on) { TS.on = false; clearInterval(TS.timer); $('#tut').hidden = true; } Music.stop(); await B.setPresence(S.uid, {at:'', off:true, t:now()}); await B.logout(); },
+  bingo() { S.bg = null; openBingo(); }, bingoPick(d) { bingoPick(+d.n); }, bingoRand, bingoBet() { return run(bingoBet); }, bingoShow() { return run(bingoShow); },
   home() { closeModal(); if (!isOwn()) travel('回家ING', 1100); goHome(); }, trophies: openTrophies, visit(d) { closeModal(); visit(d.uid); },
   async pickSeed(d) { const c = CROPS[d.id]; if (!(S.my.seeds[d.id] > 0) && S.my.coins < c.cost) return toast(`金幣不夠買${c.n}種子`); S.seed = d.id; S.tool = 'plant'; closeModal(); renderTools(); const i = S.pendingPlot; S.pendingPlot = -1; if (i >= 0 && isOwn()) clickPlot(i); else toast(`已選擇${c.n}，點空地播種`); },
   async buySeed(d) { const c = CROPS[d.id], n = +d.n; const r = await txMe(f => { if (!seedOK(f, d.id)) return ab('還沒解鎖這個種子'); if (f.coins < c.cost * n) return ab('金幣不夠'); f.coins -= c.cost * n; f.seeds[d.id] = (f.seeds[d.id] || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 包${c.n}種子`); },
