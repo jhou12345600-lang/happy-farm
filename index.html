@@ -2481,6 +2481,7 @@ function applyEnv(dt, t) {
   _c1.lerp(_c3.set(ENVC.duskTop), dusk * .7); _c2.lerp(_c3.set(ENVC.duskMid), dusk * .85);
   _c1.lerp(_c3.set(ENVC.cloudTop), cloud * day * .6); _c2.lerp(_c3.set(ENVC.cloudMid), cloud * day * .5);
   _c1.lerp(_c3.set(day > .5 ? ENVC.rainTop : '#151b2b'), rain * .85); _c2.lerp(_c3.set(day > .5 ? ENVC.rainMid : '#2a3240'), rain * .8);
+  if (W.seasonSky) { const q = W.seasonSky[2] * day * (1 - rain * .7); _c1.lerp(_c3.set(W.seasonSky[0]), q); _c2.lerp(_c3.set(W.seasonSky[1]), q); }
   U2.top.value.copy(_c1); U2.mid.value.copy(_c2); W.scene.fog.color.copy(_c2);
   W.renderer.setClearColor(_c2);
   // 太陽、月亮
@@ -3836,6 +3837,56 @@ async function psClaim() {
   if (r.abort) return toast(r.msg); S.psv = null; toast(c.rw ? `🎉 寵物選美第 ${c.k + 1} 名！獲得 ${rwText(c.rw)}` : `第 ${c.k + 1} 名，下週再來！`);
 }
 
+/* ================= 🍂 四季變化 ================= */
+const SEASONS = {
+  spring:{n:'春天', em:'🌸', leaf:['#7cc85a', '#8fd16a', '#f8bbd0', '#9ccc65', '#f48fb1'], la:.55, ground:'#9ad66f', ga:.22, sky:['#7cc3ff', '#f6eaf4', .25]},
+  summer:{n:'夏天', em:'☀️', leaf:['#2e8b3a', '#3d9b40', '#43a047', '#388e3c', '#4caf50'], la:.15, ground:'#6fbf4a', ga:.1, sky:['#3d9cf0', '#d8f1ff', .15]},
+  autumn:{n:'秋天', em:'🍂', leaf:['#e0a030', '#d2691e', '#c0392b', '#e6b422', '#b5651d'], la:.72, ground:'#c9a84c', ga:.42, sky:['#7fb0e6', '#fbe7cf', .3]},
+  winter:{n:'冬天', em:'❄️', leaf:['#9fb4a0', '#cfd8dc', '#e8eef0', '#b0bec5', '#dfe7e2'], la:.6, ground:'#dfe6e8', ga:.5, sky:['#9fbad6', '#eef3f7', .35]},
+};
+function seasonNow() { const q = QS.get('season'); if (!USE_FB && SEASONS[q]) return q; const m = +twDay().slice(5, 7); return m >= 3 && m <= 5 ? 'spring' : m <= 8 && m >= 6 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter'; }
+const _hsl = {};
+const isGreen = c => { c.getHSL(_hsl); return _hsl.h > .17 && _hsl.h < .46 && _hsl.s > .18 && _hsl.l > .12 && _hsl.l < .8; };
+function applySeason(force) {
+  if (!W.scene) return; const sk = seasonNow(); if (W.season === sk && !force) return; W.season = sk; const SE = SEASONS[sk];
+  W.seasonSky = SE.sky;
+  let i = 0;
+  for (const m of W.seasonMeshes || []) { const c0 = m.userData.c0; m.material.color.copy(c0).lerp(_c3.set(SE.leaf[(m.userData.si) % SE.leaf.length]), SE.la); i++; }
+  const G = W.ground; if (G) { const col = G.geometry.attributes.color, base = G.userData.c0, tc = new THREE.Color(SE.ground), c = new THREE.Color();
+    for (let j = 0; j < col.count; j++) { c.setRGB(base[j * 3], base[j * 3 + 1], base[j * 3 + 2]); if (isGreen(c)) c.lerp(tc, SE.ga); col.setXYZ(j, c.r, c.g, c.b); } col.needsUpdate = true; }
+}
+function prepSeason(S3) {
+  W.seasonMeshes = []; let si = 0;
+  S3.traverse(o => { if (!o.isMesh || !o.userData.merged || !o.material?.color || o.material.vertexColors) return; if (!isGreen(o.material.color)) return;
+    o.material = o.material.clone(); o.userData.c0 = o.material.color.clone(); o.userData.si = si++; W.seasonMeshes.push(o); });
+  const G = W.ground; if (G?.geometry.attributes.color) G.userData.c0 = Float32Array.from(G.geometry.attributes.color.array);
+  applySeason(true);
+}
+/* ================= 🚶 常常有村民來農場走走 ================= */
+const WALK_SCENES = ['farm', 'ranch', 'fish', 'factory', 'green', 'stable'];
+const WALK_SAY = ['今天天氣真好～', '哇，這片田照顧得真好！', '路過看看～ 👋', '聞到好香的味道！', '這裡的動物好可愛 😍', '要不要一起去碼頭釣魚？🎣', '週一晚上記得去夜市喔 🏮', '好想吃剛採的菜喔～', '你家的魚缸好漂亮！', '馬場的小馬好可愛 🐴'];
+function buildWalkers(S3) {
+  W.walkers = []; const ids = VILS.map(v => v.id);
+  WALK_SCENES.forEach((sc, i) => { const id = ids[(i * 3 + 1) % ids.length], m = vilModel(id), cx = (SCENE_T[sc] || FARM_T).x, x = cx + (i % 2 ? 6 : -6);
+    m.position.set(x, 0, 9.6); S3.add(m); W.walkers.push({m, id, sc, cx, x, z:9.6, tx:x, tz:9.6, wait:2 + i, say:null, ph:i * 1.3}); });
+}
+function walkTick(t, dt) {
+  for (const P of W.walkers || []) {
+    const u = P.m.userData;
+    if (P.wait > 0) { P.wait -= dt; if (u.legL) u.legL.rotation.z = u.legR.rotation.z = 0; if (u.armL) { u.armL.rotation.z = u.armR.rotation.z = 0; }
+      let dd = -Math.PI / 2 - P.m.rotation.y; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y += dd * Math.min(1, dt * 3);
+      if (P.wait <= 0) { const far = Math.random() < .35; P.tx = P.cx + (Math.random() * 2 - 1) * 13; P.tz = far ? 7.8 + Math.random() * .6 : 9.1 + Math.random() * 1.1; } continue; }
+    const dx = P.tx - P.x, dz = P.tz - P.z, d = Math.hypot(dx, dz);
+    if (d < .1) { P.wait = 2.5 + Math.random() * 5; if (Math.random() < .55) P.say = {m:rnd(WALK_SAY), t:now()}; continue; }
+    const s = Math.min(d, 1.5 * dt); P.x += dx / d * s; P.z += dz / d * s; P.m.position.set(P.x, Math.abs(Math.sin(t * 8 + P.ph)) * .03, P.z);
+    let dd = Math.atan2(-dz, dx) - P.m.rotation.y; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y += dd * Math.min(1, dt * 8);
+    const sw = Math.sin(t * 8 + P.ph) * .6; if (u.legL) { u.legL.rotation.z = sw; u.legR.rotation.z = -sw; } if (u.armL) { u.armL.rotation.z = -sw * .7; u.armR.rotation.z = sw * .7; }
+  }
+}
+function syncWalkers() {
+  (W.walkers || []).forEach((P, i) => { const on = P.sc === S.scene && !S.place; if (on && P.say && now() - P.say.t < 4500) ov('wk' + i, `${VIL[P.id].n}：${esc(P.say.m)}`, v => v.copy(P.m.position).setY(2.6), 'bub'); });
+}
+
 /* ================= 溫室 ================= */
 
 const GH_MAX = 6, GH_START = 2, GH_PRICE = [0, 0, 1500, 3000, 5000, 8000], GH_SPEED = .8;
@@ -4194,7 +4245,7 @@ function mergeStatic(S3) {
       o.parent.remove(o);
     }
     const bg = new THREE.BufferGeometry(); bg.setAttribute('position', new THREE.BufferAttribute(pos, 3)); bg.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); bg.computeBoundingSphere();
-    const m = new THREE.Mesh(bg, g.mat); m.castShadow = g.cast; m.receiveShadow = true; S3.add(m);
+    const m = new THREE.Mesh(bg, g.mat); m.castShadow = g.cast; m.receiveShadow = true; m.userData.merged = 1; S3.add(m);
   }
 }
 function buildWorld() {
@@ -4216,7 +4267,7 @@ function buildWorld() {
     col.set(h > 7 ? '#5e8f42' : h > 1 ? '#6a9e45' : '#74b04d').lerp(cB, n * .35).lerp(cD, n2 * .3); cols.push(col.r, col.g, col.b);
   }
   gg.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3)); gg.computeVertexNormals();
-  const ground = new THREE.Mesh(gg, new THREE.MeshLambertMaterial({vertexColors:true, flatShading:true})); ground.receiveShadow = true; S3.add(ground);
+  const ground = new THREE.Mesh(gg, new THREE.MeshLambertMaterial({vertexColors:true, flatShading:true})); ground.receiveShadow = true; S3.add(ground); W.ground = ground;
   // 遠山
   for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2 + .2, h = 28 + (i * 7) % 22, R = 24 + (i % 4) * 6; let r = 130 + (i % 3) * 18; while (padDist(12 + Math.cos(a) * r, Math.sin(a) * r) < R * .95 + 4 && r < 260) r += 6; const m = grp(cone(i % 2 ? '#4f7f4a' : '#5b8a52', [R, h, R], [0, h / 2, 0]), cone('#3f6e3d', [R * .45, h * .45, R * .45], [R * .25, h * .72, 0])); m.position.set(12 + Math.cos(a) * r, 0, Math.sin(a) * r); m.traverse(o => { o.castShadow = false; }); S3.add(m); }
   // 田地、牧場地面、小路
@@ -4319,7 +4370,7 @@ function buildWorld() {
   W.winMat = new THREE.MeshLambertMaterial({color:'#bbdefb', emissive:'#000000'});
   const glass = mat('#bbdefb'); S3.traverse(o => { if (o.isMesh && o.material === glass) o.material = W.winMat; });
   buildScenery(S3); buildFactory(S3); buildTown(S3); buildGreen(S3); buildTemple(S3); buildStable(S3); buildDock(S3); buildAquarium(S3); buildMarket(S3); buildEnv(S3);
-  mergeStatic(S3);
+  mergeStatic(S3); prepSeason(S3); buildWalkers(S3);
   W.vilG = new THREE.Group(); W.decoG = new THREE.Group(); W.greenG = new THREE.Group(); W.templeG = new THREE.Group(); S3.add(W.vilG, W.decoG, W.greenG, W.templeG);
   W.stallG = stallModel(); W.stallGoods = new THREE.Group(); W.stallG.add(W.stallGoods); W.stallG.position.set(TOWN_T.x - 3.4, 0, -.6); W.stallG.traverse(o => o.userData.hit = {type:'stall'}); S3.add(W.stallG);
 }
@@ -4678,7 +4729,7 @@ function loop() {
     if (waving) { const T2 = P.waveTo && W.people.find(q => q.uid === P.waveTo); if (T2) { const a2 = Math.atan2(-(T2.m.position.z - P.m.position.z), T2.m.position.x - P.m.position.x), ac = -Math.PI / 2; let dd = a2 - ac; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y = ac + dd * .6; } else P.m.rotation.y = -Math.PI / 2; if (u.head) u.head.rotation.z = Math.sin(t * 5) * .15; if (wa < 1400) P.m.position.y = Math.abs(Math.sin(wa / 1400 * Math.PI * 2)) * .45; const pop = wa < 300 ? wa / 300 : wa > 3400 ? (3800 - wa) / 400 : 1; P.m.scale.setScalar(1.25 * (1 + .22 * pop)); if (!P.hiFx || now() - P.hiFx > 1300) { P.hiFx = now(); fx3(P.m.position.x, 3.3, P.m.position.z, rnd(['👋', '👋✨', '💕']), '#e91e63'); } }
     else if (P.m.scale.x !== 1.25) P.m.scale.setScalar(1.25);
   }
-  fishTick(t, dt); mkTick(t, dt);
+  fishTick(t, dt); mkTick(t, dt); walkTick(t, dt);
   if (W.hoverRing.visible) W.hoverRing.material.opacity = .55 + Math.sin(t * 6) * .3;
   W.renderer.render(W.scene, W.camera);
   for (const o of OV.values()) projectTo(o.el, o.pos(_v.set(0, 0, 0)), w, h);
@@ -4853,7 +4904,7 @@ function renderScene() {
   if (f) {
     BUD = performance.now() + 10; BUILT = 0; W.syncPending = false;
     const order = {farm:[syncField, syncDeco, syncPets, syncRanch, syncFish, syncFactory, syncTown], ranch:[syncRanch, syncPets, syncField, syncDeco, syncFish, syncFactory, syncTown], fish:[syncFish, syncPets, syncField, syncDeco, syncRanch, syncFactory, syncTown], factory:[syncFactory, syncPets, syncField, syncDeco, syncRanch, syncFish, syncTown], green:[syncGreen, syncPets, syncField, syncDeco, syncRanch, syncFish, syncFactory, syncTown], town:[syncTown, syncStall, syncPets, syncField, syncDeco, syncRanch, syncFish, syncFactory]}[S.scene] || [syncField, syncDeco, syncRanch, syncFish, syncPets, syncFactory, syncTown];
-    for (const fn of order) fn(f, own); if (S.scene !== 'green') syncGreen(f, own); syncTemple(f, own); syncStable(f, own); syncAquarium(f, own); syncFest();
+    for (const fn of order) fn(f, own); if (S.scene !== 'green') syncGreen(f, own); syncTemple(f, own); syncStable(f, own); syncAquarium(f, own); syncWalkers(); syncFest();
     { const T = templeView(f); setSign(W.templeSign, own ? '我的廟宇' : `${dn(f)}的廟`, T.lv >= HALLS.length ? '三座殿都蓋好了 🙏' : `${HALLS[T.lv].n} 建造中 ${Math.floor(tpProg(T) * 100)}%`); }
     if (S.place === 'market') setSign(W.mkSign, '🏮 歡樂夜市', `${marketOpen() ? '營業中～12 點收攤' : '收攤囉'} · 現在 ${hereList().length} 人`);
     if (S.place === 'dock') setSign(W.dockSign, '🎣 釣魚碼頭', `${isNight() ? '🌙 夜釣時間' : '☀️ 白天'}${isRain() ? '・🌧️ 下雨' : ''} · 現在 ${hereList().length} 人`);
@@ -5608,7 +5659,7 @@ function renderWx() {
   const el = $('#wx'); if (!el || !S.my) return;
   const d = twNow(), hh = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
   const wx = weather(), [ic, nm] = WX_N[wx], night = isNight();
-  let html = `<button data-act="wxInfo">${night ? '🌙' : ic} ${night ? '夜晚' : nm}${night && wx === 'rain' ? '🌧️' : ''} ${hh}</button>`;
+  const SE = SEASONS[seasonNow()]; let html = `<button data-act="wxInfo">${SE.em}${night ? '🌙' : ic} ${night ? '夜晚' : nm}${night && wx === 'rain' ? '🌧️' : ''} ${hh}</button>`;
   for (const o of activeFests()) html += `<button class="fest" data-act="fest">${o.F.em} ${esc(o.F.n)}</button>`;
   { const q = qianToday(S.my); if (q) html += `<button class="fest" data-act="qianShow" style="color:${QIAN_LV[q.lv].c}">🏮 ${QIAN_LV[q.lv].n}</button>`; }
   if (el._h !== html) { el.innerHTML = html; el._h = html; }
@@ -6732,7 +6783,7 @@ function visit(uid) {
 }
 function resetSceneKeys() { if (!W.scene) return; W.plots.forEach(P => P.key = null); W.ponds.forEach(P => P.key = null); W.machs.forEach(P => { P.key = null; P.indKey = null; }); W.aniKey = null; W.petKey = null; }
 
-setInterval(() => { if (S.view) { renderScene(); renderTools(); } renderWx(); santaCheck(); thiefCheck(); }, 1000);
+setInterval(() => { if (S.view) { renderScene(); renderTools(); } renderWx(); santaCheck(); thiefCheck(); applySeason(); }, 1000);
 setInterval(() => {
   if (!S.view || document.hidden || !Music.wanted || !Music.on) return;
   Music.amb(isRain() ? 'rain' : '');
