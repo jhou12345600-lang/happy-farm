@@ -3957,39 +3957,89 @@ function buildHome(S3) {
   W.houseHit = new THREE.Mesh(new THREE.BoxGeometry(6.4, 5, 5.4), new THREE.MeshBasicMaterial({transparent:true, opacity:0, depthWrite:false, colorWrite:false})); W.houseHit.position.set(-15.5, 2.3, -5); W.houseHit.rotation.y = .35; W.houseHit.userData.hit = {type:'house'}; S3.add(W.houseHit);
 }
 function cupModel(r) { const c = ['', '#ffca28', '#cfd8dc', '#d7955b'][r]; return grp(rod('#5d4037', [.18, .08, .18], [0, .04, 0]), rod(c, [.04, .14, .04], [0, .15, 0]), M(gBucket(), c, [.16, .2, .16], [0, .32, 0], [Math.PI, 0, 0]), ring(c, [.07, .07, .2], [0, .32, .16], [0, Math.PI / 2, 0]), ring(c, [.07, .07, .2], [0, .32, -.16], [0, Math.PI / 2, 0])); }
-function syncHome(f) {
-  if (!W.homeRoom) return; const on = S.scene === 'home'; W.homeRoom.visible = on; if (!on) return;
-  const H = homeView(f), T = (f.trophy || []).slice(-15), key = (S.viewUid || '') + JSON.stringify(H.set) + (H.wall ?? 0) + (H.floor ?? 0) + T.map(x => x.r).join('');
-  if (W.homeKey === key) return; W.homeKey = key; W.homeG.clear();
-  W.homeWalls.forEach(w => w.material.color.set(HWALL[H.wall || 0])); W.homeFloor.material.color.set(HFLOOR[H.floor || 0]);
-  for (const sl of Object.keys(HPOS)) { const id = H.set?.[sl] || HDEF[sl]; if (!id || !HOME_ITEMS[id]) continue; const m = homeItemModel(id), [x, y, z, ry] = HPOS[sl]; m.position.set(x, y, z); m.rotation.y = ry; m.traverse(o => { o.userData.hit = {type:'hitem', sl}; if (o.isMesh) o.castShadow = true; }); W.homeG.add(m); if (m.userData.scr) W.homeTv = m.userData.scr; }
-  W.tcupG.clear(); T.slice().reverse().forEach((x, i) => { const c = cupModel(x.r); c.position.set(.15, .6 + Math.floor(i / 5) * .85, -.8 + (i % 5) * .4); c.traverse(o => o.userData.hit = {type:'tcab'}); W.tcupG.add(c); });
-}
 function homeTick(t) { if (S.scene !== 'home' || !W.homeTv) return; W.homeTv.material = W.homeTv.material.isMeshBasicMaterial ? W.homeTv.material : new THREE.MeshBasicMaterial({color:'#4fc3f7'}); W.homeTv.material.color.setHSL((t * .07) % 1, .6, .55 + Math.sin(t * 3) * .1); }
 function goIn() {
-  if (W.zoomed) unZoom(); S.scene = 'home'; S.tool = 'hand'; S.myPos = null; S.pray = null; travel(isOwn() ? '回到屋子裡' : `進去 ${dn(S.view)} 的家參觀`, 1000);
+  if (W.zoomed) unZoom(); S.homeEdit = null; S.scene = 'home'; S.tool = 'hand'; S.myPos = null; S.pray = null; travel(isOwn() ? '回到屋子裡' : `進去 ${dn(S.view)} 的家參觀`, 1000);
   W.homeKey = null; const st = $('#stage'), portrait = st.clientWidth / Math.max(1, st.clientHeight) < 1;
   W.camAnim = null; W.controls.target.copy(HOME_T); W.camera.position.copy(HOME_T).add(new THREE.Vector3(0, portrait ? 12.5 : 8.5, portrait ? 15 : 11)); W.controls.update();
   renderTools(); renderScene();
 }
+// ----- 自由擺放：每件家具都可以自己決定位置、轉方向，同一種也能買很多個 -----
+const HOME_MAX = 30, isPaint = id => HOME_ITEMS[id]?.slot === 'paint';
+function homeAtOf(H) {   // 舊版「固定位置」的資料轉成自由擺放
+  if (Array.isArray(H.at)) return H.at;
+  const at = [];
+  for (const sl of Object.keys(HPOS)) { const id = H.set?.[sl] || HDEF[sl]; if (!id || !HOME_ITEMS[id]) continue; const [x, , z, ry] = HPOS[sl];
+    if (sl === 'paint') at.push({id, w:'b', p:x}); else if (sl === 'paint2') at.push({id, w:'l', p:z}); else at.push({id, x, z, r:Math.round(ry / (Math.PI / 2)) & 3}); }
+  return at;
+}
+function homeInvOf(H) {
+  if (H.inv) return H.inv; const inv = {}, placed = new Set(homeAtOf(H).map(a => a.id));
+  for (const id of Object.keys(H.own || {})) if (!placed.has(id)) inv[id] = 1; return inv;
+}
+function homeMat(f) { const H = homeOf(f); if (!Array.isArray(H.at)) { H.inv = homeInvOf(H); H.at = homeAtOf(H); } H.inv ??= {}; return H; }
+function syncHome(f) {
+  if (!W.homeRoom) return; const on = S.scene === 'home'; W.homeRoom.visible = on; if (!on) return;
+  const H = homeView(f), at = homeAtOf(H), T = (f.trophy || []).slice(-15), E = S.homeEdit, key = (S.viewUid || '') + JSON.stringify(at) + (H.wall ?? 0) + (H.floor ?? 0) + T.map(x => x.r).join('') + (E ? 'e' + (E.mv ?? '') + (E.k || '') : '');
+  if (W.homeKey === key) return; W.homeKey = key; W.homeG.clear(); W.homeTv = null;
+  W.homeWalls.forEach(w => w.material.color.set(HWALL[H.wall || 0])); W.homeFloor.material.color.set(HFLOOR[H.floor || 0]);
+  at.forEach((a, i) => { if (!HOME_ITEMS[a.id]) return; const m = homeItemModel(a.id);
+    if (isPaint(a.id)) { if (a.w === 'l') { m.position.set(-HW + .08, 2.4, a.p); m.rotation.y = Math.PI / 2; } else if (a.w === 'r') { m.position.set(HW - .08, 2.4, a.p); m.rotation.y = -Math.PI / 2; } else m.position.set(a.p, 2.4, -HD + .08); }
+    else { m.position.set(a.x, 0, a.z); m.rotation.y = (a.r || 0) * Math.PI / 2; }
+    if (E && E.mv === i) m.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = .45; } });
+    m.traverse(o => { o.userData.hit = {type:'hitem', i}; if (o.isMesh) o.castShadow = true; }); W.homeG.add(m); if (m.userData.scr) W.homeTv = m.userData.scr; });
+  if (E) { const g = new THREE.Mesh(new THREE.PlaneGeometry(HW * 2 - .4, HD * 2 - .4), new THREE.MeshBasicMaterial({color:'#66bb6a', transparent:true, opacity:.16, depthWrite:false})); g.rotation.x = -Math.PI / 2; g.position.y = .02; W.homeG.add(g); }
+  W.tcupG.clear(); T.slice().reverse().forEach((x, i) => { const c = cupModel(x.r); c.position.set(.15, .6 + Math.floor(i / 5) * .85, -.8 + (i % 5) * .4); c.traverse(o => o.userData.hit = {type:'tcab'}); W.tcupG.add(c); });
+}
+function homeEditStart(k) {
+  if (!isOwn() || S.scene !== 'home') return; closeModal(); S.homeEdit = {k:k || '', mv:null}; S.tool = 'hand'; W.homeKey = null; renderTools(); renderScene();
+  toast(k ? `點地板把「${HOME_ITEMS[k].n}」放下去${isPaint(k) ? '（畫要點靠近牆壁的地方）' : ''}` : '✋ 擺設模式：點家具可以移動、轉方向或收起來');
+}
+function homeEditEnd() { S.homeEdit = null; W.homeKey = null; renderTools(); renderScene(); }
+function homeSpot(id, x, z) {   // 房間內的座標（相對房間中心）→ 擺放位置
+  if (isPaint(id)) { const dB = z + HD, dL = x + HW, dR = HW - x, m = Math.min(dB, dL, dR);
+    return m === dB ? {w:'b', p:+Math.max(-HW + 1.1, Math.min(HW - 1.1, x)).toFixed(2)} : {w:m === dL ? 'l' : 'r', p:+Math.max(-HD + 1, Math.min(HD - 1, z)).toFixed(2)}; }
+  return {x:+Math.max(-HW + .7, Math.min(HW - .7, x)).toFixed(2), z:+Math.max(-HD + .7, Math.min(HD - .4, z)).toFixed(2)};
+}
+async function homePlace(x, z) {
+  const E = S.homeEdit; if (!E) return; const lx = x - HOME_T.x, lz = z - HOME_T.z;
+  if (E.mv != null) { const i = E.mv, a = homeAtOf(homeView(S.my))[i]; if (!a) { E.mv = null; return; } const sp = homeSpot(a.id, lx, lz);
+    await fast(f => { const H = homeMat(f), b = H.at[i]; if (!b || b.id !== a.id) return ab('家具變了，再試一次'); Object.assign(b, sp); return {}; }, () => { E.mv = null; W.homeKey = null; Music.sfx('pop'); renderScene(); });
+    return; }
+  if (!E.k) return toast('點一下家具就能移動它，或從「🛋️ 家具」挑一個來擺');
+  const k = E.k, sp = homeSpot(k, lx, lz);
+  await fast(f => { const H = homeMat(f); if ((H.inv[k] || 0) < 1) return ab('沒有這個家具了，先去家具店買'); if (H.at.length >= HOME_MAX) return ab(`屋子裡最多擺 ${HOME_MAX} 件家具`);
+    H.inv[k]--; if (!H.inv[k]) delete H.inv[k]; H.at.push({id:k, ...sp, r:0}); return {left:H.inv[k] || 0}; },
+    r => { Music.sfx('pop'); W.homeKey = null; if (!r.left) { E.k = ''; toast(`✅ ${HOME_ITEMS[k].n}擺好了！點家具可以再調整`); } renderScene(); });
+}
+function homeItemMenu(i) {
+  const a = homeAtOf(homeView(S.my))[i]; if (!a) return; const I = HOME_ITEMS[a.id];
+  S.modal = null;
+  openModal(`${I.em} ${I.n}`, `<div class="mgbtn" style="display:flex;flex-direction:column;gap:8px">
+    <button class="b o" data-act="hiMove" data-i="${i}">✋ 移動（再點地板要放的位置）</button>
+    ${isPaint(a.id) ? '' : `<button class="b" data-act="hiRot" data-i="${i}">🔄 轉方向</button>`}
+    <button class="b g" data-act="hiStore" data-i="${i}">📦 收起來</button></div>`);
+}
+async function hiRot(i) { await fast(f => { const b = homeMat(f).at[i]; if (!b) return ab('找不到'); b.r = ((b.r || 0) + 1) & 3; return {}; }, () => { W.homeKey = null; Music.sfx('pop'); renderScene(); }); }
+async function hiStore(i) { closeModal(); await fast(f => { const H = homeMat(f), b = H.at[i]; if (!b) return ab('找不到'); H.at.splice(i, 1); H.inv[b.id] = (H.inv[b.id] || 0) + 1; return {}; }, () => { W.homeKey = null; toast('📦 收進家具倉庫了'); renderScene(); }); }
 function openHomeShop() {
   S.modal = () => {
-    const f = S.my, H = homeView(f);
-    let body = `<div class="popbox">🛋️ <b>我的房子・裝潢</b><br><small>買過的家具可以隨時換。好友來你的農場，點農舍就能進來參觀！</small></div>`;
+    const f = S.my, H = homeView(f), inv = homeInvOf(H), at = homeAtOf(H);
+    let body = `<div class="popbox">🛋️ <b>我的房子・裝潢</b>（擺了 ${at.length}/${HOME_MAX} 件）<br><small>家具買來先放在倉庫，按「擺放」再點地板就能放在<b>你想要的位置</b>；點擺好的家具可以移動、轉方向、收起來。同一種家具可以買很多個！好友來你的農場點農舍就能進來參觀。</small></div>
+      <div class="mgbtn"><button class="b o" data-act="homeArrange">✋ 調整已經擺好的家具</button></div>`;
+    const iv = Object.entries(inv).filter(([id, n]) => n > 0 && HOME_ITEMS[id]);
+    body += `<div class="sec">📦 我的家具倉庫</div>` + (iv.length ? iv.map(([id, n]) => `<div class="item"><div class="pic" style="font-size:26px">${HOME_ITEMS[id].em}</div><div class="info"><div class="t">${HOME_ITEMS[id].n} × ${n}</div></div><button class="b o" data-act="homePut" data-id="${id}">擺放</button></div>`).join('') : '<div class="empty">倉庫是空的，在下面的家具店買吧</div>');
     body += `<div class="sec">🎨 牆壁顏色（💰100）</div><div class="hcols">${HWALL.map((c, i) => `<button style="background:${c}" class="${(H.wall || 0) === i ? 'on' : ''}" data-act="homeCol" data-k="wall" data-i="${i}"></button>`).join('')}</div>`;
     body += `<div class="sec">🪵 地板（💰100）</div><div class="hcols">${HFLOOR.map((c, i) => `<button style="background:${c}" class="${(H.floor || 0) === i ? 'on' : ''}" data-act="homeCol" data-k="floor" data-i="${i}"></button>`).join('')}</div>`;
-    for (const sl of Object.keys(HSLOT)) {
-      const items = Object.entries(HOME_ITEMS).filter(([id]) => slotOf(id, sl) === (sl === 'paint2' ? 'paint' : sl)), cur = H.set?.[sl] || HDEF[sl];
-      body += `<div class="sec">${HSLOT[sl]}</div>` + items.map(([id, I]) => { const own = H.own?.[id] || HDEF[sl] === id, use = cur === id;
-        return `<div class="item"><div class="pic" style="font-size:26px">${I.em}</div><div class="info"><div class="t">${I.n}</div></div>${use ? `<button class="b g" data-act="homeUse" data-s="${sl}" data-id="">收起來</button>` : own ? `<button class="b o" data-act="homeUse" data-s="${sl}" data-id="${id}">擺上</button>` : `<button class="b" data-act="homeBuy" data-s="${sl}" data-id="${id}">買 💰${I.c}</button>`}</div>`; }).join('');
-    }
+    const cats = [['bed', '🛏️ 床'], ['table', '🪑 桌子'], ['tv', '📺 電視'], ['sofa', '🛋️ 沙發'], ['paint', '🖼️ 牆上的畫'], ['rug', '🟥 地毯'], ['plant', '🪴 盆栽'], ['lamp', '💡 燈'], ['shelf', '📚 書櫃']];
+    body += `<div class="sec">🛒 家具店</div>`;
+    for (const [sl, nm] of cats) body += `<div class="d" style="font-weight:800;color:#8d5a2b;margin:6px 0 4px">${nm}</div>` + Object.entries(HOME_ITEMS).filter(([, I]) => I.slot === sl).map(([id, I]) => `<div class="item"><div class="pic" style="font-size:26px">${I.em}</div><div class="info"><div class="t">${I.n}</div><div class="d">擺了 ${at.filter(a => a.id === id).length} 個${inv[id] ? `・倉庫 ${inv[id]} 個` : ''}</div></div><button class="b" data-act="homeBuy" data-id="${id}">買 💰${I.c}</button></div>`).join('');
     openModal('🛋️ 裝潢', body);
   };
   S.modal();
 }
-const homeFast = (fn, msg) => fast(f => { const H = homeOf(f); return fn(f, H) || {}; }, () => { if (msg) toast(msg); Music.sfx('ding'); W.homeKey = null; renderScene(); });
-async function homeBuy(sl, id) { const I = HOME_ITEMS[id]; await homeFast((f, H) => { if (f.coins < I.c) return ab('金幣不夠'); f.coins -= I.c; addTrade(f, `買家具${I.n}`, -I.c); H.own[id] = 1; H.set[sl] = id; }, `${I.em} 買了${I.n}，已經擺好了！`); }
-async function homeUse(sl, id) { await homeFast((f, H) => { if (id && !H.own[id] && HDEF[sl] !== id) return ab('還沒買'); if (id) H.set[sl] = id; else H.set[sl] = ''; }, id ? `擺上${HOME_ITEMS[id].n}了` : '收起來了'); }
+const homeFast = (fn, msg) => fast(f => { const H = homeMat(f); return fn(f, H) || {}; }, () => { if (msg) toast(msg); Music.sfx('ding'); W.homeKey = null; renderScene(); });
+async function homeBuy(id) { const I = HOME_ITEMS[id]; let ok = 0; await homeFast((f, H) => { if (f.coins < I.c) return ab('金幣不夠'); f.coins -= I.c; addTrade(f, `買家具${I.n}`, -I.c); (H.own ??= {})[id] = 1; H.inv[id] = (H.inv[id] || 0) + 1; ok = 1; }, ''); if (ok) homeEditStart(id); }
 async function homeCol(k, i) { await homeFast((f, H) => { if ((H[k] || 0) === i) return ab('已經是這個顏色了'); if (f.coins < 100) return ab('金幣不夠'); f.coins -= 100; H[k] = i; }, k === 'wall' ? '🎨 牆壁換新顏色了' : '🪵 地板換好了'); }
 
 /* ================= 溫室 ================= */
@@ -4172,6 +4222,7 @@ function walkTap(cx, cy) {
   if (!W.scene || W.race || S.decoMode || !S.my) return;
   const r = W.renderer.domElement.getBoundingClientRect(); W.ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1); W.ray.setFromCamera(W.ndc, W.camera);
   const o = W.ray.ray.origin, d = W.ray.ray.direction; if (d.y > -.01) return; const py = S.scene === 'home' ? HOME_T.y : 0, k = (py - o.y) / d.y, x = o.x + d.x * k, z = o.z + d.z * k;
+  if (S.scene === 'home' && S.homeEdit) { run(() => homePlace(x, z)); return; }
   if (S.scene === 'home') { S.myPos = {x:+Math.max(HOME_T.x - HW + .6, Math.min(HOME_T.x + HW - .6, x)).toFixed(2), z:+Math.max(-HD + .8, Math.min(HD - .3, z)).toFixed(2), sc:'home'}; S.pray = null; B.setPresence(S.uid, {pos:S.myPos, t:now()}); renderScene(); return; }
   const base = (SCENE_T[S.scene] || FARM_T).x, bx = WALK_BOX[S.scene] || [-12, 12];
   let tx = Math.max(base + bx[0], Math.min(base + bx[1], x)), tz = Math.max(S.scene === 'dock' ? -11.2 : -6, Math.min(11, z));
@@ -4504,7 +4555,7 @@ function init3D() {
   // 點擊（與拖曳區分）
   let down = null; const cv = renderer.domElement;
   cv.addEventListener('pointerdown', e => { down = {x:e.clientX, y:e.clientY, t:now()}; Music.kick(); Voice.unlock(); });
-  cv.addEventListener('pointerup', e => { if (!down) return; const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); if (moved < 8 && now() - down.t < 600) { const h = pick(e.clientX, e.clientY); if (h) clickHit(h); else walkTap(e.clientX, e.clientY); } down = null; });
+  cv.addEventListener('pointerup', e => { if (!down) return; const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); if (moved < 8 && now() - down.t < 600) { const E = S.scene === 'home' && S.homeEdit; const h = E && (E.k || E.mv != null) ? null : pick(e.clientX, e.clientY); if (h) clickHit(h); else walkTap(e.clientX, e.clientY); } down = null; });
   cv.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return; hoverAt(e.clientX, e.clientY); });
   cv.addEventListener('pointerleave', () => { S.hover = null; $('#tip').style.display = 'none'; W.hoverRing.visible = false; });
   $('#loading').remove();
@@ -4986,7 +5037,7 @@ function renderTools() {
   else if (S.scene === 'ranch') T = own ? [['hand','✋','收集'], ['feedAll','🌾','餵食', 1], ['buyAni','🛒','買動物', 1], ['sellProducts','💰','賣產品', 1]]
                                    : [['hand','✋','偷產品'], ['feedFriend','🌾','幫餵食', 1], ['cleanTip','🧹','幫清便便', 1]];
   else if (S.scene === 'green') T = own ? [['hand','✋','手'], ['pump','🎃','南瓜大賽', 1], ['ghBuy','➕','擴建溫室', 1]] : [['hand','✋','參觀'], ['pump','🎃','南瓜大賽', 1]];
-  else if (S.scene === 'home') T = own ? [['hand','✋','走走'], ['homeDeco','🛋️','裝潢', 1], ['trophies','🏆','獎盃櫃', 1], ['leaveHome','🚪','出門', 1]] : [['hand','✋','參觀'], ['trophies','🏆','獎盃櫃', 1], ['leaveHome','🚪','出門', 1]];
+  else if (S.scene === 'home') T = own ? (S.homeEdit ? [['homeDone','✅','完成', 1], ['homeDeco','🛋️','家具', 1]] : [['hand','✋','走走'], ['homeDeco','🛋️','裝潢', 1], ['homeArrange','🔧','擺設', 1], ['trophies','🏆','獎盃櫃', 1], ['leaveHome','🚪','出門', 1]]) : [['hand','✋','參觀'], ['trophies','🏆','獎盃櫃', 1], ['leaveHome','🚪','出門', 1]];
   else if (S.scene === 'market') T = [['hand','✋','逛逛'], ['mkGames','🎮','攤位遊戲', 1], ['mkShop','🎁','換獎品', 1], ['mkRank','🏆','夜市高手', 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'dock') T = [['hand','✋','走走'], ['fishGo','🎣','釣魚', 1], ['aqShow','🐠','我的魚缸', 1], ['fishCup','🏆','釣魚大賽', 1], ['fishDex','📖','魚種圖鑑', 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'stable') T = own ? [['hand','✋','手'], ['horseList','🐎','我的馬', 1], ['horseRace','🏁','賽馬大賽', 1]] : [['hand','✋','參觀'], ['horseList','🐎','看馬', 1], ['horseRace','🏁','賽馬大賽', 1]];
@@ -5091,7 +5142,7 @@ function pondText(i) {
 function tipFor(h) {
   if (h.type === 'house') return `<b>🏠 ${isOwn() ? '我的' : esc(dn(S.view)) + '的'}農舍</b><br>點一下進屋${isOwn() ? '裝潢' : '參觀'}`;
   if (h.type === 'tcab') return `<b>🏆 獎盃櫃</b>（${(S.view?.trophy || []).length} 座）<br>點一下看全部`;
-  if (h.type === 'hitem') { const id = homeView(S.view).set?.[h.sl] || HDEF[h.sl]; return `<b>${HOME_ITEMS[id]?.em || ''} ${HOME_ITEMS[id]?.n || ''}</b>${isOwn() ? '<br>點一下換家具' : ''}`; }
+  if (h.type === 'hitem') { const a = homeAtOf(homeView(S.view))[h.i]; return a ? `<b>${HOME_ITEMS[a.id]?.em || ''} ${HOME_ITEMS[a.id]?.n || ''}</b>${isOwn() && S.homeEdit ? '<br>點一下移動、轉方向' : ''}` : ''; }
   if (h.type === 'mk') { const G = MK_GAMES[h.id]; return `<b>${G.em} ${G.n}</b><br>${G.pts}<br>點一下玩（💰${MK_COST}）`; }
   if (h.type === 'aq') { const n = dockView(S.view).aq?.length || 0; return `<b>🐠 超大魚缸</b>（${n}/${AQ_MAX} 條）<br>點一下看魚`; }
   if (h.type === 'horse') { const x = horseView(S.view).list.find(y => y.id === h.id); return x ? `<b>${hSexE(x)} ${esc(x.n)}</b> ${hAgeT(x)}${hStatus(x) ? '<br>' + hStatus(x) : ''}<br>${isOwn() ? '點一下訓練、配種' : '點一下看看'}` : ''; }
@@ -5131,7 +5182,7 @@ function clickHit(h) {
   if (h.type === 'mk') return openMkGames();
   if (h.type === 'house') return goIn();
   if (h.type === 'tcab') return openTrophies();
-  if (h.type === 'hitem') { if (isOwn()) return openHomeShop(); const id = homeView(S.view).set?.[h.sl] || HDEF[h.sl]; return toast(`${HOME_ITEMS[id]?.em || ''} ${HOME_ITEMS[id]?.n || ''}`); }
+  if (h.type === 'hitem') { const a = homeAtOf(homeView(S.view))[h.i]; if (!a) return; if (isOwn() && S.homeEdit) return homeItemMenu(h.i); return toast(`${HOME_ITEMS[a.id]?.em || ''} ${HOME_ITEMS[a.id]?.n || ''}${isOwn() ? '（按「🔧 擺設」可以移動家具）' : ''}`); }
   if (h.type === 'horse') { if (S.scene !== 'stable') { S.scene = 'stable'; setCam('stable'); renderTools(); } return openHorse(h.id); }
   if (h.type === 'hall') { if (S.scene !== 'temple') { S.scene = 'temple'; setCam('temple'); renderTools(); } return openHall(h.i); }
   if (h.type === 'cell') { if (!S.decoMode?.k) return toast('先從「🪑 換裝飾」選一個要擺的裝飾'); return run(() => decoPut(h.c)); }
@@ -5747,7 +5798,7 @@ function openHelp() {
     <p>🌱 <b>種菜</b>：共 ${Object.keys(CROPS).length} 種作物，有蔬菜、水果、花、果樹、草穀。選「播種」挑種子，點田地就能種。✋「手」會自動收成、翻地、播種或照顧作物。</p>
     <p>💧🌿🐞 <b>照顧</b>：作物會缺水、長草、長蟲，每個問題減產 10%。</p>
     <p>🐮 <b>牧場</b>：${Object.keys(ANIMALS).filter(k => !ANIMALS[k].gone).length} 種動物，吃<b>牧草</b>或<b>飼料</b>才會生產。產品可以賣錢、煮料理。</p>
-    <p>🏠 <b>我的房子</b>：農場下面按「🏠 進屋」走進農舍，用「🛋️ 裝潢」買家具、換牆壁地板顏色，獎盃櫃會擺出你拿到的獎盃。去好友家也能進屋參觀！</p>
+    <p>🏠 <b>我的房子</b>：農場下面按「🏠 進屋」走進農舍，用「🛋️ 裝潢」買家具，點地板自己決定擺在哪裡；按「🔧 擺設」可以移動、轉方向、收起家具，也能換牆壁地板顏色，獎盃櫃會擺出你拿到的獎盃。去好友家也能進屋參觀！</p>
     <p>🐶 <b>寵物選美</b>：在「🐾 我的寵物」按「👗 打扮」幫寵物戴配件、洗澡，可愛度越高票越多。每週四晚上 8 點開票（報名費 💰100），前三名有獎金和獎盃！</p>
     <p>🏮 <b>夜市</b>：每週一晚上 6 點～12 點開，從「🗺️ 出門」進去。撈金魚、套圈圈、射氣球、彈珠台一次 💰50，分數會變成獎品券換獎品；當晚總分比「夜市高手」，隔天公布前三名！</p>
     <p>🎣 <b>釣魚碼頭</b>：點左上「🗺️ 出門」去碼頭，大家都在同一個碼頭！拋竿後等浮標<b>沉下去</b>再收線，然後<b>按住</b>慢慢收，張力太高要放開一下。釣到的魚放進魚塭旁的超大魚缸，村民會來買。每週三有釣魚大賽！</p>
@@ -6649,7 +6700,7 @@ const ACT = {
   forgot() { const b = $('#forgotBox'); b.hidden = !b.hidden; if (!b.hidden) { $('#fgName').value = $('#aName').value; $('#fgMsg').textContent = ''; $('#fgName').focus(); } }, forgotGo() { return forgotGo(); }, mailBind: openMailBind, mailBindGo() { return mailBindGo(); }, passChg: openPassChg, passChgGo() { return passChgGo(); },
   authTab(d) { authMode = d.t; document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === d.t)); $('#aPass2Wrap').hidden = d.t !== 'reg'; $('#aGo').textContent = d.t === 'reg' ? '註冊並開始' : '開始種田'; $('#aPass').autocomplete = d.t === 'reg' ? 'new-password' : 'current-password'; $('#authErr').textContent = ''; },
   tool(d) { if (d.t === 'plant' && (!S.seed || S.tool === 'plant')) { S.tool = 'plant'; renderTools(); return openSeedPicker(-1); } if (d.t === 'stock' && (!S.fry || S.tool === 'stock')) { S.tool = 'stock'; renderTools(); return openFryPicker(-1); } S.tool = d.t; renderTools(); },
-  scene(d) { if (W.zoomed) { W.zoomed = false; clearTimeout(W.zoomT); const o = (W.camAnim?.off1 || W.camera.position.clone().sub(W.controls.target)).clone().multiplyScalar(1 / .42); W.camAnim = null; W.camera.position.copy(W.controls.target).add(o); } const lp = !PLACES[d.s] && leavePlace(); if (S.scene === 'home' && d.s !== 'home') { const o = W.preHomeOff && W.preHomeOff.length() > 5 ? W.preHomeOff : new THREE.Vector3(0, 24, 28); W.camera.position.copy(W.controls.target).add(o); W.preHomeOff = null; } S.scene = d.s; S.tool = 'hand'; S.hover = null; S.myPos = null; S.pray = null; $('#tip').style.display = 'none'; setCam(d.s); renderTools(); renderScene(); if (lp) { travel('回農場ING', 1100); watchHere(); beat(); } },
+  scene(d) { if (W.zoomed) { W.zoomed = false; clearTimeout(W.zoomT); const o = (W.camAnim?.off1 || W.camera.position.clone().sub(W.controls.target)).clone().multiplyScalar(1 / .42); W.camAnim = null; W.camera.position.copy(W.controls.target).add(o); } const lp = !PLACES[d.s] && leavePlace(); if (S.scene === 'home' && d.s !== 'home') { S.homeEdit = null; const o = W.preHomeOff && W.preHomeOff.length() > 5 ? W.preHomeOff : new THREE.Vector3(0, 24, 28); W.camera.position.copy(W.controls.target).add(o); W.preHomeOff = null; } S.scene = d.s; S.tool = 'hand'; S.hover = null; S.myPos = null; S.pray = null; $('#tip').style.display = 'none'; setCam(d.s); renderTools(); renderScene(); if (lp) { travel('回農場ING', 1100); watchHere(); beat(); } },
   feedAll() { return run(feedAll); }, feedFriend() { return run(feedFriend); },
   buyAni() { openShop('ani'); }, cleanTip() { toast('點牧場上的 💩 就能幫好友清掉，拿經驗！'); },
   close: closeModal,
@@ -6670,7 +6721,7 @@ const ACT = {
   fcEnter(d) { return run(() => fcEnter(+d.i)); },
   petShow() { S.psv = null; openPetShow(); }, petDress(d) { openPetDress(d.k); }, paccBuy(d) { return run(() => paccBuy(d.k, d.id)); }, paccOn(d) { return run(() => paccOn(d.k, d.id)); }, paccOff(d) { return run(() => paccOff(d.k, d.s)); }, petBath(d) { return run(() => petBath(d.k)); },
   psEnter(d) { return run(() => psEnter(d.k)); }, psVote() { return run(psVote); }, psClaim() { return run(psClaim); },
-  goIn() { if (!PLACES[S.scene] && S.place) leavePlace(); W.preHomeOff = W.zoomed ? null : W.camera.position.clone().sub(W.controls.target); goIn(); }, homeDeco: openHomeShop, homeBuy(d) { return run(() => homeBuy(d.s, d.id)); }, homeUse(d) { return run(() => homeUse(d.s, d.id)); }, homeCol(d) { return run(() => homeCol(d.k, +d.i)); }, leaveHome() { ACT.scene({s:'farm'}); },
+  goIn() { if (!PLACES[S.scene] && S.place) leavePlace(); W.preHomeOff = W.zoomed ? null : W.camera.position.clone().sub(W.controls.target); goIn(); }, homeDeco: openHomeShop, homeBuy(d) { return run(() => homeBuy(d.id)); }, homePut(d) { homeEditStart(d.id); }, homeArrange() { homeEditStart(''); }, homeDone() { homeEditEnd(); }, hiMove(d) { closeModal(); if (S.homeEdit) { S.homeEdit.mv = +d.i; S.homeEdit.k = ''; } W.homeKey = null; renderScene(); toast('點地板要放的位置'); }, hiRot(d) { return run(() => hiRot(+d.i)); }, hiStore(d) { return run(() => hiStore(+d.i)); }, homeCol(d) { return run(() => homeCol(d.k, +d.i)); }, leaveHome() { S.homeEdit = null; ACT.scene({s:'farm'}); },
   mkGames: openMkGames, mkShop: openMkShop, mkRank: openMkRank, nmStart(d) { return run(() => nmStart(d.id)); }, nmAgain() { const id = NM?.id; mkStop(); if (id) return run(() => nmStart(id)); }, nmQuit() { mkStop(); }, mkBuy(d) { return run(() => mkBuy(d.id)); }, mkClaim() { return run(mkClaim); }, fcClaim() { return run(fcClaim); }, hRaceGo(d) { startHorseRace(d.r); }, toTown() { ACT.scene({s:'town'}); },
   pump: openPump, pumpPlant() { return run(pumpPlant); }, pumpCare(d) { return run(() => pumpCare(d.k)); }, pumpHarvest() { return run(pumpHarvest); }, pumpClaim() { return run(pumpClaim); }, pumpEnter(d) { return run(() => pumpEnter(+d.i)); }, ghPlant(d) { return run(() => ghPlant(d.id)); }, ghBuy() { return run(ghBuy); },
   expPick(d) { openExp(d.k); }, expGo(d) { return run(() => expGo(d.k, d.d)); }, expBack(d) { return run(() => expBack(d.k)); },
@@ -6887,10 +6938,10 @@ function travel(text, ms = 1500) {
   $('#tvText').textContent = text; el.classList.remove('out'); el.hidden = false; Music.sfx('pop');
   clearTimeout(_tvT); _tvT = setTimeout(() => { el.classList.add('out'); _tvT = setTimeout(() => { el.hidden = true; el.classList.remove('out'); }, 350); }, ms);
 }
-function goHome() { leavePlace(); S.myPos = null; S.pray = null; unZoom(); S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; renderAll(); beat(); watchHere(); }
+function goHome() { leavePlace(); S.homeEdit = null; S.myPos = null; S.pray = null; unZoom(); S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; renderAll(); beat(); watchHere(); }
 function visit(uid) {
   if (uid === S.uid) return goHome();
-  leavePlace();
+  leavePlace(); S.homeEdit = null;
   { const fr0 = S.friends.find(x => x.uid === uid); travel(`拜訪 ${fr0 ? dn(fr0.farm) : '好友'} 的農場ING`); }
   S.myPos = null; S.pray = null;
   unZoom(); clearSanta(); S.decoMode = null; S.thief = null; S.unsubView && S.unsubView();
