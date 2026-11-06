@@ -114,6 +114,7 @@ button{font-family:inherit;cursor:pointer;border:none}
 .ov.bub{background:#fff;color:#3b2a14;text-shadow:none;border:2px solid #8d6e63;border-radius:12px;padding:3px 9px;font-size:13px;max-width:200px;white-space:normal;text-align:center}
 .ov.cnt{background:#e53935;border:2px solid #fff;border-radius:10px;padding:0 6px;font-size:11px;text-shadow:none}
 .ov.tag{background:rgba(255,255,255,.92);color:#5d3a12;text-shadow:none;border-radius:10px;padding:1px 7px;font-size:11px}
+.ov.mutag{font-size:10.5px;padding:1px 5px;border:1.5px solid #ffca28;white-space:nowrap}
 .ov.buy{background:#43a047;border:2px solid #fff;border-radius:12px;padding:3px 10px;font-size:14px;text-shadow:none}
 .fx3{position:absolute;left:0;top:0;font-size:19px;font-weight:900;white-space:nowrap;text-shadow:0 0 4px #fff,0 0 4px #fff,0 0 3px #fff;pointer-events:none;will-change:transform,opacity}
 #tip{position:absolute;pointer-events:none;background:rgba(40,25,10,.88);color:#fff;font-size:13px;padding:7px 10px;border-radius:10px;line-height:1.5;display:none;z-index:4;white-space:nowrap}
@@ -3132,7 +3133,7 @@ function startHorseRace(rid) {
   W.race = {...B, racers, t0:performance.now() / 1000, end:Math.max(...racers.map(r => r.T)) + 1.3, lbl:[...$('#raceLbl').children], rk:'', cd:0,
     onEnd:async () => {
       let got = null;
-      const r = await txMe(g => { const H = horseOf(g); if (H.cl[rid]) return ab(''); H.cl[rid] = k + 1; giveRw(g, rw, 'horse', `${hrDate(rid)}・${e.n}`); if (k < 3) { (H.mus ??= []).push({n:e.n, col:e.col, r:k + 1, rid, t:now()}); if (H.mus.length > 12) H.mus = H.mus.slice(-12); } addLog(g, `🏁 ${hrDate(rid)} 賽馬大賽：「${e.n}」跑第 ${k + 1} 名，獲得 ${rwText(rw)}${k < 3 ? '，「' + e.n + '」的賽馬雕像被村民搬到展覽館展示了' : ''}`); return {}; }).catch(() => null);
+      const r = await txMe(g => { const H = horseOf(g); if (H.cl[rid]) return ab(''); H.cl[rid] = k + 1; giveRw(g, rw, 'horse', `${hrDate(rid)}・${e.n}`); if (k < 3) { (H.mus ??= []).push({id:e.id, n:e.n, col:e.col, r:k + 1, rid, t:now()}); if (H.mus.length > 12) H.mus = H.mus.slice(-12); } addLog(g, `🏁 ${hrDate(rid)} 賽馬大賽：「${e.n}」跑第 ${k + 1} 名，獲得 ${rwText(rw)}${k < 3 ? '，「' + e.n + '」的賽馬雕像被村民搬到展覽館展示了' : ''}`); return {}; }).catch(() => null);
       if (r && !r.abort) got = rw;
       $('#raceEnd').innerHTML = `<div class="rc"><div class="big">${['🥇', '🥈', '🥉'][k] || '🏇'}</div><b>${k === 0 ? `「${esc(e.n)}」跑第 1 名！` : `「${esc(e.n)}」跑第 ${k + 1} 名，${esc(fl[0].n)} 奪冠！`}</b><div>${got ? `獎勵：${rwText(got)}${k < 3 ? '<br>🏛️ 牠的賽馬雕像會擺在展覽館！' : ''}` : '（這場的獎勵已經領過了）'}</div><button class="b o" data-act="raceEnd">🐎 回馬場</button></div>`;
       $('#raceEnd').hidden = false; if (k < 3) { Music.sfx('coin'); Music.sparkle(); } else Music.sfx('pop');
@@ -3491,7 +3492,7 @@ const MU_NPC = {pumpkin:[['阿土伯', 96.5], ['美玉姨', 88.2], ['里長伯',
 const MEDAL = r => ['', '🥇', '🥈', '🥉'][r] || '🏅';
 const MU_HX = [0, -6, 6], MU_HNPC = [['阿土伯', '阿福', 2], ['里長伯', '黑旋風', 1], ['茉莉', '小白', 3]];
 function musHorses() {
-  const L = [], add = (f, uid, n) => { for (const x of (f?.horse?.mus || [])) L.push({...x, uid, o:n}); };
+  const L = [], add = (f, uid, n) => { for (const x of (f?.horse?.mus || [])) L.push({...x, n:(x.id != null && f.horse.list?.find(h => h.id === x.id)?.n) || x.n, uid, o:n}); };
   add(S.my, S.uid, myName()); for (const x of S.friends || []) add(x.farm, x.uid, dn(x.farm));
   return L.sort((a, b) => (b.rid > a.rid ? 1 : b.rid < a.rid ? -1 : 0) || a.r - b.r);
 }
@@ -3523,18 +3524,27 @@ function buildMuseum(S3) {
   W.musG = new THREE.Group(); S3.add(W.musG);
   W.musSign = makeSign(X + 7.5, 6.6); S3.add(W.musSign);
 }
+const MU_SAY = ['哇～這個好大！', '冠軍果然不一樣', '這是誰種的呀？', '好想帶回家喔', '明年我也要參加！', '拍照拍照 📸', '這匹馬好帥！', '金色的獎盃好閃', '下週比什麼呢？', '好壯觀啊～'];
+function musSpots() { const L = []; for (const dx of Object.values(MU_SEC)) for (const [sx] of MU_SLOT) L.push([dx + sx, -1.25]); for (const hx of MU_HX) L.push([hx, 2.7]); return L; }
 function buildMuseumPeople(S3) {
-  W.musCrowd = []; const ids = VILS.map(v => v.id);
-  for (let i = 0; i < 5; i++) { const m = vilModel(ids[(i * 3 + 1) % ids.length]); m.scale.setScalar(1.1); const x0 = -10 + i * 5, z = -.4 + (i % 2) * .9; m.position.set(MU_X + x0, 0, z); S3.add(m); W.musCrowd.push({m, x:x0, z, sp:(i % 2 ? 1 : -1) * .5, ph:i, stop:i % 3}); }
+  W.musCrowd = []; const ids = VILS.map(v => v.id), sp = musSpots();
+  for (let i = 0; i < 12; i++) { const m = vilModel(ids[i % ids.length]); m.scale.setScalar(1.05); const [x, z] = i % 3 === 2 ? [-10 + i * 1.7, 3.8 + (i % 2) * 1.2] : i % 3 === 1 ? sp[12 + i % 3] : sp[(i * 5) % 12]; m.position.set(MU_X + x, 0, z); S3.add(m);
+    W.musCrowd.push({m, x, z, tx:x, tz:z, ph:i, stop:1 + (i % 4), say:null}); }
 }
 function musTick(t, dt) {
   if (!W.musCrowd || S.scene !== 'museum') return;
-  for (const C of W.musCrowd) { const u = C.m.userData;
-    if (C.stop > 0) { C.stop -= dt; C.m.rotation.y = Math.PI / 2; if (u.legL) u.legL.rotation.z = u.legR.rotation.z = 0; C.m.position.y = 0; continue; }
-    C.x += C.sp * dt; if (C.x > 11 || C.x < -11) { C.sp = -C.sp; C.x = Math.max(-11, Math.min(11, C.x)); }
-    if (Math.random() < dt * .25) C.stop = 2 + Math.random() * 4;
-    C.m.position.set(MU_X + C.x, Math.abs(Math.sin(t * 6 + C.ph)) * .03, C.z); C.m.rotation.y = C.sp > 0 ? 0 : Math.PI;
-    const sw = Math.sin(t * 6 + C.ph) * .5; if (u.legL) { u.legL.rotation.z = sw; u.legR.rotation.z = -sw; } }
+  if (t - (W.musSyncT || 0) > 2) { W.musSyncT = t; syncMuseum(); }
+  const sp = musSpots();
+  W.musCrowd.forEach((C, i) => { const u = C.m.userData;
+    if (C.say && now() - C.say.t < 3800) ov('musay' + i, `${VIL[VILS[i % VILS.length].id].n}：${esc(C.say.m)}`, v => v.copy(C.m.position).setY(2.5), 'bub');
+    if (C.stop > 0) { C.stop -= dt; C.m.rotation.y = Math.PI / 2; C.m.position.y = 0; if (u.legL) u.legL.rotation.z = u.legR.rotation.z = 0;
+      if (C.stop <= 0) { const r = Math.random(); [C.tx, C.tz] = r < .5 ? sp[Math.floor(Math.random() * 12)] : r < .75 ? sp[12 + Math.floor(Math.random() * 3)] : [-11 + Math.random() * 22, 3.6 + Math.random() * 1.6]; C.tx += (Math.random() - .5) * .8; }
+      return; }
+    const dx = C.tx - C.x, dz = C.tz - C.z, d = Math.hypot(dx, dz);
+    if (d < .08) { C.stop = 2.5 + Math.random() * 5; if (Math.random() < .35) C.say = {m:rnd(MU_SAY), t:now()}; return; }
+    const st = Math.min(d, dt * 1.1); C.x += dx / d * st; C.z += dz / d * st;
+    C.m.position.set(MU_X + C.x, Math.abs(Math.sin(t * 7 + C.ph)) * .03, C.z); C.m.rotation.y = Math.atan2(-dz, dx);
+    const sw = Math.sin(t * 7 + C.ph) * .55; if (u.legL) { u.legL.rotation.z = sw; u.legR.rotation.z = -sw; } });
 }
 const musGlass = new THREE.MeshLambertMaterial({color:'#e1f5fe', transparent:true, opacity:.18, depthWrite:false});
 function syncMuseum() {
@@ -3546,16 +3556,17 @@ function syncMuseum() {
       const v = giantVeg(k, x.v); v.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(v), sz3 = bb.getSize(new THREE.Vector3()), s = Math.min(.8, 1.3 / Math.max(sz3.x, sz3.z, .01), 1.4 / Math.max(sz3.y, .01));
       v.scale.multiplyScalar(s); if (k === 'luffa') v.rotation.y = .5; v.position.y = h + .05; g.add(v);
       const gl = new THREE.Mesh(new THREE.BoxGeometry(1.45, 1.6, 1.45), musGlass); gl.position.y = h + .85; g.add(gl);
-      const pl = textPlane(`${x.npc ? '🏅' : MEDAL(x.r)} ${x.n}`, x.npc ? '#5d4037' : '#1b5e20', '#fffde7', 1.5, .42, 78); pl.position.set(0, Math.max(.3, h * .55), .76); g.add(pl);
+      const pl = textPlane(`${x.v} ${gU(k)}`, x.npc ? '#5d4037' : '#1b5e20', '#fffde7', 1.5, .42, 80); pl.position.set(0, Math.max(.3, h * .55), .76); g.add(pl);
       g.traverse(o => o.userData.hit = {type:'mus', k}); W.musG.add(g); });
     hs.forEach((x, i) => { const g = new THREE.Group(), h = [.9, .7, .55][i]; g.position.set(MU_X + MU_HX[i], 0, 1.4);
       g.add(blk(x.npc ? '#bdbdbd' : '#fff8e1', [2.4, h, 1.3], [0, h / 2, 0]), blk(x.npc ? '#9e9e9e' : '#ffca28', [2.55, .1, 1.45], [0, h, 0]));
       const m = horseStatue(x.col, x.r, x.npc); m.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(m), z3 = bb.getSize(new THREE.Vector3()); m.scale.multiplyScalar(Math.min(2.1 / Math.max(z3.x, z3.z, .01), 1.9 / Math.max(z3.y, .01))); m.position.y = h + .05; m.rotation.y = .35; g.add(m);
-      const pl = textPlane(`${x.npc ? '🏅' : MEDAL(x.r)} ${x.n}`, x.npc ? '#5d4037' : '#1b5e20', '#fffde7', 2, .42, 70); pl.position.set(0, Math.max(.28, h * .55), .66); g.add(pl);
+      const pl = textPlane(x.npc ? '村民的馬' : `${hrDate(x.rid)} 第 ${x.r} 名`, x.npc ? '#5d4037' : '#1b5e20', '#fffde7', 2, .42, 70); pl.position.set(0, Math.max(.28, h * .55), .66); g.add(pl);
       g.traverse(o => o.userData.hit = {type:'mus', k:'horse'}); W.musG.add(g); });
   }
-  if (S.scene === 'museum') for (const [k, dx] of Object.entries(MU_SEC)) { const x = show[k][0]; ov('mu' + k, `${x.npc ? '🏅 村民紀錄' : MEDAL(x.r) + ' ' + esc(x.n)} ${x.v} ${gU(k)}`, v => v.set(MU_X + dx, 3.4, -3.6), 'tag'); }
-  if (S.scene === 'museum') { const x = hs[0]; ov('muH', `🐎 ${x.npc ? '村民的馬' : MEDAL(x.r)} ${esc(x.n)}（${esc(x.o)}${x.npc ? '' : '・' + hrDate(x.rid)}）`, v => v.set(MU_X, 3.3, 1.4), 'tag'); }
+  if (S.scene === 'museum') {
+    for (const [k, dx] of Object.entries(MU_SEC)) show[k].forEach((x, i) => { const [sx, sz, h] = MU_SLOT[i]; ov('mu' + k + i, `${x.npc ? '🏅' : MEDAL(x.r)} ${esc(x.n)}${x.uid === S.uid ? '（我）' : ''}`, v => v.set(MU_X + dx + sx, h + 2.05 + (i ? 0 : .25), sz), 'tag mutag'); });
+    hs.forEach((x, i) => ov('muH' + i, `${x.npc ? '🏅' : MEDAL(x.r)} 「${esc(x.n)}」${esc(x.o)}${x.uid === S.uid ? '（我）' : ''}`, v => v.set(MU_X + MU_HX[i], [.9, .7, .55][i] + 2.1, 1.4), 'tag mutag')); }
 }
 function openMuseum(k0) {
   S.modal = () => {
@@ -6848,7 +6859,7 @@ const ACT = {
   async hRename(d) { const v = ($('#hnm')?.value || '').trim(); if (!v || [...v].length > 8) return toast('名字要 1～8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { const h = horseOf(f).list.find(x => x.id === +d.id); if (!h) return ab('找不到這匹馬'); h.n = v; return {}; }, () => { toast(`🐎 改名成「${v}」了！`); Music.sfx('pop'); }); },
   async petRename(d) { const v = ($('#pnm_' + d.k)?.value || '').trim(); if ([...v].length > 8) return toast('名字最多 8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { if (!f.pets.includes(d.k)) return ab('沒有這隻寵物'); const x = px(f, d.k); if (v) x.nm = v; else delete x.nm; return {}; }, () => { toast(v ? `🐾 ${PETS[d.k].n}改名叫「${v}」了！` : `🐾 改回「${PETS[d.k].n}」`); Music.voice(PETS[d.k].kind); }); },
   hEnter(d) { return run(() => hEnter(+d.id)); },
-  map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, goMuseum() { goPlace('museum'); }, musList() { openMuseum(); }, leaveP() { ACT.scene({s:'farm'}); },
+  map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, goMuseum() { goPlace('museum'); refreshFriends(); }, musList() { openMuseum(); }, leaveP() { ACT.scene({s:'farm'}); },
   fishGo: fishStart, fishCast, fishHook, fishQuit() { fishStop(); renderTools(); }, fishKeep(d) { return run(() => fishKeep(d.m)); }, aqShow: openAquarium, aqSell(d) { return run(() => aqSell(+d.i)); }, fishDex: openFishDex, fishCup: openFishCup,
   fcEnter(d) { return run(() => fcEnter(+d.i)); },
   petShow() { S.psv = null; openPetShow(); }, petDress(d) { openPetDress(d.k); }, paccBuy(d) { return run(() => paccBuy(d.k, d.id)); }, paccOn(d) { return run(() => paccOn(d.k, d.id)); }, paccOff(d) { return run(() => paccOff(d.k, d.s)); }, petBath(d) { return run(() => petBath(d.k)); },
@@ -7097,6 +7108,7 @@ async function tickNow() { if (!S.my || S.busy) return; if (tickOwn(normalize(cl
 setInterval(tickNow, 5000);
 setInterval(() => { if (S.my) beat(); }, 25000);
 setInterval(() => { if (S.my) refreshFriends(); }, 20000);
+setInterval(() => { if (S.my && S.place === 'museum') refreshFriends(); }, 7000);
 setInterval(() => { if (S.my) { renderStrip(); renderTop(); } }, 10000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S.my) beat(); });
 
