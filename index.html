@@ -64,6 +64,7 @@ button{font-family:inherit;cursor:pointer;border:none}
 #fishUI .fb{display:flex;gap:8px;justify-content:center}#fishUI .b.big{font-size:17px;padding:11px 18px;flex:1}#fishUI .b.pulse{animation:cdpop .45s infinite alternate}#fishUI .hold.on{transform:scale(.96);filter:brightness(.92)}
 #fishUI .fbar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:12.5px;font-weight:800;color:#5d4037}#fishUI .fbar>div{flex:1;height:14px;background:#efebe9;border-radius:7px;position:relative;overflow:hidden}#fishUI .fbar i{position:absolute;left:0;top:0;bottom:0;border-radius:7px}#fishUI .fbar.ten s{position:absolute;left:85%;top:0;bottom:0;width:2px;background:#d32f2f}
 #fishUI .fcatch{display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:8px}#fishUI .fcatch .fe{font-size:46px;animation:cdpop .6s}#fishUI .fcatch b{font-size:18px;color:#4e342e}#fishUI .fcatch .cm{font-size:26px;font-weight:900;color:#e65100}#fishUI .fcatch small{color:#8d6e63}
+.psshots{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}.psshots>div{text-align:center;font-size:12px;padding:4px;border-radius:10px;background:#fffaf0}.psshots>div.psme{background:#fff3c4;font-weight:800}
 .psv>div{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:5px 6px;border-radius:8px;font-size:13px}.psv>div.me{background:#fff3c4;font-weight:800}.psv .pb{height:12px;background:#efebe9;border-radius:6px;overflow:hidden;display:block}.psv .pb i{display:block;height:100%;background:linear-gradient(90deg,#f48fb1,#e91e63);transition:width .1s}
 .hcols{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 8px}.hcols button{width:38px;height:38px;border-radius:10px;border:3px solid #d7ccc8}.hcols button.on{border-color:#ff9800;box-shadow:0 0 0 2px #ffe0b2}
 .rare{display:inline-block;color:#fff;font-size:11px;font-weight:800;padding:1px 7px;border-radius:9px;vertical-align:middle}.fcres>div{padding:4px 8px;border-radius:8px;font-size:13.5px}.fcres>div.me{background:#fff3c4;font-weight:800}
@@ -1692,7 +1693,7 @@ function dogModel(sp) {
   head.add(ball(sp.mask ? '#ffffff' : c2, [.1 * s * sn + .02 * s, .075 * s, .08 * s], [.14 * s, -.04 * s, 0]));
   head.add(ball('#1a1a1a', U(.03 * s), [.14 * s + .1 * s * sn, -.02 * s, 0]));
   const eye = sp.eye || '#1a1a1a';
-  head.add(ball(eye, U(.026 * s), [.12 * s, .05 * s, .075 * s]), ball(eye, U(.026 * s), [.12 * s, .05 * s, -.075 * s]));
+  head.add(ball(eye, U(.026 * s), [.12 * s, .05 * s, .075 * s]), ball(eye, U(.026 * s), [.12 * s, .05 * s, -.075 * s])); head.userData.face = {ex:.12 * s, ey:.05 * s, ez:.075 * s, nx:.14 * s + .1 * s * sn, ny:-.02 * s};
   if (sp.beard) head.add(ball('#d6d9de', [.08 * s, .06 * s, .07 * s], [.17 * s, -.1 * s, 0]));
   const ec = sp.ear === 'flop' && sp.c === '#e0a84f' ? '#d4943d' : c;
   for (const z of [1, -1]) {
@@ -1734,7 +1735,7 @@ function catModel(sp) {
   head.add(ball(sp.flat ? c : (pat === 'point' ? c2 : '#ffffff'), [.05 * s, .04 * s, .07 * s], [.13 * s * (sp.flat ? .8 : 1), -.04 * s, 0]));
   head.add(ball('#f48fb1', U(.018 * s), [.16 * s * (sp.flat ? .8 : 1), -.02 * s, 0]));
   const eye = sp.eye || '#9ccc65';
-  head.add(ball(eye, U(.028 * s), [.11 * s, .03 * s, .065 * s]), ball(eye, U(.028 * s), [.11 * s, .03 * s, -.065 * s]));
+  head.add(ball(eye, U(.028 * s), [.11 * s, .03 * s, .065 * s]), ball(eye, U(.028 * s), [.11 * s, .03 * s, -.065 * s])); head.userData.face = {ex:.11 * s, ey:.03 * s, ez:.065 * s, nx:.16 * s * (sp.flat ? .8 : 1), ny:-.02 * s};
   head.add(ball('#111', [.012 * s, .025 * s, .012 * s], [.135 * s, .03 * s, .065 * s]), ball('#111', [.012 * s, .025 * s, .012 * s], [.135 * s, .03 * s, -.065 * s]));
   for (const z of [1, -1]) {
     if (sp.fold) head.add(ball(hc, [.05 * s, .025 * s, .05 * s], [.02 * s, .12 * s, .06 * s * z]));
@@ -3843,17 +3844,33 @@ async function mkClaim() {
 }
 
 /* ================= 🐶 寵物選美（每週四晚上 8 點公布） ================= */
+// 不比數值：主角幫寵物打扮，每週不同的村民評審依照自己喜歡的風格投票
 const PS_FEE = 100, PS_H = 20, PS_RW = [{c:3000, tr:1}, {c:1500, tr:2}, {c:500, tr:3}];
+const PSTYLE = {cute:'💕可愛', cool:'😎帥氣', elegant:'✨優雅', funny:'🤣搞笑', festive:'🎉熱鬧', nature:'🌿自然', magic:'🔮夢幻'};
 const PACC = {
-  bow:{n:'蝴蝶結', em:'🎀', slot:'top', ch:8, c:300}, hat:{n:'派對帽', em:'🥳', slot:'top', ch:10, c:400}, flower:{n:'花圈', em:'🌸', slot:'top', ch:15, c:700}, crown:{n:'小皇冠', em:'👑', slot:'top', ch:25, c:1500},
-  glasses:{n:'墨鏡', em:'🕶️', slot:'face', ch:12, c:500}, bowtie:{n:'紳士領結', em:'🎩', slot:'neck', ch:10, c:400}, scarf:{n:'圍巾', em:'🧣', slot:'neck', ch:12, c:500}, cape:{n:'英雄披風', em:'🦸', slot:'back', ch:18, c:900},
+  bow:{n:'蝴蝶結', em:'🎀', slot:'top', st:['cute', 'elegant'], c:300}, hat:{n:'派對帽', em:'🥳', slot:'top', st:['funny', 'festive'], c:400}, flower:{n:'花圈', em:'🌸', slot:'top', st:['nature', 'cute'], c:700}, crown:{n:'小皇冠', em:'👑', slot:'top', st:['elegant', 'magic'], c:1500},
+  bunny:{n:'兔耳朵', em:'🐰', slot:'top', st:['cute'], c:500}, catear:{n:'貓耳髮箍', em:'🐱', slot:'top', st:['cute', 'funny'], c:500}, witch:{n:'魔法帽', em:'🧙', slot:'top', st:['magic', 'festive'], c:900}, santa:{n:'聖誕帽', em:'🎅', slot:'top', st:['festive', 'funny'], c:600},
+  halo:{n:'天使光環', em:'😇', slot:'top', st:['magic', 'elegant'], c:1200}, straw:{n:'小草帽', em:'👒', slot:'top', st:['nature'], c:400}, cowboy:{n:'牛仔帽', em:'🤠', slot:'top', st:['cool'], c:700},
+  glasses:{n:'墨鏡', em:'🕶️', slot:'face', st:['cool'], c:500}, heartgl:{n:'愛心眼鏡', em:'😍', slot:'face', st:['cute', 'funny'], c:600}, roundgl:{n:'圓框眼鏡', em:'👓', slot:'face', st:['elegant'], c:500}, mustache:{n:'小鬍子', em:'🥸', slot:'face', st:['funny'], c:300},
+  bowtie:{n:'紳士領結', em:'🎩', slot:'neck', st:['elegant', 'cool'], c:400}, scarf:{n:'圍巾', em:'🧣', slot:'neck', st:['cute', 'nature'], c:500}, bell:{n:'鈴鐺項圈', em:'🔔', slot:'neck', st:['cute', 'festive'], c:400}, pearl:{n:'珍珠項鍊', em:'📿', slot:'neck', st:['elegant'], c:1000}, lei:{n:'花環項鍊', em:'🌺', slot:'neck', st:['nature', 'festive'], c:600},
+  cape:{n:'英雄披風', em:'🦸', slot:'back', st:['cool', 'magic'], c:900}, wings:{n:'天使翅膀', em:'🪽', slot:'back', st:['magic', 'cute'], c:1300}, bfly:{n:'蝴蝶翅膀', em:'🦋', slot:'back', st:['nature', 'magic'], c:1100}, bag:{n:'小背包', em:'🎒', slot:'back', st:['cute', 'nature'], c:500},
 };
 const PSLOT_N = {top:'頭上', face:'臉', neck:'脖子', back:'背上'};
+const PS_JUDGES = [['阿土伯', ['nature'], '有鄉下味，我喜歡！'], ['美玉姨', ['elegant'], '好有氣質喔～'], ['小豆', ['funny'], '哈哈哈太好笑了！'], ['阿德師', ['cool'], '帥！'], ['阿海伯', ['nature', 'cool'], '像海邊的男子漢'], ['茉莉', ['cute'], '可愛到融化了～'],
+  ['里長伯', ['festive'], '喜氣洋洋！'], ['廟公阿成', ['magic'], '有仙氣！'], ['放學的小朋友', ['cute', 'funny'], '我要跟牠拍照！'], ['騎腳踏車的大哥哥', ['cool'], '超有型的啦'], ['隔壁村的阿姨', ['elegant', 'cute'], '好像小公主'], ['路過的旅客', ['magic'], '像童話故事一樣'],
+  ['麵包店老闆娘', ['cute'], '像剛出爐的小麵包'], ['郵差阿伯', ['festive'], '看了心情就好'], ['學校老師', ['elegant'], '整整齊齊，很有禮貌'], ['漁夫阿明', ['cool', 'nature'], '很有精神！'], ['花店姊姊', ['nature', 'elegant'], '跟花一樣美'], ['糖果店阿嬤', ['cute', 'festive'], '甜甜的好可愛'],
+  ['魔術師', ['magic', 'funny'], '有驚喜！'], ['攝影師', ['cool', 'elegant'], '超上鏡'], ['雜貨店老闆', ['funny', 'festive'], '好熱鬧哈哈'], ['小學生妹妹', ['cute', 'magic'], '是仙女寵物！'], ['果農阿伯', ['nature', 'funny'], '很逗趣'], ['設計師', ['cool', 'magic'], '搭配很有創意']];
+const PS_NJ = 15;
+// 每一場選美的主題（評分觀點）都不一樣：評審除了自己的喜好，也會看打扮合不合這場的主題
+const PS_THEMES = [['🌸 春日花園', ['nature', 'cute'], '像在花園裡散步一樣'], ['🎩 紳士淑女之夜', ['elegant'], '高雅有氣質'], ['🦸 超級英雄', ['cool', 'magic'], '帥氣又有超能力'], ['🎪 搞笑嘉年華', ['funny', 'festive'], '越好笑越好'],
+  ['🧚 童話王國', ['magic', 'cute'], '像故事書裡走出來'], ['🏖️ 海邊度假', ['nature', 'cool'], '輕鬆自在的度假風'], ['🎉 熱鬧廟會', ['festive'], '喜氣洋洋最重要'], ['💕 萌萌大賽', ['cute'], '比誰最可愛'], ['🌙 夢幻星空', ['magic', 'elegant'], '閃閃發亮的夜晚'], ['🤠 西部牛仔', ['cool', 'funny'], '有型又逗趣']];
+const psTheme = cid => { const R = seededR(strHash('pstheme:' + cid)); return PS_THEMES[Math.floor(R() * PS_THEMES.length)]; };
+const psJudges = cid => { const R = seededR(strHash('psj:' + cid)); return PS_JUDGES.map(j => [R(), j]).sort((a, b) => a[0] - b[0]).slice(0, PS_NJ).map(x => x[1]); };
 const paccOf = f => { const A = f.pacc ??= {}; A.own ??= {}; A.on ??= {}; A.bath ??= {}; return A; };
 const paccView = f => f?.pacc || {own:{}, on:{}, bath:{}};
 const petOn = (f, k) => paccView(f).on?.[k] || {};
 const bathed = (f, k) => paccView(f).bath?.[k] === today();
-const petCharm = (f, k) => Object.values(petOn(f, k)).reduce((s, id) => s + (PACC[id]?.ch || 0), 0) + petLv(f, k) * 6 + (bathed(f, k) ? 10 : 0) + 10;
+const accSt = on => Object.values(on || {}).flatMap(id => PACC[id]?.st || []);
 const psNext = d => { let x = d; for (let i = 0; i < 7 && dowOf(x) !== 4; i++) x = addDays(x, 1); return x; };
 const psOpen = () => { const d = twDay(); return dowOf(d) === 4 && twHour() >= PS_H ? psNext(addDays(d, 1)) : psNext(d); };
 const psReady = cid => twDay() > cid || (twDay() === cid && twHour() >= PS_H);
@@ -3861,10 +3878,18 @@ const psEnt = (f, c) => f?.pshow?.ent?.[c] || null;
 const PS_NPC = [['阿土伯', '大黃', 'shiba'], ['美玉姨', '咪咪', 'tabby'], ['小豆', '豆豆', 'poodle'], ['茉莉', '雪球', 'persian']];
 function psField(cid) {
   const ps = [{uid:S.uid, n:myName(), e:psEnt(S.my, cid), me:1}, ...S.friends.map(x => ({uid:x.uid, n:dn(x.farm), e:psEnt(x.farm, cid)}))].filter(x => x.e && PETS[x.e.k]);
-  const out = ps.map(p => ({...p, k:p.e.k, pn:petNm(p.e.k, p.me ? S.my : S.friends.find(y => y.uid === p.uid)?.farm), on:p.e.on || {}, v:Math.round(p.e.sc * 1.3 + seededR(strHash('ps:' + cid + ':' + p.uid))() * 30)}));
-  const R = seededR(strHash('psnpc:' + cid));
-  for (const [n, pn, k] of PS_NPC) if (out.length < 4) { const kk = PETS[k] ? k : Object.keys(PETS)[Math.floor(R() * Object.keys(PETS).length)]; out.push({uid:'npc:' + n, n, k:kk, pn, on:{}, v:Math.round(35 + R() * 60), npc:1}); }
-  return out.sort((a, b) => b.v - a.v);
+  const out = ps.map(p => ({...p, k:p.e.k, pn:petNm(p.e.k, p.me ? S.my : S.friends.find(y => y.uid === p.uid)?.farm), on:p.e.on || {}}));
+  const R = seededR(strHash('psnpc:' + cid)), ids = Object.keys(PACC);
+  for (const [n, pn, k] of PS_NPC) if (out.length < 4) { const kk = PETS[k] ? k : Object.keys(PETS)[Math.floor(R() * Object.keys(PETS).length)], on = {};
+    for (let i = 0; i < 1 + Math.floor(R() * 3); i++) { const id = ids[Math.floor(R() * ids.length)]; on[PACC[id].slot] = id; }
+    out.push({uid:'npc:' + n, n, k:kk, pn, on, npc:1}); }
+  // 每位評審把票投給最合自己口味的寵物（同分就看評審當天的心情）
+  for (const x of out) { x.v = 0; x.fans = []; x.tie = seededR(strHash('pst:' + cid + ':' + x.uid))(); }
+  const [, th, thSay] = psTheme(cid);
+  for (const [jn, likes, say] of psJudges(cid)) {
+    const JR = seededR(strHash('psv:' + cid + ':' + jn)), sc = out.map(x => { const st = accSt(x.on); return st.filter(s => likes.includes(s)).length * 10 + st.filter(s => th.includes(s)).length * 7 + Object.keys(x.on).length + JR() * 2; });
+    const w = out[sc.indexOf(Math.max(...sc))], st = accSt(w.on), hit = st.some(s => likes.includes(s)), thHit = st.some(s => th.includes(s)); w.v++; w.fans.push([jn, likes, hit ? say : thHit ? `很符合主題，${thSay}！` : '打扮得好用心！']); }
+  return out.sort((a, b) => b.v - a.v || b.tie - a.tie);
 }
 function psClaimable(f) { const E = f?.pshow?.ent || {}, C = f?.pshow?.cl || {}; const cid = Object.keys(E).filter(c => psReady(c) && !C[c]).sort()[0]; if (!cid) return null; const fl = psField(cid), k = fl.findIndex(x => x.me); return k < 0 ? null : {cid, k, rw:PS_RW[k] || null, fl}; }
 // 3D 配件
@@ -3873,30 +3898,69 @@ function petAccMesh(m, on) {
   if (!on || !Object.keys(on).length) return;
   const bb = new THREE.Box3().setFromObject(head), sz = new THREE.Vector3(); bb.getSize(sz); const r = Math.max(sz.x, sz.z) / 2 / (m.scale.x || 1), hy = r * 1.05;
   const add = (par, o) => { par.add(o); m.userData.acc.push(o); };
-  const top = on.top, face = on.face, neck = on.neck, back = on.back;
+  const top = on.top, face = on.face, neck = on.neck, back = on.back, hx = -r * .08;
+  const brim = (c, w, y = hy) => rod(c, [r * w, r * .06, r * w], [hx, y, 0]);
   if (top === 'bow') add(head, grp(ball('#f06292', [r * .35, r * .25, r * .18], [-r * .1, hy * .9, r * .35]), ball('#f06292', [r * .35, r * .25, r * .18], [-r * .1, hy * .9, -r * .05]), ball('#ec407a', U(r * .14), [-r * .1, hy * .9, r * .15])));
   if (top === 'hat') add(head, grp(cone('#ab47bc', [r * .45, r * 1.1, r * .45], [-r * .1, hy + r * .5, 0]), ball('#fdd835', U(r * .16), [-r * .1, hy + r * 1.08, 0]), ring('#fdd835', [r * .42, r * .42, r * .3], [-r * .1, hy + r * .05, 0], [Math.PI / 2, 0, 0])));
   if (top === 'flower') { const g = new THREE.Group(); for (let i = 0; i < 8; i++) { const a = i / 8 * 6.28; g.add(ball(['#f48fb1', '#fff59d', '#ce93d8', '#ffffff'][i % 4], U(r * .17), [Math.cos(a) * r * .62, 0, Math.sin(a) * r * .62])); } g.position.set(-r * .05, hy * .82, 0); add(head, g); }
   if (top === 'crown') add(head, grp(rod('#ffca28', [r * .5, r * .3, r * .5], [-r * .05, hy + r * .1, 0]), ...[0, 1, 2, 3, 4].map(i => { const a = i / 5 * 6.28; return cone('#ffca28', [r * .1, r * .3, r * .1], [-r * .05 + Math.cos(a) * r * .4, hy + r * .38, Math.sin(a) * r * .4]); }), ball('#e53935', U(r * .1), [r * .38, hy + r * .12, 0])));
-  if (face === 'glasses') add(head, grp(blk('#212121', [r * .1, r * .32, r * .42], [r * 1.0, r * .25, r * .3]), blk('#212121', [r * .1, r * .32, r * .42], [r * 1.0, r * .25, -r * .3]), blk('#212121', [r * .06, r * .06, r * .25], [r * 1.0, r * .3, 0])));
-  const body = m; const nx = (head.position.x - r * .5), ny = head.position.y - r * .9;
+  if (top === 'bunny') add(head, grp(...[-1, 1].flatMap(s => [ball('#fafafa', [r * .14, r * .55, r * .2], [hx, hy + r * .5, s * r * .28], [s * .15, 0, 0]), ball('#f8bbd0', [r * .06, r * .4, r * .12], [hx + r * .1, hy + r * .52, s * r * .28], [s * .15, 0, 0])])));
+  if (top === 'catear') add(head, grp(ring('#7e57c2', [r * .62, r * .62, r * .5], [hx + r * .1, hy - r * .25, 0], [0, Math.PI / 2, 0]), ...[-1, 1].flatMap(sg => [cone('#7e57c2', [r * .3, r * .5, r * .3], [hx + r * .12, hy + r * .3, sg * r * .42], [sg * .25, 0, 0]), cone('#f8bbd0', [r * .17, r * .32, r * .17], [hx + r * .26, hy + r * .27, sg * r * .42], [sg * .25, 0, 0])])));
+  if (top === 'witch') add(head, grp(brim('#4a148c', .85), cone('#4a148c', [r * .45, r * 1.25, r * .45], [hx, hy + r * .62, 0], [0, 0, .25]), rod('#fdd835', [r * .47, r * .1, r * .47], [hx, hy + r * .12, 0])));
+  if (top === 'santa') add(head, grp(cone('#e53935', [r * .45, r * 1, r * .45], [hx - r * .1, hy + r * .5, 0], [0, 0, .45]), rod('#fafafa', [r * .5, r * .15, r * .5], [hx, hy + r * .02, 0]), ball('#fafafa', U(r * .15), [hx - r * .55, hy + r * .9, 0])));
+  if (top === 'halo') { const h = ring('#ffd54f', [r * .45, r * .45, r * .3], [hx, hy + r * .6, 0], [Math.PI / 2, 0, 0]); h.material = new THREE.MeshBasicMaterial({color:'#ffe082'}); add(head, h); }
+  if (top === 'straw') add(head, grp(brim('#e6c870', .95), rod('#e6c870', [r * .45, r * .3, r * .45], [hx, hy + r * .15, 0]), rod('#e53935', [r * .47, r * .08, r * .47], [hx, hy + r * .07, 0])));
+  if (top === 'cowboy') add(head, grp(brim('#8d6e63', .9), rod('#795548', [r * .42, r * .38, r * .42], [hx, hy + r * .2, 0]), rod('#3e2723', [r * .44, r * .08, r * .44], [hx, hy + r * .08, 0]), ...[-1, 1].map(s => blk('#8d6e63', [r * .9, r * .05, r * .2], [hx, hy + r * .1, s * r * .82], [s * .4, 0, 0]))));
+  const F = head.userData.face || {ex:r * .9, ey:r * .25, ez:r * .3, nx:r * 1.1, ny:-r * .1}, e = F.ez, gx = F.ex + e * .32;
+  if (face === 'glasses') add(head, grp(...[-1, 1].map(z => blk('#212121', [e * .18, e * .8, e * 1.05], [gx, F.ey, z * F.ez])), blk('#212121', [e * .1, e * .14, e * .9], [gx, F.ey + e * .2, 0])));
+  if (face === 'heartgl') add(head, grp(...[-1, 1].flatMap(z => [ball('#ec407a', [e * .12, e * .32, e * .3], [gx, F.ey + e * .1, z * F.ez - e * .2]), ball('#ec407a', [e * .12, e * .32, e * .3], [gx, F.ey + e * .1, z * F.ez + e * .2]), cone('#ec407a', [e * .4, e * .5, e * .12], [gx, F.ey - e * .25, z * F.ez], [Math.PI, Math.PI / 2, 0])]), blk('#ad1457', [e * .1, e * .12, e * .8], [gx, F.ey + e * .15, 0])));
+  if (face === 'roundgl') add(head, grp(...[-1, 1].map(z => ring('#5d4037', [e * .48, e * .48, e * .6], [gx, F.ey, z * F.ez], [0, Math.PI / 2, 0])), blk('#5d4037', [e * .1, e * .1, e * .55], [gx, F.ey + e * .1, 0])));
+  if (face === 'mustache') add(head, grp(...[-1, 1].map(z => ball('#3e2723', [e * .2, e * .22, e * .6], [F.nx - e * .1, F.ny - e * .45, z * e * .45], [z * .35, 0, 0]))));
+  const body = m; const nx = (head.position.x - r * .5), ny = head.position.y - r * .9, collar = c => ring(c, [r * .72, r * .72, r * .9], [nx + r * .1, ny + r * .1, 0], [0, 0, Math.PI / 2 - .35]);
   if (neck === 'bowtie') add(body, grp(cone('#e53935', [r * .3, r * .35, r * .3], [nx + r * .3, ny, r * .25], [Math.PI / 2, 0, 0]), cone('#e53935', [r * .3, r * .35, r * .3], [nx + r * .3, ny, -r * .25], [-Math.PI / 2, 0, 0]), ball('#b71c1c', U(r * .13), [nx + r * .32, ny, 0])));
   if (neck === 'scarf') add(body, grp(ring('#ef5350', [r * .75, r * .75, r * 1.1], [nx + r * .1, ny + r * .1, 0], [0, 0, Math.PI / 2 - .35]), blk('#ef5350', [r * .25, r * .7, r * .1], [nx + r * .35, ny - r * .35, r * .3])));
-  if (back === 'cape') { const tl = m.userData.tail, hp = head.parent; hp.remove(head); if (tl) tl.parent?.remove(tl); const bb2 = new THREE.Box3().setFromObject(m), top = bb2.max.y / (m.scale.y || 1) + r * .5; hp.add(head); if (tl) m.add(tl); add(body, grp(blk('#c62828', [r * 2.6, r * .08, r * 1.7], [nx - r * 1.2, top - r * .55, 0], [0, 0, .1]), blk('#fdd835', [r * .22, r * .1, r * 1.75], [nx - r * .05, top - r * .45, 0]), blk('#c62828', [r * .8, r * .9, r * .06], [nx - r * 2.3, top - r * .9, r * .82]), blk('#c62828', [r * .8, r * .9, r * .06], [nx - r * 2.3, top - r * .9, -r * .82]))); }
+  if (neck === 'bell') add(body, grp(collar('#e53935'), ball('#fdd835', U(r * .17), [nx + r * .42, ny - r * .18, 0])));
+  if (neck === 'pearl') { const g = grp(collar('#fafafa')); for (let i = 0; i < 3; i++) g.add(ball('#ffffff', U(r * .09), [nx + r * .4, ny - r * .1 - i * r * .14, 0])); add(body, g); }
+  if (neck === 'lei') { const g = new THREE.Group(); for (let i = 0; i < 12; i++) { const a = i / 12 * 6.28; g.add(ball(['#ff7043', '#f06292', '#fff176', '#ba68c8'][i % 4], U(r * .14), [Math.cos(a) * r * .25, Math.cos(a) * r * .68, Math.sin(a) * r * .7])); } g.position.set(nx + r * .15, ny + r * .05, 0); g.rotation.z = .35; add(body, g); }
+  if (back) { const tl = m.userData.tail, hp = head.parent; hp.remove(head); if (tl) tl.parent?.remove(tl); const bb2 = new THREE.Box3().setFromObject(m), tp = bb2.max.y / (m.scale.y || 1) + r * .5; hp.add(head); if (tl) m.add(tl); const bx = nx - r * 1.1;
+    if (back === 'cape') add(body, grp(blk('#c62828', [r * 2.6, r * .08, r * 1.7], [nx - r * 1.2, tp - r * .55, 0], [0, 0, .1]), blk('#fdd835', [r * .22, r * .1, r * 1.75], [nx - r * .05, tp - r * .45, 0]), blk('#c62828', [r * .8, r * .9, r * .06], [nx - r * 2.3, tp - r * .9, r * .82]), blk('#c62828', [r * .8, r * .9, r * .06], [nx - r * 2.3, tp - r * .9, -r * .82])));
+    if (back === 'wings') add(body, grp(...[-1, 1].flatMap(sg => [ball('#ffffff', [r * .75, r * .16, r * 1.0], [bx, tp + r * .15, sg * r * .95], [sg * .55, 0, .35]), ball('#e3f2fd', [r * .5, r * .14, r * .7], [bx - r * .45, tp + r * .35, sg * r * 1.3], [sg * .75, 0, .35])])));
+    if (back === 'bfly') add(body, grp(...[-1, 1].flatMap(s => [ball('#ba68c8', [r * .55, r * .08, r * .7], [bx + r * .15, tp - r * .05, s * r * .75], [s * .6, 0, -.2]), ball('#ffb74d', [r * .4, r * .07, r * .45], [bx - r * .45, tp - r * .15, s * r * .65], [s * .6, 0, .2]), ball('#fff176', U(r * .1), [bx + r * .15, tp + r * .05, s * r * .85])])));
+    if (back === 'bag') add(body, grp(blk('#ff7043', [r * .8, r * .55, r * 1.0], [bx, tp - r * .3, 0]), blk('#e64a19', [r * .82, r * .2, r * 1.02], [bx, tp - r * .05, 0]), blk('#fdd835', [r * .1, r * .14, r * .14], [bx + r * .42, tp - r * .2, 0])));
+  }
 }
+// 打扮照片（離屏渲染一張 3D 寵物照）
+const PSHOT = new Map();
+function petShot(k, on, w = 300, h = 220) {
+  if (!W.renderer || !PETS[k]) return ''; const key = k + JSON.stringify(on || {}) + w; if (PSHOT.has(key)) return PSHOT.get(key);
+  const sc = new THREE.Scene(); sc.background = new THREE.Color('#fff3e0');
+  sc.add(new THREE.HemisphereLight('#ffffff', '#c8b8a0', 2.4)); const dl = new THREE.DirectionalLight('#ffffff', 1.5); dl.position.set(4, 6, 5); sc.add(dl);
+  const m = petModel(k); m.rotation.y = -.25; petAccMesh(m, on); sc.add(m); m.updateMatrixWorld(true);
+  const bb = new THREE.Box3().setFromObject(m), c = bb.getCenter(new THREE.Vector3()), sz = bb.getSize(new THREE.Vector3()), R = Math.max(sz.x, sz.y, sz.z);
+  const cam = new THREE.PerspectiveCamera(30, w / h, .02, 50); cam.position.set(c.x + R * 1.45, c.y + R * .62, c.z + R * 1.05); cam.lookAt(c.x + R * .06, c.y + R * .08, c.z);
+  const rt = new THREE.WebGLRenderTarget(w, h); rt.texture.colorSpace = THREE.SRGBColorSpace;
+  const px = new Uint8Array(w * h * 4); W.renderer.setRenderTarget(rt); W.renderer.render(sc, cam); W.renderer.readRenderTargetPixels(rt, 0, 0, w, h, px); W.renderer.setRenderTarget(null); rt.dispose();
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const x = cv.getContext('2d'), id = x.createImageData(w, h);
+  for (let y = 0; y < h; y++) id.data.set(px.subarray((h - 1 - y) * w * 4, (h - y) * w * 4), y * w * 4);
+  x.putImageData(id, 0, 0); const url = cv.toDataURL(); if (PSHOT.size > 40) PSHOT.clear(); PSHOT.set(key, url); return url;
+}
+if (QS.has('debug')) window.__hfShot = (k, on) => petShot(k, on);
+const shotImg = (k, on, wd = 150) => { const u = petShot(k, on); return u ? `<img src="${u}" alt="" style="width:${wd}px;border-radius:10px;border:2px solid #ffe0b2;display:block;margin:0 auto">` : ''; };
 // 介面
+const stTxt = st => [...new Set(st)].map(s => PSTYLE[s]).join(' ');
 function openPetShow() {
   S.modal = () => {
-    const f = S.my, cid = psOpen(), mine = psEnt(f, cid), cl = psClaimable(f), G = S.psv;
-    let body = `<div class="popbox">🐶 <b>寵物選美</b>（每週四晚上 8 點公布）<br><small>幫寵物打扮、洗香香，報名費 💰${PS_FEE}，村民投票選出最可愛的寵物！<br>🥇 ${rwText(PS_RW[0])}　🥈 ${rwText(PS_RW[1])}　🥉 ${rwText(PS_RW[2])}</small></div>`;
+    const f = S.my, cid = psOpen(), mine = psEnt(f, cid), cl = psClaimable(f), G = S.psv, J = psJudges(cid), TH = psTheme(cid);
+    let body = `<div class="popbox">🐶 <b>寵物選美</b>（每週四晚上 8 點公布）<br><small>幫寵物戴上喜歡的配件打扮好，報名費 💰${PS_FEE}，<b>不比數值</b>，由村民評審投票！<b>每一場的主題和評審都不一樣</b>，評審會照自己的喜好和這場的主題來投票，看看這場要怎麼搭配吧～<br>🥇 ${rwText(PS_RW[0])}　🥈 ${rwText(PS_RW[1])}　🥉 ${rwText(PS_RW[2])}</small></div>`;
     if (cl) {
       if (!G || G.cid !== cl.cid) body += `<div class="sec">🎉 ${hrDate(cl.cid)} 寵物選美開票囉！</div><div class="mgbtn"><button class="b o" data-act="psVote">🗳️ 看村民投票！</button></div>`;
-      else { const mx = Math.max(...cl.fl.map(x => x.v)), k = G.k; body += `<div class="sec">🗳️ 開票中${G.done ? '…結果出爐！' : '…'}</div><div class="psv">${cl.fl.map((x, i) => `<div class="${x.me ? 'me' : ''}"><span class="pn">${G.done ? ['🥇', '🥈', '🥉'][i] || (i + 1) + '.' : '　'} ${esc(x.n)}的${esc(x.pn)}</span><span class="pb"><i style="width:${Math.round(Math.min(x.v, x.v * k) / mx * 100)}%"></i></span><b>${Math.round(x.v * Math.min(1, k))} 票</b></div>`).join('')}</div>`;
-        if (G.done) body += `<div class="mgbtn"><button class="b o" data-act="psClaim">${cl.rw ? `🎁 領獎（第 ${cl.k + 1} 名：${rwText(cl.rw)}）` : `第 ${cl.k + 1} 名，下次加油！（確認）`}</button></div>`; }
+      else { const mx = Math.max(1, ...cl.fl.map(x => x.v)), k = G.k; body += `<div class="sec">🗳️ ${psTheme(cl.cid)[0]} 開票中${G.done ? '…結果出爐！' : '…'}</div><div class="psv">${cl.fl.map((x, i) => `<div class="${x.me ? 'me' : ''}"><span class="pn">${G.done ? ['🥇', '🥈', '🥉'][i] || (i + 1) + '.' : '　'} ${esc(x.n)}的${esc(x.pn)} ${Object.values(x.on).map(id => PACC[id]?.em || '').join('')}</span><span class="pb"><i style="width:${Math.round(x.v * Math.min(1, k) / mx * 100)}%"></i></span><b>${Math.round(x.v * Math.min(1, k))} 票</b></div>`).join('')}</div>`;
+        if (G.done) { const me = cl.fl[cl.k]; body += `<div class="psshots">${cl.fl.slice(0, 4).map((x, i) => `<div class="${x.me ? 'psme' : ''}">${shotImg(x.k, x.on, 120)}<small>${['🥇', '🥈', '🥉'][i] || i + 1 + '.'} ${esc(x.n)}的${esc(x.pn)}</small></div>`).join('')}</div><div class="mgres">${me.fans.length ? `💬 投給${esc(me.pn)}的村民：<br>${me.fans.map(([n, , say]) => `<b>${esc(n)}</b>「${say}」`).join('<br>')}` : '這次沒有評審投給你，看看評審喜歡的風格，下次換個打扮吧！'}</div>`;
+          body += `<div class="mgbtn"><button class="b o" data-act="psClaim">${cl.rw ? `🎁 領獎（第 ${cl.k + 1} 名：${rwText(cl.rw)}）` : `第 ${cl.k + 1} 名，下次加油！（確認）`}</button></div>`; } }
     }
-    body += `<div class="sec">📅 下一場：${hrDate(cid)}（週四）晚上 8 點公布</div>`;
-    if (mine) body += `<div class="mgres">✅ 已經報名：${icon('pet', mine.k)} <b>${petNm(mine.k, S.my)}</b>　${Object.values(mine.on || {}).map(id => PACC[id]?.em).join('')}<br><small>報名時的打扮就是比賽的樣子，等開票吧 🤞</small></div>`;
-    else body += (f.pets || []).filter(k => PETS[k]).map(k => `<div class="item"><div class="pic">${icon('pet', k)}</div><div class="info"><div class="t">${petNm(k, f)} <small>Lv.${petLv(f, k)}</small> ${Object.values(petOn(f, k)).map(id => PACC[id]?.em).join('')}${bathed(f, k) ? ' 🛁' : ''}</div><div class="d">可愛度 <b>${petCharm(f, k)}</b></div></div><div class="acts"><button class="b" data-act="petDress" data-k="${k}">👗 打扮</button><button class="b o" data-act="psEnter" data-k="${k}">報名 💰${PS_FEE}</button></div></div>`).join('') || '<div class="mgres">還沒有寵物，先去商店「寵物」帶一隻回家吧</div>';
+    body += `<div class="sec">📅 下一場：${hrDate(cid)}（週四）晚上 8 點公布</div><div class="mgres">🎭 這場主題：<b>${TH[0]}</b>（${TH[1].map(s => PSTYLE[s]).join('、')}）<br><small>${TH[2]}</small></div><div class="d" style="font-size:12.5px;color:#5d4037;margin-bottom:6px">🧑‍⚖️ 這場的 ${J.length} 位評審：${J.map(([n, l]) => `${esc(n)}（${l.map(s => PSTYLE[s]).join('')}）`).join('、')}</div>`;
+    if (mine) body += `<div class="mgres">${shotImg(mine.k, mine.on, 140)}✅ 已經報名：<b>${petNm(mine.k, S.my)}</b>　${Object.values(mine.on || {}).map(id => PACC[id]?.em).join('')}<br><small>報名時的打扮就是比賽的樣子，等開票吧 🤞</small></div>`;
+    else body += (f.pets || []).filter(k => PETS[k]).map(k => { const on = petOn(f, k); return `<div class="item"><div class="pic" style="width:76px">${shotImg(k, on, 72)}</div><div class="info"><div class="t">${petNm(k, f)} ${Object.values(on).map(id => PACC[id]?.em).join('')}${bathed(f, k) ? ' 🛁' : ''}</div><div class="d">${Object.keys(on).length ? `風格：${stTxt(accSt(on))}` : '還沒打扮'}</div></div><div class="acts"><button class="b" data-act="petDress" data-k="${k}">👗 打扮</button><button class="b o" data-act="psEnter" data-k="${k}">報名 💰${PS_FEE}</button></div></div>`; }).join('') || '<div class="mgres">還沒有寵物，先去商店「寵物」帶一隻回家吧</div>';
     const fr = S.friends.filter(x => psEnt(x.farm, cid));
     body += `<div class="sec">👥 已報名的好友（${fr.length}）</div><div class="d" style="font-size:13px">${fr.length ? fr.map(x => `${esc(dn(x.farm))}的${petNm(psEnt(x.farm, cid).k, x.farm) || '寵物'}`).join('、') : '還沒有好友報名'}<br><small style="color:#8d6e63">報名不到 4 隻的話，村民的寵物也會來比</small></div>`;
     const past = Object.keys(f.pshow?.cl || {}).sort().slice(-3).reverse();
@@ -3907,26 +3971,27 @@ function openPetShow() {
 }
 function openPetDress(k) {
   S.modal = () => {
-    const f = S.my, A = paccView(f), on = petOn(f, k);
-    let body = `<div class="popbox">${icon('pet', k)} <b>${petNm(k, S.my)}</b>　可愛度 <b>${petCharm(f, k)}</b><br><small>配件買一次就能給所有寵物戴（每個位置戴一個）。每天幫寵物洗澡可愛度 +10！</small></div>`;
+    const f = S.my, A = paccView(f), on = petOn(f, k), J = psJudges(psOpen()), cnt = {}; for (const [, l] of J) for (const s of l) cnt[s] = (cnt[s] || 0) + 1;
+    const fav = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]).slice(0, 3).map(s => PSTYLE[s]).join('、'), TH = psTheme(psOpen());
+    let body = `<div class="popbox" style="text-align:center">${shotImg(k, on, 200)}<b>${petNm(k, S.my)}</b> ${Object.values(on).map(id => PACC[id]?.em).join('')}<br><small>${Object.keys(on).length ? `現在的風格：${stTxt(accSt(on))}` : '還沒戴任何配件'}<br>🎭 這場主題：<b>${TH[0]}</b>（${TH[1].map(s => PSTYLE[s]).join('、')}）<br>最多評審喜歡：${fav}<br>配件買一次就能給所有寵物戴（每個位置戴一個）</small></div>`;
     body += `<div class="mgbtn">${bathed(f, k) ? '<button class="b g" disabled>🛁 今天洗過澡了，香噴噴！</button>' : `<button class="b o" data-act="petBath" data-k="${k}">🛁 幫牠洗澡（免費）</button>`}</div>`;
     for (const sl of ['top', 'face', 'neck', 'back']) {
       body += `<div class="sec">${PSLOT_N[sl]}</div>` + Object.entries(PACC).filter(([, P]) => P.slot === sl).map(([id, P]) => { const own = A.own?.[id], wear = on[sl] === id;
-        return `<div class="item"><div class="pic" style="font-size:28px">${P.em}</div><div class="info"><div class="t">${P.n}</div><div class="d">可愛度 +${P.ch}</div></div>${wear ? `<button class="b g" data-act="paccOff" data-k="${k}" data-s="${sl}">脫下</button>` : own ? `<button class="b o" data-act="paccOn" data-k="${k}" data-id="${id}">戴上</button>` : `<button class="b" data-act="paccBuy" data-k="${k}" data-id="${id}">買 💰${P.c}</button>`}</div>`; }).join('');
+        return `<div class="item"><div class="pic" style="font-size:28px">${P.em}</div><div class="info"><div class="t">${P.n}</div><div class="d">風格：${stTxt(P.st)}</div></div>${wear ? `<button class="b g" data-act="paccOff" data-k="${k}" data-s="${sl}">脫下</button>` : own ? `<button class="b o" data-act="paccOn" data-k="${k}" data-id="${id}">戴上</button>` : `<button class="b" data-act="paccBuy" data-k="${k}" data-id="${id}">買 💰${P.c}</button>`}</div>`; }).join('');
     }
     openModal('👗 寵物打扮', body);
   };
   S.modal();
 }
 const paccSet = (k, fn, okMsg) => fast(f => { const A = paccOf(f); const r = fn(f, A); if (r?.abort) return r; return {}; }, () => { if (okMsg) toast(okMsg); Music.sfx('ding'); W.petKey = null; });
-async function paccBuy(k, id) { const P = PACC[id]; await paccSet(k, (f, A) => { if (A.own[id]) return; if (f.coins < P.c) return ab('金幣不夠'); f.coins -= P.c; addTrade(f, `寵物配件${P.n}`, -P.c); A.own[id] = 1; (A.on[k] ??= {})[P.slot] = id; }, `${P.em} 買了${P.n}，已經幫${PETS[k].n}戴上！`); }
+async function paccBuy(k, id) { const P = PACC[id]; await paccSet(k, (f, A) => { if (A.own[id]) return; if (f.coins < P.c) return ab('金幣不夠'); f.coins -= P.c; addTrade(f, `寵物配件${P.n}`, -P.c); A.own[id] = 1; (A.on[k] ??= {})[P.slot] = id; }, `${P.em} 買了${P.n}，已經幫${petNm(k, S.my)}戴上！`); }
 async function paccOn(k, id) { const P = PACC[id]; await paccSet(k, (f, A) => { if (!A.own[id]) return ab('還沒有這個配件'); (A.on[k] ??= {})[P.slot] = id; }, `${P.em} 戴上${P.n}了！`); }
 async function paccOff(k, sl) { await paccSet(k, (f, A) => { if (A.on[k]) delete A.on[k][sl]; }, ''); }
-async function petBath(k) { await paccSet(k, (f, A) => { if (A.bath[k] === today()) return ab('今天洗過了'); A.bath[k] = today(); gainExp(f, 3); }, `🛁 ${petNm(k, S.my)}洗得香噴噴！可愛度 +10（今天有效）`); Music.sparkle(); }
+async function petBath(k) { await paccSet(k, (f, A) => { if (A.bath[k] === today()) return ab('今天洗過了'); A.bath[k] = today(); }, `🛁 ${petNm(k, S.my)}洗得香噴噴！`); Music.sparkle(); }
 async function psEnter(k) {
   let msg = '';
   await fast(f => { f.pshow ??= {}; f.pshow.ent ??= {}; f.pshow.cl ??= {}; const cid = psOpen(); if (f.pshow.ent[cid]) return ab('這週已經報名了'); if (!f.pets.includes(k)) return ab('找不到這隻寵物'); if (f.coins < PS_FEE) return ab('金幣不夠');
-    f.coins -= PS_FEE; addTrade(f, '寵物選美報名費', -PS_FEE); f.pshow.ent[cid] = {k, on:{...petOn(f, k)}, sc:petCharm(f, k), t:now()};
+    f.coins -= PS_FEE; addTrade(f, '寵物選美報名費', -PS_FEE); f.pshow.ent[cid] = {k, on:{...petOn(f, k)}, t:now()};
     const ks = Object.keys(f.pshow.ent).sort(); while (ks.length > 6) { const c = ks.shift(); delete f.pshow.ent[c]; delete f.pshow.cl[c]; }
     msg = `🐶 ${petNm(k, S.my)}報名 ${hrDate(cid)} 寵物選美！`; return {}; }, () => { toast(msg); Music.sfx('ding'); });
 }
@@ -5943,7 +6008,7 @@ function openHelp() {
     <p>💧🌿🐞 <b>照顧</b>：作物會缺水、長草、長蟲，每個問題減產 10%。</p>
     <p>🐮 <b>牧場</b>：${Object.keys(ANIMALS).filter(k => !ANIMALS[k].gone).length} 種動物，吃<b>牧草</b>或<b>飼料</b>才會生產。產品可以賣錢、煮料理。</p>
     <p>🏠 <b>我的房子</b>：農場下面按「🏠 進屋」走進農舍，用「🛋️ 裝潢」買家具，點地板自己決定擺在哪裡；按「🔧 擺設」可以移動、轉方向、收起家具，也能換牆壁地板顏色，獎盃櫃會擺出你拿到的獎盃。去好友家也能進屋參觀！</p>
-    <p>🐶 <b>寵物選美</b>：在「🐾 我的寵物」按「👗 打扮」幫寵物戴配件、洗澡，可愛度越高票越多。每週四晚上 8 點開票（報名費 💰100），前三名有獎金和獎盃！</p>
+    <p>🐶 <b>寵物選美</b>：在「🐾 我的寵物」按「👗 打扮」幫寵物戴配件打扮（24 種配件、7 種風格）。不比數值，每一場主題和 15 位村民評審都不一樣，評審照自己的喜好和這場主題投票，看主題來搭配吧！每週四晚上 8 點開票（報名費 💰100），前三名有獎金和獎盃！</p>
     <p>🏮 <b>夜市</b>：每週一晚上 6 點～12 點開，從「🗺️ 出門」進去。撈金魚、套圈圈、射氣球、彈珠台一次 💰50，分數會變成獎品券換獎品；當晚總分比「夜市高手」，隔天公布前三名！</p>
     <p>🎣 <b>釣魚碼頭</b>：點左上「🗺️ 出門」去碼頭，大家都在同一個碼頭！拋竿後等浮標<b>沉下去</b>再收線，然後<b>按住</b>慢慢收，張力太高要放開一下。釣到的魚放進馬場旁的超大魚缸，村民會來買。每週三有釣魚大賽！</p>
     <p>🐎 <b>馬場</b>：每人有 3 匹馬（2 公 1 母）。每天可以訓練 3 次（用紅蘿蔔或金幣），母馬配種生小馬會遺傳爸媽的天分。每月 15、30 號舉辦<b>賽馬大賽</b>，前一天截止報名，前三名有大獎和獎盃！</p>
