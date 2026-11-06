@@ -80,6 +80,10 @@ button{font-family:inherit;cursor:pointer;border:none}
 .qex{font-size:14px;text-align:left;background:#fff;border-radius:8px;padding:7px 9px;margin-bottom:6px}.qef{font-size:13.5px;font-weight:800;color:#c62828;margin-bottom:6px}
 .wd{display:flex;gap:10px;align-items:center}.wd img{width:112px;height:112px;background:#fff8e1;border-radius:16px;border:2px solid #e0c99d;flex:none}.sws{display:flex;flex-wrap:wrap;gap:6px}.sw{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px #d7b98e;cursor:pointer}.sw.on{box-shadow:0 0 0 3px #ff9800}
 .hats{display:flex;flex-wrap:wrap;gap:6px}.hats .b.on2{background:#ff9800;color:#fff;box-shadow:0 0 0 3px #ffe0b2}
+.tcase{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:linear-gradient(#8d6e63,#6d4c41);padding:10px;border-radius:14px;box-shadow:inset 0 0 0 4px #a1887f}
+.tcup{position:relative;background:linear-gradient(#fffaf0,#f5e6c8);border-radius:10px;padding:8px 4px 6px;text-align:center;box-shadow:0 3px 0 #5d4037}.tcup .cup{font-size:40px;display:block;line-height:1.1}.tcup.r2 .cup{filter:grayscale(1) brightness(1.15)}.tcup.r3 .cup{filter:sepia(1) hue-rotate(-25deg) saturate(1.6) brightness(.85)}
+.tcup .ev{position:absolute;top:4px;right:6px;font-size:18px}.tcup b{display:block;font-size:12px;color:#5d4037}.tcup small{font-size:11px;color:#8d6e63}
+#visitBar .tb{background:#fff3c4;color:#5d4037;padding:6px 10px}
 .mgbox{text-align:center}.mgd{color:#8d6e63;font-size:13px;margin-bottom:10px}.mgtip{color:#8d6e63;font-weight:800;margin:8px 0}.mgres{font-size:16px;line-height:1.7;margin:10px 0;color:#5d4037}.mgres small{color:#8d6e63}.mgbtn{margin:10px 0}
 .mg3{display:flex;justify-content:center;gap:12px;margin:8px 0}.mgi{position:relative;width:88px;height:104px;border-radius:18px;border:3px solid #d7b98e;background:linear-gradient(#fffdf5,#ffeccc);font-size:52px;cursor:pointer;animation:mgfl 2s ease-in-out infinite}
 .mgi:nth-child(2){animation-delay:.3s}.mgi:nth-child(3){animation-delay:.6s}.mgi:disabled{cursor:default;color:inherit}.mgi.sel{border-color:#ff9800;box-shadow:0 0 0 3px #ffe0b2}
@@ -240,6 +244,15 @@ button{font-family:inherit;cursor:pointer;border:none}
 .prize .pic{width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:40px}
 .prize .pic img{width:64px;height:64px}
 .prize b{font-size:18px;color:#5d3a12}
+#travel{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#fff8e1,#ffe0b2 60%,#ffcc80);animation:tvin .25s ease-out}#travel[hidden]{display:none}#travel.out{animation:tvout .35s ease-in forwards}
+@keyframes tvin{from{opacity:0}to{opacity:1}}@keyframes tvout{to{opacity:0}}
+#travel .tv{width:min(86vw,360px);text-align:center}#travel .tvsky{position:relative;height:50px}#travel .cl{position:absolute;font-size:30px;opacity:.85;animation:tvcl 4s linear infinite}#travel .c1{top:0;animation-delay:-1s}#travel .c2{top:18px;font-size:22px;animation-delay:-2.6s}#travel .c3{top:6px;font-size:26px;animation-delay:-3.6s}
+@keyframes tvcl{from{left:110%}to{left:-20%}}
+#travel .tvroad{position:relative;height:120px;border-bottom:10px solid #8d6e63;border-radius:0 0 8px 8px;background:linear-gradient(transparent 82%,#9ccc65 82%);overflow:hidden}
+#travel .tvrun{position:absolute;bottom:4px;left:50%;width:120px;margin-left:-60px;animation:tvhop .36s ease-in-out infinite alternate}#travel .tvrun img{width:120px;height:120px;transform:scaleX(-1)}#travel .dust{position:absolute;left:-14px;bottom:2px;font-size:22px;animation:tvdust .36s linear infinite}
+@keyframes tvhop{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-14px) rotate(4deg)}}@keyframes tvdust{from{opacity:.9;transform:translateX(0) scale(.7)}to{opacity:0;transform:translateX(-26px) scale(1.2)}}
+#travel b{display:block;margin-top:14px;font-size:20px;color:#5d4037;font-weight:900;text-shadow:0 2px 0 #fff}#travel .tvdots{margin-top:6px}#travel .tvdots i{display:inline-block;width:10px;height:10px;margin:0 4px;border-radius:50%;background:#ff9800;animation:tvdot 1s ease-in-out infinite}#travel .tvdots i:nth-child(2){animation-delay:.15s}#travel .tvdots i:nth-child(3){animation-delay:.3s}
+@keyframes tvdot{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-8px);opacity:1}}
 #reqPop{position:fixed;left:50%;top:118px;transform:translateX(-50%);z-index:19;width:min(92vw,360px);background:#fffaf0;border:3px solid #ff9800;border-radius:18px;box-shadow:0 8px 24px rgba(0,0,0,.3);padding:10px 12px;display:flex;gap:10px;align-items:center;animation:rqin .45s cubic-bezier(.2,1.5,.4,1)}
 #reqPop[hidden]{display:none}
 #reqPop .pic{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:20px;flex:none;animation:rqwig 1.2s ease-in-out infinite}
@@ -316,7 +329,7 @@ button{font-family:inherit;cursor:pointer;border:none}
     <div id="ovl"></div>
     <div id="sceneTabs"><button data-act="scene" data-s="farm" class="on">🌾 農場</button><button data-act="scene" data-s="ranch">🐮 牧場</button><button data-act="scene" data-s="fish">🐟 魚塭</button><button data-act="scene" data-s="factory">🏭 工廠</button><button data-act="scene" data-s="green">🌱 溫室<em class="badge" id="bdH"></em></button><button data-act="scene" data-s="town">🏘️ 小鎮<em class="badge" id="bdV"></em></button><button data-act="scene" data-s="temple">🏯 廟宇</button></div>
     <div id="wx"></div>
-    <div id="visitBar" hidden><span>👀 在 <b id="visitName"></b> 的家</span><button data-act="home">🏠 回家</button></div>
+    <div id="visitBar" hidden><span>👀 在 <b id="visitName"></b> 的家</span><button data-act="trophies" class="tb">🏆</button><button data-act="home">🏠 回家</button></div>
     <div id="hereBox" hidden></div>
     <div id="race" hidden><div class="rtitle">🐉 端午龍舟賽</div><div id="raceRank"></div><div id="raceCd"></div><div id="raceLbl"></div><div id="raceEnd" hidden></div></div>
     <div id="hint">🖱️ 拖曳旋轉視角、滾輪縮放</div>
@@ -327,6 +340,7 @@ button{font-family:inherit;cursor:pointer;border:none}
   <nav id="tools"></nav>
 </div>
 
+<div id="travel" hidden><div class="tv"><div class="tvsky"><span class="cl c1">☁️</span><span class="cl c2">☁️</span><span class="cl c3">☁️</span></div><div class="tvroad"><div class="tvrun"><img id="tvChar" alt=""><span class="dust">💨</span></div></div><b id="tvText"></b><div class="tvdots"><i></i><i></i><i></i></div></div></div>
 <div id="modal" hidden><div class="box"><div class="mh"><span id="mt"></span><button data-act="close">✕</button></div><div id="mb"></div></div></div>
 <div id="tut" hidden><div id="tutRing" hidden></div><div id="tutHand" hidden>👆</div><div id="tutCard"><div class="th"><img id="tutAv" alt=""><div><b id="tutT"></b><small id="tutN"></small></div></div><div id="tutD"></div><div class="tb"><button class="b g" id="tutSkip" data-act="tutSkip">跳過教學</button><button class="b o" id="tutNext" data-act="tutNext">下一步 ▶</button></div></div></div>
 <div id="reqPop" hidden></div><div id="toast"></div>
@@ -445,9 +459,12 @@ const CROP_LIST = [
 CROP_LIST.sort((a, b) => a[3] - b[3]);
 const CAT_N = {veg:'🥬 蔬菜', fruit:'🍓 水果', flower:'🌸 花', tree:'🌳 果樹', grass:'🌾 草穀'};
 const CROPS = {};
-for (const [id, n, cat, lv, min, m] of CROP_LIST) {
-  const cost = id === 'grass' ? 5 : Math.round(6 + lv * 5 + min * 0.5);
-  const y = 3;
+// 生長／生產時間：30 分鐘以內不變，超過的縮短，最長 6 小時
+const tShort = min => min <= 30 ? min : Math.min(360, Math.round(30 + (min - 30) * .45));
+const YIELD = 6;   // 一塊地／一池／一批動物產品都是 6 個
+for (const [id, n, cat, lv, min0, m] of CROP_LIST) {
+  const min = tShort(min0), cost = id === 'grass' ? 5 : Math.round(6 + lv * 5 + min * 0.5);
+  const y = YIELD;
   const sell = id === 'grass' ? 1 : Math.max(1, Math.ceil((cost * 1.7 + min * 0.8) / y));
   CROPS[id] = {n, cat, lv, t:min * 60, cost, y, sell, exp:Math.max(1, Math.round(1 + min * 0.06 + lv * 0.8)), m};
 }
@@ -463,7 +480,7 @@ const ANI_LIST = [
   ['ostrich','鴕鳥',14,2200,480,'ostrichegg','鴕鳥蛋',320,5],
 ];
 const ANIMALS = {}, PROD = {};
-for (const [k, n, lv, price, min, prod, pn, sell, eat] of ANI_LIST) { ANIMALS[k] = {n, lv, price, iv:min * 60, prod, exp:Math.round(3 + min * 0.06), eat}; PROD[prod] = {n:pn, sell:Math.max(2, Math.round(sell / 3)), from:k}; }
+for (const [k, n, lv, price, min0, prod, pn, sell, eat] of ANI_LIST) { const min = tShort(min0); ANIMALS[k] = {n, lv, price, iv:min * 60, prod, exp:Math.round(3 + min * 0.06), eat, ...(k === 'horse' ? {gone:1} : {})}; PROD[prod] = {n:pn, sell:Math.max(2, Math.round(sell * min / min0 / YIELD)), from:k}; }
 // 寵物：狗 & 貓
 const PET_LIST = [
   ['dog','小黃狗','dog',3,1500,.25,0,{c:'#d9a35a',c2:'#f3dcb5',ear:'prick',tail:'up',size:.9}],
@@ -536,9 +553,9 @@ const SEA_LIST = [
 ];
 const SEA_CAT = {fish:'🐟 魚', shrimp:'🦐 蝦蟹', shell:'🐚 貝類', squid:'🦑 頭足類'};
 const SEA = {};
-for (const [id, n, cat, lv, min, m] of SEA_LIST) {
-  const cost = Math.round(10 + lv * 7 + min * 0.6);
-  const y = 3;
+for (const [id, n, cat, lv, min0, m] of SEA_LIST) {
+  const min = tShort(min0), cost = Math.round(10 + lv * 7 + min * 0.6);
+  const y = YIELD;
   SEA[id] = {n, cat, lv, t:min * 60, cost, y, sell:Math.max(2, Math.ceil((cost * 1.8 + min * 0.9) / y)), exp:Math.max(2, Math.round(2 + min * 0.07 + lv)), m};
 }
 const MAXPOND = 8, START_POND = 2;
@@ -633,7 +650,7 @@ const _pv = id => CROPS[id]?.sell ?? PROD[id]?.sell ?? SEA[id]?.sell ?? (PROC[id
 const _pl = id => CROPS[id] ? CROPS[id].lv : PROD[id] ? ANIMALS[PROD[id].from].lv : SEA[id] ? SEA[id].lv : PROC[id] ? procCalc(id).lv : 99;
 function procCalc(id) {
   const P = PROC[id];
-  if (P.sell == null) { let v = 0, lv = MACH[P.m].lv; for (const [k, c] of Object.entries(P.need)) { v += _pv(k) * c; lv = Math.max(lv, _pl(k)); } P.sell = Math.max(2, Math.round((v * 1.45 + P.t / 60 * .6 + 5) / PROC_N)); P.lv = lv; P.exp = Math.max(2, Math.round(2 + P.t / 60 * .18)); }
+  if (P.sell == null) { let v = 0, lv = MACH[P.m].lv; for (const [k, c] of Object.entries(P.need)) { v += _pv(k) * c; lv = Math.max(lv, _pl(k)); } P.sell = Math.max(3, Math.round((v * 2 + P.t / 60 * .5 + 10) / PROC_N)); P.lv = lv; P.exp = Math.max(2, Math.round(2 + P.t / 60 * .18)); }
   return P;
 }
 Object.keys(PROC).forEach(procCalc);
@@ -745,6 +762,7 @@ const FESTS = [
     r:[{n:'聖誕餅乾', em:'🍪', need:{wheat:3, egg:2}}, {n:'聖誕大蛋糕', em:'🎂', need:{strawberry:4, egg:3, wheat:3, milk:2}}]},
 ];
 const FEST_R = {}; for (const F of FESTS) F.r.forEach((R, k) => { R.id = F.id + k; R.f = F.id; FEST_R[R.id] = R; });
+const TASK_RANGE = {plant:[3, 10], harvest:[2, 6], steal:[1, 3], help:[2, 5], feed:[1, 3], collect:[3, 12], sell:[1, 3], clean:[1, 3], visit:[1, 3], order:[1, 2], gift:[1, 2], feedf:[1, 2], fish:[1, 3], gacha:[1, 1], proc:[2, 6], pet:[1, 3], chat:[1, 1]};
 const TASKS = {
   plant:{n:'播種 5 次', need:5, c:50, e:5}, harvest:{n:'收成 3 塊地', need:3, c:60, e:10},
   steal:{n:'去好友家偷 2 次', need:2, c:80, e:5}, help:{n:'幫好友照顧作物 3 次', need:3, c:50, e:10},
@@ -762,7 +780,7 @@ const WHEEL = [
   {t:'30經驗', e:30, w:12, col:'#90caf9'}, {t:'200金幣', c:200, w:10, col:'#ef9a9a'},
   {t:'種子包', seed:3, w:10, col:'#c5e1a5'}, {t:'500金幣', c:500, w:5, col:'#ffd54f'},
 ];
-const MAXP = 18, START_P = 6, PER_A = 3, MAX_STOCK = 9, MAX_POOP = 6;
+const MAXP = 18, START_P = 6, PER_A = YIELD, MAX_STOCK = YIELD * 3, MAX_POOP = 6;
 const FERT_PRICE = 30, FEED_PRICE = 5, CAUGHT_COINS = 50, CAUGHT_ITEMS = 10;
 const plotPrice = n => 500 + (n - 7) * 400;
 const plotLv = n => n - 5;
@@ -819,7 +837,11 @@ function daily(f) { if (!f.daily || f.daily.day !== today()) f.daily = {day:toda
 const dailyView = f => f && f.daily && f.daily.day === today() ? {t:{}, cl:[], vis:[], ...f.daily} : {t:{}, cl:[], vis:[], help:0, prank:0, bonus:false, spin:false};
 function bump(f, k, n = 1) { const d = daily(f); d.t[k] = (d.t[k] || 0) + n; f.st ??= {}; f.st[k] = (f.st[k] || 0) + n; }
 function addLog(f, m) { f.log = f.log || []; f.log.push({t:now(), m}); if (f.log.length > 40) f.log = f.log.slice(-40); }
-function todayTasks(uid) { const pool = Object.keys(TASKS); let h = hashStr(today() + uid); const out = []; while (out.length < 5) { h = (Math.imul(h, 1103515245) + 12345) >>> 0; out.push(pool.splice(h % pool.length, 1)[0]); } return out; }
+const _rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+function todayTasks(uid) { const pool = Object.keys(TASKS), R = _rng(hashStr('task:' + today() + ':' + uid)), out = []; while (out.length < 5) out.push(pool.splice(Math.floor(R() * pool.length), 1)[0]);
+  for (const k of out) { const [a, b] = TASK_RANGE[k] || [TASKS[k].need0 ?? TASKS[k].need, TASKS[k].need0 ?? TASKS[k].need]; TASKS[k].need0 ??= TASKS[k].need; TASKS[k].c0 ??= TASKS[k].c; TASKS[k].e0 ??= TASKS[k].e; const n = a + Math.floor(R() * (b - a + 1)), k2 = n / TASKS[k].need0;
+    TASKS[k].need = n; TASKS[k].c = Math.round(TASKS[k].c0 * (.6 + .4 * k2)); TASKS[k].e = Math.max(2, Math.round(TASKS[k].e0 * (.6 + .4 * k2))); TASKS[k].n = TASKS[k].n.replace(/\d+/, n); }
+  return out; }
 
 const growMs = c => CROPS[c].t * 1000 / SPEED;
 const totalMs = p => growMs(p.c) - (p.f || 0);
@@ -1036,7 +1058,7 @@ function givePrize(f, p) {
 function dexAdd(f, id, n = 1) { if (!id) return; f.dex ??= {}; f.dex[id] = (f.dex[id] || 0) + n; }
 const dexOk = k => !!(CROPS[k] || PROD[k] || SEA[k] || PROC[k] || (k.startsWith('r:') && RECIPES[k.slice(2)]));
 const dexCount = f => Object.keys(f.dex || {}).filter(dexOk).length + (f.pets || []).filter(k => PETS[k]).length;
-const DEX_TOTAL = () => Object.keys(CROPS).length + Object.keys(PROD).length + Object.keys(SEA).length + Object.keys(PROC).length + Object.keys(RECIPES).length + Object.keys(PETS).length;
+const DEX_TOTAL = () => Object.keys(CROPS).length + Object.keys(PROD).filter(k => k !== 'manure').length + Object.keys(SEA).length + Object.keys(PROC).length + Object.keys(RECIPES).length + Object.keys(PETS).length;
 const statOf = (f, k) => k === 'lv' ? levelOf(f.exp).L : k === 'dex' ? dexCount(f) : (f.st || {})[k] || 0;
 const achClaimable = f => ACH.reduce((n, A) => { const got = (f.ach || {})[A.id] || 0; return n + A.tiers.filter((t, i) => i >= got && statOf(f, A.id) >= t).length; }, 0);
 
@@ -1079,7 +1101,7 @@ function coopOffers(uid, L) {
   return out;
 }
 const coopValue = c => Object.entries(c.need).reduce((a, [id, n]) => a + itemInfo(id).sell * n, 0);
-function coopReward(c, uid) { const V = coopValue(c); let mine = 0; for (const [id, n] of Object.entries(c.by?.[uid] || {})) mine += itemInfo(id).sell * n; const sh = V ? mine / V : 0; return {c:Math.round(100 + V * .5 + V * sh * 1.2), e:Math.round(20 + V * .04 + V * sh * .06), sh, mine}; }
+function coopReward(c, uid) { const V = coopValue(c); let mine = 0; for (const [id, n] of Object.entries(c.by?.[uid] || {})) mine += itemInfo(id).sell * n; const sh = V ? mine / V : 0; return {c:Math.round(60 + V * .3 + V * sh * .7), e:Math.round(10 + V * .02 + V * sh * .03), sh, mine}; }
 const coopLeft = c => Object.entries(c.need).map(([id, n]) => [id, n - (c.got?.[id] || 0)]).filter(([, n]) => n > 0);
 const coopMine = (c, uid) => Object.keys(c.by?.[uid] || {}).length > 0;
 const coopLive = c => !c.done && now() < c.end;
@@ -1239,7 +1261,8 @@ function normalize(f) {
   f.nick ??= ''; f.feed ??= 0; f.pets ??= []; f.pet ??= '';
   if (f.dog && !f.pets.includes('dog')) { f.pets.push('dog'); if (!f.pet) f.pet = 'dog'; }
   f.pets = f.pets.filter(k => PETS[k]); if (f.pet && !PETS[f.pet]) f.pet = f.pets[0] || '';
-  f.ranch ??= {animals:[], poop:0, pt:0}; f.ranch.animals = (f.ranch.animals || []).filter(a => ANIMALS[a.k]); f.ranch.poop ??= 0;
+  f.ranch ??= {animals:[], poop:0, pt:0}; { const hs = (f.ranch.animals || []).filter(a => a.k === 'horse').length; if (hs) { f.coins = (f.coins || 0) + hs * 750; (f.log ??= []).push({t:now(), m:`🐴 牧場的馬搬到新的「馬場」囉！原本的 ${hs} 匹馬退還 💰${hs * 750}`}); } }
+  f.ranch.animals = (f.ranch.animals || []).filter(a => ANIMALS[a.k] && !ANIMALS[a.k].gone); f.ranch.poop ??= 0;
   f.seeds ??= {}; f.wh ??= {}; f.friends ??= []; f.log ??= []; f.orders ??= []; f.ordersDone ??= 0;
   f.orders = f.orders.filter(o => RECIPES[o.r]); f.orders.forEach(o => { o.got ??= {}; });
   f.gacha ??= Math.max(0, levelOf(f.exp).L - 1); f.fry ??= {};
@@ -1254,7 +1277,7 @@ function normalize(f) {
 const petOf = f => f && f.pet && PETS[f.pet] && !f.petx?.[f.pet]?.ex ? f.pet : '';
 const itemLv = id => CROPS[id] ? CROPS[id].lv : PROD[id] ? ANIMALS[PROD[id].from].lv : SEA[id] ? SEA[id].lv : PROC[id] ? PROC[id].lv : 99;
 const recipeOk = (r, L) => Object.keys(RECIPES[r].need).every(id => itemLv(id) <= L);
-function recipeReward(r, need = RECIPES[r].need) { let v = 0; for (const [id, n] of Object.entries(need)) v += itemInfo(id).sell * n; return {c:Math.round(v * 2.2 + 30), e:Math.round(8 + v * 0.15)}; }
+function recipeReward(r, need = RECIPES[r].need) { let v = 0; for (const [id, n] of Object.entries(need)) v += itemInfo(id).sell * n; return {c:Math.round(v * 1.5 + 20), e:Math.round(5 + v * 0.06)}; }
 const orderLeft = o => Object.entries(RECIPES[o.r].need).map(([id, n]) => [id, n - ((o.got || {})[id] || 0)]).filter(([, n]) => n > 0);
 function fillOrders(f) {
   const L = levelOf(f.exp).L, slots = orderSlots(L); let ch = false;
@@ -2121,7 +2144,7 @@ function thumbURL(kind, id) {
   } catch (e) { console.warn(e); THUMB[key] = ''; }
   return THUMB[key];
 }
-if (QS.has('debug')) window.__hf = {THREE, vehModel:k => vehModel(k), riderModel:(...a) => riderModel(...a), charModel:(...a) => charModel(...a), get pumpKg() { return pumpKg; }, get ghXZ() { return ghXZ; }, EXP, expLoot, stallSim, VIL, DECO, DECO_CELLS, vilToday, festSched, act:(k, d = {}) => ACT[k](d), clickHit:h => clickHit(h), riddleToday, thumbURL, PETS, ANIMALS, CROPS, PROD, SEA, PROC, MACH, activeFests, weather, twNow, scr(kind, i) { let p; if (kind === 'mach') { const [x, z] = facXZ(i); p = new THREE.Vector3(x, 1, z); } else if (kind === 'pet') p = W.pets[i].m.position.clone().setY(.5); else if (kind === 'plot') { const [x, z] = plotXZ(i); p = new THREE.Vector3(x, .4, z); } else if (kind === 'ani') p = W.animals[i].g.position.clone().setY(.5); else if (kind === 'poop') p = new THREE.Vector3(POOP_XZ[i][0], .2, POOP_XZ[i][1]); else if (kind === 'pond') { const [x, z] = pondXZ(i); p = new THREE.Vector3(x, .45, z); } else p = new THREE.Vector3(TROUGH_XZ[0], .5, TROUGH_XZ[1]); p.project(W.camera); const r = W.renderer.domElement.getBoundingClientRect(); return [r.left + (p.x * .5 + .5) * r.width, r.top + (-p.y * .5 + .5) * r.height]; }, S:() => S, get W() { return W; }};
+if (QS.has('debug')) window.__hf = {CROPS, PROC, PROD, SEA, RECIPES, recipeReward, todayTasks, TASKS, THREE, vehModel:k => vehModel(k), riderModel:(...a) => riderModel(...a), charModel:(...a) => charModel(...a), get pumpKg() { return pumpKg; }, get ghXZ() { return ghXZ; }, EXP, expLoot, stallSim, VIL, DECO, DECO_CELLS, vilToday, festSched, act:(k, d = {}) => ACT[k](d), clickHit:h => clickHit(h), riddleToday, thumbURL, PETS, ANIMALS, CROPS, PROD, SEA, PROC, MACH, activeFests, weather, twNow, scr(kind, i) { let p; if (kind === 'mach') { const [x, z] = facXZ(i); p = new THREE.Vector3(x, 1, z); } else if (kind === 'pet') p = W.pets[i].m.position.clone().setY(.5); else if (kind === 'plot') { const [x, z] = plotXZ(i); p = new THREE.Vector3(x, .4, z); } else if (kind === 'ani') p = W.animals[i].g.position.clone().setY(.5); else if (kind === 'poop') p = new THREE.Vector3(POOP_XZ[i][0], .2, POOP_XZ[i][1]); else if (kind === 'pond') { const [x, z] = pondXZ(i); p = new THREE.Vector3(x, .45, z); } else p = new THREE.Vector3(TROUGH_XZ[0], .5, TROUGH_XZ[1]); p.project(W.camera); const r = W.renderer.domElement.getBoundingClientRect(); return [r.left + (p.x * .5 + .5) * r.width, r.top + (-p.y * .5 + .5) * r.height]; }, S:() => S, get W() { return W; }};
 const icon = (kind, id) => { const u = thumbURL(kind, id); return u ? `<img src="${u}" alt="">` : '🌱'; };
 const itemIcon = id => icon(CROPS[id] ? 'crop' : SEA[id] ? 'sea' : PROC[id] ? 'proc' : 'prod', id);
 
@@ -2835,7 +2858,12 @@ const pumpResWk = () => dowOf() === 6 ? wkOf() : wkOf() - 1;   // 最近一次�
 const pumpMs = () => PUMP_H * 3600000 / SPEED;
 const pumpMature = q => q && q.s === 'grow' && now() >= q.p + pumpMs();
 function pumpKg(q, final) { if (!q || q.s !== 'grow') return 0; const R = seededR(strHash('pump:' + q.p)), luck = Math.floor(R() * 31), pr = final ? 1 : Math.min(1, (now() - q.p) / pumpMs()); return Math.round((40 + (q.care || 0) + luck) * (.15 + .85 * pr) * 10) / 10; }
-const PUMP_RW = [{c:500, fert:10}, {c:500, fert:10}, {c:500, fert:10}, {c:100, fert:5}];
+// ----- 比賽獎勵＆獎盃 -----
+const EVENTS = {pumpkin:{n:'巨大南瓜大賽', em:'🎃'}, horse:{n:'賽馬大賽', em:'🐎'}, fishing:{n:'釣魚大賽', em:'🎣'}, market:{n:'夜市高手', em:'🏮'}, petshow:{n:'寵物選美', em:'🐶'}, bingo:{n:'賓果', em:'🎱'}};
+const TROPHY_N = {1:'冠軍獎盃', 2:'第二名獎盃', 3:'第三名獎盃'};
+const rwText = rw => [rw.c ? `💰${rw.c}` : '', rw.fert ? `🧪化肥×${rw.fert}` : '', rw.tr ? `🏆${TROPHY_N[rw.tr]}` : ''].filter(Boolean).join('＋');
+function giveRw(f, rw, ev, label) { if (rw.c) f.coins += rw.c; if (rw.fert) f.fert = (f.fert || 0) + rw.fert; if (rw.tr) { (f.trophy ??= []).push({e:ev, r:rw.tr, t:now(), w:label || ''}); if (f.trophy.length > 80) f.trophy = f.trophy.slice(-80); } if (rw.c) addTrade(f, `${EVENTS[ev]?.n || ''}獎金`, rw.c); }
+const PUMP_RW = [{c:2000, tr:1}, {c:1000, tr:2}, {c:500, tr:3}];
 const pumpEnt = (f, w) => greenView(f).ent?.[w] || 0;
 function pumpRank(w) { const all = [{uid:S.uid, n:myName(), kg:pumpEnt(S.my, w)}, ...S.friends.map(x => ({uid:x.uid, n:dn(x.farm), kg:pumpEnt(x.farm, w)}))].filter(x => x.kg > 0); return all.sort((a, b) => b.kg - a.kg); }
 function pumpClaimable(f) { const w = pumpResWk(), G = greenView(f); if (!G.ent?.[w] || (G.cl || 0) >= w) return null; const k = pumpRank(w).findIndex(x => x.uid === S.uid); return k >= 0 && PUMP_RW[k] ? {w, k, rw:PUMP_RW[k]} : null; }
@@ -3037,7 +3065,7 @@ function clickGh(i) {
 function openPump() {
   S.modal = () => {
     const own = isOwn(), f = own ? S.my : S.view, G = greenView(f), q = G.pump || {s:'empty'}, wk = wkOf(), open = pumpOpen(), L = levelOf(S.my.exp).L, mine = greenView(S.my);
-    let body = `<div class="popbox">🎃 <b>巨大南瓜大賽</b>（每週一次）<br><small>週日～週五挑一顆自己種的巨大南瓜報名，<b>週五晚上 12 點截止，週六公布排名</b>，在好友之間比誰最重！<br>第 1～3 名：💰500＋🧪化肥×10 · 第 4 名：💰100＋🧪化肥×5 · 其他名次沒有獎勵</small></div>`;
+    let body = `<div class="popbox">🎃 <b>巨大南瓜大賽</b>（每週一次）<br><small>週日～週五挑一顆自己種的巨大南瓜報名，<b>週五晚上 12 點截止，週六公布排名</b>，在好友之間比誰最重！<b>看不到好友的南瓜有多重</b>，公布時才知道名次 🤫<br>第 1 名 💰2000＋🏆冠軍獎盃 · 第 2 名 💰1000＋🏆第二名獎盃 · 第 3 名 💰500＋🏆第三名獎盃</small></div>`;
     if (own) {
       if (q.s !== 'grow') body += L < PUMP_LV ? `<div class="empty">Lv.${PUMP_LV} 才能參加南瓜大賽</div>` : `<div class="mgbtn"><button class="b o" data-act="pumpPlant">🎃 種一顆巨大南瓜（${PUMP_COST}💰，${fmtDur(pumpMs())}長大）</button></div>`;
       else {
@@ -3052,9 +3080,9 @@ function openPump() {
     }
     if (open) body += `<div class="sec">📝 本週比賽（${wkRange(wk)}）</div><div class="mgres">${own ? (mine.ent?.[wk] ? `你報名了 <b>${mine.ent[wk]} kg</b> 的南瓜（週五晚上 12 點前都可以換）` : '你還沒報名喔！') : ''}<br><small>已經有 ${pumpRank(wk).length} 人報名 · 週五晚上 12 點截止，週六公布排名</small></div>`;
     const rw = pumpResWk(), rk = pumpRank(rw);
-    body += `<div class="sec">🏆 ${dowOf() === 6 ? '本週' : '上週'}排名（${wkRange(rw)}）</div>` + (rk.length ? rk.map((x, k) => `<div class="log"><span style="width:32px">${['🥇', '🥈', '🥉'][k] || k + 1}</span><span style="flex:1">${esc(x.n)}${x.uid === S.uid ? '（我）' : ''}</span><b>${x.kg} kg</b>${PUMP_RW[k] ? `<small style="margin-left:6px;color:#e65100">💰${PUMP_RW[k].c}＋化肥×${PUMP_RW[k].fert}</small>` : ''}</div>`).join('') : '<div class="empty">這一週沒有人報名</div>');
+    body += `<div class="sec">🏆 ${dowOf() === 6 ? '本週' : '上週'}排名（${wkRange(rw)}）</div>` + (rk.length ? rk.map((x, k) => `<div class="log"><span style="width:32px">${['🥇', '🥈', '🥉'][k] || k + 1}</span><span style="flex:1">${esc(x.n)}${x.uid === S.uid ? '（我）' : ''}</span><b>${x.uid === S.uid ? x.kg + ' kg' : '？？ kg'}</b>${PUMP_RW[k] ? `<small style="margin-left:6px;color:#e65100">${rwText(PUMP_RW[k])}</small>` : ''}</div>`).join('') : '<div class="empty">這一週沒有人報名</div>');
     const cl = own && pumpClaimable(S.my);
-    if (cl) body += `<div class="mgbtn"><button class="b o" data-act="pumpClaim">🎁 領第 ${cl.k + 1} 名獎勵（💰${cl.rw.c}＋化肥×${cl.rw.fert}）</button></div>`;
+    if (cl) body += `<div class="mgbtn"><button class="b o" data-act="pumpClaim">🎁 領第 ${cl.k + 1} 名獎勵（${rwText(cl.rw)}）</button></div>`;
     if (mine.rec) body += `<div class="d" style="text-align:center;margin-top:6px">🏅 我的最重紀錄：${mine.rec} kg</div>`;
     openModal('🎃 巨大南瓜大賽', body);
   };
@@ -3084,8 +3112,8 @@ async function pumpEnter(i) {
 }
 async function pumpClaim() {
   const cl = pumpClaimable(S.my); if (!cl) return toast('沒有可以領的獎勵');
-  await fast(f => { const G = greenOf(f); if ((G.cl || 0) >= cl.w) return ab('已經領過了'); G.cl = cl.w; f.coins += cl.rw.c; f.fert = (f.fert || 0) + cl.rw.fert; addLog(f, `🏆 南瓜大賽第 ${cl.k + 1} 名！獎勵 💰${cl.rw.c}＋化肥×${cl.rw.fert}`); addTrade(f, `南瓜大賽第 ${cl.k + 1} 名`, cl.rw.c); return {}; },
-    () => { toast(`🏆 南瓜大賽第 ${cl.k + 1} 名！💰${cl.rw.c}＋化肥×${cl.rw.fert}`); Music.sfx('coin'); Music.sparkle(); });
+  await fast(f => { const G = greenOf(f); if ((G.cl || 0) >= cl.w) return ab('已經領過了'); G.cl = cl.w; giveRw(f, cl.rw, 'pumpkin', wkRange(cl.w)); addLog(f, `🏆 南瓜大賽第 ${cl.k + 1} 名！獎勵 ${rwText(cl.rw)}`); return {}; },
+    () => { toast(`🏆 南瓜大賽第 ${cl.k + 1} 名！${rwText(cl.rw)}`); Music.sfx('coin'); Music.sparkle(); });
 }
 
 function syncFest() {
@@ -3771,7 +3799,7 @@ const myName = () => dn(S.my);
 function toast(m) { const d = document.createElement('div'); d.textContent = m; $('#toast').appendChild(d); setTimeout(() => d.remove(), 2800); while ($('#toast').children.length > 3) $('#toast').firstChild.remove(); }
 const fxPlot = (i, text, color, dy = 0) => { const [x, z] = plotXZ(i); fx3(x, 1.4 + dy, z, text, color); };
 const fxAni = (i, text, color, dy = 0) => { const A = W.animals[i]; const p = A ? A.g.position : new THREE.Vector3(...aniHome(i), 0); fx3(p.x, 1.6 + dy, p.z, text, color); };
-function lvToast(up) { if (up) { toast(`🎉 升級了！現在是 Lv.${up}`); Music.sfx('coin'); Voice.speak(`升級囉！耶～`, myGender()); const nx = Object.values(CROPS).filter(c => c.lv === up).map(c => c.n).concat(Object.values(ANIMALS).filter(a => a.lv === up).map(a => a.n)).concat(Object.values(PETS).filter(p => p.lv === up).map(p => p.n)); if (nx.length) toast(`🔓 解鎖：${nx.slice(0, 8).join('、')}`); } }
+function lvToast(up) { if (up) { toast(`🎉 升級了！現在是 Lv.${up}`); Music.sfx('coin'); Voice.speak(`升級囉！耶～`, myGender()); const nx = Object.values(CROPS).filter(c => c.lv === up).map(c => c.n).concat(Object.values(ANIMALS).filter(a => a.lv === up && !a.gone).map(a => a.n)).concat(Object.values(PETS).filter(p => p.lv === up).map(p => p.n)); if (nx.length) toast(`🔓 解鎖：${nx.slice(0, 8).join('、')}`); } }
 
 /* ================= 畫面更新 ================= */
 function orderReady(f) { return (f.orders || []).filter(o => orderLeft(o).some(([id]) => (f.wh[id] || 0) > 0)).length; }
@@ -4237,7 +4265,7 @@ function openShop(tab = 'seed') {
     else if (tab === 'sea') body += `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">共 ${Object.keys(SEA).length} 種魚蝦貝類，養大之後可以賣，也能煮成海鮮料理完成訂單！魚池 ${f.fish.n}/${MAXPOND} 個。</p>` + fryRows('shop');
     else if (tab === 'ani') {
       body += `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">牧場空位：${cnt}/${cap}（升級可以養更多）。動物要吃牧草或飼料，吃飽才會生產；產品好友也能來偷！</p>`;
-      body += Object.entries(ANIMALS).map(([k, A]) => { const lock = Lv < A.lv; return `<div class="item ${lock ? 'dim' : ''}"><div class="pic">${lock ? '🔒' : icon('ani', k)}</div><div class="info"><div class="t">${A.n}</div><div class="d">每 ${fmtDur(A.iv * 1000 / SPEED)} 產 ${PER_A} 個${PROD[A.prod].n}（每個 ${PROD[A.prod].sell}💰）<br>每次吃 ${A.eat} 份飼料 · +${A.exp} 經驗/個</div></div>
+      body += Object.entries(ANIMALS).filter(([, A]) => !A.gone).map(([k, A]) => { const lock = Lv < A.lv; return `<div class="item ${lock ? 'dim' : ''}"><div class="pic">${lock ? '🔒' : icon('ani', k)}</div><div class="info"><div class="t">${A.n}</div><div class="d">每 ${fmtDur(A.iv * 1000 / SPEED)} 產 ${PER_A} 個${PROD[A.prod].n}（每個 ${PROD[A.prod].sell}💰）<br>每次吃 ${A.eat} 份飼料 · +${A.exp} 經驗/個</div></div>
         <div class="acts">${lock ? `<button class="b g" disabled>Lv.${A.lv} 解鎖</button>` : cnt >= cap ? '<button class="b g" disabled>牧場滿了</button>' : `<button class="b o" data-act="buyAnimal" data-k="${k}">買 ${A.price}💰</button>`}</div></div>`; }).join('');
       if (cnt) body += `<div class="sec">🐾 我的動物（賣掉可拿回一半的錢）</div>` + f.ranch.animals.map((a, i) => `<div class="item"><div class="pic">${icon('ani', a.k)}</div><div class="info"><div class="t">${ANIMALS[a.k].n} #${i + 1}</div><div class="d">${isHungry(a) ? '🍽️ 餓了' : `飽足 ${fmtDur(a.fu - now())}`} · 產品 ${aView(a).s}</div></div><div class="acts"><button class="b g" data-act="sellAnimal" data-i="${i}">賣掉 ${Math.floor(ANIMALS[a.k].price / 2)}💰</button></div></div>`).join('');
     } else if (tab === 'pet') {
@@ -4304,7 +4332,7 @@ function openOrders() {
 /* ----- 升級抽抽樂 ----- */
 function rollGacha(f) {
   const L = levelOf(f.exp).L, okCrops = Object.keys(CROPS).filter(k => CROPS[k].lv <= L), okSea = Object.keys(SEA).filter(k => SEA[k].lv <= L);
-  const pets = f.pets.length >= PET_MAX ? [] : Object.keys(PETS).filter(k => PETS[k].lv <= L + 2 && !f.pets.includes(k)), anis = Object.keys(ANIMALS).filter(k => ANIMALS[k].lv <= L);
+  const pets = f.pets.length >= PET_MAX ? [] : Object.keys(PETS).filter(k => PETS[k].lv <= L + 2 && !f.pets.includes(k)), anis = Object.keys(ANIMALS).filter(k => ANIMALS[k].lv <= L && !ANIMALS[k].gone);
   const table = [['coin', 30], ['fert', 12], ['feed', 12], ['seed', 14], ['fry', okSea.length ? 12 : 0], ['exp', 10], ['ani', anis.length && f.ranch.animals.length < ranchCap(L) ? 5 : 0], ['pet', pets.length ? 3 : 0], ['big', 2]];
   let x = Math.random() * table.reduce((a, b) => a + b[1], 0), kind = 'coin'; for (const [k, w] of table) { if (x < w) { kind = k; break; } x -= w; }
   if (kind === 'coin') { const n = Math.round(100 + L * 30 + Math.random() * L * 20); f.coins += n; return {t:`💰 ${n} 金幣`, ic:'💰'}; }
@@ -4536,13 +4564,13 @@ function openHelp() {
     <p>🖱️ <b>3D 視角</b>：拖曳可以旋轉、滾輪或雙指可以縮放，左上角切換「農場／牧場／魚塭／工廠」。</p>
     <p>🌱 <b>種菜</b>：共 ${Object.keys(CROPS).length} 種作物，有蔬菜、水果、花、果樹、草穀。選「播種」挑種子，點田地就能種。✋「手」會自動收成、翻地、播種或照顧作物。</p>
     <p>💧🌿🐞 <b>照顧</b>：作物會缺水、長草、長蟲，每個問題減產 10%。</p>
-    <p>🐮 <b>牧場</b>：${Object.keys(ANIMALS).length} 種動物，吃<b>牧草</b>或<b>飼料</b>才會生產。產品可以賣錢、煮料理；馬會產有機肥料。</p>
+    <p>🐮 <b>牧場</b>：${Object.keys(ANIMALS).length} 種動物，吃<b>牧草</b>或<b>飼料</b>才會生產。產品可以賣錢、煮料理。</p>
     <p>🐟 <b>魚塭</b>：${Object.keys(SEA).length} 種魚蝦貝類（吳郭魚、鮭魚、鮪魚、龍蝦、帝王蟹、牡蠣、海膽、章魚…），放魚苗養大就能撈。水面有垃圾記得撈掉。</p>
     <p>🍳 <b>料理訂單</b>：村民會點菜，把需要的材料<b>慢慢收集、分次交貨</b>，交齊就能拿大獎勵，不能用錢買。</p>
     <p>🏭 <b>加工廠</b>：蓋${MACH_KEYS.length}種機器（磨坊、果汁機、果醬坊、烘焙坊、乳品坊、罐頭工廠…），把原料做成 ${Object.keys(PROC).length} 種加工品，更值錢，也能完成更多料理訂單。好友可以來幫你加速。</p>
     <p>☀️🌙 <b>日夜與天氣</b>：跟著台灣時間變白天黑夜。<b>下雨會自動澆水</b>；晚上 7 點後偷菜每次多 1 個，但狗貓晚上比較警覺。</p>
     <p>🧑‍🌾 <b>主角</b>：可以選男生或女生（個人資料可更換），登入時主角會跟你揮手打招呼。</p>
-    <p>🌾 <b>收成量</b>：每塊田、每次動物生產、每池海鮮、每次加工都是 3 個；施肥有 40% 機率大豐收雙倍。倉庫可以自己決定要賣幾個。</p>
+    <p>🌾 <b>收成量</b>：每塊田、每次動物生產、每池海鮮都是 6 個，每次加工 3 個；施肥有 40% 機率大豐收雙倍。倉庫可以自己決定要賣幾個。</p>
     <p>🐾 <b>寵物養成</b>：每人最多養 2 隻，想換品種要先賣掉一隻（半價）。抓到小偷時寵物會追著小偷跑！摸摸頭、餵寵物零食加親密度。Lv.3 每天叼禮物，Lv.5 狗會自動收成、貓會自動撈垃圾抓蟲，Lv.8 還有更多技能。</p>
     <p>🎉 <b>節日活動</b>：春節、元宵、端午、中秋、萬聖節、聖誕節…每年自動舉辦，有節日布置、禮包、雙倍獎勵的節日訂單和加成。</p>
     <p>🤝 <b>合作大訂單</b>：發起超大訂單邀好友一起交貨，3 天內完成大家都有獎，交越多拿越多。</p>
@@ -4574,11 +4602,22 @@ function wxInfo() {
 }
 
 /* ----- 更多選單 ----- */
+function openTrophies() {
+  S.modal = () => {
+    const own = isOwn(), f = own ? S.my : S.view, T = (f?.trophy || []).slice().reverse(), cnt = r => T.filter(x => x.r === r).length;
+    let body = `<div class="popbox">🏆 <b>${own ? '我的' : esc(dn(f)) + '的'}獎盃櫃</b><br><small>參加南瓜大賽、賽馬、釣魚大賽、夜市高手、寵物選美拿到前三名，就會得到獎盃擺在這裡，好友來玩都看得到！</small></div>
+      <div class="stats"><div><b>${cnt(1)}</b>🏆 冠軍</div><div><b>${cnt(2)}</b>🥈 第二名</div><div><b>${cnt(3)}</b>🥉 第三名</div></div>`;
+    body += T.length ? `<div class="tcase">${T.map(x => `<div class="tcup r${x.r}"><span class="cup">🏆</span><span class="ev">${EVENTS[x.e]?.em || '🏅'}</span><b>${EVENTS[x.e]?.n || '比賽'}</b><small>${TROPHY_N[x.r]}${x.w ? '<br>' + esc(x.w) : ''}</small></div>`).join('')}</div>` : `<div class="empty">${own ? '還沒有獎盃，去參加比賽拿第一名吧！' : '這位好友還沒有獎盃'}</div>`;
+    openModal('🏆 獎盃櫃', body);
+  };
+  S.modal();
+}
 function openMore() {
   S.modal = () => {
     const f = S.my, a = achClaimable(f), g = petGiftReady(f);
     openModal('☰ 更多', `<div class="menu">
-      <button data-act="dex" data-t="ach">🏆 成就${a ? `<em class="badge on">${a}</em>` : ''}</button>
+      <button data-act="dex" data-t="ach">🎖️ 成就${a ? `<em class="badge on">${a}</em>` : ''}</button>
+      <button data-act="trophies">🏆 我的獎盃櫃</button>
       <button data-act="dex" data-t="crop">📖 圖鑑</button>
       <button data-act="pets">🐾 我的寵物${g ? `<em class="badge on">${g}</em>` : ''}</button>
       <button data-act="fest">📅 節日行事曆</button>
@@ -5294,7 +5333,7 @@ const TUT = [
   {t:'施肥', d:'點「🧪 <b>施肥</b>」，再點你剛種的田：成熟時間少 30%，而且有 <b>40% 機率大豐收、收成變雙倍</b>！', act:true,
     el() { const i = firstPlot(S.my, p => p.s === 'grow' && !isMature(p)); if (S.tool === 'fert' && i >= 0) return plotW(i); return '#tools [data-t=fert]'; },
     done:() => S.my.plots.some(p => p.s === 'grow' && p.f > 0) || !S.my.plots.some(p => p.s === 'grow' && !isMature(p))},
-  {t:'收成', d:'教學小魔法 ✨ 已經讓你的作物<b>馬上成熟</b>了！用「✋ 手」點一下<b>發亮的田</b>收成吧。每塊田一次收 <b>3 個</b>。', act:true,
+  {t:'收成', d:'教學小魔法 ✨ 已經讓你的作物<b>馬上成熟</b>了！用「✋ 手」點一下<b>發亮的田</b>收成吧。每塊田一次收 <b>6 個</b>。', act:true,
     async enter() { S.tutBase = S.my.st?.harvest || 0; S.tool = 'hand'; renderTools(); await txMe(f => { const i = firstPlot(f, p => p.s === 'grow' && CROPS[p.c]); if (i < 0) return ab(''); const p = f.plots[i]; p.p = now() - totalMs(p) - 2000; p.d = false; p.w = 0; p.b = 0; return {}; }).catch(() => {}); },
     el() { const i = firstPlot(S.my, p => isMature(p)); return i >= 0 ? plotW(i) : '#tools [data-t=hand]'; },
     done:() => (S.my.st?.harvest || 0) > S.tutBase},
@@ -5302,7 +5341,7 @@ const TUT = [
   {t:'倉庫與賣東西', d:'收成的東西都放在「📦 <b>倉庫</b>」。可以<b>自己輸入要賣幾個</b>，也可以留著做訂單或送好友。點開看看！', el:'#top [data-act=wh]', act:true, modal:'倉庫'},
   {t:'料理訂單', d:'村民會來點菜！在「🍳 <b>訂單</b>」把需要的材料<b>分次交貨</b>，交齊就能拿到大獎勵。點開看看！', el:'#top [data-act=orders]', act:true, modal:'訂單'},
   {t:'商店', d:'「🏪 <b>商店</b>」可以買種子、魚苗、動物、寵物（最多 2 隻）、機器和道具。點開看看！', el:'#top [data-act=shop]', act:true, modal:'商店'},
-  {t:'牧場', d:'點左上的「🐮 <b>牧場</b>」。在商店買雞、牛等動物，用「🌾 餵食」餵飽牠們就會一直生產（一次 3 個），點動物就能收集。也要記得清 💩 喔！', el:'#sceneTabs [data-s=ranch]', act:true, done:() => S.scene === 'ranch'},
+  {t:'牧場', d:'點左上的「🐮 <b>牧場</b>」。在商店買雞、牛等動物，用「🌾 餵食」餵飽牠們就會一直生產（一次 6 個），點動物就能收集。也要記得清 💩 喔！', el:'#sceneTabs [data-s=ranch]', act:true, done:() => S.scene === 'ranch'},
   {t:'魚塭', d:'點「🐟 <b>魚塭</b>」。放魚苗養大就能撈起來，水面有 🗑️ 垃圾要撈掉。', el:'#sceneTabs [data-s=fish]', act:true, done:() => S.scene === 'fish'},
   {t:'加工廠', d:'點「🏭 <b>工廠</b>」。蓋機器（2 級開放磨坊）把原料做成麵粉、果汁、起司…更值錢，也能完成更多訂單。', el:'#sceneTabs [data-s=factory]', act:true, done:() => S.scene === 'factory'},
   {t:'加好友', d:() => `點「👥 <b>好友</b>」，輸入朋友的「帳號」送出邀請。你的帳號是 <b>${esc(S.my.username)}</b>，告訴朋友讓他加你！點開看看！`, el:'#top [data-act=friends]', act:true, modal:'好友', enter() { if (S.scene !== 'farm') ACT.scene({s:'farm'}); }},
@@ -5437,7 +5476,7 @@ const ACT = {
   tut() { closeModal(); startTut(0); },
   async saveNick() { const v = ($('#nickIn')?.value || '').trim(); if ([...v].length > 10) return toast('名字最多 10 個字'); if (/[<>]/.test(v)) return toast('名字不能有 < 或 >'); await txMe(f => { f.nick = v; return {}; }); beat(); toast(v ? `名字改成「${v}」了！` : '已改回用帳號當名字'); },
   async logout() { if (!confirm('確定要登出嗎？')) return; if (TS.on) { TS.on = false; clearInterval(TS.timer); $('#tut').hidden = true; } Music.stop(); await B.setPresence(S.uid, {at:'', off:true, t:now()}); await B.logout(); },
-  home() { closeModal(); goHome(); }, visit(d) { closeModal(); visit(d.uid); },
+  home() { closeModal(); if (!isOwn()) travel('回家ING', 1100); goHome(); }, trophies: openTrophies, visit(d) { closeModal(); visit(d.uid); },
   async pickSeed(d) { const c = CROPS[d.id]; if (!(S.my.seeds[d.id] > 0) && S.my.coins < c.cost) return toast(`金幣不夠買${c.n}種子`); S.seed = d.id; S.tool = 'plant'; closeModal(); renderTools(); const i = S.pendingPlot; S.pendingPlot = -1; if (i >= 0 && isOwn()) clickPlot(i); else toast(`已選擇${c.n}，點空地播種`); },
   async buySeed(d) { const c = CROPS[d.id], n = +d.n; const r = await txMe(f => { if (!seedOK(f, d.id)) return ab('還沒解鎖這個種子'); if (f.coins < c.cost * n) return ab('金幣不夠'); f.coins -= c.cost * n; f.seeds[d.id] = (f.seeds[d.id] || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 包${c.n}種子`); },
   async buyFert(d) { const n = +d.n; const r = await txMe(f => { if (f.coins < FERT_PRICE * n) return ab('金幣不夠'); f.coins -= FERT_PRICE * n; f.fert = (f.fert || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 包化肥`); },
@@ -5596,13 +5635,21 @@ async function onAuth(u) {
   setTimeout(() => { if (S.my && S.uid === u.uid) giveGrants(); }, 6500);
   S.mailB = ''; B.syncMail?.(S.my.username).then(m => { if (S.uid !== u.uid) return; S.mailB = m || ''; if (m && mailPend()) { toast('📧 Email 綁定完成！忘記密碼時可以收重設信'); try { store.removeItem('hf_mailpend_' + S.uid); } catch {} } }).catch(() => {});
 }
+let _tvT = 0;
+function travel(text, ms = 1500) {
+  const el = $('#travel'); if (!el || !S.my) return;
+  const g = myGender(), L = lookOf(g, S.my.look); $('#tvChar').src = thumbURL('char', [g, L.top, L.bot, L.hat, L.hc, L.st, L.ac].join('|'));
+  $('#tvText').textContent = text; el.classList.remove('out'); el.hidden = false; Music.sfx('pop');
+  clearTimeout(_tvT); _tvT = setTimeout(() => { el.classList.add('out'); _tvT = setTimeout(() => { el.hidden = true; el.classList.remove('out'); }, 350); }, ms);
+}
 function goHome() { S.myPos = null; S.pray = null; unZoom(); S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; S.tool = 'hand'; renderAll(); beat(); watchHere(); }
 function visit(uid) {
   if (uid === S.uid) return goHome();
+  { const fr0 = S.friends.find(x => x.uid === uid); travel(`拜訪 ${fr0 ? dn(fr0.farm) : '好友'} 的農場ING`); }
   S.myPos = null; S.pray = null;
   unZoom(); clearSanta(); S.decoMode = null; S.thief = null; S.unsubView && S.unsubView();
   S.viewUid = uid; const fr = S.friends.find(x => x.uid === uid); S.view = fr ? fr.farm : null; S.tool = 'hand'; renderAll(); beat(); watchHere();
-  setTimeout(() => { if (S.viewUid === uid) waveAt(uid, fr ? dn(fr.farm) : '', false, true); }, 1200);
+  setTimeout(() => { if (S.viewUid === uid) waveAt(uid, fr ? dn(fr.farm) : '', false, true); }, 2100);
   S.unsubView = B.watch(uid, nf => { if (S.viewUid !== uid) return; if (!nf) { toast('找不到這個農場'); return goHome(); } S.view = normalize(nf); const fr2 = S.friends.find(x => x.uid === uid); if (fr2) fr2.farm = S.view; renderScene(); renderTools(); });
   if (!dailyView(S.my).vis.includes(uid)) txMe(f => { const d = daily(f); if (d.vis.includes(uid)) return ab(''); d.vis.push(uid); bump(f, 'visit'); return {}; }).catch(() => {});
 }
