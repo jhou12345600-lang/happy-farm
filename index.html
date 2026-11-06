@@ -4051,7 +4051,8 @@ function giantPumpkin(kg) {
 }
 function syncGreen(f, own) {
   if (!W.greenG) return;
-  const G = greenView(f), key = JSON.stringify([G.n, (G.plots || []).map(p => p.s === 'grow' ? p.c + ':' + (ghMature(p) ? 3 : ghProg(p) > .5 ? 2 : 1) : p.s), G.pump?.s, G.pump?.s === 'grow' ? Math.round(pumpKg(G.pump) / 5) + (pumpMature(G.pump) ? 'm' : '') : '']);
+  const pkV = q => own ? pumpKg(q) : Math.round(25 + 35 * Math.min(1, (now() - q.p) / pumpMs()));
+  const G = greenView(f), key = JSON.stringify([G.n, (G.plots || []).map(p => p.s === 'grow' ? p.c + ':' + (ghMature(p) ? 3 : ghProg(p) > .5 ? 2 : 1) : p.s), G.pump?.s, G.pump?.s === 'grow' ? Math.round(pkV(G.pump) / 5) + (own ? 'o' : 'f') + (pumpMature(G.pump) ? 'm' : '') : '']);
   if (W.greenKey !== key) {
     W.greenKey = key; W.greenG.clear();
     for (let i = 0; i < GH_MAX; i++) { const [x, z] = ghXZ(i), lock = i >= (G.n || GH_START), p = (G.plots || [])[i] || {s:'empty'}, g = new THREE.Group(); g.position.set(x, 0, z);
@@ -4061,11 +4062,11 @@ function syncGreen(f, own) {
       g.traverse(o => o.userData.hit = {type:'gplot', i}); W.greenG.add(g); }
     const q = G.pump || {s:'empty'}, pg = new THREE.Group(); pg.position.set(PUMP_XZ[0], 0, PUMP_XZ[1]);
     pg.add(blk('#795548', [4.4, .3, 2.2], [0, .15, 0]), blk('#5d4037', [4.1, .05, 1.9], [0, .31, 0]), blk('#ffe082', [1.6, .4, .06], [-1.4, .55, 1.12]));
-    if (q.s === 'grow') { const m = giantPumpkin(pumpKg(q)); m.position.y = .32; pg.add(m); if (pumpMature(q)) pg.add(ring('#e53935', [.7, .7, .3], [0, .4 + .7 * (.45 + Math.min(2.4, pumpKg(q) / 60)), 0], [Math.PI / 2, 0, 0])); }
+    if (q.s === 'grow') { const m = giantPumpkin(pkV(q)); m.position.y = .32; pg.add(m); if (pumpMature(q)) pg.add(ring('#e53935', [.7, .7, .3], [0, .4 + .7 * (.45 + Math.min(2.4, pkV(q) / 60)), 0], [Math.PI / 2, 0, 0])); }
     pg.traverse(o => o.userData.hit = {type:'gpump'}); W.greenG.add(pg);
   }
   for (let i = 0; i < (G.n || GH_START); i++) { const p = (G.plots || [])[i], [x, z] = ghXZ(i); if (p?.s === 'grow' && CROPS[p.c]) ov('gp' + i, ghMature(p) ? '✨ 可以收成' : `${CROPS[p.c].n} ${Math.floor(ghProg(p) * 100)}%`, v => v.set(x, 1.6, z), ghMature(p) ? 'bub' : 'tag'); }
-  const q = G.pump; ov('gpump', q?.s === 'grow' ? `🎃 巨大南瓜 ${pumpKg(q)} kg${pumpMature(q) ? ' ✨可以收成' : ''}` : own ? '🎃 南瓜大賽（點我）' : '🎃 南瓜大賽', v => v.set(PUMP_XZ[0], q?.s === 'grow' ? 2.6 + Math.min(2.4, pumpKg(q) / 60) : 1.4, PUMP_XZ[1]), q?.s === 'grow' && pumpMature(q) ? 'bub' : 'tag');
+  const q = G.pump; ov('gpump', q?.s === 'grow' ? `🎃 巨大南瓜 ${own ? pumpKg(q) : '？？'} kg${pumpMature(q) ? ' ✨可以收成' : ''}` : own ? '🎃 南瓜大賽（點我）' : '🎃 南瓜大賽', v => v.set(PUMP_XZ[0], q?.s === 'grow' ? 2.6 + Math.min(2.4, pkV(q) / 60) : 1.4, PUMP_XZ[1]), q?.s === 'grow' && pumpMature(q) ? 'bub' : 'tag');
 }
 
 /* ----- 廟宇介面 ----- */
@@ -5096,7 +5097,7 @@ function tipFor(h) {
   if (h.type === 'horse') { const x = horseView(S.view).list.find(y => y.id === h.id); return x ? `<b>${hSexE(x)} ${esc(x.n)}</b> ${hAgeT(x)}${hStatus(x) ? '<br>' + hStatus(x) : ''}<br>${isOwn() ? '點一下訓練、配種' : '點一下看看'}` : ''; }
   if (h.type === 'hall') { const H = HALLS[h.i], T = templeView(S.view); return `<b>${H.em} ${H.n}</b>（${H.god}）<br>${h.i < T.lv ? (qianToday(S.my) ? '今天已經抽過籤了，點一下看籤詩' : '點一下參拜抽籤 🙏') : h.i === T.lv ? `建造中 ${Math.floor(tpProg(T) * 100)}%，點一下捐材料` : '還沒開始蓋'}`; }
   if (h.type === 'gplot') { const G = greenView(S.view), p = (G.plots || [])[h.i]; if (h.i >= (G.n || GH_START)) return h.i === (G.n || GH_START) && isOwn() ? `🔒 點一下花 ${GH_PRICE[G.n || GH_START]} 金幣擴建` : '🔒 還沒擴建'; if (!p || p.s !== 'grow' || !CROPS[p.c]) return isOwn() ? '空花圃，點一下種東西' : '空花圃'; return `<b>${CROPS[p.c].gh ? '🌱 ' : ''}${CROPS[p.c].n}</b><br>${ghMature(p) ? '✨ 成熟了！點一下收成' : `還要 ${fmtDur(p.p + ghMs(p.c) - now())}`}`; }
-  if (h.type === 'gpump') { const q = greenView(S.view).pump; return q?.s === 'grow' ? `<b>🎃 巨大南瓜</b> 約 ${pumpKg(q)} kg<br>${pumpMature(q) ? '可以收成了！' : '點一下照顧它'}` : '<b>🎃 巨大南瓜大賽</b><br>每週一次，週五晚上 12 點截止、週六公布排名'; }
+  if (h.type === 'gpump') { const q = greenView(S.view).pump; return q?.s === 'grow' ? `<b>🎃 巨大南瓜</b> ${isOwn() ? `約 ${pumpKg(q)} kg` : '？？ kg（重量是秘密 🤫）'}<br>${pumpMature(q) ? '可以收成了！' : '點一下照顧它'}` : '<b>🎃 巨大南瓜大賽</b><br>每週一次，週五晚上 12 點截止、週六公布排名'; }
   if (h.type === 'stall') { const sl = stallView(S.view).sl.filter(s => (s.s || 0) < s.n); return `<b>🏪 ${isOwn() ? '我的' : esc(dn(S.view)) + '的'}市集攤位</b><br>${sl.length ? sl.map(s => `${itemInfo(s.id).n} ${s.p}💰`).join('、') : '目前沒有東西'}<br>點一下${isOwn() ? '管理攤位' : '逛逛'}`; }
   if (h.type === 'vil') { const v = VIL[h.id], q = isOwn() && vilToday(S.my, S.uid).find(r => r.v === h.id && !r.done); return `<b>${v.n}</b> ${v.role}${isOwn() ? `<br>${'❤️'.repeat(vilHeart(S.my, h.id)) || '🤍'} 好感 ${vilHeart(S.my, h.id)}/${VIL_MAX}` : ''}${q ? '<br>❗ 有委託，點一下幫忙' : '<br>點一下聊聊'}`; }
   if (h.type === 'deco') { const d = S.view?.deco?.at?.[h.i]; return d ? `<b>${DECO[d.k].n}</b><br>⭐ 人氣 +${DECO[d.k].pop}${S.decoMode && isOwn() ? '<br>點一下旋轉、移動或收起' : ''}` : ''; }
