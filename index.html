@@ -1084,6 +1084,8 @@ const achClaimable = f => ACH.reduce((n, A) => { const got = (f.ach || {})[A.id]
 
 /* ----- 寵物 ----- */
 const px = (f, k) => { f.petx ??= {}; return f.petx[k] ??= {a:0}; };
+const petNm = (k, f = S.view || S.my) => esc(f?.petx?.[k]?.nm || PETS[k]?.n || '');
+const nameOK = v => !/[<>&"'`]/.test(v);
 const petLv = (f, k) => petLvOf(f?.petx?.[k]?.a).L;
 const biteOf = (f, k) => Math.min(.9, (PETS[k].bite + (petLv(f, k) - 1) * .02) * (isNight() ? 1.3 : 1));
 const petGiftReady = f => (f.pets || []).filter(k => PETS[k] && ((petLv(f, k) >= 3 && f.petx?.[k]?.gd !== today()) || (f.petx?.[k]?.ex && f.petx[k].ex.end <= now()))).length;
@@ -1351,6 +1353,7 @@ function tickOwn(f, msgs) {
   if (!f.horse) { f.horse = horseStarter(f); addLog(f, '🐎 新的「馬場」開幕了！送你 3 匹馬：2 匹公馬、1 匹母馬，快去馬場看看吧'); msgs?.push('🐎 新設施「馬場」開幕！送你 3 匹馬'); ch = true; }
   if (hBirth(f, msgs)) ch = true;
   if (aqSim(f, msgs)) ch = true;
+  if (giantSellOld(f, msgs)) ch = true;
   return ch;
 }
 
@@ -2175,7 +2178,7 @@ const itemIcon = id => icon(CROPS[id] ? 'crop' : SEA[id] ? 'sea' : PROC[id] ? 'p
 const W = {};
 const FARM_T = new THREE.Vector3(0, 0, .8), RANCH_T = new THREE.Vector3(24, 0, .8), FISH_T = new THREE.Vector3(-30, 0, .8), TOWN_T = new THREE.Vector3(76, 0, .8), GREEN_T = new THREE.Vector3(-52, 0, .8), TEMPLE_T = new THREE.Vector3(101, 0, -.6), STABLE_T = new THREE.Vector3(-80, 0, -1.2);
 const DOCK_T = new THREE.Vector3(-114, 0, -3.6); const HOME_T = new THREE.Vector3(0, -60, 0);
-const SCENE_T = {home:HOME_T, market:new THREE.Vector3(128, 0, -.4), dock:DOCK_T, farm:FARM_T, ranch:RANCH_T, fish:FISH_T, factory:new THREE.Vector3(50, 0, .8), town:TOWN_T, green:GREEN_T, temple:TEMPLE_T, stable:STABLE_T};
+const SCENE_T = {home:HOME_T, museum:new THREE.Vector3(160, 0, -1), market:new THREE.Vector3(128, 0, -.4), dock:DOCK_T, farm:FARM_T, ranch:RANCH_T, fish:FISH_T, factory:new THREE.Vector3(50, 0, .8), town:TOWN_T, green:GREEN_T, temple:TEMPLE_T, stable:STABLE_T};
 const pondXZ = i => { const r = Math.floor(i / 4), c = i % 4; return [-30 + (c - 1.5) * 4.3, (r - .5) * 4.6 + .4]; };
 const plotXZ = i => { const r = Math.floor(i / 6), c = i % 6; return [(c - 2.5) * 2.75, (r - 1) * 2.75 - .3]; };
 const aniHome = i => { const r = Math.floor(i / 4), c = i % 4; return [24 + (c - 1.5) * 3.5, .3 + (r - 1.5) * 2.7]; };
@@ -2222,7 +2225,7 @@ function makeSign(x, z) {
 function setSign(g, title, sub) { const k = title + '|' + sub; if (g.userData.txt === k) return; g.userData.txt = k; const m = g.userData.face.material; m.map?.dispose(); m.map = signTexture(title, sub); m.needsUpdate = true; }
 
 /* ================= 3D：真實農場背景 ================= */
-const FLAT_PADS = [[101, 0, 13, 10], [-80, 0, 15, 12], [128, 0, 14, 11], [-114, 0, 16, 13]];   // 廟宇、馬場、夜市、釣魚碼頭
+const FLAT_PADS = [[101, 0, 13, 10], [-80, 0, 15, 12], [128, 0, 14, 11], [-114, 0, 16, 13], [160, 0, 15, 11]];   // 廟宇、馬場、夜市、釣魚碼頭、展覽館
 const padDist = (x, z) => Math.min(...FLAT_PADS.map(([cx, cz, hx, hz]) => Math.hypot(Math.max(0, Math.abs(x - cx) - hx), Math.max(0, Math.abs(z - cz) - hz))));
 const inLake = (x, z) => x > -133.5 && x < -94.5 && z < -.4 && z > -22;
 function terrainH(x, z) { if (inLake(x, z)) return -.6; const d = Math.hypot((x - 12) / 1.3, z); if (d <= 58) return 0; const k = d - 58, fl = Math.min(1, padDist(x, z) / 9); return fl * Math.max(0, k * .14 * (1 + Math.sin(x * .05) * .5 + Math.cos(z * .07) * .4) + Math.sin(x * .11 + z * .07) * 1.5 * Math.min(1, k / 10)); }
@@ -2875,7 +2878,7 @@ const H_COLS = [['#8d5a2b', '#3e2723', '栗色'], ['#5d4037', '#1b0f0a', '深棕
 const H_STAT = {spd:['速度', '⚡'], sta:['耐力', '💪'], acc:['爆發力', '🔥']};
 const H_NAMES = ['小黑', '閃電', '追風', '奔雷', '烏雲', '白雪', '金沙', '旋風', '流星', '火焰', '疾風', '月影', '飛雲', '銀河', '雷霆', '布丁', '可可', '麻糬', '豆花', '珍珠', '阿福', '小虎', '大力', '彩虹', '芒果', '黑糖', '小栗', '風火輪'];
 const H_STUD_G = {spd:82, sta:76, acc:80};
-const HORSE_RW = [{c:5000, tr:1}, {c:3000, tr:2}, {c:1500, tr:3}], HORSE_RW_REST = {fert:5};
+const HORSE_RW = [{c:5000, tr:1, ev:'horse'}, {c:3000, tr:2, ev:'horse'}, {c:1500, tr:3, ev:'horse'}], HORSE_RW_REST = {fert:5};
 const HR_NPC = [['阿土伯', '黑旋風', 5], ['小美', '粉紅泡泡', 4], ['阿福', '大肚王', 0], ['村長', '老驥', 3]];
 const hAge = h => Math.max(0, (now() - h.b) * SPEED / HY);
 const hStage = h => { const a = hAge(h); return a < 1 ? 'foal' : a >= 8 ? 'old' : 'adult'; };
@@ -3022,6 +3025,7 @@ function openHorse(id) {
       else body += `<div class="d" style="font-size:12.5px;color:#8d6e63">懷孕 ${H_PREG / 864e5} 天，小馬會遺傳爸媽的天分（還會有一點點變化）。懷孕期間不能比賽和訓練。</div>` + sires.map(m => `<div class="item"><div class="pic" style="font-size:26px">🐎</div><div class="info"><div class="t">♂️ ${esc(m.n)} <small>${hAgeT(m)} · 天分 <span style="color:#f9a825">${hStars(m.g)}</span></small></div></div><button class="b o" data-act="hBreed" data-id="${h.id}" data-m="${m.id}">💕 配種 💰${H_BREED}</button></div>`).join('')
         + `<div class="item"><div class="pic" style="font-size:26px">🏇</div><div class="info"><div class="t">♂️ 赤兔 <small>種馬場的冠軍種馬 · 天分 <span style="color:#f9a825">${hStars(H_STUD_G)}</span></small></div></div><button class="b o" data-act="hBreed" data-id="${h.id}" data-m="stud">💕 借種 💰${H_STUD}</button></div>`;
     }
+    body += `<div class="sec">✏️ 幫牠改名字</div><div class="row"><input id="hnm" maxlength="8" placeholder="1～8 個字" value="${h.n}"><button class="b" data-act="hRename" data-id="${h.id}">儲存</button></div>`;
     body += `<div class="mgbtn" style="margin-top:10px"><button class="b g" data-act="hSell" data-id="${h.id}">💰 賣掉（${hPrice(h)}）</button></div>`;
     openModal('🐎 ' + h.n, body);
   };
@@ -3128,9 +3132,9 @@ function startHorseRace(rid) {
   W.race = {...B, racers, t0:performance.now() / 1000, end:Math.max(...racers.map(r => r.T)) + 1.3, lbl:[...$('#raceLbl').children], rk:'', cd:0,
     onEnd:async () => {
       let got = null;
-      const r = await txMe(g => { const H = horseOf(g); if (H.cl[rid]) return ab(''); H.cl[rid] = k + 1; giveRw(g, rw, 'horse', `${hrDate(rid)}・${e.n}`); addLog(g, `🏁 ${hrDate(rid)} 賽馬大賽：「${e.n}」跑第 ${k + 1} 名，獲得 ${rwText(rw)}`); return {}; }).catch(() => null);
+      const r = await txMe(g => { const H = horseOf(g); if (H.cl[rid]) return ab(''); H.cl[rid] = k + 1; giveRw(g, rw, 'horse', `${hrDate(rid)}・${e.n}`); if (k < 3) { (H.mus ??= []).push({n:e.n, col:e.col, r:k + 1, rid, t:now()}); if (H.mus.length > 12) H.mus = H.mus.slice(-12); } addLog(g, `🏁 ${hrDate(rid)} 賽馬大賽：「${e.n}」跑第 ${k + 1} 名，獲得 ${rwText(rw)}${k < 3 ? '，「' + e.n + '」的賽馬雕像被村民搬到展覽館展示了' : ''}`); return {}; }).catch(() => null);
       if (r && !r.abort) got = rw;
-      $('#raceEnd').innerHTML = `<div class="rc"><div class="big">${['🥇', '🥈', '🥉'][k] || '🏇'}</div><b>${k === 0 ? `「${esc(e.n)}」跑第 1 名！` : `「${esc(e.n)}」跑第 ${k + 1} 名，${esc(fl[0].n)} 奪冠！`}</b><div>${got ? `獎勵：${rwText(got)}` : '（這場的獎勵已經領過了）'}</div><button class="b o" data-act="raceEnd">🐎 回馬場</button></div>`;
+      $('#raceEnd').innerHTML = `<div class="rc"><div class="big">${['🥇', '🥈', '🥉'][k] || '🏇'}</div><b>${k === 0 ? `「${esc(e.n)}」跑第 1 名！` : `「${esc(e.n)}」跑第 ${k + 1} 名，${esc(fl[0].n)} 奪冠！`}</b><div>${got ? `獎勵：${rwText(got)}${k < 3 ? '<br>🏛️ 牠的賽馬雕像會擺在展覽館！' : ''}` : '（這場的獎勵已經領過了）'}</div><button class="b o" data-act="raceEnd">🐎 回馬場</button></div>`;
       $('#raceEnd').hidden = false; if (k < 3) { Music.sfx('coin'); Music.sparkle(); } else Music.sfx('pop');
     }};
   $('#raceRank').innerHTML = ''; $('#raceCd').textContent = ''; $('#raceEnd').hidden = true; $('#race').hidden = false; $('#stage').classList.add('racing');
@@ -3138,7 +3142,7 @@ function startHorseRace(rid) {
 }
 
 /* ================= 🎣 釣魚碼頭（大家共用的地方） ================= */
-const PLACES = {dock:{n:'釣魚碼頭', em:'🎣'}, market:{n:'夜市', em:'🏮'}};
+const PLACES = {dock:{n:'釣魚碼頭', em:'🎣'}, market:{n:'夜市', em:'🏮'}, museum:{n:'展覽館', em:'🏛️'}};
 const hereAt = () => S.place ? '@' + S.place : (S.viewUid || S.uid);
 const DOCK_X = -114, DOCK_BAIT = 10, AQ_MAX = 20;
 const DOCK_SPOTS = [[-119, -10.7, 1], [-116.6, -10.7, 1], [-114.2, -10.7, 1], [-111.8, -10.7, 1], [-109.4, -10.7, 1], [-115.5, -5.5, 2], [-112.5, -5.5, 0]];   // x, z, 面向（0 右、1 前、2 左）
@@ -3279,7 +3283,7 @@ function goPlace(pl) {
   if (!isOwn()) { S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; }
   unZoom(); clearSanta(); S.place = pl; S.scene = pl; S.tool = 'hand'; S.myPos = null; S.pray = null; S.decoMode = null; S.thief = null; S.fishing = null;
   setCam(pl); renderAll(); beat(); watchHere();
-  setTimeout(() => { if (S.place !== pl) return; const t = now(), m = pl === 'dock' ? rnd(['大家好～今天魚況怎麼樣？🎣', '我來釣魚囉！', '嗨～有人釣到大魚了嗎？']) : rnd(['夜市好熱鬧！🏮', '來玩遊戲囉～', '嗨～大家晚安！']); S.spokeT = t;
+  setTimeout(() => { if (S.place !== pl) return; const t = now(), m = pl === 'dock' ? rnd(['大家好～今天魚況怎麼樣？🎣', '我來釣魚囉！', '嗨～有人釣到大魚了嗎？']) : pl === 'museum' ? rnd(['哇～這些巨大蔬果好壯觀！🏛️', '來參觀展覽囉！', '這顆也太大了吧！']) : rnd(['夜市好熱鬧！🏮', '來玩遊戲囉～', '嗨～大家晚安！']); S.spokeT = t;
     B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), lk:S.my.look || null, vh:rideOf(S.my), at:hereAt(), t, off:false, say:{m, t, d:3500}, wave:t, waveTo:'', back:false, arr:true}); Music.babble(myGender(), m); }, 2100);
 }
 function leavePlace() { if (!S.place) return false; S.place = null; fishStop(true); $('#fishUI').hidden = true; if (typeof mkStop === 'function') mkStop(); return true; }
@@ -3425,7 +3429,7 @@ function openFishDex() {
   S.modal();
 }
 // ----- 週三釣魚大賽 -----
-const FC_FEE = 100, FISH_RW = [{c:5000, tr:1}, {c:3000, tr:2}, {c:1500, tr:3}], FISH_RW_REST = {fert:5};
+const FC_FEE = 100, FISH_RW = [{c:5000, tr:1, ev:'fishing'}, {c:3000, tr:2, ev:'fishing'}, {c:1500, tr:3, ev:'fishing'}], FISH_RW_REST = {fert:5};
 const fcNext = d => { let x = d; for (let i = 0; i < 7 && dowOf(x) !== 3; i++) x = addDays(x, 1); return x; };
 const fcOpen = () => { const d = twDay(); return dowOf(d) === 3 ? fcNext(addDays(d, 1)) : fcNext(d); };
 const fcEnt = (f, c) => dockView(f).ent?.[c] || null;
@@ -3474,8 +3478,97 @@ function openMap() {
     openModal('🗺️ 出門去哪裡？', `<div class="popbox"><small>這些地方是<b>大家共用</b>的，好友也在的話會看到彼此，一起玩更熱鬧！</small></div>
       <div class="item" data-act="goDock" style="cursor:pointer"><div class="pic" style="font-size:34px">🎣</div><div class="info"><div class="t">釣魚碼頭</div><div class="d">真的要拋竿、等浮標、慢慢收線！天氣、白天晚上會出現不同的魚，有超稀有大魚。週三釣魚大賽。</div></div></div>
       <div class="item" data-act="goMarket" style="cursor:pointer;${mo ? '' : 'opacity:.6'}"><div class="pic" style="font-size:34px">🏮</div><div class="info"><div class="t">夜市 ${mo ? '<span class="rare" style="background:#e53935">營業中</span>' : ''}</div><div class="d">每週一晚上 6 點～12 點開！撈金魚、套圈圈、射氣球、彈珠台，玩分數換獎品，還有「夜市高手」排行。</div></div></div>
+      <div class="item" data-act="goMuseum" style="cursor:pointer"><div class="pic" style="font-size:34px">🏛️</div><div class="info"><div class="t">展覽館</div><div class="d">巨大蔬果大賽（南瓜／西瓜／冬瓜／絲瓜每週輪流）的得獎作品都展在這裡，和好友一起來參觀！</div></div></div>
       <div class="item" data-act="mapGo" data-s="town" style="cursor:pointer"><div class="pic" style="font-size:34px">🏘️</div><div class="info"><div class="t">小鎮</div><div class="d">村民委託、市集攤位、賓果。</div></div></div>
       <div class="item" data-act="mapGo" data-s="temple" style="cursor:pointer"><div class="pic" style="font-size:34px">🏯</div><div class="info"><div class="t">廟宇</div><div class="d">參拜抽籤、和好友一起蓋廟。</div></div></div>`);
+  };
+  S.modal();
+}
+
+/* ================= 🏛️ 展覽館（大家共用，展示巨大蔬果大賽得獎作品） ================= */
+const MU_X = 160, MU_SEC = {pumpkin:-9, watermelon:-3, wintermelon:3, luffa:9}, MU_SLOT = [[0, -3.6, 1.15], [-1.95, -2.6, .85], [1.95, -2.6, .65]];
+const MU_NPC = {pumpkin:[['阿土伯', 96.5], ['美玉姨', 88.2], ['里長伯', 80.1]], watermelon:[['阿德師', 71.4], ['茉莉', 66], ['小豆', 60.3]], wintermelon:[['阿海伯', 108.6], ['廟公阿成', 99.1], ['美玉姨', 91.7]], luffa:[['小豆', 248], ['阿土伯', 231], ['茉莉', 214]]};
+const MEDAL = r => ['', '🥇', '🥈', '🥉'][r] || '🏅';
+const MU_HX = [0, -6, 6], MU_HNPC = [['阿土伯', '阿福', 2], ['里長伯', '黑旋風', 1], ['茉莉', '小白', 3]];
+function musHorses() {
+  const L = [], add = (f, uid, n) => { for (const x of (f?.horse?.mus || [])) L.push({...x, uid, o:n}); };
+  add(S.my, S.uid, myName()); for (const x of S.friends || []) add(x.farm, x.uid, dn(x.farm));
+  return L.sort((a, b) => (b.rid > a.rid ? 1 : b.rid < a.rid ? -1 : 0) || a.r - b.r);
+}
+function musHShow(all = musHorses()) { const L = all.slice(0, 3); while (L.length < 3) { const [o, n, col] = MU_HNPC[L.length]; L.push({o, n, col, npc:1, r:0}); } return L; }
+function horseStatue(col, r, npc) {
+  const m = horseModel(col), c = npc ? '#9e9e9e' : ['', '#ffca28', '#cfd8dc', '#c88a4a'][r] || '#bdbdbd', mat = new THREE.MeshLambertMaterial({color:c, emissive:c, emissiveIntensity:npc ? 0 : .12});
+  m.traverse(o => { if (o.isMesh) o.material = mat; }); return m;
+}
+function musAll() {
+  const L = [], add = (f, uid, n) => { for (const x of (f?.green?.mus || [])) if (GIANT[x.k]) L.push({...x, uid, n}); };
+  add(S.my, S.uid, myName()); for (const x of S.friends || []) add(x.farm, x.uid, dn(x.farm));
+  return L.sort((a, b) => b.w - a.w || a.r - b.r || b.v - a.v);
+}
+function musShow(k, all = musAll()) { const L = all.filter(x => x.k === k).slice(0, 3); while (L.length < 3) { const [n, v] = MU_NPC[k][L.length]; L.push({k, v, n, npc:1, r:0}); } return L; }
+function buildMuseum(S3) {
+  const X = MU_X;
+  S3.add(blk('#eceff1', [28, .1, 14], [X, .05, -1]), blk('#b71c1c', [3, .12, 3.2], [X, .07, 4.7]), blk('#b71c1c', [22, .12, 1.2], [X, .07, -.6]));
+  for (let i = 0; i < 14; i++) for (let j = 0; j < 7; j++) if ((i + j) % 2) S3.add(blk('#cfd8dc', [1.95, .11, 1.95], [X - 13 + i * 2, .055, -7 + j * 2]));
+  S3.add(blk('#f5f0e6', [28, 6, .5], [X, 3, -7.9]), blk('#d7ccc8', [28.8, .5, 1], [X, 6.2, -7.8]), blk('#efebe9', [12, 1.8, .6], [X, 7.3, -7.9]), blk('#d7ccc8', [12.6, .3, .9], [X, 8.3, -7.8]));
+  for (const s of [-1, 1]) S3.add(blk('#f5f0e6', [.5, 5, 12], [X + s * 14, 2.5, -2]), blk('#d7ccc8', [.9, .4, 12.4], [X + s * 14, 5.1, -2]));
+  for (const x of [-12, -6, 0, 6, 12]) S3.add(rod('#fafafa', [.4, 5.6, .4], [X + x, 2.9, -7.25]), blk('#e0e0e0', [1, .3, 1], [X + x, .2, -7.25]), blk('#e0e0e0', [1, .3, 1], [X + x, 5.7, -7.25]));
+  for (const s of [-1, 1]) S3.add(rod('#fafafa', [.6, 6.5, .6], [X + s * 13.4, 3.3, 5.2]), blk('#e0e0e0', [1.4, .4, 1.4], [X + s * 13.4, .2, 5.2]), blk('#e0e0e0', [1.4, .4, 1.4], [X + s * 13.4, 6.6, 5.2]));
+  const ts = textPlane('🏛️ 歡樂展覽館', '#5d4037', '#ffe082', 10, 1.4, 120); ts.position.set(X, 7.3, -7.55); S3.add(ts);
+  for (const [k, dx] of Object.entries(MU_SEC)) { const p = textPlane(`${GIANT[k].em} 巨大${GIANT[k].n}`, '#4e342e', '#fff3e0', 4.4, .9, 90); p.position.set(X + dx, 4.7, -7.6); S3.add(p);
+    S3.add(blk('#8d6e63', [5.2, .08, 3.6], [X + dx, .1, -3])); }
+  for (const s of [-1, 1]) S3.add(blk('#6d4c41', [3, .12, .7], [X + s * 10.5, .55, 3.6]), blk('#4e342e', [.15, .5, .5], [X + s * 10.5 - 1.3, .27, 3.6]), blk('#4e342e', [.15, .5, .5], [X + s * 10.5 + 1.3, .27, 3.6]));
+  { const p = textPlane('🐎 賽馬冠軍雕像', '#4e342e', '#fff3e0', 3.6, .7, 80); p.position.set(X + 3.4, .62, 3.12); p.rotation.x = -.5; S3.add(p, blk('#5d4037', [3.8, .5, .3], [X + 3.4, .25, 3.05])); }
+  for (const x of [-14.5, 14.5]) S3.add(M(gBucket(), '#795548', [.45, .5, .45], [X + x, .25, 5.6]), ball('#43a047', [.6, .7, .6], [X + x, .95, 5.6]));
+  W.musG = new THREE.Group(); S3.add(W.musG);
+  W.musSign = makeSign(X + 7.5, 6.6); S3.add(W.musSign);
+}
+function buildMuseumPeople(S3) {
+  W.musCrowd = []; const ids = VILS.map(v => v.id);
+  for (let i = 0; i < 5; i++) { const m = vilModel(ids[(i * 3 + 1) % ids.length]); m.scale.setScalar(1.1); const x0 = -10 + i * 5, z = -.4 + (i % 2) * .9; m.position.set(MU_X + x0, 0, z); S3.add(m); W.musCrowd.push({m, x:x0, z, sp:(i % 2 ? 1 : -1) * .5, ph:i, stop:i % 3}); }
+}
+function musTick(t, dt) {
+  if (!W.musCrowd || S.scene !== 'museum') return;
+  for (const C of W.musCrowd) { const u = C.m.userData;
+    if (C.stop > 0) { C.stop -= dt; C.m.rotation.y = Math.PI / 2; if (u.legL) u.legL.rotation.z = u.legR.rotation.z = 0; C.m.position.y = 0; continue; }
+    C.x += C.sp * dt; if (C.x > 11 || C.x < -11) { C.sp = -C.sp; C.x = Math.max(-11, Math.min(11, C.x)); }
+    if (Math.random() < dt * .25) C.stop = 2 + Math.random() * 4;
+    C.m.position.set(MU_X + C.x, Math.abs(Math.sin(t * 6 + C.ph)) * .03, C.z); C.m.rotation.y = C.sp > 0 ? 0 : Math.PI;
+    const sw = Math.sin(t * 6 + C.ph) * .5; if (u.legL) { u.legL.rotation.z = sw; u.legR.rotation.z = -sw; } }
+}
+const musGlass = new THREE.MeshLambertMaterial({color:'#e1f5fe', transparent:true, opacity:.18, depthWrite:false});
+function syncMuseum() {
+  if (!W.musG) return;
+  const all = musAll(), show = Object.fromEntries(Object.keys(MU_SEC).map(k => [k, musShow(k, all)])), hs = musHShow(), key = JSON.stringify([show, hs]);
+  if (W.musKey !== key) { W.musKey = key; W.musG.clear();
+    for (const [k, dx] of Object.entries(MU_SEC)) show[k].forEach((x, i) => { const [sx, sz, h] = MU_SLOT[i], g = new THREE.Group(); g.position.set(MU_X + dx + sx, 0, sz);
+      g.add(blk(i ? '#e0e0e0' : '#fff8e1', [1.5, h, 1.5], [0, h / 2, 0]), blk(i ? '#bdbdbd' : '#ffca28', [1.65, .1, 1.65], [0, h, 0]), blk('#bdbdbd', [1.65, .1, 1.65], [0, .05, 0]));
+      const v = giantVeg(k, x.v); v.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(v), sz3 = bb.getSize(new THREE.Vector3()), s = Math.min(.8, 1.3 / Math.max(sz3.x, sz3.z, .01), 1.4 / Math.max(sz3.y, .01));
+      v.scale.multiplyScalar(s); if (k === 'luffa') v.rotation.y = .5; v.position.y = h + .05; g.add(v);
+      const gl = new THREE.Mesh(new THREE.BoxGeometry(1.45, 1.6, 1.45), musGlass); gl.position.y = h + .85; g.add(gl);
+      const pl = textPlane(`${x.npc ? '🏅' : MEDAL(x.r)} ${x.n}`, x.npc ? '#5d4037' : '#1b5e20', '#fffde7', 1.5, .42, 78); pl.position.set(0, Math.max(.3, h * .55), .76); g.add(pl);
+      g.traverse(o => o.userData.hit = {type:'mus', k}); W.musG.add(g); });
+    hs.forEach((x, i) => { const g = new THREE.Group(), h = [.9, .7, .55][i]; g.position.set(MU_X + MU_HX[i], 0, 1.4);
+      g.add(blk(x.npc ? '#bdbdbd' : '#fff8e1', [2.4, h, 1.3], [0, h / 2, 0]), blk(x.npc ? '#9e9e9e' : '#ffca28', [2.55, .1, 1.45], [0, h, 0]));
+      const m = horseStatue(x.col, x.r, x.npc); m.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(m), z3 = bb.getSize(new THREE.Vector3()); m.scale.multiplyScalar(Math.min(2.1 / Math.max(z3.x, z3.z, .01), 1.9 / Math.max(z3.y, .01))); m.position.y = h + .05; m.rotation.y = .35; g.add(m);
+      const pl = textPlane(`${x.npc ? '🏅' : MEDAL(x.r)} ${x.n}`, x.npc ? '#5d4037' : '#1b5e20', '#fffde7', 2, .42, 70); pl.position.set(0, Math.max(.28, h * .55), .66); g.add(pl);
+      g.traverse(o => o.userData.hit = {type:'mus', k:'horse'}); W.musG.add(g); });
+  }
+  if (S.scene === 'museum') for (const [k, dx] of Object.entries(MU_SEC)) { const x = show[k][0]; ov('mu' + k, `${x.npc ? '🏅 村民紀錄' : MEDAL(x.r) + ' ' + esc(x.n)} ${x.v} ${gU(k)}`, v => v.set(MU_X + dx, 3.4, -3.6), 'tag'); }
+  if (S.scene === 'museum') { const x = hs[0]; ov('muH', `🐎 ${x.npc ? '村民的馬' : MEDAL(x.r)} ${esc(x.n)}（${esc(x.o)}${x.npc ? '' : '・' + hrDate(x.rid)}）`, v => v.set(MU_X, 3.3, 1.4), 'tag'); }
+}
+function openMuseum(k0) {
+  S.modal = () => {
+    const all = musAll(), ck = giantOf();
+    let body = `<div class="popbox">🏛️ <b>歡樂展覽館</b><br><small>巨大蔬果大賽每週輪流比 🎃南瓜 → 🍉西瓜 → 🍈冬瓜 → 🥒絲瓜，前三名的作品會被村民搬來這裡展覽；賽馬大賽前三名的馬也會做成賽馬雕像擺在這裡。這裡是<b>大家共用</b>的，好友也會來參觀！<br>本週比的是 ${GIANT[ck].em} <b>${gNm(ck)}</b>，週六公布排名。</small></div>`;
+    for (const k of GIANT_ORDER) { const L = all.filter(x => x.k === k);
+      body += `<div class="sec">${GIANT[k].em} ${gNm(k)}大賽・得獎作品</div>` + (L.length ? L.slice(0, 9).map(x => `<div class="log"><span style="width:30px">${MEDAL(x.r)}</span><span style="flex:1">${esc(x.n)}${x.uid === S.uid ? '（我）' : ''} <small style="color:#8d6e63">${wkRange(x.w)}</small></span><b>${x.v} ${gU(k)}</b></div>`).join('')
+        : `<div class="empty">還沒有好友得獎，現在展出村民的紀錄：${MU_NPC[k].map(([n, v]) => `${n} ${v}${gU(k)}`).join('、')}</div>`); }
+    { const L = musHorses(); body += `<div class="sec">🐎 賽馬大賽・得獎賽馬雕像</div>` + (L.length ? L.slice(0, 9).map(x => `<div class="log"><span style="width:30px">${MEDAL(x.r)}</span><span style="flex:1">「${esc(x.n)}」<small style="color:#8d6e63">${esc(x.o)}${x.uid === S.uid ? '（我）' : ''}・${hrDate(x.rid)}</small></span><b>第 ${x.r} 名</b></div>`).join('')
+      : `<div class="empty">還沒有好友的馬得獎，現在展出村民的馬：${MU_HNPC.map(([o, n]) => `${o}的「${n}」`).join('、')}</div>`); }
+    body += `<div class="mgbtn"><button class="b o" data-act="pump">${GIANT[ck].em} 看本週比賽</button></div>`;
+    openModal('🏛️ 展覽館', body);
+    if (k0) setTimeout(() => { const el = [...document.querySelectorAll('#modal .sec')].find(e => e.textContent.includes(k0 === 'horse' ? '賽馬' : gNm(k0))); el?.scrollIntoView({block:'start'}); }, 50);
   };
   S.modal();
 }
@@ -3756,7 +3849,7 @@ const psEnt = (f, c) => f?.pshow?.ent?.[c] || null;
 const PS_NPC = [['阿土伯', '大黃', 'shiba'], ['美玉姨', '咪咪', 'tabby'], ['小豆', '豆豆', 'poodle'], ['茉莉', '雪球', 'persian']];
 function psField(cid) {
   const ps = [{uid:S.uid, n:myName(), e:psEnt(S.my, cid), me:1}, ...S.friends.map(x => ({uid:x.uid, n:dn(x.farm), e:psEnt(x.farm, cid)}))].filter(x => x.e && PETS[x.e.k]);
-  const out = ps.map(p => ({...p, k:p.e.k, pn:PETS[p.e.k].n, on:p.e.on || {}, v:Math.round(p.e.sc * 1.3 + seededR(strHash('ps:' + cid + ':' + p.uid))() * 30)}));
+  const out = ps.map(p => ({...p, k:p.e.k, pn:petNm(p.e.k, p.me ? S.my : S.friends.find(y => y.uid === p.uid)?.farm), on:p.e.on || {}, v:Math.round(p.e.sc * 1.3 + seededR(strHash('ps:' + cid + ':' + p.uid))() * 30)}));
   const R = seededR(strHash('psnpc:' + cid));
   for (const [n, pn, k] of PS_NPC) if (out.length < 4) { const kk = PETS[k] ? k : Object.keys(PETS)[Math.floor(R() * Object.keys(PETS).length)]; out.push({uid:'npc:' + n, n, k:kk, pn, on:{}, v:Math.round(35 + R() * 60), npc:1}); }
   return out.sort((a, b) => b.v - a.v);
@@ -3790,10 +3883,10 @@ function openPetShow() {
         if (G.done) body += `<div class="mgbtn"><button class="b o" data-act="psClaim">${cl.rw ? `🎁 領獎（第 ${cl.k + 1} 名：${rwText(cl.rw)}）` : `第 ${cl.k + 1} 名，下次加油！（確認）`}</button></div>`; }
     }
     body += `<div class="sec">📅 下一場：${hrDate(cid)}（週四）晚上 8 點公布</div>`;
-    if (mine) body += `<div class="mgres">✅ 已經報名：${icon('pet', mine.k)} <b>${PETS[mine.k].n}</b>　${Object.values(mine.on || {}).map(id => PACC[id]?.em).join('')}<br><small>報名時的打扮就是比賽的樣子，等開票吧 🤞</small></div>`;
-    else body += (f.pets || []).filter(k => PETS[k]).map(k => `<div class="item"><div class="pic">${icon('pet', k)}</div><div class="info"><div class="t">${PETS[k].n} <small>Lv.${petLv(f, k)}</small> ${Object.values(petOn(f, k)).map(id => PACC[id]?.em).join('')}${bathed(f, k) ? ' 🛁' : ''}</div><div class="d">可愛度 <b>${petCharm(f, k)}</b></div></div><div class="acts"><button class="b" data-act="petDress" data-k="${k}">👗 打扮</button><button class="b o" data-act="psEnter" data-k="${k}">報名 💰${PS_FEE}</button></div></div>`).join('') || '<div class="mgres">還沒有寵物，先去商店「寵物」帶一隻回家吧</div>';
+    if (mine) body += `<div class="mgres">✅ 已經報名：${icon('pet', mine.k)} <b>${petNm(mine.k, S.my)}</b>　${Object.values(mine.on || {}).map(id => PACC[id]?.em).join('')}<br><small>報名時的打扮就是比賽的樣子，等開票吧 🤞</small></div>`;
+    else body += (f.pets || []).filter(k => PETS[k]).map(k => `<div class="item"><div class="pic">${icon('pet', k)}</div><div class="info"><div class="t">${petNm(k, f)} <small>Lv.${petLv(f, k)}</small> ${Object.values(petOn(f, k)).map(id => PACC[id]?.em).join('')}${bathed(f, k) ? ' 🛁' : ''}</div><div class="d">可愛度 <b>${petCharm(f, k)}</b></div></div><div class="acts"><button class="b" data-act="petDress" data-k="${k}">👗 打扮</button><button class="b o" data-act="psEnter" data-k="${k}">報名 💰${PS_FEE}</button></div></div>`).join('') || '<div class="mgres">還沒有寵物，先去商店「寵物」帶一隻回家吧</div>';
     const fr = S.friends.filter(x => psEnt(x.farm, cid));
-    body += `<div class="sec">👥 已報名的好友（${fr.length}）</div><div class="d" style="font-size:13px">${fr.length ? fr.map(x => `${esc(dn(x.farm))}的${PETS[psEnt(x.farm, cid).k]?.n || '寵物'}`).join('、') : '還沒有好友報名'}<br><small style="color:#8d6e63">報名不到 4 隻的話，村民的寵物也會來比</small></div>`;
+    body += `<div class="sec">👥 已報名的好友（${fr.length}）</div><div class="d" style="font-size:13px">${fr.length ? fr.map(x => `${esc(dn(x.farm))}的${petNm(psEnt(x.farm, cid).k, x.farm) || '寵物'}`).join('、') : '還沒有好友報名'}<br><small style="color:#8d6e63">報名不到 4 隻的話，村民的寵物也會來比</small></div>`;
     const past = Object.keys(f.pshow?.cl || {}).sort().slice(-3).reverse();
     if (past.length) body += `<div class="sec">📜 我的戰績</div><div class="d" style="font-size:13px">${past.map(c => `${hrDate(c)}：第 ${f.pshow.cl[c]} 名（${PETS[f.pshow.ent[c]?.k]?.n || ''}）`).join('<br>')}</div>`;
     openModal('🐶 寵物選美', body);
@@ -3803,7 +3896,7 @@ function openPetShow() {
 function openPetDress(k) {
   S.modal = () => {
     const f = S.my, A = paccView(f), on = petOn(f, k);
-    let body = `<div class="popbox">${icon('pet', k)} <b>${PETS[k].n}</b>　可愛度 <b>${petCharm(f, k)}</b><br><small>配件買一次就能給所有寵物戴（每個位置戴一個）。每天幫寵物洗澡可愛度 +10！</small></div>`;
+    let body = `<div class="popbox">${icon('pet', k)} <b>${petNm(k, S.my)}</b>　可愛度 <b>${petCharm(f, k)}</b><br><small>配件買一次就能給所有寵物戴（每個位置戴一個）。每天幫寵物洗澡可愛度 +10！</small></div>`;
     body += `<div class="mgbtn">${bathed(f, k) ? '<button class="b g" disabled>🛁 今天洗過澡了，香噴噴！</button>' : `<button class="b o" data-act="petBath" data-k="${k}">🛁 幫牠洗澡（免費）</button>`}</div>`;
     for (const sl of ['top', 'face', 'neck', 'back']) {
       body += `<div class="sec">${PSLOT_N[sl]}</div>` + Object.entries(PACC).filter(([, P]) => P.slot === sl).map(([id, P]) => { const own = A.own?.[id], wear = on[sl] === id;
@@ -3817,13 +3910,13 @@ const paccSet = (k, fn, okMsg) => fast(f => { const A = paccOf(f); const r = fn(
 async function paccBuy(k, id) { const P = PACC[id]; await paccSet(k, (f, A) => { if (A.own[id]) return; if (f.coins < P.c) return ab('金幣不夠'); f.coins -= P.c; addTrade(f, `寵物配件${P.n}`, -P.c); A.own[id] = 1; (A.on[k] ??= {})[P.slot] = id; }, `${P.em} 買了${P.n}，已經幫${PETS[k].n}戴上！`); }
 async function paccOn(k, id) { const P = PACC[id]; await paccSet(k, (f, A) => { if (!A.own[id]) return ab('還沒有這個配件'); (A.on[k] ??= {})[P.slot] = id; }, `${P.em} 戴上${P.n}了！`); }
 async function paccOff(k, sl) { await paccSet(k, (f, A) => { if (A.on[k]) delete A.on[k][sl]; }, ''); }
-async function petBath(k) { await paccSet(k, (f, A) => { if (A.bath[k] === today()) return ab('今天洗過了'); A.bath[k] = today(); gainExp(f, 3); }, `🛁 ${PETS[k].n}洗得香噴噴！可愛度 +10（今天有效）`); Music.sparkle(); }
+async function petBath(k) { await paccSet(k, (f, A) => { if (A.bath[k] === today()) return ab('今天洗過了'); A.bath[k] = today(); gainExp(f, 3); }, `🛁 ${petNm(k, S.my)}洗得香噴噴！可愛度 +10（今天有效）`); Music.sparkle(); }
 async function psEnter(k) {
   let msg = '';
   await fast(f => { f.pshow ??= {}; f.pshow.ent ??= {}; f.pshow.cl ??= {}; const cid = psOpen(); if (f.pshow.ent[cid]) return ab('這週已經報名了'); if (!f.pets.includes(k)) return ab('找不到這隻寵物'); if (f.coins < PS_FEE) return ab('金幣不夠');
     f.coins -= PS_FEE; addTrade(f, '寵物選美報名費', -PS_FEE); f.pshow.ent[cid] = {k, on:{...petOn(f, k)}, sc:petCharm(f, k), t:now()};
     const ks = Object.keys(f.pshow.ent).sort(); while (ks.length > 6) { const c = ks.shift(); delete f.pshow.ent[c]; delete f.pshow.cl[c]; }
-    msg = `🐶 ${PETS[k].n}報名 ${hrDate(cid)} 寵物選美！`; return {}; }, () => { toast(msg); Music.sfx('ding'); });
+    msg = `🐶 ${petNm(k, S.my)}報名 ${hrDate(cid)} 寵物選美！`; return {}; }, () => { toast(msg); Music.sfx('ding'); });
 }
 async function psVote() {
   const cl = psClaimable(S.my); if (!cl) return; S.psv = {cid:cl.cid, k:0, done:0};
@@ -4050,7 +4143,7 @@ const greenView = f => f?.green || {n:GH_START, plots:[], pump:{s:'empty'}, bag:
 const ghMs = c => CROPS[c].t * 1000 / SPEED * GH_SPEED;
 const ghMature = p => p && p.s === 'grow' && CROPS[p.c] && now() >= p.p + ghMs(p.c);
 const ghProg = p => p && p.s === 'grow' && CROPS[p.c] ? Math.min(1, (now() - p.p) / ghMs(p.c)) : 0;
-// 南瓜大賽：每週一次（台灣時間）。週日～週五可以挑一顆報名，週五晚上 12 點截止，週六公布排名
+// 巨大蔬果大賽：每週輪流南瓜→西瓜→冬瓜→絲瓜（台灣時間）。週日～週五可以挑一個報名，週五晚上 12 點截止，週六公布排名
 const wkOf = (day = twDay()) => Math.floor((dayN(day) + 4) / 7);
 const dowOf = (day = twDay()) => (dayN(day) + 4) % 7;   // 0 週日 … 6 週六
 const wkStart = w => new Date((w * 7 - 4) * 864e5).toISOString().slice(0, 10);
@@ -4059,16 +4152,35 @@ const pumpOpen = () => dowOf() <= 5;
 const pumpResWk = () => dowOf() === 6 ? wkOf() : wkOf() - 1;   // 最近一次公布排名的那一週
 const pumpMs = () => PUMP_H * 3600000 / SPEED;
 const pumpMature = q => q && q.s === 'grow' && now() >= q.p + pumpMs();
-function pumpKg(q, final) { if (!q || q.s !== 'grow') return 0; const R = seededR(strHash('pump:' + q.p)), luck = Math.floor(R() * 31), pr = final ? 1 : Math.min(1, (now() - q.p) / pumpMs()); return Math.round((40 + (q.care || 0) + luck) * (.15 + .85 * pr) * 10) / 10; }
+function pumpKg(q, final) { if (!q || q.s !== 'grow') return 0; const R = seededR(strHash('pump:' + q.p)), luck = Math.floor(R() * 31), pr = final ? 1 : Math.min(1, (now() - q.p) / pumpMs()); return Math.round((40 + (q.care || 0) + luck) * (.15 + .85 * pr) * (GIANT[q.k]?.mul || 1) * 10) / 10; }
+// ----- 巨大蔬果大賽：南瓜 → 西瓜 → 冬瓜 → 絲瓜，每週輪流 -----
+const GIANT = {pumpkin:{n:'南瓜', em:'🎃', u:'kg', mul:1, sell:7}, watermelon:{n:'西瓜', em:'🍉', u:'kg', mul:.75, sell:9}, wintermelon:{n:'冬瓜', em:'🍈', u:'kg', mul:1.15, sell:6}, luffa:{n:'絲瓜', em:'🥒', u:'cm', mul:2.6, sell:2.6}};
+const GIANT_ORDER = ['pumpkin', 'watermelon', 'wintermelon', 'luffa'], GIANT_W0 = wkOf('2026-11-01');
+const giantOf = (w = wkOf()) => GIANT_ORDER[(((w - GIANT_W0) % 4) + 4) % 4];
+const giantPlantW = () => pumpOpen() && ((5 - dowOf()) * 24 + 24 - twHour()) * 3600000 > pumpMs() ? wkOf() : wkOf() + 1;
+const gK = q => GIANT[q?.k] ? q.k : 'pumpkin', gNm = k => '巨大' + GIANT[k].n, gU = k => GIANT[k].u;
+const giantRw = k => [{c:2000, tr:1, ev:k}, {c:1000, tr:2, ev:k}, {c:500, tr:3, ev:k}];
+const giantPrice = it => Math.round(it.kg * GIANT[gK(it)].sell);
+const itemW = it => it.w ?? wkOf(new Date(it.t + 8 * 3600000).toISOString().slice(0, 10));
+
 // ----- 比賽獎勵＆獎盃 -----
-const EVENTS = {pumpkin:{n:'巨大南瓜大賽', em:'🎃'}, horse:{n:'賽馬大賽', em:'🐎'}, fishing:{n:'釣魚大賽', em:'🎣'}, market:{n:'夜市高手', em:'🏮'}, petshow:{n:'寵物選美', em:'🐶'}, bingo:{n:'賓果', em:'🎱'}};
+const EVENTS = {pumpkin:{n:'巨大南瓜大賽', em:'🎃'}, watermelon:{n:'巨大西瓜大賽', em:'🍉'}, wintermelon:{n:'巨大冬瓜大賽', em:'🍈'}, luffa:{n:'巨大絲瓜大賽', em:'🥒'}, horse:{n:'賽馬大賽', em:'🐎'}, fishing:{n:'釣魚大賽', em:'🎣'}, market:{n:'夜市高手', em:'🏮'}, petshow:{n:'寵物選美', em:'🐶'}, bingo:{n:'賓果', em:'🎱'}};
 const TROPHY_N = {1:'冠軍獎盃', 2:'第二名獎盃', 3:'第三名獎盃'};
-const rwText = rw => [rw.c ? `💰${rw.c}` : '', rw.fert ? `🧪化肥×${rw.fert}` : '', rw.tr ? `🏆${TROPHY_N[rw.tr]}` : ''].filter(Boolean).join('＋');
+const TR_PRE = {pumpkin:'南瓜', watermelon:'西瓜', wintermelon:'冬瓜', luffa:'絲瓜', horse:'賽馬', fishing:'釣魚'};
+const trName = (ev, r) => TR_PRE[ev] ? `${TR_PRE[ev]}獎盃（${['', '冠軍', '第二名', '第三名'][r]}）` : TROPHY_N[r];
+const rwText = rw => [rw.c ? `💰${rw.c}` : '', rw.fert ? `🧪化肥×${rw.fert}` : '', rw.tr ? `🏆${trName(rw.ev, rw.tr)}` : ''].filter(Boolean).join('＋');
 function giveRw(f, rw, ev, label) { if (rw.c) f.coins += rw.c; if (rw.fert) f.fert = (f.fert || 0) + rw.fert; if (rw.tr) { (f.trophy ??= []).push({e:ev, r:rw.tr, t:now(), w:label || ''}); if (f.trophy.length > 80) f.trophy = f.trophy.slice(-80); } if (rw.c) addTrade(f, `${EVENTS[ev]?.n || ''}獎金`, rw.c); }
-const PUMP_RW = [{c:2000, tr:1}, {c:1000, tr:2}, {c:500, tr:3}];
+const PUMP_RW = giantRw('pumpkin');
 const pumpEnt = (f, w) => greenView(f).ent?.[w] || 0;
 function pumpRank(w) { const all = [{uid:S.uid, n:myName(), kg:pumpEnt(S.my, w)}, ...S.friends.map(x => ({uid:x.uid, n:dn(x.farm), kg:pumpEnt(x.farm, w)}))].filter(x => x.kg > 0); return all.sort((a, b) => b.kg - a.kg); }
-function pumpClaimable(f) { const w = pumpResWk(), G = greenView(f); if (!G.ent?.[w] || (G.cl || 0) >= w) return null; const k = pumpRank(w).findIndex(x => x.uid === S.uid); return k >= 0 && PUMP_RW[k] ? {w, k, rw:PUMP_RW[k]} : null; }
+function pumpClaimable(f) { const w = pumpResWk(), G = greenView(f); if (!G.ent?.[w] || (G.cl || 0) >= w) return null; const k = pumpRank(w).findIndex(x => x.uid === S.uid); return k >= 0 ? {w, k, rw:giantRw(giantOf(w))[k] || null} : null; }
+function giantSellOld(f, msgs) {   // 沒參加比賽、或比完賽剩下的巨大蔬果，村民會來買走
+  const G = f.green; if (!G?.bag?.length) return false; const rw = pumpResWk(), eIt = G.entI != null ? G.bag[G.entI] : null; let ch = false, sum = 0, n = 0;
+  G.bag = G.bag.filter(it => { const w = itemW(it), entered = it === eIt && G.ent?.[w] && (G.cl || 0) < w && w >= rw;
+    if (w < rw || (w === rw && !entered)) { const c = giantPrice(it), who = rnd(BUYERS); f.coins += c; sum += c; n++; addTrade(f, `${who}買走${it.kg}${gU(gK(it))}的${gNm(gK(it))}`, c); if (n <= 3) addLog(f, `🧑‍🌾 ${who}買走了你的${gNm(gK(it))}（${it.kg} ${gU(gK(it))}），💰${c}`); ch = true; return false; } return true; });
+  if (ch) { const j = eIt ? G.bag.indexOf(eIt) : -1; G.entI = j >= 0 ? j : null; msgs?.push(`🧑‍🌾 村民買走了你的 ${n} 個巨大蔬果，💰${sum}`); }
+  return ch;
+}
 
 function buildGreen(S3) {
   const X = GREEN_T.x;
@@ -4096,10 +4208,18 @@ function giantPumpkin(kg) {
   g.add(ball('#ef6c00', [.45, .4, .45], [0, .42, 0]), rod('#5d4037', [.07, .25, .07], [0, .86, 0], [.3, 0, .2]), ball('#558b2f', [.3, .05, .2], [.15, .82, .1]));
   g.scale.setScalar(s); return g;
 }
+function giantVeg(k, v) {
+  const g = new THREE.Group();
+  if (k === 'watermelon') { const s = .5 + Math.min(2.2, v / 45); g.add(ball('#2e7d32', [.62, .48, .5], [0, .46, 0])); for (let i = 0; i < 6; i++) g.add(ball('#1b5e20', [.63, .49, .08], [0, .46, 0], [i / 6 * Math.PI, 0, 0])); g.add(rod('#5d4037', [.05, .14, .05], [.6, .55, 0], [0, 0, 1])); g.scale.setScalar(s); }
+  else if (k === 'wintermelon') { const s = .45 + Math.min(2.2, v / 70); g.add(ball('#4e7a3a', [.8, .38, .38], [0, .38, 0])); for (let i = 0; i < 14; i++) g.add(ball('#e8f0e0', U(.05), [-.6 + (i % 7) * .2, .4 + Math.sin(i) * .25, (i < 7 ? 1 : -1) * .3])); g.add(rod('#5d4037', [.05, .14, .05], [.82, .42, 0], [0, 0, 1.2])); g.scale.setScalar(s); }
+  else if (k === 'luffa') { const L = Math.min(5.5, .6 + v / 70); for (let i = 0; i < 8; i++) { const a = i / 7; g.add(ball(i % 2 ? '#558b2f' : '#689f38', [L / 14 + .06, .16 + Math.sin(a * Math.PI) * .05, .16 + Math.sin(a * Math.PI) * .05], [-L / 2 + a * L, .2 + Math.sin(a * Math.PI) * .15, Math.sin(a * 3) * .12])); } g.add(ball('#fdd835', U(.1), [L / 2 + .08, .25, 0])); }
+  else return giantPumpkin(v);
+  return g;
+}
 function syncGreen(f, own) {
   if (!W.greenG) return;
-  const pkV = q => own ? pumpKg(q) : Math.round(25 + 35 * Math.min(1, (now() - q.p) / pumpMs()));
-  const G = greenView(f), key = JSON.stringify([G.n, (G.plots || []).map(p => p.s === 'grow' ? p.c + ':' + (ghMature(p) ? 3 : ghProg(p) > .5 ? 2 : 1) : p.s), G.pump?.s, G.pump?.s === 'grow' ? Math.round(pkV(G.pump) / 5) + (own ? 'o' : 'f') + (pumpMature(G.pump) ? 'm' : '') : '']);
+  const pkV = q => own ? pumpKg(q) : Math.round((25 + 35 * Math.min(1, (now() - q.p) / pumpMs())) * (GIANT[gK(q)].mul));
+  const G = greenView(f), key = JSON.stringify([G.n, (G.plots || []).map(p => p.s === 'grow' ? p.c + ':' + (ghMature(p) ? 3 : ghProg(p) > .5 ? 2 : 1) : p.s), G.pump?.s, gK(G.pump), G.pump?.s === 'grow' ? Math.round(pkV(G.pump) / 5) + (own ? 'o' : 'f') + (pumpMature(G.pump) ? 'm' : '') : '']);
   if (W.greenKey !== key) {
     W.greenKey = key; W.greenG.clear();
     for (let i = 0; i < GH_MAX; i++) { const [x, z] = ghXZ(i), lock = i >= (G.n || GH_START), p = (G.plots || [])[i] || {s:'empty'}, g = new THREE.Group(); g.position.set(x, 0, z);
@@ -4109,11 +4229,11 @@ function syncGreen(f, own) {
       g.traverse(o => o.userData.hit = {type:'gplot', i}); W.greenG.add(g); }
     const q = G.pump || {s:'empty'}, pg = new THREE.Group(); pg.position.set(PUMP_XZ[0], 0, PUMP_XZ[1]);
     pg.add(blk('#795548', [4.4, .3, 2.2], [0, .15, 0]), blk('#5d4037', [4.1, .05, 1.9], [0, .31, 0]), blk('#ffe082', [1.6, .4, .06], [-1.4, .55, 1.12]));
-    if (q.s === 'grow') { const m = giantPumpkin(pkV(q)); m.position.y = .32; pg.add(m); if (pumpMature(q)) pg.add(ring('#e53935', [.7, .7, .3], [0, .4 + .7 * (.45 + Math.min(2.4, pkV(q) / 60)), 0], [Math.PI / 2, 0, 0])); }
+    if (q.s === 'grow') { const m = giantVeg(gK(q), pkV(q)); m.position.y = .32; pg.add(m); if (pumpMature(q)) pg.add(ring('#e53935', [.7, .7, .3], [0, .4 + .7 * (.45 + Math.min(2.4, pkV(q) / 60)), 0], [Math.PI / 2, 0, 0])); }
     pg.traverse(o => o.userData.hit = {type:'gpump'}); W.greenG.add(pg);
   }
   for (let i = 0; i < (G.n || GH_START); i++) { const p = (G.plots || [])[i], [x, z] = ghXZ(i); if (p?.s === 'grow' && CROPS[p.c]) ov('gp' + i, ghMature(p) ? '✨ 可以收成' : `${CROPS[p.c].n} ${Math.floor(ghProg(p) * 100)}%`, v => v.set(x, 1.6, z), ghMature(p) ? 'bub' : 'tag'); }
-  const q = G.pump; ov('gpump', q?.s === 'grow' ? `🎃 巨大南瓜 ${own ? pumpKg(q) : '？？'} kg${pumpMature(q) ? ' ✨可以收成' : ''}` : own ? '🎃 南瓜大賽（點我）' : '🎃 南瓜大賽', v => v.set(PUMP_XZ[0], q?.s === 'grow' ? 2.6 + Math.min(2.4, pkV(q) / 60) : 1.4, PUMP_XZ[1]), q?.s === 'grow' && pumpMature(q) ? 'bub' : 'tag');
+  const q = G.pump, ck = giantOf(); ov('gpump', q?.s === 'grow' ? `${GIANT[gK(q)].em} ${gNm(gK(q))} ${own ? pumpKg(q) : '？？'} ${gU(gK(q))}${pumpMature(q) ? ' ✨可以收成' : ''}` : `${GIANT[ck].em} 巨大蔬果大賽・本週${GIANT[ck].n}${own ? '（點我）' : ''}`, v => v.set(PUMP_XZ[0], q?.s === 'grow' ? 2.6 + Math.min(2.4, pkV(q) / 60) : 1.4, PUMP_XZ[1]), q?.s === 'grow' && pumpMature(q) ? 'bub' : 'tag');
 }
 
 /* ----- 廟宇介面 ----- */
@@ -4214,7 +4334,7 @@ async function qianDraw(h) {
   if (lv <= 1) { Music.sfx('coin'); Music.sparkle(); } else if (lv >= 3) Music.sfx('bad'); renderAll();
 }
 // 點地面走過去
-const WALK_BOX = {farm:[-12, 12], ranch:[-12, 12], fish:[-12, 12], factory:[-12, 12], town:[-11, 11], green:[-8, 8], temple:[-10, 10], stable:[-13, 13], dock:[-15, 15], market:[-12, 12]};
+const WALK_BOX = {farm:[-12, 12], ranch:[-12, 12], fish:[-12, 12], factory:[-12, 12], town:[-11, 11], green:[-8, 8], temple:[-10, 10], stable:[-13, 13], dock:[-15, 15], market:[-12, 12], museum:[-13, 13]};
 function walkTap(cx, cy) {
   if (!W.scene || W.race || S.decoMode || !S.my) return;
   const r = W.renderer.domElement.getBoundingClientRect(); W.ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1); W.ray.setFromCamera(W.ndc, W.camera);
@@ -4271,55 +4391,64 @@ function clickGh(i) {
 function openPump() {
   S.modal = () => {
     const own = isOwn(), f = own ? S.my : S.view, G = greenView(f), q = G.pump || {s:'empty'}, wk = wkOf(), open = pumpOpen(), L = levelOf(S.my.exp).L, mine = greenView(S.my);
-    let body = `<div class="popbox">🎃 <b>巨大南瓜大賽</b>（每週一次）<br><small>週日～週五挑一顆自己種的巨大南瓜報名，<b>週五晚上 12 點截止，週六公布排名</b>，在好友之間比誰最重！<b>看不到好友的南瓜有多重</b>，公布時才知道名次 🤫<br>第 1 名 💰2000＋🏆冠軍獎盃 · 第 2 名 💰1000＋🏆第二名獎盃 · 第 3 名 💰500＋🏆第三名獎盃</small></div>`;
+    const curK = giantOf(wk), pk = giantOf(giantPlantW()), sched = [0, 1, 2, 3].map(i => { const w = wk + i, k = giantOf(w); return `${i === 0 ? '<b>本週</b>' : md(wkStart(w))}${GIANT[k].em}${GIANT[k].n}`; }).join(' → ');
+    let body = `<div class="popbox">${GIANT[curK].em} <b>本週：${gNm(curK)}大賽</b><br><small>每週輪流比 🎃南瓜 → 🍉西瓜 → 🍈冬瓜 → 🥒絲瓜（絲瓜比長度）。週日～週五挑一個報名，<b>週五晚上 12 點截止，週六公布排名</b>，<b>看不到好友的數值</b> 🤫<br>前三名 💰2000／1000／500＋該比賽的專屬獎盃，<b>得獎作品會被村民搬到「🏛️ 展覽館」展覽</b>；沒得獎和沒參加的會被村民買走。<br>📅 ${sched}</small></div>`;
     if (own) {
-      if (q.s !== 'grow') body += L < PUMP_LV ? `<div class="empty">Lv.${PUMP_LV} 才能參加南瓜大賽</div>` : `<div class="mgbtn"><button class="b o" data-act="pumpPlant">🎃 種一顆巨大南瓜（${PUMP_COST}💰，${fmtDur(pumpMs())}長大）</button></div>`;
-      else {
-        body += `<div class="mgres">🎃 現在大約 <b>${pumpKg(q)} kg</b>${pumpMature(q) ? '，可以收成了！' : `，還要 ${fmtDur(q.p + pumpMs() - now())} 長大`}<br><small>照顧越多次，南瓜越重！</small></div>`;
-        if (pumpMature(q)) body += `<div class="mgbtn"><button class="b o" data-act="pumpHarvest">✂️ 收成，量量看幾公斤！</button></div>`;
-        else body += `<div class="mgbtn" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">${Object.entries(PUMP_CARE).map(([k, C]) => { const w = (q.last?.[k] || 0) + C.iv * 3600000 / SPEED - now(); return w > 0 ? `<button class="b g" disabled>${C.em}${C.n} ${fmtDur(w)}</button>` : `<button class="b o" data-act="pumpCare" data-k="${k}">${C.em}${C.n} +${C.kg}kg${k === 'fert' ? '（用 1 化肥）' : ''}</button>`; }).join('')}</div>`;
-      }
-    }
-    if (own) {
+      if (q.s !== 'grow') body += L < PUMP_LV ? `<div class="empty">Lv.${PUMP_LV} 才能參加巨大蔬果大賽</div>` : `<div class="mgbtn"><button class="b o" data-act="pumpPlant">${GIANT[pk].em} 種一個${gNm(pk)}（${PUMP_COST}💰，${fmtDur(pumpMs())}長大）${open ? '' : '・參加下週比賽'}</button></div>`;
+      else { const k = gK(q);
+        body += `<div class="mgres">${GIANT[k].em} ${gNm(k)}現在大約 <b>${pumpKg(q)} ${gU(k)}</b>${pumpMature(q) ? '，可以收成了！' : `，還要 ${fmtDur(q.p + pumpMs() - now())} 長大`}<br><small>照顧越多次越大！</small></div>`;
+        if (pumpMature(q)) body += `<div class="mgbtn"><button class="b o" data-act="pumpHarvest">✂️ 收成，量量看！</button></div>`;
+        else body += `<div class="mgbtn" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">${Object.entries(PUMP_CARE).map(([c, C]) => { const w = (q.last?.[c] || 0) + C.iv * 3600000 / SPEED - now(); return w > 0 ? `<button class="b g" disabled>${C.em}${C.n} ${fmtDur(w)}</button>` : `<button class="b o" data-act="pumpCare" data-k="${c}">${C.em}${C.n}${c === 'fert' ? '（用 1 化肥）' : ''}</button>`; }).join('')}</div>`; }
       const bag = mine.bag || [], ent = mine.ent?.[wk] || 0;
-      body += `<div class="sec">🎃 我的巨大南瓜（收成後會留在這裡，挑一顆報名）</div>` + (bag.length ? bag.map((b, i) => `<div class="log"><span style="flex:1">🎃 ${b.kg} kg <small style="color:#8d6e63">${md(new Date(b.t + 8 * 3600000).toISOString().slice(0, 10))} 收成</small></span>${ent === b.kg && mine.entI === i ? '<b style="color:#2e7d32">✅ 本週參賽中</b>' : open ? `<button class="b o" data-act="pumpEnter" data-i="${i}">${ent ? '換這顆比賽' : '報名這顆'}</button>` : ''}</div>`).join('') : '<div class="empty">還沒有巨大南瓜，先種一顆吧！</div>');
+      body += `<div class="sec">🧺 我收成的巨大蔬果（挑一個報名本週比賽）</div>` + (bag.length ? bag.map((b, i) => { const k = gK(b), used = b.e != null && b.e !== wk, ok = k === curK && itemW(b) === wk && !used;
+        return `<div class="log"><span style="flex:1">${GIANT[k].em} ${gNm(k)} ${b.kg} ${gU(k)} <small style="color:#8d6e63">${md(new Date(b.t + 8 * 3600000).toISOString().slice(0, 10))} 收成${itemW(b) > wk ? '・下週比賽用' : used ? '・參賽過了' : ''}</small></span>${ent === b.kg && mine.entI === i ? '<b style="color:#2e7d32">✅ 本週參賽中</b>' : open && ok ? `<button class="b o" data-act="pumpEnter" data-i="${i}">${ent ? '換這個比賽' : '報名這個'}</button>` : ''}</div>`; }).join('') : '<div class="empty">還沒有巨大蔬果，先種一個吧！</div>');
     }
-    if (open) body += `<div class="sec">📝 本週比賽（${wkRange(wk)}）</div><div class="mgres">${own ? (mine.ent?.[wk] ? `你報名了 <b>${mine.ent[wk]} kg</b> 的南瓜（週五晚上 12 點前都可以換）` : '你還沒報名喔！') : ''}<br><small>已經有 ${pumpRank(wk).length} 人報名 · 週五晚上 12 點截止，週六公布排名</small></div>`;
-    const rw = pumpResWk(), rk = pumpRank(rw);
-    body += `<div class="sec">🏆 ${dowOf() === 6 ? '本週' : '上週'}排名（${wkRange(rw)}）</div>` + (rk.length ? rk.map((x, k) => `<div class="log"><span style="width:32px">${['🥇', '🥈', '🥉'][k] || k + 1}</span><span style="flex:1">${esc(x.n)}${x.uid === S.uid ? '（我）' : ''}</span><b>${x.uid === S.uid ? x.kg + ' kg' : '？？ kg'}</b>${PUMP_RW[k] ? `<small style="margin-left:6px;color:#e65100">${rwText(PUMP_RW[k])}</small>` : ''}</div>`).join('') : '<div class="empty">這一週沒有人報名</div>');
+    if (open) body += `<div class="sec">📝 本週${gNm(curK)}大賽（${wkRange(wk)}）</div><div class="mgres">${own ? (mine.ent?.[wk] ? `你報名了 <b>${mine.ent[wk]} ${gU(curK)}</b> 的${gNm(curK)}（週五晚上 12 點前都可以換）` : '你還沒報名喔！') : ''}<br><small>已經有 ${pumpRank(wk).length} 人報名 · 週五晚上 12 點截止，週六公布排名</small></div>`;
+    const rw = pumpResWk(), rk = pumpRank(rw), rK = giantOf(rw), RW = giantRw(rK);
+    body += `<div class="sec">🏆 ${dowOf() === 6 ? '本週' : '上週'}${gNm(rK)}大賽排名（${wkRange(rw)}）</div>` + (rk.length ? rk.map((x, k) => `<div class="log"><span style="width:32px">${['🥇', '🥈', '🥉'][k] || k + 1}</span><span style="flex:1">${esc(x.n)}${x.uid === S.uid ? '（我）' : ''}</span><b>${x.uid === S.uid ? x.kg + ' ' + gU(rK) : '？？ ' + gU(rK)}</b>${RW[k] ? `<small style="margin-left:6px;color:#e65100">${rwText(RW[k])}</small>` : ''}</div>`).join('') : '<div class="empty">這一週沒有人報名</div>');
     const cl = own && pumpClaimable(S.my);
-    if (cl) body += `<div class="mgbtn"><button class="b o" data-act="pumpClaim">🎁 領第 ${cl.k + 1} 名獎勵（${rwText(cl.rw)}）</button></div>`;
-    if (mine.rec) body += `<div class="d" style="text-align:center;margin-top:6px">🏅 我的最重紀錄：${mine.rec} kg</div>`;
-    openModal('🎃 巨大南瓜大賽', body);
+    if (cl) body += `<div class="mgbtn"><button class="b o" data-act="pumpClaim">${cl.rw ? `🎁 領第 ${cl.k + 1} 名獎勵（${rwText(cl.rw)}），作品送去展覽館` : `📦 第 ${cl.k + 1} 名，結算（作品給村民買走）`}</button></div>`;
+    body += `<div class="mgbtn"><button class="b" data-act="goMuseum">🏛️ 去展覽館看得獎作品</button></div>`;
+    if (mine.rec) body += `<div class="d" style="text-align:center;margin-top:6px">🏅 我的南瓜最重紀錄：${mine.rec} kg</div>`;
+    openModal(`${GIANT[curK].em} 巨大蔬果大賽`, body);
   };
   S.modal();
 }
 async function pumpPlant() {
-  await fast(f => { if (levelOf(f.exp).L < PUMP_LV) return ab(`Lv.${PUMP_LV} 才能參加`); const G = greenOf(f); if (G.pump.s === 'grow') return ab('已經種了一顆'); if (f.coins < PUMP_COST) return ab('金幣不夠'); f.coins -= PUMP_COST; addTrade(f, '巨大南瓜種子', -PUMP_COST); G.pump = {s:'grow', p:now(), care:0, last:{}}; return {}; },
-    () => { toast('🎃 巨大南瓜種下去了！記得常常來照顧它'); Music.sfx('pop'); });
+  const k = giantOf(giantPlantW());
+  await fast(f => { if (levelOf(f.exp).L < PUMP_LV) return ab(`Lv.${PUMP_LV} 才能參加`); const G = greenOf(f); if (G.pump.s === 'grow') return ab('已經種了一個'); if (f.coins < PUMP_COST) return ab('金幣不夠'); f.coins -= PUMP_COST; addTrade(f, `${gNm(k)}種子`, -PUMP_COST); G.pump = {s:'grow', p:now(), care:0, last:{}, k, w:giantPlantW()}; return {}; },
+    () => { toast(`${GIANT[k].em} ${gNm(k)}種下去了！記得常常來照顧它`); Music.sfx('pop'); });
 }
-async function pumpCare(k) {
-  const C = PUMP_CARE[k];
-  await fast(f => { const q = greenOf(f).pump; if (q.s !== 'grow') return ab('還沒種南瓜'); if (pumpMature(q)) return ab('已經長大了，可以收成囉'); q.last ??= {}; const w = (q.last[k] || 0) + C.iv * 3600000 / SPEED - now(); if (w > 0) return ab(`${fmtDur(w)}後才能再${C.n}`);
-    if (k === 'fert') { if ((f.fert || 0) > 0) f.fert--; else if ((f.wh.manure || 0) > 0) f.wh.manure--; else return ab('沒有化肥了'); }
-    q.last[k] = now(); q.care = (q.care || 0) + C.kg; return {}; },
-    () => { fx3(PUMP_XZ[0], 2.4, PUMP_XZ[1], `${C.em} +${C.kg} kg`, '#e65100'); if (k === 'sing') Music.babble(myGender(), '南瓜快長大'); else Music.sfx('pop'); });
+async function pumpCare(c) {
+  const C = PUMP_CARE[c];
+  await fast(f => { const q = greenOf(f).pump; if (q.s !== 'grow') return ab('還沒種'); if (pumpMature(q)) return ab('已經長大了，可以收成囉'); q.last ??= {}; const w = (q.last[c] || 0) + C.iv * 3600000 / SPEED - now(); if (w > 0) return ab(`${fmtDur(w)}後才能再${C.n}`);
+    if (c === 'fert') { if ((f.fert || 0) > 0) f.fert--; else if ((f.wh.manure || 0) > 0) f.wh.manure--; else return ab('沒有化肥了'); }
+    q.last[c] = now(); q.care = (q.care || 0) + C.kg; return {k:gK(q)}; },
+    r => { fx3(PUMP_XZ[0], 2.4, PUMP_XZ[1], `${C.em} 長大了！`, '#e65100'); if (c === 'sing') Music.babble(myGender(), '快快長大'); else Music.sfx('pop'); });
 }
 async function pumpHarvest() {
-  await fast(f => { const G = greenOf(f), q = G.pump; if (!pumpMature(q)) return ab('還沒長大'); const kg = pumpKg(q, true); G.rec = Math.max(G.rec || 0, kg);
-    G.bag.unshift({kg, t:now()}); if (G.entI != null) G.entI++; if (G.bag.length > 8) { G.bag.length = 8; if (G.entI >= 8) G.entI = null; }
-    f.wh.pumpkin = (f.wh.pumpkin || 0) + 8; dexAdd(f, 'pumpkin', 8); const up = gainExp(f, 60); G.pump = {s:'empty'};
-    addLog(f, `🎃 收成一顆 ${kg} kg 的巨大南瓜！`); return {kg, up}; },
-    r => { toast(`🎃 哇！${r.kg} kg 的巨大南瓜！${pumpOpen() ? '記得挑一顆報名本週比賽' : '週日開始就能報名比賽'}，另外拿到南瓜×8`); Music.sfx('coin'); Music.sparkle(); lvToast(r.up); });
+  await fast(f => { const G = greenOf(f), q = G.pump; if (!pumpMature(q)) return ab('還沒長大'); const kg = pumpKg(q, true), k = gK(q); if (k === 'pumpkin') G.rec = Math.max(G.rec || 0, kg);
+    G.bag.unshift({kg, t:now(), k, w:q.w ?? wkOf()}); if (G.entI != null) G.entI++; if (G.bag.length > 8) { G.bag.length = 8; if (G.entI >= 8) G.entI = null; }
+    if (CROPS[k]) { f.wh[k] = (f.wh[k] || 0) + 8; dexAdd(f, k, 8); } const up = gainExp(f, 60); G.pump = {s:'empty'};
+    addLog(f, `${GIANT[k].em} 收成一個 ${kg} ${gU(k)} 的${gNm(k)}！`); return {kg, k, up}; },
+    r => { toast(`${GIANT[r.k].em} 哇！${r.kg} ${gU(r.k)} 的${gNm(r.k)}！${giantOf() === r.k && pumpOpen() ? '記得挑一個報名本週比賽' : '等它的比賽週再報名'}${CROPS[r.k] ? `，另外拿到${CROPS[r.k].n}×8` : ''}`); Music.sfx('coin'); Music.sparkle(); lvToast(r.up); });
 }
 async function pumpEnter(i) {
-  await fast(f => { if (!pumpOpen()) return ab('週六是公布排名的日子，明天（週日）開始報名下一週'); const G = greenOf(f), b = G.bag[i]; if (!b) return ab('找不到這顆南瓜'); const w = wkOf(); G.ent[w] = b.kg; G.entI = i; for (const k of Object.keys(G.ent)) if (+k < w - 3) delete G.ent[k]; return {kg:b.kg}; },
-    r => { toast(`📝 報名成功！${r.kg} kg 的巨大南瓜參加本週比賽`); Music.sfx('pop'); });
+  await fast(f => { if (!pumpOpen()) return ab('週六是公布排名的日子，明天（週日）開始報名下一週'); const G = greenOf(f), b = G.bag[i]; if (!b) return ab('找不到'); const w = wkOf(); if (gK(b) !== giantOf(w)) return ab(`本週比的是${gNm(giantOf(w))}喔`); if (b.e != null && b.e !== w) return ab('這個已經參加過比賽了，不能再參加'); if (itemW(b) !== w) return ab('這個不是這一週種的，不能參加');
+    G.bag.forEach(x => { if (x.e === w && x !== b) delete x.e; }); b.e = w;
+    G.ent[w] = b.kg; G.entI = i; for (const k of Object.keys(G.ent)) if (+k < w - 3) delete G.ent[k]; return {kg:b.kg, k:gK(b)}; },
+    r => { toast(`📝 報名成功！${r.kg} ${gU(r.k)} 的${gNm(r.k)}參加本週比賽`); Music.sfx('pop'); });
 }
 async function pumpClaim() {
-  const cl = pumpClaimable(S.my); if (!cl) return toast('沒有可以領的獎勵');
-  await fast(f => { const G = greenOf(f); if ((G.cl || 0) >= cl.w) return ab('已經領過了'); G.cl = cl.w; giveRw(f, cl.rw, 'pumpkin', wkRange(cl.w)); addLog(f, `🏆 南瓜大賽第 ${cl.k + 1} 名！獎勵 ${rwText(cl.rw)}`); return {}; },
-    () => { toast(`🏆 南瓜大賽第 ${cl.k + 1} 名！${rwText(cl.rw)}`); Music.sfx('coin'); Music.sparkle(); });
+  const cl = pumpClaimable(S.my); if (!cl) return toast('沒有可以結算的比賽');
+  const k = giantOf(cl.w);
+  await fast(f => { const G = greenOf(f); if ((G.cl || 0) >= cl.w) return ab('已經領過了'); G.cl = cl.w; const v = G.ent[cl.w];
+    let i = G.bag.findIndex((b, j) => j === G.entI && b.kg === v); if (i < 0) i = G.bag.findIndex(b => b.kg === v && itemW(b) === cl.w); const it = i >= 0 ? G.bag.splice(i, 1)[0] : null; G.entI = null;
+    if (cl.rw) { giveRw(f, cl.rw, k, wkRange(cl.w)); (G.mus ??= []).push({k, v, w:cl.w, r:cl.k + 1, t:now()}); if (G.mus.length > 24) G.mus = G.mus.slice(-24);
+      addLog(f, `🏆 ${gNm(k)}大賽第 ${cl.k + 1} 名！獎勵 ${rwText(cl.rw)}，得獎的${gNm(k)}被村民搬到展覽館展覽了`); }
+    else if (it) { const c = giantPrice(it), who = rnd(BUYERS); f.coins += c; addTrade(f, `${who}買走${gNm(k)}`, c); addLog(f, `🧑‍🌾 ${gNm(k)}大賽第 ${cl.k + 1} 名，${who}買走了你的${gNm(k)}，💰${c}`); }
+    giantSellOld(f); return {}; },
+    () => { if (cl.rw) { toast(`🏆 ${gNm(k)}大賽第 ${cl.k + 1} 名！${rwText(cl.rw)}，作品送去展覽館了`); Music.sfx('coin'); Music.sparkle(); } else { toast('📦 結算好了，作品給村民買走了'); Music.sfx('coin'); } });
 }
 
 function syncFest() {
@@ -4382,7 +4511,7 @@ function mergeLocal(root) {
   return root;
 }
 function mergeStatic(S3) {
-  const keep = new Set([W.aqHit, W.mkHit, W.stableG, W.sky, W.sunBall, W.blades, W.trough, W.animalsG, W.petsG, W.peopleG, W.hoverRing, W.farmSign, W.ranchSign, W.fishSign, W.facSign, W.festSign, W.festG, W.stars, W.moon, W.rain, W.snow, W.pond,
+  const keep = new Set([W.aqHit, W.mkHit, W.musG, W.stableG, W.sky, W.sunBall, W.blades, W.trough, W.animalsG, W.petsG, W.peopleG, W.hoverRing, W.farmSign, W.ranchSign, W.fishSign, W.facSign, W.festSign, W.festG, W.stars, W.moon, W.rain, W.snow, W.pond,
     ...W.ripples, ...W.ponds.map(p => p.g), ...W.plots.map(p => p.g), ...W.poops, ...W.birds.map(b => b.b), ...W.clouds, ...W.flies.map(f => f.b), ...W.machs.map(m => m.g), ...W.ffly.map(f => f.m), ...(W.hens || []).map(h => h.m)].filter(Boolean));
   S3.updateMatrixWorld(true);
   const list = [];
@@ -4524,8 +4653,8 @@ function buildWorld() {
   // 窗戶晚上會亮
   W.winMat = new THREE.MeshLambertMaterial({color:'#bbdefb', emissive:'#000000'});
   const glass = mat('#bbdefb'); S3.traverse(o => { if (o.isMesh && o.material === glass) o.material = W.winMat; });
-  buildScenery(S3); buildFactory(S3); buildTown(S3); buildGreen(S3); buildTemple(S3); buildStable(S3); buildDock(S3); buildAquarium(S3); buildMarket(S3); buildEnv(S3);
-  mergeStatic(S3); prepSeason(S3); buildWalkers(S3); buildHome(S3);
+  buildScenery(S3); buildFactory(S3); buildTown(S3); buildGreen(S3); buildTemple(S3); buildStable(S3); buildDock(S3); buildAquarium(S3); buildMarket(S3); buildMuseum(S3); buildEnv(S3);
+  mergeStatic(S3); prepSeason(S3); buildWalkers(S3); buildMuseumPeople(S3); buildHome(S3);
   W.vilG = new THREE.Group(); W.decoG = new THREE.Group(); W.greenG = new THREE.Group(); W.templeG = new THREE.Group(); S3.add(W.vilG, W.decoG, W.greenG, W.templeG);
   W.stallG = stallModel(); W.stallGoods = new THREE.Group(); W.stallG.add(W.stallGoods); W.stallG.position.set(TOWN_T.x - 3.4, 0, -.6); W.stallG.traverse(o => o.userData.hit = {type:'stall'}); S3.add(W.stallG);
 }
@@ -4596,7 +4725,7 @@ function hoverAt(cx, cy) {
   else if (h.type === 'gplot') { const [x, z] = ghXZ(h.i); ring.position.set(x, .4, z); ring.scale.setScalar(1.4); }
   else if (h.type === 'gpump') { ring.position.set(PUMP_XZ[0], .4, PUMP_XZ[1]); ring.scale.setScalar(1.8); }
   else if (h.type === 'stall') { ring.position.set(TOWN_T.x - 3.4, .06, -.6); ring.scale.setScalar(1.6); }
-  else if (h.type === 'house' || h.type === 'tcab' || h.type === 'hitem' || h.type === 'mk') ring.visible = false;
+  else if (h.type === 'house' || h.type === 'tcab' || h.type === 'hitem' || h.type === 'mk' || h.type === 'mus') ring.visible = false;
   else if (h.type === 'vil') { const P = W.vils?.find(x => x.id === h.id); if (P) { ring.position.set(P.m.position.x, .06, P.m.position.z); ring.scale.setScalar(.6); } }
   else if (h.type === 'deco') { const d = S.view?.deco?.at?.[h.i]; if (d) { ring.position.set(d.x, .06, d.z); ring.scale.setScalar(.6); } }
   else if (h.type === 'cell') { ring.position.set(h.c[0], .08, h.c[1]); ring.scale.setScalar(.55); }
@@ -4752,7 +4881,7 @@ function syncPets(f) {
     W.petKey = key; W.petsG.clear(); W.petsG.add(c.g); W.pets = c.pets; W.petsG.visible = true;
   }
   if (!W.petsG.visible) return;
-  W.pets.forEach((P, i) => ov('pet' + i, `${P.guard ? '🛡️' : ''}${PETS[P.k].n} Lv${petLv(f, P.k)}`, v => v.copy(P.m.position).setY(P.m.userData.top || 1.3), 'tag'));
+  W.pets.forEach((P, i) => ov('pet' + i, `${P.guard ? '🛡️' : ''}${petNm(P.k, f)} Lv${petLv(f, P.k)}`, v => v.copy(P.m.position).setY(P.m.userData.top || 1.3), 'tag'));
 }
 function syncPeople(list) {
   const lkOf = p => p.uid === S.uid ? S.my?.look || null : p.lk || null, vhOf = p => p.vil ? '' : p.uid === S.uid ? rideOf(S.my) || '' : VEH[p.vh] ? p.vh : '';
@@ -4885,7 +5014,7 @@ function loop() {
     if (waving) { const T2 = P.waveTo && W.people.find(q => q.uid === P.waveTo); if (T2) { const a2 = Math.atan2(-(T2.m.position.z - P.m.position.z), T2.m.position.x - P.m.position.x), ac = -Math.PI / 2; let dd = a2 - ac; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y = ac + dd * .6; } else P.m.rotation.y = -Math.PI / 2; if (u.head) u.head.rotation.z = Math.sin(t * 5) * .15; if (wa < 1400) P.m.position.y = Math.abs(Math.sin(wa / 1400 * Math.PI * 2)) * .45; const pop = wa < 300 ? wa / 300 : wa > 3400 ? (3800 - wa) / 400 : 1; P.m.scale.setScalar(1.25 * (1 + .22 * pop)); if (!P.hiFx || now() - P.hiFx > 1300) { P.hiFx = now(); fx3(P.m.position.x, 3.3, P.m.position.z, rnd(['👋', '👋✨', '💕']), '#e91e63'); } }
     else if (P.m.scale.x !== 1.25) P.m.scale.setScalar(1.25);
   }
-  fishTick(t, dt); mkTick(t, dt); walkTick(t, dt); homeTick(t);
+  fishTick(t, dt); mkTick(t, dt); musTick(t, dt); walkTick(t, dt); homeTick(t);
   { const py = S.scene === 'home' ? HOME_T.y : 0; for (const P of W.people || []) P.m.position.y = py; if (S.scene === 'home') { W.rain.visible = W.snow.visible = false; if (W.bub) W.bub.visible = false; } }
   if (W.hoverRing.visible) W.hoverRing.material.opacity = .55 + Math.sin(t * 6) * .3;
   W.renderer.render(W.scene, W.camera);
@@ -5033,9 +5162,10 @@ function renderTools() {
                                   : [['hand','✋','偷撈'], ['cleanTip2','🧹','幫撈垃圾', 1]];
   else if (S.scene === 'ranch') T = own ? [['hand','✋','收集'], ['feedAll','🌾','餵食', 1], ['buyAni','🛒','買動物', 1], ['sellProducts','💰','賣產品', 1]]
                                    : [['hand','✋','偷產品'], ['feedFriend','🌾','幫餵食', 1], ['cleanTip','🧹','幫清便便', 1]];
-  else if (S.scene === 'green') T = own ? [['hand','✋','手'], ['pump','🎃','南瓜大賽', 1], ['ghBuy','➕','擴建溫室', 1]] : [['hand','✋','參觀'], ['pump','🎃','南瓜大賽', 1]];
+  else if (S.scene === 'green') T = own ? [['hand','✋','手'], ['pump', GIANT[giantOf()].em, '巨大大賽', 1], ['ghBuy','➕','擴建溫室', 1]] : [['hand','✋','參觀'], ['pump', GIANT[giantOf()].em, '巨大大賽', 1]];
   else if (S.scene === 'home') T = own ? (S.homeEdit ? [['homeDone','✅','完成', 1], ['homeDeco','🛋️','家具', 1]] : [['hand','✋','走走'], ['homeDeco','🛋️','裝潢', 1], ['homeArrange','🔧','擺設', 1], ['trophies','🏆','獎盃櫃', 1], ['leaveHome','🚪','出門', 1]]) : [['hand','✋','參觀'], ['trophies','🏆','獎盃櫃', 1], ['leaveHome','🚪','出門', 1]];
   else if (S.scene === 'market') T = [['hand','✋','逛逛'], ['mkGames','🎮','攤位遊戲', 1], ['mkShop','🎁','換獎品', 1], ['mkRank','🏆','夜市高手', 1], ['leaveP','🏠','回農場', 1]];
+  else if (S.scene === 'museum') T = [['hand','✋','參觀'], ['musList','📜','得獎名單', 1], ['pump', GIANT[giantOf()].em, '本週比賽', 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'dock') T = [['hand','✋','走走'], ['fishGo','🎣','釣魚', 1], ['aqShow','🐠','我的魚缸', 1], ['fishCup','🏆','釣魚大賽', 1], ['fishDex','📖','魚種圖鑑', 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'stable') T = own ? [['hand','✋','手'], ['horseList','🐎','我的馬', 1], ['horseRace','🏁','賽馬大賽', 1], ['aqShow','🐠','魚缸', 1]] : [['hand','✋','參觀'], ['horseList','🐎','看馬', 1], ['horseRace','🏁','賽馬大賽', 1], ['aqShow','🐠','魚缸', 1]];
   else if (S.scene === 'temple') T = [['hand','✋','手'], ['templeInfo','🏯','廟宇', 1], ['qianShow','📜','今日籤詩', 1], ['toTown','🏘️','回小鎮', 1]];
@@ -5062,16 +5192,17 @@ function renderScene() {
   if (f) {
     BUD = performance.now() + 10; BUILT = 0; W.syncPending = false;
     const order = {farm:[syncField, syncDeco, syncPets, syncRanch, syncFish, syncFactory, syncTown], ranch:[syncRanch, syncPets, syncField, syncDeco, syncFish, syncFactory, syncTown], fish:[syncFish, syncPets, syncField, syncDeco, syncRanch, syncFactory, syncTown], factory:[syncFactory, syncPets, syncField, syncDeco, syncRanch, syncFish, syncTown], green:[syncGreen, syncPets, syncField, syncDeco, syncRanch, syncFish, syncFactory, syncTown], town:[syncTown, syncStall, syncPets, syncField, syncDeco, syncRanch, syncFish, syncFactory]}[S.scene] || [syncField, syncDeco, syncRanch, syncFish, syncPets, syncFactory, syncTown];
-    for (const fn of order) fn(f, own); if (S.scene !== 'green') syncGreen(f, own); syncTemple(f, own); syncStable(f, own); syncAquarium(f, own); syncWalkers(); syncHome(f); syncFest();
+    for (const fn of order) fn(f, own); if (S.scene !== 'green') syncGreen(f, own); syncTemple(f, own); syncStable(f, own); syncAquarium(f, own); syncWalkers(); syncHome(f); syncFest(); syncMuseum();
     { const T = templeView(f); setSign(W.templeSign, own ? '我的廟宇' : `${dn(f)}的廟`, T.lv >= HALLS.length ? '三座殿都蓋好了 🙏' : `${HALLS[T.lv].n} 建造中 ${Math.floor(tpProg(T) * 100)}%`); }
     if (S.place === 'market') setSign(W.mkSign, '🏮 歡樂夜市', `${marketOpen() ? '營業中～12 點收攤' : '收攤囉'} · 現在 ${hereList().length} 人`);
+    if (S.place === 'museum') setSign(W.musSign, '🏛️ 歡樂展覽館', `本週比${GIANT[giantOf()].em}${GIANT[giantOf()].n} · 現在 ${hereList().length} 人`);
     if (S.place === 'dock') setSign(W.dockSign, '🎣 釣魚碼頭', `${isNight() ? '🌙 夜釣時間' : '☀️ 白天'}${isRain() ? '・🌧️ 下雨' : ''} · 現在 ${hereList().length} 人`);
     { const L = horseView(f).list || []; setSign(W.stableSign, own ? '我的馬場' : `${dn(f)}的馬場`, `馬 ${L.length}/${H_MAX} 匹 · 🏁下一場 ${hrDate(hrOpen())}`); }
-    setSign(W.greenSign, own ? '我的溫室' : `${dn(f)}的溫室`, `花圃 ${greenView(f).n || GH_START}/${GH_MAX} · 🎃南瓜大賽`); if (S.scene !== 'town') syncStall(f, own);
+    setSign(W.greenSign, own ? '我的溫室' : `${dn(f)}的溫室`, `花圃 ${greenView(f).n || GH_START}/${GH_MAX} · ${GIANT[giantOf()].em}巨大${GIANT[giantOf()].n}大賽`); if (S.scene !== 'town') syncStall(f, own);
     ov('stallL', own ? '🏪 我的攤位' : `🏪 ${esc(dn(f))}的攤位`, v => v.set(TOWN_T.x - 3.4, 3.1, -.6), 'tag');
     setSign(W.townSign, own ? '我的小鎮' : `${dn(f)}的小鎮`, own ? `今天的委託 ${vilPending(S.my)}/${VIL_REQ}` : '村民們都在這裡');
     setSign(W.facSign, own ? '我的加工廠' : `${dn(f)}的工廠`, `機器 ${Object.keys(f.fac?.own || {}).length}/${MACH_KEYS.length}`);
-    setSign(W.farmSign, own ? '我的農場' : `${dn(f)}的農場`, `Lv.${levelOf(f.exp).L} · ⭐人氣 ${decoPop(f)}${petOf(f) ? ' · ' + PETS[petOf(f)].n + '顧家' : ''}`);
+    setSign(W.farmSign, own ? '我的農場' : `${dn(f)}的農場`, `Lv.${levelOf(f.exp).L} · ⭐人氣 ${decoPop(f)}${petOf(f) ? ' · ' + petNm(petOf(f), f) + '顧家' : ''}`);
     setSign(W.ranchSign, own ? '我的牧場' : `${dn(f)}的牧場`, `動物 ${f.ranch.animals.length}/${ranchCap(levelOf(f.exp).L)}`);
     setSign(W.fishSign, own ? '我的魚塭' : `${dn(f)}的魚塭`, `魚池 ${f.fish.n}/${MAXPOND}`);
   }
@@ -5140,12 +5271,13 @@ function tipFor(h) {
   if (h.type === 'house') return `<b>🏠 ${isOwn() ? '我的' : esc(dn(S.view)) + '的'}農舍</b><br>點一下進屋${isOwn() ? '裝潢' : '參觀'}`;
   if (h.type === 'tcab') return `<b>🏆 獎盃櫃</b>（${(S.view?.trophy || []).length} 座）<br>點一下看全部`;
   if (h.type === 'hitem') { const a = homeAtOf(homeView(S.view))[h.i]; return a ? `<b>${HOME_ITEMS[a.id]?.em || ''} ${HOME_ITEMS[a.id]?.n || ''}</b>${isOwn() && S.homeEdit ? '<br>點一下移動、轉方向' : ''}` : ''; }
+  if (h.type === 'mus') return h.k === 'horse' ? '<b>🐎 賽馬冠軍雕像</b><br>點一下看全部得獎名單' : `<b>${GIANT[h.k].em} ${gNm(h.k)}大賽得獎作品</b><br>點一下看全部得獎名單`;
   if (h.type === 'mk') { const G = MK_GAMES[h.id]; return `<b>${G.em} ${G.n}</b><br>${G.pts}<br>點一下玩（💰${MK_COST}）`; }
   if (h.type === 'aq') { const n = dockView(S.view).aq?.length || 0; return `<b>🐠 超大魚缸</b>（${n}/${AQ_MAX} 條）<br>點一下看魚`; }
   if (h.type === 'horse') { const x = horseView(S.view).list.find(y => y.id === h.id); return x ? `<b>${hSexE(x)} ${esc(x.n)}</b> ${hAgeT(x)}${hStatus(x) ? '<br>' + hStatus(x) : ''}<br>${isOwn() ? '點一下訓練、配種' : '點一下看看'}` : ''; }
   if (h.type === 'hall') { const H = HALLS[h.i], T = templeView(S.view); return `<b>${H.em} ${H.n}</b>（${H.god}）<br>${h.i < T.lv ? (qianToday(S.my) ? '今天已經抽過籤了，點一下看籤詩' : '點一下參拜抽籤 🙏') : h.i === T.lv ? `建造中 ${Math.floor(tpProg(T) * 100)}%，點一下捐材料` : '還沒開始蓋'}`; }
   if (h.type === 'gplot') { const G = greenView(S.view), p = (G.plots || [])[h.i]; if (h.i >= (G.n || GH_START)) return h.i === (G.n || GH_START) && isOwn() ? `🔒 點一下花 ${GH_PRICE[G.n || GH_START]} 金幣擴建` : '🔒 還沒擴建'; if (!p || p.s !== 'grow' || !CROPS[p.c]) return isOwn() ? '空花圃，點一下種東西' : '空花圃'; return `<b>${CROPS[p.c].gh ? '🌱 ' : ''}${CROPS[p.c].n}</b><br>${ghMature(p) ? '✨ 成熟了！點一下收成' : `還要 ${fmtDur(p.p + ghMs(p.c) - now())}`}`; }
-  if (h.type === 'gpump') { const q = greenView(S.view).pump; return q?.s === 'grow' ? `<b>🎃 巨大南瓜</b> ${isOwn() ? `約 ${pumpKg(q)} kg` : '？？ kg（重量是秘密 🤫）'}<br>${pumpMature(q) ? '可以收成了！' : '點一下照顧它'}` : '<b>🎃 巨大南瓜大賽</b><br>每週一次，週五晚上 12 點截止、週六公布排名'; }
+  if (h.type === 'gpump') { const q = greenView(S.view).pump, k = gK(q), ck = giantOf(); return q?.s === 'grow' ? `<b>${GIANT[k].em} ${gNm(k)}</b> ${isOwn() ? `約 ${pumpKg(q)} ${gU(k)}` : `？？ ${gU(k)}（是秘密 🤫）`}<br>${pumpMature(q) ? '可以收成了！' : '點一下照顧它'}` : `<b>${GIANT[ck].em} 巨大蔬果大賽</b><br>本週比${gNm(ck)}，每週輪流南瓜→西瓜→冬瓜→絲瓜`; }
   if (h.type === 'stall') { const sl = stallView(S.view).sl.filter(s => (s.s || 0) < s.n); return `<b>🏪 ${isOwn() ? '我的' : esc(dn(S.view)) + '的'}市集攤位</b><br>${sl.length ? sl.map(s => `${itemInfo(s.id).n} ${s.p}💰`).join('、') : '目前沒有東西'}<br>點一下${isOwn() ? '管理攤位' : '逛逛'}`; }
   if (h.type === 'vil') { const v = VIL[h.id], q = isOwn() && vilToday(S.my, S.uid).find(r => r.v === h.id && !r.done); return `<b>${v.n}</b> ${v.role}${isOwn() ? `<br>${'❤️'.repeat(vilHeart(S.my, h.id)) || '🤍'} 好感 ${vilHeart(S.my, h.id)}/${VIL_MAX}` : ''}${q ? '<br>❗ 有委託，點一下幫忙' : '<br>點一下聊聊'}`; }
   if (h.type === 'deco') { const d = S.view?.deco?.at?.[h.i]; return d ? `<b>${DECO[d.k].n}</b><br>⭐ 人氣 +${DECO[d.k].pop}${S.decoMode && isOwn() ? '<br>點一下旋轉、移動或收起' : ''}` : ''; }
@@ -5155,7 +5287,7 @@ function tipFor(h) {
   if (h.type === 'pond') return pondText(h.i);
   if (h.type === 'mach') return machText(h.i);
   if (h.type === 'person') { const p = (S.people || hereList()).find(x => x.uid === h.uid); return p ? (h.uid === S.uid ? `<b>${esc(p.n)}</b>（我）<br>點一下跟大家揮手 👋` : `<b>${esc(p.n)}</b> Lv.${p.lv || 1}<br>點一下跟他揮手 👋`) : ''; }
-  if (h.type === 'pet') { const P = W.pets[h.i]; if (!P) return ''; return `<b>${PETS[P.k].n}</b> Lv.${petLv(S.view, P.k)}${P.guard ? '（顧家中 🛡️）' : ''}<br>${isOwn() ? '點一下摸摸頭 💕' : '小心別被牠抓到！'}`; }
+  if (h.type === 'pet') { const P = W.pets[h.i]; if (!P) return ''; return `<b>${petNm(P.k, S.view)}</b>（${PETS[P.k].n}）Lv.${petLv(S.view, P.k)}${P.guard ? '（顧家中 🛡️）' : ''}<br>${isOwn() ? '點一下摸摸頭 💕' : '小心別被牠抓到！'}`; }
   if (h.type === 'tile') return plotText(h.i);
   if (h.type === 'ani') return aniText(h.i);
   if (h.type === 'poop') return '💩 便便！點一下清掉' + (isOwn() ? '（+1 經驗）' : '（幫忙 +2 經驗）');
@@ -5177,6 +5309,7 @@ function clickHit(h) {
   if (h.type === 'gpump') return openPump();
   if (h.type === 'aq') return openAquarium();
   if (h.type === 'mk') return openMkGames();
+  if (h.type === 'mus') return openMuseum(h.k);
   if (h.type === 'house') return goIn();
   if (h.type === 'tcab') return openTrophies();
   if (h.type === 'hitem') { const a = homeAtOf(homeView(S.view))[h.i]; if (!a) return; if (isOwn() && S.homeEdit) return homeItemMenu(h.i); return toast(`${HOME_ITEMS[a.id]?.em || ''} ${HOME_ITEMS[a.id]?.n || ''}${isOwn() ? '（按「🔧 擺設」可以移動家具）' : ''}`); }
@@ -5191,7 +5324,7 @@ function clickHit(h) {
   if (h.type === 'pond') { if (S.scene !== 'fish') { S.scene = 'fish'; setCam('fish'); renderTools(); } return run(() => clickPond(h.i)); }
   if (h.type === 'person') { const p = (S.people || hereList()).find(x => x.uid === h.uid); return waveAt(h.uid, p ? p.n : ''); }
   if (h.type === 'mach') { if (S.scene !== 'factory') { S.scene = 'factory'; setCam('factory'); renderTools(); } return clickMach(h.i); }
-  if (h.type === 'pet') { const P = W.pets[h.i]; if (!P) return; Music.voice(PETS[P.k].kind); if (!isOwn()) return toast(`${dn(S.view)}家的${PETS[P.k].n}（Lv.${petLv(S.view, P.k)}）正在巡邏，小心別被抓到！`); const x = S.my.petx?.[P.k]; if ((x?.pat || 0) + PET_PAT / SPEED > now()) return openPets(); return run(() => petPat(P.k)); }
+  if (h.type === 'pet') { const P = W.pets[h.i]; if (!P) return; Music.voice(PETS[P.k].kind); if (!isOwn()) return toast(`${dn(S.view)}家的${petNm(P.k, S.view)}（Lv.${petLv(S.view, P.k)}）正在巡邏，小心別被抓到！`); const x = S.my.petx?.[P.k]; if ((x?.pat || 0) + PET_PAT / SPEED > now()) return openPets(); return run(() => petPat(P.k)); }
 }
 function smartTool(p, own) {
   if (own) { if (p.s === 'dead') return 'plow'; if (p.s === 'empty' || !CROPS[p.c]) return 'plant'; if (isMature(p)) return 'harvest'; }
@@ -5250,7 +5383,7 @@ async function fast(fn, show) {
 }
 const txView = fn => B.tx(S.viewUid, fn);
 const ab = msg => ({abort:1, msg});
-function guardCheck(f, nm) { const pk = petOf(f); if (pk && PETS[pk].bite && Math.random() < biteOf(f, pk)) { addLog(f, `🐾 你的${PETS[pk].n}抓到來偷東西的 ${nm}，罰他 ${CAUGHT_COINS} 金幣和倉庫物品！`); return PETS[pk].n; } return ''; }
+function guardCheck(f, nm) { const pk = petOf(f); if (pk && PETS[pk].bite && Math.random() < biteOf(f, pk)) { addLog(f, `🐾 你的${petNm(pk, f)}抓到來偷東西的 ${nm}，罰他 ${CAUGHT_COINS} 金幣和倉庫物品！`); return PETS[pk].n; } return ''; }
 ['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, () => { if (!Music.ready) Voice.unlock(); Music.kick(); }, {capture:true, passive:true}));
 function npcReply(delay = 1000) {
   const host = S.viewUid; if (isOwn() || hereList().some(p => p.uid === host)) return;
@@ -5886,9 +6019,9 @@ const bingoBadge = f => (bingoRes(f) && !f.bingo.cl) || (bingoOpen() && f.bingo?
 function openTrophies() {
   S.modal = () => {
     const own = isOwn(), f = own ? S.my : S.view, T = (f?.trophy || []).slice().reverse(), cnt = r => T.filter(x => x.r === r).length;
-    let body = `<div class="popbox">🏆 <b>${own ? '我的' : esc(dn(f)) + '的'}獎盃櫃</b><br><small>參加南瓜大賽、賽馬、釣魚大賽、夜市高手、寵物選美拿到前三名，就會得到獎盃擺在這裡，好友來玩都看得到！</small></div>
+    let body = `<div class="popbox">🏆 <b>${own ? '我的' : esc(dn(f)) + '的'}獎盃櫃</b><br><small>參加巨大蔬果大賽（南瓜／西瓜／冬瓜／絲瓜獎盃）、賽馬（賽馬獎盃）、釣魚大賽（釣魚獎盃）、夜市高手、寵物選美拿到前三名，就會得到獎盃擺在這裡，好友來玩都看得到！</small></div>
       <div class="stats"><div><b>${cnt(1)}</b>🏆 冠軍</div><div><b>${cnt(2)}</b>🥈 第二名</div><div><b>${cnt(3)}</b>🥉 第三名</div></div>`;
-    body += T.length ? `<div class="tcase">${T.map(x => `<div class="tcup r${x.r}"><span class="cup">🏆</span><span class="ev">${EVENTS[x.e]?.em || '🏅'}</span><b>${EVENTS[x.e]?.n || '比賽'}</b><small>${TROPHY_N[x.r]}${x.w ? '<br>' + esc(x.w) : ''}</small></div>`).join('')}</div>` : `<div class="empty">${own ? '還沒有獎盃，去參加比賽拿第一名吧！' : '這位好友還沒有獎盃'}</div>`;
+    body += T.length ? `<div class="tcase">${T.map(x => `<div class="tcup r${x.r}"><span class="cup">🏆</span><span class="ev">${EVENTS[x.e]?.em || '🏅'}</span><b>${EVENTS[x.e]?.n || '比賽'}</b><small>${trName(x.e, x.r)}${x.w ? '<br>' + esc(x.w) : ''}</small></div>`).join('')}</div>` : `<div class="empty">${own ? '還沒有獎盃，去參加比賽拿第一名吧！' : '這位好友還沒有獎盃'}</div>`;
     openModal('🏆 獎盃櫃', body);
   };
   S.modal();
@@ -5960,8 +6093,8 @@ function openPets() {
     body += f.pets.filter(k => PETS[k]).map(k => {
       const P = PETS[k], x = f.petx?.[k] || {a:0}, lv = petLvOf(x.a), patIn = (x.pat || 0) + PET_PAT / SPEED - now(), feedIn = (x.fed || 0) + PET_FEED / SPEED - now(), gift = lv.L >= 3 && x.gd !== today();
       const sk = PET_SKILLS[P.kind].map(([L, t]) => `<div style="color:${lv.L >= L ? '#2e7d32' : '#b0a090'}">${lv.L >= L ? '✅' : `🔒Lv.${L}`} ${t}</div>`).join('');
-      return `<div class="item"><div class="pic">${icon('pet', k)}</div><div class="info"><div class="t">${P.n} <small style="color:#e65100">Lv.${lv.L}</small>${f.pet === k ? ' <small style="color:#43a047">🛡️顧家中</small>' : ''}</div>
-        <div class="d">親密度 ${lv.L >= PET_MAXLV ? '滿級 💯' : `${lv.cur}/${lv.need}`} · 抓小偷 ${Math.round(biteOf(f, k) * 100)}%${isNight() ? '（晚上加成）' : ''}</div><div class="bar"><i style="width:${lv.L >= PET_MAXLV ? 100 : lv.cur / lv.need * 100}%"></i></div><div class="d" style="margin-top:3px">${sk}</div></div>
+      return `<div class="item"><div class="pic">${icon('pet', k)}</div><div class="info"><div class="t">${petNm(k, f)}${x.nm ? ` <small style="color:#8d6e63">（${P.n}）</small>` : ''} <small style="color:#e65100">Lv.${lv.L}</small>${f.pet === k ? ' <small style="color:#43a047">🛡️顧家中</small>' : ''}</div>
+        <div class="d">親密度 ${lv.L >= PET_MAXLV ? '滿級 💯' : `${lv.cur}/${lv.need}`} · 抓小偷 ${Math.round(biteOf(f, k) * 100)}%${isNight() ? '（晚上加成）' : ''}</div><div class="bar"><i style="width:${lv.L >= PET_MAXLV ? 100 : lv.cur / lv.need * 100}%"></i></div><div class="d" style="margin-top:3px">${sk}</div><div class="row" style="margin:6px 0 0;gap:4px"><input id="pnm_${k}" maxlength="8" placeholder="幫${P.n}取名字" value="${x.nm || ''}" style="flex:1;min-width:0"><button class="b" data-act="petRename" data-k="${k}">✏️ 改名</button></div></div>
         <div class="acts">${patIn > 0 ? `<button class="b g" disabled>摸摸 ${fmtDur(patIn)}</button>` : `<button class="b" data-act="petPat" data-k="${k}">🤚 摸摸頭</button>`}${feedIn > 0 ? `<button class="b g" disabled>餵食 ${fmtDur(feedIn)}</button>` : `<button class="b o" data-act="petFeed" data-k="${k}">🦴 餵零食</button>`}${gift ? `<button class="b o" data-act="petGift" data-k="${k}">🎁 撿禮物</button>` : ''}<button class="b" data-act="petDress" data-k="${k}">👗 打扮</button>${f.pet === k ? '' : `<button class="b g" data-act="setPet" data-k="${k}">派去顧家</button>`}<button class="b r" data-act="sellPet" data-k="${k}">賣掉 ${Math.floor(P.price / 2)}💰</button>${expRow(f, k)}</div></div>`;
     }).join('');
     openModal('🐾 我的寵物', body);
@@ -5969,12 +6102,12 @@ function openPets() {
   S.modal();
 }
 async function petPat(k) {
-  const r = await txMe(f => { if (!f.pets.includes(k)) return ab('沒有這隻寵物'); const x = px(f, k), w = (x.pat || 0) + PET_PAT / SPEED - now(); if (w > 0) return ab(`${PETS[k].n}剛被摸過，${fmtDur(w)}後再摸`); const b = petLvOf(x.a).L; x.pat = now(); x.a += 3; bump(f, 'pet'); return {b, a:petLvOf(x.a).L}; });
-  if (r.abort) return toast(r.msg); petFx(k, '💕 +3 親密度'); Music.voice(PETS[k].kind); if (r.a > r.b) { toast(`🎉 ${PETS[k].n}升到 Lv.${r.a} 了！`); Music.sfx('coin'); }
+  const r = await txMe(f => { if (!f.pets.includes(k)) return ab('沒有這隻寵物'); const x = px(f, k), w = (x.pat || 0) + PET_PAT / SPEED - now(); if (w > 0) return ab(`${petNm(k, f)}剛被摸過，${fmtDur(w)}後再摸`); const b = petLvOf(x.a).L; x.pat = now(); x.a += 3; bump(f, 'pet'); return {b, a:petLvOf(x.a).L}; });
+  if (r.abort) return toast(r.msg); petFx(k, '💕 +3 親密度'); Music.voice(PETS[k].kind); if (r.a > r.b) { toast(`🎉 ${petNm(k, S.my)}升到 Lv.${r.a} 了！`); Music.sfx('coin'); }
 }
 async function petFeed(k) {
   const r = await txMe(f => { if (!f.pets.includes(k)) return ab('沒有這隻寵物'); if (!(f.petfood > 0)) return ab('沒有寵物零食了，可以在寵物頁或商店買'); const x = px(f, k), w = (x.fed || 0) + PET_FEED / SPEED - now(); if (w > 0) return ab(`${PETS[k].n}還很飽，${fmtDur(w)}後再餵`); const b = petLvOf(x.a).L; x.fed = now(); x.a += 12; f.petfood--; bump(f, 'pet'); return {b, a:petLvOf(x.a).L}; });
-  if (r.abort) return toast(r.msg); petFx(k, '🦴 好好吃 +12'); Music.voice(PETS[k].kind); if (r.a > r.b) { toast(`🎉 ${PETS[k].n}升到 Lv.${r.a} 了！`); Music.sfx('coin'); }
+  if (r.abort) return toast(r.msg); petFx(k, '🦴 好好吃 +12'); Music.voice(PETS[k].kind); if (r.a > r.b) { toast(`🎉 ${petNm(k, S.my)}升到 Lv.${r.a} 了！`); Music.sfx('coin'); }
 }
 async function petGift(k) {
   const r = await txMe(f => {
@@ -5986,7 +6119,7 @@ async function petGift(k) {
     if (roll < .92) { f.fert = (f.fert || 0) + 1; return {t:'🧪 化肥 ×1'}; }
     f.petfood = (f.petfood || 0) + 2; return {t:'🦴 寵物零食 ×2'};
   });
-  if (r.abort) return toast(r.msg); petFx(k, '🎁'); toast(`🎁 ${PETS[k].n}叼回了：${r.t}`); Music.sfx('coin');
+  if (r.abort) return toast(r.msg); petFx(k, '🎁'); toast(`🎁 ${petNm(k, S.my)}叼回了：${r.t}`); Music.sfx('coin');
 }
 
 /* ----- 節日活動 ----- */
@@ -6238,8 +6371,8 @@ function thiefCheck() {
 async function thiefEnd(v, pk) {
   if (!S.thief) return; S.thief = null; renderScene();
   if (pk) {
-    const r = await txMe(f => { const s = rnd(Object.keys(CROPS).filter(c => CROPS[c].lv <= levelOf(f.exp).L && !CROPS[c].vil && !CROPS[c].gh)); f.seeds[s] = (f.seeds[s] || 0) + 2; addLog(f, `🐾 你的${PETS[pk].n}抓到來偷菜的${VIL[v].n}！${VIL[v].n}道歉，送你 ${CROPS[s].n}種子×2`); return {s}; }).catch(() => ({abort:1}));
-    if (!r.abort) { toast(`🐾 ${PETS[pk].n}抓到${VIL[v].n}了！「對不起啦～這個給你賠罪」🌱${CROPS[r.s].n}種子×2`); Music.sfx('coin'); }
+    const r = await txMe(f => { const s = rnd(Object.keys(CROPS).filter(c => CROPS[c].lv <= levelOf(f.exp).L && !CROPS[c].vil && !CROPS[c].gh)); f.seeds[s] = (f.seeds[s] || 0) + 2; addLog(f, `🐾 你的${petNm(pk, f)}抓到來偷菜的${VIL[v].n}！${VIL[v].n}道歉，送你 ${CROPS[s].n}種子×2`); return {s}; }).catch(() => ({abort:1}));
+    if (!r.abort) { toast(`🐾 ${petNm(pk, S.my)}抓到${VIL[v].n}了！「對不起啦～這個給你賠罪」🌱${CROPS[r.s].n}種子×2`); Music.sfx('coin'); }
   } else {
     const r = await txMe(f => { const has = Object.keys(f.wh).filter(k => CROPS[k] && f.wh[k] > 0 && k !== 'grass'); let m;
       if (has.length) { const k = rnd(has), n = Math.min(2, f.wh[k]); f.wh[k] -= n; m = `${n} 個${CROPS[k].n}`; } else { const c = Math.min(f.coins, 20); f.coins -= c; m = `${c} 金幣`; }
@@ -6712,8 +6845,10 @@ const ACT = {
   templeInfo: openTemple, hall(d) { openHall(+d.i); }, pray(d) { startPray(+d.i); }, tpGive(d) { return run(() => tpGive(d.k, +d.n)); }, qianShow() { if (qianToday(S.my)) openQian(); else { toast('今天還沒抽籤，去廟裡參拜吧 🙏'); if (S.scene !== 'temple') ACT.toTemple(); } },
   toTemple() { ACT.scene({s:'temple'}); },
   horseList: openHorses, horse(d) { openHorse(+d.id); }, horseRace: openHorseRace, hTrain(d) { return run(() => hTrain(+d.id, d.k)); }, hBreed(d) { return run(() => hBreed(+d.id, d.m)); }, hSell(d) { return run(() => hSell(+d.id)); },
+  async hRename(d) { const v = ($('#hnm')?.value || '').trim(); if (!v || [...v].length > 8) return toast('名字要 1～8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { const h = horseOf(f).list.find(x => x.id === +d.id); if (!h) return ab('找不到這匹馬'); h.n = v; return {}; }, () => { toast(`🐎 改名成「${v}」了！`); Music.sfx('pop'); }); },
+  async petRename(d) { const v = ($('#pnm_' + d.k)?.value || '').trim(); if ([...v].length > 8) return toast('名字最多 8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { if (!f.pets.includes(d.k)) return ab('沒有這隻寵物'); const x = px(f, d.k); if (v) x.nm = v; else delete x.nm; return {}; }, () => { toast(v ? `🐾 ${PETS[d.k].n}改名叫「${v}」了！` : `🐾 改回「${PETS[d.k].n}」`); Music.voice(PETS[d.k].kind); }); },
   hEnter(d) { return run(() => hEnter(+d.id)); },
-  map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, leaveP() { ACT.scene({s:'farm'}); },
+  map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, goMuseum() { goPlace('museum'); }, musList() { openMuseum(); }, leaveP() { ACT.scene({s:'farm'}); },
   fishGo: fishStart, fishCast, fishHook, fishQuit() { fishStop(); renderTools(); }, fishKeep(d) { return run(() => fishKeep(d.m)); }, aqShow: openAquarium, aqSell(d) { return run(() => aqSell(+d.i)); }, fishDex: openFishDex, fishCup: openFishCup,
   fcEnter(d) { return run(() => fcEnter(+d.i)); },
   petShow() { S.psv = null; openPetShow(); }, petDress(d) { openPetDress(d.k); }, paccBuy(d) { return run(() => paccBuy(d.k, d.id)); }, paccOn(d) { return run(() => paccOn(d.k, d.id)); }, paccOff(d) { return run(() => paccOff(d.k, d.s)); }, petBath(d) { return run(() => petBath(d.k)); },
@@ -6787,7 +6922,7 @@ const ACT = {
   },
   async buyPet(d) { const P = PETS[d.k]; if (S.my.pets.length >= PET_MAX) return toast(`寵物最多 ${PET_MAX} 隻，想換品種要先賣掉一隻（半價）`); if (!confirm(`花 ${P.price} 金幣買一隻${P.n}？`)) return; const r = await txMe(f => { if (f.pets.includes(d.k)) return ab('已經有了'); if (f.pets.length >= PET_MAX) return ab(`寵物最多 ${PET_MAX} 隻`); if (levelOf(f.exp).L < P.lv) return ab(`Lv.${P.lv} 才能買`); if (f.coins < P.price) return ab('金幣不夠'); f.coins -= P.price; f.pets.push(d.k); f.pet = d.k; return {}; }); if (r.abort) return toast(r.msg); toast(`🐾 ${P.n}來到你家了，開始巡邏顧家囉！`); closeModal(); if (!isOwn()) goHome(); S.scene = 'farm'; setCam('farm'); renderAll(); },
   async sellPet(d) { const P = PETS[d.k]; if (!confirm(`確定要把${P.n}賣掉嗎？只能拿回一半的錢：${Math.floor(P.price / 2)} 金幣（親密度也會歸零）`)) return; const r = await txMe(f => { if (!f.pets.includes(d.k)) return ab('沒有這隻寵物'); f.pets = f.pets.filter(k => k !== d.k); if (f.petx) delete f.petx[d.k]; if (f.pet === d.k) f.pet = f.pets[0] || ''; f.coins += Math.floor(P.price / 2); return {}; }); toast(r.abort ? r.msg : `👋 ${P.n}找到新主人了，拿回 ${Math.floor(P.price / 2)} 金幣`); },
-  async setPet(d) { await txMe(f => { if (!f.pets.includes(d.k)) return ab('還沒有這隻寵物'); f.pet = d.k; return {}; }); toast(`${PETS[d.k].n}負責顧家了！`); },
+  async setPet(d) { await txMe(f => { if (!f.pets.includes(d.k)) return ab('還沒有這隻寵物'); f.pet = d.k; return {}; }); toast(`${petNm(d.k, S.my)}負責顧家了！`); },
   buyPlot() { return run(buyPlot); },
   sell(d) { const want = Math.floor(+($('#sq_' + d.id)?.value || 0)); if (!(want > 0)) return toast('請輸入要賣的數量');
     return fast(f => { const have = f.wh[d.id] || 0; if (!have) return ab('沒有可以賣的'); const n = Math.min(want, have), g = n * sellOf(d.id); f.coins += g; f.wh[d.id] = have - n; bump(f, 'sell'); addTrade(f, `倉庫賣出 ${itemInfo(d.id).n} ×${n}`, g); return {n, g}; }, r => { toast(`賣出 ${r.n} 個${itemInfo(d.id).n}，賺了 ${r.g} 金幣 💰`); Music.sfx('coin'); }); },
