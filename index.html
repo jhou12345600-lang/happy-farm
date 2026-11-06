@@ -64,6 +64,7 @@ button{font-family:inherit;cursor:pointer;border:none}
 #fishUI .fb{display:flex;gap:8px;justify-content:center}#fishUI .b.big{font-size:17px;padding:11px 18px;flex:1}#fishUI .b.pulse{animation:cdpop .45s infinite alternate}#fishUI .hold.on{transform:scale(.96);filter:brightness(.92)}
 #fishUI .fbar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:12.5px;font-weight:800;color:#5d4037}#fishUI .fbar>div{flex:1;height:14px;background:#efebe9;border-radius:7px;position:relative;overflow:hidden}#fishUI .fbar i{position:absolute;left:0;top:0;bottom:0;border-radius:7px}#fishUI .fbar.ten s{position:absolute;left:85%;top:0;bottom:0;width:2px;background:#d32f2f}
 #fishUI .fcatch{display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:8px}#fishUI .fcatch .fe{font-size:46px;animation:cdpop .6s}#fishUI .fcatch b{font-size:18px;color:#4e342e}#fishUI .fcatch .cm{font-size:26px;font-weight:900;color:#e65100}#fishUI .fcatch small{color:#8d6e63}
+.psv>div{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:5px 6px;border-radius:8px;font-size:13px}.psv>div.me{background:#fff3c4;font-weight:800}.psv .pb{height:12px;background:#efebe9;border-radius:6px;overflow:hidden;display:block}.psv .pb i{display:block;height:100%;background:linear-gradient(90deg,#f48fb1,#e91e63);transition:width .1s}
 .rare{display:inline-block;color:#fff;font-size:11px;font-weight:800;padding:1px 7px;border-radius:9px;vertical-align:middle}.fcres>div{padding:4px 8px;border-radius:8px;font-size:13.5px}.fcres>div.me{background:#fff3c4;font-weight:800}
 #stage.racing #fishUI{display:none}
 #nmGame{position:absolute;inset:0;z-index:7;background:rgba(20,10,5,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;touch-action:none;user-select:none;-webkit-user-select:none}#nmGame[hidden]{display:none}
@@ -3736,6 +3737,105 @@ async function mkClaim() {
   if (r.abort) return toast(r.msg); toast(c.rw ? `🎉 夜市高手第 ${c.k + 1} 名！獲得 ${rwText(c.rw)}` : `第 ${c.k + 1} 名，下週再來挑戰！`); if (c.rw) { Music.sfx('coin'); Music.sparkle(); }
 }
 
+/* ================= 🐶 寵物選美（每週四晚上 8 點公布） ================= */
+const PS_FEE = 100, PS_H = 20, PS_RW = [{c:3000, tr:1}, {c:1500, tr:2}, {c:500, tr:3}];
+const PACC = {
+  bow:{n:'蝴蝶結', em:'🎀', slot:'top', ch:8, c:300}, hat:{n:'派對帽', em:'🥳', slot:'top', ch:10, c:400}, flower:{n:'花圈', em:'🌸', slot:'top', ch:15, c:700}, crown:{n:'小皇冠', em:'👑', slot:'top', ch:25, c:1500},
+  glasses:{n:'墨鏡', em:'🕶️', slot:'face', ch:12, c:500}, bowtie:{n:'紳士領結', em:'🎩', slot:'neck', ch:10, c:400}, scarf:{n:'圍巾', em:'🧣', slot:'neck', ch:12, c:500}, cape:{n:'英雄披風', em:'🦸', slot:'back', ch:18, c:900},
+};
+const PSLOT_N = {top:'頭上', face:'臉', neck:'脖子', back:'背上'};
+const paccOf = f => { const A = f.pacc ??= {}; A.own ??= {}; A.on ??= {}; A.bath ??= {}; return A; };
+const paccView = f => f?.pacc || {own:{}, on:{}, bath:{}};
+const petOn = (f, k) => paccView(f).on?.[k] || {};
+const bathed = (f, k) => paccView(f).bath?.[k] === today();
+const petCharm = (f, k) => Object.values(petOn(f, k)).reduce((s, id) => s + (PACC[id]?.ch || 0), 0) + petLv(f, k) * 6 + (bathed(f, k) ? 10 : 0) + 10;
+const psNext = d => { let x = d; for (let i = 0; i < 7 && dowOf(x) !== 4; i++) x = addDays(x, 1); return x; };
+const psOpen = () => { const d = twDay(); return dowOf(d) === 4 && twHour() >= PS_H ? psNext(addDays(d, 1)) : psNext(d); };
+const psReady = cid => twDay() > cid || (twDay() === cid && twHour() >= PS_H);
+const psEnt = (f, c) => f?.pshow?.ent?.[c] || null;
+const PS_NPC = [['阿土伯', '大黃', 'shiba'], ['美玉姨', '咪咪', 'tabby'], ['小豆', '豆豆', 'poodle'], ['茉莉', '雪球', 'persian']];
+function psField(cid) {
+  const ps = [{uid:S.uid, n:myName(), e:psEnt(S.my, cid), me:1}, ...S.friends.map(x => ({uid:x.uid, n:dn(x.farm), e:psEnt(x.farm, cid)}))].filter(x => x.e && PETS[x.e.k]);
+  const out = ps.map(p => ({...p, k:p.e.k, pn:PETS[p.e.k].n, on:p.e.on || {}, v:Math.round(p.e.sc * 1.3 + seededR(strHash('ps:' + cid + ':' + p.uid))() * 30)}));
+  const R = seededR(strHash('psnpc:' + cid));
+  for (const [n, pn, k] of PS_NPC) if (out.length < 4) { const kk = PETS[k] ? k : Object.keys(PETS)[Math.floor(R() * Object.keys(PETS).length)]; out.push({uid:'npc:' + n, n, k:kk, pn, on:{}, v:Math.round(35 + R() * 60), npc:1}); }
+  return out.sort((a, b) => b.v - a.v);
+}
+function psClaimable(f) { const E = f?.pshow?.ent || {}, C = f?.pshow?.cl || {}; const cid = Object.keys(E).filter(c => psReady(c) && !C[c]).sort()[0]; if (!cid) return null; const fl = psField(cid), k = fl.findIndex(x => x.me); return k < 0 ? null : {cid, k, rw:PS_RW[k] || null, fl}; }
+// 3D 配件
+function petAccMesh(m, on) {
+  const head = m.userData.head; if (!head) return; const old = m.userData.acc || []; for (const o of old) o.parent?.remove(o); m.userData.acc = [];
+  if (!on || !Object.keys(on).length) return;
+  const bb = new THREE.Box3().setFromObject(head), sz = new THREE.Vector3(); bb.getSize(sz); const r = Math.max(sz.x, sz.z) / 2 / (m.scale.x || 1), hy = r * 1.05;
+  const add = (par, o) => { par.add(o); m.userData.acc.push(o); };
+  const top = on.top, face = on.face, neck = on.neck, back = on.back;
+  if (top === 'bow') add(head, grp(ball('#f06292', [r * .35, r * .25, r * .18], [-r * .1, hy * .9, r * .35]), ball('#f06292', [r * .35, r * .25, r * .18], [-r * .1, hy * .9, -r * .05]), ball('#ec407a', U(r * .14), [-r * .1, hy * .9, r * .15])));
+  if (top === 'hat') add(head, grp(cone('#ab47bc', [r * .45, r * 1.1, r * .45], [-r * .1, hy + r * .5, 0]), ball('#fdd835', U(r * .16), [-r * .1, hy + r * 1.08, 0]), ring('#fdd835', [r * .42, r * .42, r * .3], [-r * .1, hy + r * .05, 0], [Math.PI / 2, 0, 0])));
+  if (top === 'flower') { const g = new THREE.Group(); for (let i = 0; i < 8; i++) { const a = i / 8 * 6.28; g.add(ball(['#f48fb1', '#fff59d', '#ce93d8', '#ffffff'][i % 4], U(r * .17), [Math.cos(a) * r * .62, 0, Math.sin(a) * r * .62])); } g.position.set(-r * .05, hy * .82, 0); add(head, g); }
+  if (top === 'crown') add(head, grp(rod('#ffca28', [r * .5, r * .3, r * .5], [-r * .05, hy + r * .1, 0]), ...[0, 1, 2, 3, 4].map(i => { const a = i / 5 * 6.28; return cone('#ffca28', [r * .1, r * .3, r * .1], [-r * .05 + Math.cos(a) * r * .4, hy + r * .38, Math.sin(a) * r * .4]); }), ball('#e53935', U(r * .1), [r * .38, hy + r * .12, 0])));
+  if (face === 'glasses') add(head, grp(blk('#212121', [r * .1, r * .32, r * .42], [r * 1.0, r * .25, r * .3]), blk('#212121', [r * .1, r * .32, r * .42], [r * 1.0, r * .25, -r * .3]), blk('#212121', [r * .06, r * .06, r * .25], [r * 1.0, r * .3, 0])));
+  const body = m; const nx = (head.position.x - r * .5), ny = head.position.y - r * .9;
+  if (neck === 'bowtie') add(body, grp(cone('#e53935', [r * .3, r * .35, r * .3], [nx + r * .3, ny, r * .25], [Math.PI / 2, 0, 0]), cone('#e53935', [r * .3, r * .35, r * .3], [nx + r * .3, ny, -r * .25], [-Math.PI / 2, 0, 0]), ball('#b71c1c', U(r * .13), [nx + r * .32, ny, 0])));
+  if (neck === 'scarf') add(body, grp(ring('#ef5350', [r * .75, r * .75, r * 1.1], [nx + r * .1, ny + r * .1, 0], [0, 0, Math.PI / 2 - .35]), blk('#ef5350', [r * .25, r * .7, r * .1], [nx + r * .35, ny - r * .35, r * .3])));
+  if (back === 'cape') { const tl = m.userData.tail, hp = head.parent; hp.remove(head); if (tl) tl.parent?.remove(tl); const bb2 = new THREE.Box3().setFromObject(m), top = bb2.max.y / (m.scale.y || 1) + r * .5; hp.add(head); if (tl) m.add(tl); add(body, grp(blk('#c62828', [r * 2.6, r * .08, r * 1.7], [nx - r * 1.2, top - r * .55, 0], [0, 0, .1]), blk('#fdd835', [r * .22, r * .1, r * 1.75], [nx - r * .05, top - r * .45, 0]), blk('#c62828', [r * .8, r * .9, r * .06], [nx - r * 2.3, top - r * .9, r * .82]), blk('#c62828', [r * .8, r * .9, r * .06], [nx - r * 2.3, top - r * .9, -r * .82]))); }
+}
+// 介面
+function openPetShow() {
+  S.modal = () => {
+    const f = S.my, cid = psOpen(), mine = psEnt(f, cid), cl = psClaimable(f), G = S.psv;
+    let body = `<div class="popbox">🐶 <b>寵物選美</b>（每週四晚上 8 點公布）<br><small>幫寵物打扮、洗香香，報名費 💰${PS_FEE}，村民投票選出最可愛的寵物！<br>🥇 ${rwText(PS_RW[0])}　🥈 ${rwText(PS_RW[1])}　🥉 ${rwText(PS_RW[2])}</small></div>`;
+    if (cl) {
+      if (!G || G.cid !== cl.cid) body += `<div class="sec">🎉 ${hrDate(cl.cid)} 寵物選美開票囉！</div><div class="mgbtn"><button class="b o" data-act="psVote">🗳️ 看村民投票！</button></div>`;
+      else { const mx = Math.max(...cl.fl.map(x => x.v)), k = G.k; body += `<div class="sec">🗳️ 開票中${G.done ? '…結果出爐！' : '…'}</div><div class="psv">${cl.fl.map((x, i) => `<div class="${x.me ? 'me' : ''}"><span class="pn">${G.done ? ['🥇', '🥈', '🥉'][i] || (i + 1) + '.' : '　'} ${esc(x.n)}的${esc(x.pn)}</span><span class="pb"><i style="width:${Math.round(Math.min(x.v, x.v * k) / mx * 100)}%"></i></span><b>${Math.round(x.v * Math.min(1, k))} 票</b></div>`).join('')}</div>`;
+        if (G.done) body += `<div class="mgbtn"><button class="b o" data-act="psClaim">${cl.rw ? `🎁 領獎（第 ${cl.k + 1} 名：${rwText(cl.rw)}）` : `第 ${cl.k + 1} 名，下次加油！（確認）`}</button></div>`; }
+    }
+    body += `<div class="sec">📅 下一場：${hrDate(cid)}（週四）晚上 8 點公布</div>`;
+    if (mine) body += `<div class="mgres">✅ 已經報名：${icon('pet', mine.k)} <b>${PETS[mine.k].n}</b>　${Object.values(mine.on || {}).map(id => PACC[id]?.em).join('')}<br><small>報名時的打扮就是比賽的樣子，等開票吧 🤞</small></div>`;
+    else body += (f.pets || []).filter(k => PETS[k]).map(k => `<div class="item"><div class="pic">${icon('pet', k)}</div><div class="info"><div class="t">${PETS[k].n} <small>Lv.${petLv(f, k)}</small> ${Object.values(petOn(f, k)).map(id => PACC[id]?.em).join('')}${bathed(f, k) ? ' 🛁' : ''}</div><div class="d">可愛度 <b>${petCharm(f, k)}</b></div></div><div class="acts"><button class="b" data-act="petDress" data-k="${k}">👗 打扮</button><button class="b o" data-act="psEnter" data-k="${k}">報名 💰${PS_FEE}</button></div></div>`).join('') || '<div class="mgres">還沒有寵物，先去商店「寵物」帶一隻回家吧</div>';
+    const fr = S.friends.filter(x => psEnt(x.farm, cid));
+    body += `<div class="sec">👥 已報名的好友（${fr.length}）</div><div class="d" style="font-size:13px">${fr.length ? fr.map(x => `${esc(dn(x.farm))}的${PETS[psEnt(x.farm, cid).k]?.n || '寵物'}`).join('、') : '還沒有好友報名'}<br><small style="color:#8d6e63">報名不到 4 隻的話，村民的寵物也會來比</small></div>`;
+    const past = Object.keys(f.pshow?.cl || {}).sort().slice(-3).reverse();
+    if (past.length) body += `<div class="sec">📜 我的戰績</div><div class="d" style="font-size:13px">${past.map(c => `${hrDate(c)}：第 ${f.pshow.cl[c]} 名（${PETS[f.pshow.ent[c]?.k]?.n || ''}）`).join('<br>')}</div>`;
+    openModal('🐶 寵物選美', body);
+  };
+  S.modal();
+}
+function openPetDress(k) {
+  S.modal = () => {
+    const f = S.my, A = paccView(f), on = petOn(f, k);
+    let body = `<div class="popbox">${icon('pet', k)} <b>${PETS[k].n}</b>　可愛度 <b>${petCharm(f, k)}</b><br><small>配件買一次就能給所有寵物戴（每個位置戴一個）。每天幫寵物洗澡可愛度 +10！</small></div>`;
+    body += `<div class="mgbtn">${bathed(f, k) ? '<button class="b g" disabled>🛁 今天洗過澡了，香噴噴！</button>' : `<button class="b o" data-act="petBath" data-k="${k}">🛁 幫牠洗澡（免費）</button>`}</div>`;
+    for (const sl of ['top', 'face', 'neck', 'back']) {
+      body += `<div class="sec">${PSLOT_N[sl]}</div>` + Object.entries(PACC).filter(([, P]) => P.slot === sl).map(([id, P]) => { const own = A.own?.[id], wear = on[sl] === id;
+        return `<div class="item"><div class="pic" style="font-size:28px">${P.em}</div><div class="info"><div class="t">${P.n}</div><div class="d">可愛度 +${P.ch}</div></div>${wear ? `<button class="b g" data-act="paccOff" data-k="${k}" data-s="${sl}">脫下</button>` : own ? `<button class="b o" data-act="paccOn" data-k="${k}" data-id="${id}">戴上</button>` : `<button class="b" data-act="paccBuy" data-k="${k}" data-id="${id}">買 💰${P.c}</button>`}</div>`; }).join('');
+    }
+    openModal('👗 寵物打扮', body);
+  };
+  S.modal();
+}
+const paccSet = (k, fn, okMsg) => fast(f => { const A = paccOf(f); const r = fn(f, A); if (r?.abort) return r; return {}; }, () => { if (okMsg) toast(okMsg); Music.sfx('ding'); W.petKey = null; });
+async function paccBuy(k, id) { const P = PACC[id]; await paccSet(k, (f, A) => { if (A.own[id]) return; if (f.coins < P.c) return ab('金幣不夠'); f.coins -= P.c; addTrade(f, `寵物配件${P.n}`, -P.c); A.own[id] = 1; (A.on[k] ??= {})[P.slot] = id; }, `${P.em} 買了${P.n}，已經幫${PETS[k].n}戴上！`); }
+async function paccOn(k, id) { const P = PACC[id]; await paccSet(k, (f, A) => { if (!A.own[id]) return ab('還沒有這個配件'); (A.on[k] ??= {})[P.slot] = id; }, `${P.em} 戴上${P.n}了！`); }
+async function paccOff(k, sl) { await paccSet(k, (f, A) => { if (A.on[k]) delete A.on[k][sl]; }, ''); }
+async function petBath(k) { await paccSet(k, (f, A) => { if (A.bath[k] === today()) return ab('今天洗過了'); A.bath[k] = today(); gainExp(f, 3); }, `🛁 ${PETS[k].n}洗得香噴噴！可愛度 +10（今天有效）`); Music.sparkle(); }
+async function psEnter(k) {
+  let msg = '';
+  await fast(f => { f.pshow ??= {}; f.pshow.ent ??= {}; f.pshow.cl ??= {}; const cid = psOpen(); if (f.pshow.ent[cid]) return ab('這週已經報名了'); if (!f.pets.includes(k)) return ab('找不到這隻寵物'); if (f.coins < PS_FEE) return ab('金幣不夠');
+    f.coins -= PS_FEE; addTrade(f, '寵物選美報名費', -PS_FEE); f.pshow.ent[cid] = {k, on:{...petOn(f, k)}, sc:petCharm(f, k), t:now()};
+    const ks = Object.keys(f.pshow.ent).sort(); while (ks.length > 6) { const c = ks.shift(); delete f.pshow.ent[c]; delete f.pshow.cl[c]; }
+    msg = `🐶 ${PETS[k].n}報名 ${hrDate(cid)} 寵物選美！`; return {}; }, () => { toast(msg); Music.sfx('ding'); });
+}
+async function psVote() {
+  const cl = psClaimable(S.my); if (!cl) return; S.psv = {cid:cl.cid, k:0, done:0};
+  for (let i = 1; i <= 25; i++) { await sleep(110); if (!S.psv) return; S.psv.k = i / 25; if (S.modal) S.modal(); if (i % 3 === 0) Music.sfx('pop'); }
+  S.psv.done = 1; if (S.modal) S.modal(); Music.sfx(cl.k < 3 ? 'coin' : 'ding'); if (cl.k < 3) Music.sparkle();
+}
+async function psClaim() {
+  const c = psClaimable(S.my); if (!c) return;
+  const r = await txMe(f => { if (f.pshow.cl[c.cid]) return ab('已經領過了'); f.pshow.cl[c.cid] = c.k + 1; if (c.rw) giveRw(f, c.rw, 'petshow', `${hrDate(c.cid)}・${PETS[c.fl[c.k].k]?.n || ''}`); addLog(f, `🐶 ${hrDate(c.cid)} 寵物選美：第 ${c.k + 1} 名${c.rw ? `，獲得 ${rwText(c.rw)}` : ''}`); return {}; });
+  if (r.abort) return toast(r.msg); S.psv = null; toast(c.rw ? `🎉 寵物選美第 ${c.k + 1} 名！獲得 ${rwText(c.rw)}` : `第 ${c.k + 1} 名，下週再來！`);
+}
+
 /* ================= 溫室 ================= */
 
 const GH_MAX = 6, GH_START = 2, GH_PRICE = [0, 0, 1500, 3000, 5000, 8000], GH_SPEED = .8;
@@ -4433,13 +4533,13 @@ function syncFish(f, own) {
   }
 }
 function syncPets(f) {
-  const list = (f.pets || []).filter(k => PETS[k] && !f.petx?.[k]?.ex).slice(0, 8); const key = list.join(',') + '|' + petOf(f);
+  const list = (f.pets || []).filter(k => PETS[k] && !f.petx?.[k]?.ex).slice(0, 8); const key = list.join(',') + '|' + petOf(f) + '|' + JSON.stringify(paccView(f).on || {});
   if (W.petKey !== key) {
     W.petCache ??= new Map(); let c = W.petCache.get(key);
     if (!c) {
       if (!take()) { W.petsG.visible = false; return; }
       const g = new THREE.Group(), pets = [];
-      list.forEach((k, i) => { const m = petModel(k); m.traverse(o => o.userData.hit = {type:'pet', i}); g.add(m); pets.push({m, k, ph:i * (PATH_LEN / Math.max(list.length, 1)), sp:PETS[k].kind === 'cat' ? 1.2 : 1.7, guard:k === petOf(f)}); });
+      list.forEach((k, i) => { const m = petModel(k); petAccMesh(m, petOn(f, k)); m.traverse(o => o.userData.hit = {type:'pet', i}); g.add(m); pets.push({m, k, ph:i * (PATH_LEN / Math.max(list.length, 1)), sp:PETS[k].kind === 'cat' ? 1.2 : 1.7, guard:k === petOf(f)}); });
       c = {g, pets}; W.petCache.set(key, c); if (W.petCache.size > 4) W.petCache.delete(W.petCache.keys().next().value);
     }
     W.petKey = key; W.petsG.clear(); W.petsG.add(c.g); W.pets = c.pets; W.petsG.visible = true;
@@ -4716,7 +4816,7 @@ function renderTop() {
   const unread = (f.log || []).filter(l => l.t > (f.logSeen || 0)).length + S.gifts.length;
   const set = (id, n) => { $(id).textContent = n; $(id).classList.toggle('on', n > 0); };
   set('#bdM', unread); set('#bdF', S.reqs.length); set('#bdT', taskClaimable(f)); set('#bdO', orderReady(f)); set('#bdG', f.gacha || 0);
-  set('#bdV', vilPending(f)); { const G = greenView(f); set('#bdH', (G.plots || []).slice(0, G.n || GH_START).filter(ghMature).length + (pumpMature(G.pump) ? 1 : 0) + (pumpClaimable(f) ? 1 : 0)); } set('#bdC', coopReady(f)); set('#bdS', horseBadge(f)); set('#bdP', dockBadge(f) + (typeof mkBadge === 'function' ? mkBadge(f) : 0)); set('#bdE', festReady(f)); set('#bdX', achClaimable(f) + petGiftReady(f) + (bingoRes(f) && !f.bingo.cl ? 1 : 0));
+  set('#bdV', vilPending(f)); { const G = greenView(f); set('#bdH', (G.plots || []).slice(0, G.n || GH_START).filter(ghMature).length + (pumpMature(G.pump) ? 1 : 0) + (pumpClaimable(f) ? 1 : 0)); } set('#bdC', coopReady(f)); set('#bdS', horseBadge(f)); set('#bdP', dockBadge(f) + (typeof mkBadge === 'function' ? mkBadge(f) : 0)); set('#bdE', festReady(f)); set('#bdX', achClaimable(f) + petGiftReady(f) + (bingoRes(f) && !f.bingo.cl ? 1 : 0) + (psClaimable(f) ? 1 : 0));
 }
 function renderTools() {
   const own = isOwn(), f = S.my; let T;
@@ -4730,7 +4830,7 @@ function renderTools() {
   else if (S.scene === 'dock') T = [['hand','✋','走走'], ['fishGo','🎣','釣魚', 1], ['aqShow','🐠','我的魚缸', 1], ['fishCup','🏆','釣魚大賽', 1], ['fishDex','📖','魚種圖鑑', 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'stable') T = own ? [['hand','✋','手'], ['horseList','🐎','我的馬', 1], ['horseRace','🏁','賽馬大賽', 1]] : [['hand','✋','參觀'], ['horseList','🐎','看馬', 1], ['horseRace','🏁','賽馬大賽', 1]];
   else if (S.scene === 'temple') T = [['hand','✋','手'], ['templeInfo','🏯','廟宇', 1], ['qianShow','📜','今日籤詩', 1], ['toTown','🏘️','回小鎮', 1]];
-  else if (S.scene === 'town') T = own ? [['hand','✋','手'], ['vilList','📋','村民委託', 1], ['stall','🏪','我的攤位', 1], ['toTemple','🏯','去廟裡', 1], ['bingo','🎱','賓果', 1]] : [['hand','✋','逛逛'], ['stall','🏪','逛攤位', 1], ['toTemple','🏯','去廟裡', 1]];
+  else if (S.scene === 'town') T = own ? [['hand','✋','手'], ['vilList','📋','村民委託', 1], ['stall','🏪','我的攤位', 1], ['toTemple','🏯','去廟裡', 1], ['bingo','🎱','賓果', 1], ['petShow','🐶','寵物選美', 1]] : [['hand','✋','逛逛'], ['stall','🏪','逛攤位', 1], ['toTemple','🏯','去廟裡', 1]];
   else if (S.decoMode && own) T = [['decoDone','✅','完成', 1], ['decoTool','🪑','換裝飾', 1]];
   else T = own ? [['hand','✋','手'], ['plant','🌱', S.seed ? CROPS[S.seed].n : '播種'], ['water','💧','澆水'], ['weed','🌿','除草'], ['bug','🐞','除蟲'], ['fert','🧪','施肥'], ['plow','⛏️','翻地'], ['decoTool','🪑','裝飾', 1]]
                : [['hand','✋','偷菜'], ['water','💧','幫澆水'], ['weed','🌿','幫拔草'], ['bug','🐞','幫除蟲'], ['pbug','🐛','放蟲'], ['pweed','🌾','種草']];
@@ -5480,6 +5580,7 @@ function openHelp() {
     <p>🌱 <b>種菜</b>：共 ${Object.keys(CROPS).length} 種作物，有蔬菜、水果、花、果樹、草穀。選「播種」挑種子，點田地就能種。✋「手」會自動收成、翻地、播種或照顧作物。</p>
     <p>💧🌿🐞 <b>照顧</b>：作物會缺水、長草、長蟲，每個問題減產 10%。</p>
     <p>🐮 <b>牧場</b>：${Object.keys(ANIMALS).filter(k => !ANIMALS[k].gone).length} 種動物，吃<b>牧草</b>或<b>飼料</b>才會生產。產品可以賣錢、煮料理。</p>
+    <p>🐶 <b>寵物選美</b>：在「🐾 我的寵物」按「👗 打扮」幫寵物戴配件、洗澡，可愛度越高票越多。每週四晚上 8 點開票（報名費 💰100），前三名有獎金和獎盃！</p>
     <p>🏮 <b>夜市</b>：每週一晚上 6 點～12 點開，從「🗺️ 出門」進去。撈金魚、套圈圈、射氣球、彈珠台一次 💰50，分數會變成獎品券換獎品；當晚總分比「夜市高手」，隔天公布前三名！</p>
     <p>🎣 <b>釣魚碼頭</b>：點左上「🗺️ 出門」去碼頭，大家都在同一個碼頭！拋竿後等浮標<b>沉下去</b>再收線，然後<b>按住</b>慢慢收，張力太高要放開一下。釣到的魚放進魚塭旁的超大魚缸，村民會來買。每週三有釣魚大賽！</p>
     <p>🐎 <b>馬場</b>：每人有 3 匹馬（2 公 1 母）。每天可以訓練 3 次（用紅蘿蔔或金幣），母馬配種生小馬會遺傳爸媽的天分。每月 15、30 號舉辦<b>賽馬大賽</b>，前一天截止報名，前三名有大獎和獎盃！</p>
@@ -5582,6 +5683,7 @@ function openMore() {
     openModal('☰ 更多', `<div class="menu">
       <button data-act="dex" data-t="ach">🎖️ 成就${a ? `<em class="badge on">${a}</em>` : ''}</button>
       <button data-act="trophies">🏆 我的獎盃櫃</button>
+      <button data-act="petShow">🐶 寵物選美${psClaimable(f) ? '<em class="badge on">1</em>' : ''}</button>
       <button data-act="bingo">🎱 BINGO 賓果${bingoBadge(f) ? '<em class="badge on">1</em>' : ''}</button>
       <button data-act="dex" data-t="crop">📖 圖鑑</button>
       <button data-act="pets">🐾 我的寵物${g ? `<em class="badge on">${g}</em>` : ''}</button>
@@ -5644,7 +5746,7 @@ function openPets() {
       const sk = PET_SKILLS[P.kind].map(([L, t]) => `<div style="color:${lv.L >= L ? '#2e7d32' : '#b0a090'}">${lv.L >= L ? '✅' : `🔒Lv.${L}`} ${t}</div>`).join('');
       return `<div class="item"><div class="pic">${icon('pet', k)}</div><div class="info"><div class="t">${P.n} <small style="color:#e65100">Lv.${lv.L}</small>${f.pet === k ? ' <small style="color:#43a047">🛡️顧家中</small>' : ''}</div>
         <div class="d">親密度 ${lv.L >= PET_MAXLV ? '滿級 💯' : `${lv.cur}/${lv.need}`} · 抓小偷 ${Math.round(biteOf(f, k) * 100)}%${isNight() ? '（晚上加成）' : ''}</div><div class="bar"><i style="width:${lv.L >= PET_MAXLV ? 100 : lv.cur / lv.need * 100}%"></i></div><div class="d" style="margin-top:3px">${sk}</div></div>
-        <div class="acts">${patIn > 0 ? `<button class="b g" disabled>摸摸 ${fmtDur(patIn)}</button>` : `<button class="b" data-act="petPat" data-k="${k}">🤚 摸摸頭</button>`}${feedIn > 0 ? `<button class="b g" disabled>餵食 ${fmtDur(feedIn)}</button>` : `<button class="b o" data-act="petFeed" data-k="${k}">🦴 餵零食</button>`}${gift ? `<button class="b o" data-act="petGift" data-k="${k}">🎁 撿禮物</button>` : ''}${f.pet === k ? '' : `<button class="b g" data-act="setPet" data-k="${k}">派去顧家</button>`}<button class="b r" data-act="sellPet" data-k="${k}">賣掉 ${Math.floor(P.price / 2)}💰</button>${expRow(f, k)}</div></div>`;
+        <div class="acts">${patIn > 0 ? `<button class="b g" disabled>摸摸 ${fmtDur(patIn)}</button>` : `<button class="b" data-act="petPat" data-k="${k}">🤚 摸摸頭</button>`}${feedIn > 0 ? `<button class="b g" disabled>餵食 ${fmtDur(feedIn)}</button>` : `<button class="b o" data-act="petFeed" data-k="${k}">🦴 餵零食</button>`}${gift ? `<button class="b o" data-act="petGift" data-k="${k}">🎁 撿禮物</button>` : ''}<button class="b" data-act="petDress" data-k="${k}">👗 打扮</button>${f.pet === k ? '' : `<button class="b g" data-act="setPet" data-k="${k}">派去顧家</button>`}<button class="b r" data-act="sellPet" data-k="${k}">賣掉 ${Math.floor(P.price / 2)}💰</button>${expRow(f, k)}</div></div>`;
     }).join('');
     openModal('🐾 我的寵物', body);
   };
@@ -6398,6 +6500,8 @@ const ACT = {
   map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, leaveP() { ACT.scene({s:'farm'}); },
   fishGo: fishStart, fishCast, fishHook, fishQuit() { fishStop(); renderTools(); }, fishKeep(d) { return run(() => fishKeep(d.m)); }, aqShow: openAquarium, aqSell(d) { return run(() => aqSell(+d.i)); }, fishDex: openFishDex, fishCup: openFishCup,
   fcEnter(d) { return run(() => fcEnter(+d.i)); },
+  petShow() { S.psv = null; openPetShow(); }, petDress(d) { openPetDress(d.k); }, paccBuy(d) { return run(() => paccBuy(d.k, d.id)); }, paccOn(d) { return run(() => paccOn(d.k, d.id)); }, paccOff(d) { return run(() => paccOff(d.k, d.s)); }, petBath(d) { return run(() => petBath(d.k)); },
+  psEnter(d) { return run(() => psEnter(d.k)); }, psVote() { return run(psVote); }, psClaim() { return run(psClaim); },
   mkGames: openMkGames, mkShop: openMkShop, mkRank: openMkRank, nmStart(d) { return run(() => nmStart(d.id)); }, nmAgain() { const id = NM?.id; mkStop(); if (id) return run(() => nmStart(id)); }, nmQuit() { mkStop(); }, mkBuy(d) { return run(() => mkBuy(d.id)); }, mkClaim() { return run(mkClaim); }, fcClaim() { return run(fcClaim); }, hRaceGo(d) { startHorseRace(d.r); }, toTown() { ACT.scene({s:'town'}); },
   pump: openPump, pumpPlant() { return run(pumpPlant); }, pumpCare(d) { return run(() => pumpCare(d.k)); }, pumpHarvest() { return run(pumpHarvest); }, pumpClaim() { return run(pumpClaim); }, pumpEnter(d) { return run(() => pumpEnter(+d.i)); }, ghPlant(d) { return run(() => ghPlant(d.id)); }, ghBuy() { return run(ghBuy); },
   expPick(d) { openExp(d.k); }, expGo(d) { return run(() => expGo(d.k, d.d)); }, expBack(d) { return run(() => expBack(d.k)); },
