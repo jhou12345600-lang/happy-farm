@@ -66,6 +66,10 @@ button{font-family:inherit;cursor:pointer;border:none}
 #fishUI .fcatch{display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:8px}#fishUI .fcatch .fe{font-size:46px;animation:cdpop .6s}#fishUI .fcatch b{font-size:18px;color:#4e342e}#fishUI .fcatch .cm{font-size:26px;font-weight:900;color:#e65100}#fishUI .fcatch small{color:#8d6e63}
 .rare{display:inline-block;color:#fff;font-size:11px;font-weight:800;padding:1px 7px;border-radius:9px;vertical-align:middle}.fcres>div{padding:4px 8px;border-radius:8px;font-size:13.5px}.fcres>div.me{background:#fff3c4;font-weight:800}
 #stage.racing #fishUI{display:none}
+#nmGame{position:absolute;inset:0;z-index:7;background:rgba(20,10,5,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;touch-action:none;user-select:none;-webkit-user-select:none}#nmGame[hidden]{display:none}
+#nmGame .nmh{width:min(100%,360px);display:flex;align-items:center;gap:8px;color:#fff;font-weight:900;font-size:17px;margin-bottom:6px}#nmGame .nmh b{flex:1}#nmGame .nmh span{background:#fdd835;color:#4e342e;border-radius:12px;padding:2px 10px}#nmGame .nmh .x{background:#fff;border:0;border-radius:50%;width:32px;height:32px;font-size:16px;font-weight:900}
+#nmC{width:min(100%,360px);max-height:calc(100% - 80px);aspect-ratio:360/440;object-fit:contain;border-radius:14px;border:3px solid #fdd835;background:#000;touch-action:none}#nmTip{color:#ffe0b2;font-size:12.5px;max-width:360px;text-align:center;margin-top:6px}
+#nmEnd{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45)}#nmEnd[hidden]{display:none}#nmEnd .rc{background:#fffaf0;border:4px solid #ff9800;border-radius:20px;padding:16px 18px;text-align:center;max-width:320px}#nmEnd .big{font-size:50px}#nmEnd b{font-size:18px;color:#4e342e}#nmEnd .rc>div{margin:6px 0;color:#6d4c41;font-size:14px}
 #race{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden}#race[hidden]{display:none}
 #race .rtitle{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:linear-gradient(#e53935,#b71c1c);color:#fff;font-weight:900;font-size:18px;padding:6px 18px;border-radius:16px;border:3px solid #fdd835;box-shadow:0 4px 10px rgba(0,0,0,.25)}
 #raceRank{position:absolute;top:56px;left:10px;background:rgba(255,250,240,.92);border:2px solid #8d6e63;border-radius:12px;padding:5px 9px;font-weight:800;font-size:13px;color:#5d4037;min-width:110px}#raceRank .me{color:#d84315}
@@ -343,6 +347,7 @@ button{font-family:inherit;cursor:pointer;border:none}
     <div id="visitBar" hidden><span>👀 在 <b id="visitName"></b> 的家</span><button data-act="trophies" class="tb">🏆</button><button data-act="home">🏠 回家</button></div>
     <div id="hereBox" hidden></div>
     <div id="fishUI" hidden></div>
+    <div id="nmGame" hidden><div class="nmh"><b id="nmT"></b><span id="nmS"></span><button class="x" data-act="nmQuit">✕</button></div><canvas id="nmC"></canvas><div id="nmTip"></div><div id="nmEnd" hidden></div></div>
     <div id="race" hidden><div class="rtitle">🐉 端午龍舟賽</div><div id="raceRank"></div><div id="raceCd"></div><div id="raceLbl"></div><div id="raceEnd" hidden></div></div>
     <div id="hint">🖱️ 拖曳旋轉視角、滾輪縮放</div>
     <button id="chatBtn" data-act="chat" title="說話">💬</button>
@@ -2167,7 +2172,7 @@ const itemIcon = id => icon(CROPS[id] ? 'crop' : SEA[id] ? 'sea' : PROC[id] ? 'p
 const W = {};
 const FARM_T = new THREE.Vector3(0, 0, .8), RANCH_T = new THREE.Vector3(24, 0, .8), FISH_T = new THREE.Vector3(-30, 0, .8), TOWN_T = new THREE.Vector3(76, 0, .8), GREEN_T = new THREE.Vector3(-52, 0, .8), TEMPLE_T = new THREE.Vector3(101, 0, -.6), STABLE_T = new THREE.Vector3(-80, 0, -1.2);
 const DOCK_T = new THREE.Vector3(-114, 0, -3.6);
-const SCENE_T = {dock:DOCK_T, farm:FARM_T, ranch:RANCH_T, fish:FISH_T, factory:new THREE.Vector3(50, 0, .8), town:TOWN_T, green:GREEN_T, temple:TEMPLE_T, stable:STABLE_T};
+const SCENE_T = {market:new THREE.Vector3(128, 0, -.4), dock:DOCK_T, farm:FARM_T, ranch:RANCH_T, fish:FISH_T, factory:new THREE.Vector3(50, 0, .8), town:TOWN_T, green:GREEN_T, temple:TEMPLE_T, stable:STABLE_T};
 const pondXZ = i => { const r = Math.floor(i / 4), c = i % 4; return [-30 + (c - 1.5) * 4.3, (r - .5) * 4.6 + .4]; };
 const plotXZ = i => { const r = Math.floor(i / 6), c = i % 6; return [(c - 2.5) * 2.75, (r - 1) * 2.75 - .3]; };
 const aniHome = i => { const r = Math.floor(i / 4), c = i % 4; return [24 + (c - 1.5) * 3.5, .3 + (r - 1.5) * 2.7]; };
@@ -3474,6 +3479,263 @@ function openMap() {
   S.modal();
 }
 
+/* ================= 🏮 夜市（每週一晚上，大家共用） ================= */
+const MK_X = 128, MK_COST = 50, MK_H0 = 18;
+const marketOpen = () => dowOf() === 1 && twHour() >= MK_H0;
+const mkDay = () => twDay();
+const mkOf = f => { const M = f.mk ??= {}; M.tk ??= 0; M.n ??= {}; M.cl ??= {}; M.best ??= {}; return M; };
+const mkView = f => f?.mk || {tk:0, n:{}, cl:{}, best:{}};
+const MK_RW = [{c:500, fert:10, tr:1}, {c:300, fert:5, tr:2}, {c:100, fert:3, tr:3}];
+const MK_PRIZE = [
+  ['fert', '🧪', '化肥 ×2', 50, f => { f.fert = (f.fert || 0) + 2; }],
+  ['feed', '🌾', '飼料 ×20', 70, f => { f.feed = (f.feed || 0) + 20; }],
+  ['pet', '🦴', '寵物零食 ×3', 40, f => { f.petfood = (f.petfood || 0) + 3; }],
+  ['seed', '🌱', '隨機種子 ×5', 30, f => { const L = levelOf(f.exp).L, ks = Object.keys(CROPS).filter(k => CROPS[k].lv <= L && !CROPS[k].gh && k !== 'grass'); const k = rnd(ks); f.seeds[k] = (f.seeds[k] || 0) + 5; return CROPS[k].n; }],
+  ['gacha', '🎰', '抽抽樂券 ×1', 150, f => { f.gacha = (f.gacha || 0) + 1; }],
+  ['coin', '💰', '金幣 ×100', 120, f => { f.coins += 100; }],
+];
+function mkField(day) {
+  const ps = [{uid:S.uid, n:myName(), p:mkView(S.my).n?.[day] || 0, me:1}, ...S.friends.map(x => ({uid:x.uid, n:dn(x.farm), p:mkView(x.farm).n?.[day] || 0}))].filter(x => x.p > 0);
+  const R = seededR(strHash('mknpc:' + day));
+  for (const n of ['小豆', '茉莉', '阿德師', '美玉姨']) if (ps.length < 4) ps.push({uid:'npc:' + n, n, p:Math.round(60 + R() * 200), npc:1});
+  return ps.sort((a, b) => b.p - a.p);
+}
+function mkClaimable(f) { const M = mkView(f), d = twDay(); const day = Object.keys(M.n || {}).filter(x => x < d && M.n[x] > 0 && !M.cl?.[x]).sort()[0]; if (!day) return null; const fl = mkField(day), k = fl.findIndex(x => x.me); return k < 0 ? null : {day, k, rw:MK_RW[k] || null, fl}; }
+const mkBadge = f => mkClaimable(f) ? 1 : 0;
+// ----- 3D 夜市 -----
+function textPlane(text, bg, fg, w, h, fs = 64) {
+  const c = document.createElement('canvas'); c.width = 512; c.height = Math.round(512 * h / w); const x = c.getContext('2d');
+  x.fillStyle = bg; x.fillRect(0, 0, c.width, c.height); x.strokeStyle = '#fdd835'; x.lineWidth = 10; x.strokeRect(6, 6, c.width - 12, c.height - 12);
+  x.fillStyle = fg; x.font = `900 ${fs}px sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text, c.width / 2, c.height / 2 + 4);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  return new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({map:t}));
+}
+const MK_STALLS = [['goldfish', -7.5, -5.2, '撈金魚', '#1565c0'], ['ring', -2.5, -5.2, '套圈圈', '#2e7d32'], ['balloon', 2.5, -5.2, '射氣球', '#c62828'], ['pinball', 7.5, -5.2, '彈珠台', '#6a1b9a'],
+  ['food', -11.2, .6, '大雞排', '#ef6c00'], ['food', -11.2, 5, '珍珠奶茶', '#5d4037'], ['food', 11.2, .6, '烤香腸', '#d84315'], ['food', 11.2, 5, '臭豆腐', '#558b2f']];
+function mkStallModel(col, name, side) {
+  const g = new THREE.Group();
+  g.add(blk('#8d6e63', [3.8, 1, 1.2], [0, .5, .8]), blk('#efebe9', [3.9, .08, 1.3], [0, 1.02, .8]), rod('#5d4037', [.1, 2.6, .1], [-1.8, 1.3, 1.35]), rod('#5d4037', [.1, 2.6, .1], [1.8, 1.3, 1.35]), rod('#5d4037', [.1, 2.6, .1], [-1.8, 1.3, -.5]), rod('#5d4037', [.1, 2.6, .1], [1.8, 1.3, -.5]));
+  for (let i = 0; i < 8; i++) g.add(blk(i % 2 ? '#ffffff' : col, [.5, .08, 2.3], [-1.75 + i * .5, 2.65, .4], [-.18, 0, 0]));
+  g.add(blk(col, [3.9, .3, .06], [0, 2.4, 1.55]));
+  const sg = textPlane(name, col, '#ffffff', 3, .8, 120); sg.position.set(0, 3.25, 1.2); g.add(sg); g.add(blk('#4e342e', [3.1, .9, .06], [0, 3.25, 1.16]));
+  for (const x of [-1.5, -.5, .5, 1.5]) { const L = new THREE.Mesh(gS(), new THREE.MeshLambertMaterial({color:'#ff7043', emissive:'#ff5722', emissiveIntensity:.8})); L.scale.set(.16, .2, .16); L.position.set(x, 2.25, 1.5); g.add(L); }
+  if (side) g.rotation.y = side * Math.PI / 2;
+  return g;
+}
+function buildMarket(S3) {
+  const X = MK_X;
+  S3.add(blk('#546e7a', [30, .05, 20], [X, .02, -.5]), blk('#78909c', [30, .055, 3.2], [X, .025, 2.8]), blk('#d2b07a', [40, .05, 2], [X - 16, .03, 9.6]));
+  for (let i = 0; i < 14; i++) S3.add(blk('#fdd835', [.9, .06, .12], [X - 13 + i * 2, .03, 2.8]));
+  W.mkHit = new THREE.Group(); S3.add(W.mkHit);
+  for (const [id, x, z, name, col] of MK_STALLS) { const st = mkStallModel(col, name, Math.abs(x) > 10 ? -Math.sign(x) : 0); st.position.set(X + x, 0, z); if (id !== 'food') st.traverse(o => o.userData.hit = {type:'mk', id}); (id === 'food' ? S3 : W.mkHit).add(st); }
+  // 攤位上的道具
+  { const tub = grp(M(gBucket(), '#90a4ae', [1.4, .35, .8], [0, 1.15, .8]), blk('#4fc3f7', [1.3, .05, .7], [0, 1.3, .8])); tub.position.set(X - 7.5, 0, -5.2); S3.add(tub);
+    for (let i = 0; i < 6; i++) S3.add(blk(['#e53935', '#43a047', '#1e88e5', '#fdd835'][i % 4], [.18, .4, .18], [X - 3.6 + i * .45, 1.25, -4.4]));
+    for (let i = 0; i < 12; i++) S3.add(ball(['#e53935', '#fdd835', '#43a047', '#1e88e5', '#ab47bc', '#ff7043'][i % 6], [.2, .26, .2], [X + 1.4 + (i % 6) * .45, 1.4 + Math.floor(i / 6) * .5, -5.9]));
+    S3.add(blk('#ce93d8', [1.5, 1.8, .3], [X + 7.5, 1.9, -5.7]), blk('#4a148c', [1.3, 1.6, .05], [X + 7.5, 1.9, -5.54])); }
+  // 燈籠串
+  W.mkLamps = [];
+  for (const z of [-2.4, 1.2, 4.6]) { S3.add(rod('#3e2723', [.03, 26, .03], [X, 3.9, z], [0, 0, Math.PI / 2]));
+    for (let i = 0; i < 13; i++) { const L = new THREE.Mesh(gS(), new THREE.MeshLambertMaterial({color:['#e53935', '#ff7043', '#fdd835'][i % 3], emissive:['#e53935', '#ff7043', '#fdd835'][i % 3], emissiveIntensity:.9})); L.scale.set(.24, .3, .24); L.position.set(X - 12 + i * 2, 3.7 - Math.sin(i / 12 * Math.PI) * .4, z); S3.add(L); W.mkLamps.push(L); } }
+  for (const x of [-14, 14]) S3.add(rod('#3e2723', [.18, 4.2, .18], [X + x, 2.1, -2.4]), rod('#3e2723', [.18, 4.2, .18], [X + x, 2.1, 1.2]), rod('#3e2723', [.18, 4.2, .18], [X + x, 2.1, 4.6]));
+  // 牌樓
+  const gate = grp(rod('#c62828', [.35, 4.6, .35], [-4.5, 2.3, 0]), rod('#c62828', [.35, 4.6, .35], [4.5, 2.3, 0]), blk('#b71c1c', [10, .5, .5], [0, 4.5, 0]), blk('#fdd835', [10.2, .14, .55], [0, 4.8, 0]));
+  const gs = textPlane('🏮 歡樂夜市', '#b71c1c', '#ffeb3b', 4.4, 1, 110); gs.position.set(0, 4.1, .3); gate.add(gs); gate.position.set(X, 0, 8.2); S3.add(gate);
+  // 逛夜市的人
+  W.mkCrowd = []; const ids = VILS.map(v => v.id);
+  for (let i = 0; i < 10; i++) { const m = vilModel(ids[i % ids.length]); m.scale.setScalar(1.1); const z = 1.6 + (i % 3) * 1.3, x0 = -8.5 + (i * 2.3) % 17; m.position.set(X + x0, 0, z); S3.add(m); W.mkCrowd.push({m, x:x0, z, sp:(i % 2 ? 1 : -1) * (.8 + (i % 4) * .2), ph:i, stop:0}); }
+  W.mkSign = makeSign(X + 6.5, 8.4); S3.add(W.mkSign);
+}
+function mkTick(t, dt) {
+  if (!W.mkCrowd) return; const open = S.scene === 'market';
+  for (const L of W.mkLamps) L.material.emissiveIntensity = .7 + Math.sin(t * 3 + L.position.x) * .25;
+  if (!open) return;
+  for (const C of W.mkCrowd) { const u = C.m.userData;
+    if (C.stop > 0) { C.stop -= dt; C.m.rotation.y = -Math.PI / 2; if (u.legL) u.legL.rotation.z = u.legR.rotation.z = 0; continue; }
+    C.x += C.sp * dt; if (C.x > 8.8 || C.x < -8.8) { C.sp = -C.sp; C.x = Math.max(-8.8, Math.min(8.8, C.x)); }
+    if (Math.random() < dt * .12) C.stop = 1.5 + Math.random() * 3;
+    C.m.position.set(MK_X + C.x, Math.abs(Math.sin(t * 7 + C.ph)) * .03, C.z); C.m.rotation.y = C.sp > 0 ? 0 : Math.PI;
+    const sw = Math.sin(t * 7 + C.ph) * .6; if (u.legL) { u.legL.rotation.z = sw; u.legR.rotation.z = -sw; } if (u.armL) { u.armL.rotation.z = -sw * .7; u.armR.rotation.z = sw * .7; } }
+}
+// ----- 小遊戲引擎（2D 畫布） -----
+let NM = null;
+const MK_GAMES = {
+  goldfish:{n:'撈金魚', em:'🐠', tip:'點魚就能撈起來！紙網會慢慢破掉，撈空也會傷紙網。金色的魚最值錢！', pts:'紅 5・黑 10・金 30 分'},
+  ring:{n:'套圈圈', em:'⭕', tip:'第一下停左右、第二下停遠近，圈圈套中獎品就得分！越後面的分數越高。', pts:'前排 10・中排 20・後排 30・金色 60 分'},
+  balloon:{n:'射氣球', em:'🎈', tip:'準星會一直晃，抓準時機按下去射擊！10 發子彈。', pts:'一般 5・金色 15 分'},
+  pinball:{n:'彈珠台', em:'🎯', tip:'按住拉彈簧、放開發射彈珠，力道不同會掉到不同的洞！5 顆彈珠。', pts:'洞口 3～40 分'},
+};
+const NMW = 360, NMH = 440;
+function openMkGames() {
+  S.modal = () => {
+    const M = mkView(S.my), d = mkDay(), today = M.n?.[d] || 0;
+    let body = `<div class="popbox">🏮 <b>夜市攤位遊戲</b>（每週一晚上 6 點～12 點）<br><small>玩一次 💰${MK_COST}，玩出來的分數會變成<b>獎品券</b>，可以換化肥、飼料、抽抽樂券…今晚的總分會參加「夜市高手」好友排行！</small></div>
+      <div class="stats"><div><b>${M.tk || 0}</b>🎟️ 獎品券</div><div><b>${today}</b>今晚分數</div></div>`;
+    body += Object.entries(MK_GAMES).map(([id, G]) => `<div class="item"><div class="pic" style="font-size:30px">${G.em}</div><div class="info"><div class="t">${G.n} <small style="color:#8d6e63">最高 ${M.best?.[id] || 0} 分</small></div><div class="d">${G.pts}</div></div><button class="b o" data-act="nmStart" data-id="${id}">玩 💰${MK_COST}</button></div>`).join('');
+    body += `<div class="mgbtn"><button class="b" data-act="mkShop">🎁 換獎品</button> <button class="b" data-act="mkRank">🏆 夜市高手</button></div>`;
+    openModal('🏮 夜市遊戲', body);
+  };
+  S.modal();
+}
+async function nmStart(id) {
+  if (!marketOpen()) return toast('🏮 夜市收攤了，下週一晚上 6 點再來！'); if (NM) return;
+  const r = await txMe(f => { if (f.coins < MK_COST) return ab('金幣不夠'); f.coins -= MK_COST; addTrade(f, `夜市${MK_GAMES[id].n}`, -MK_COST); return {}; });
+  if (r.abort) return toast(r.msg);
+  closeModal(); const el = $('#nmGame'), c = $('#nmC'), dpr = Math.min(2, window.devicePixelRatio || 1); c.width = NMW * dpr; c.height = NMH * dpr; c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+  const tok = Math.random(); NM = {id, tok, t:0, score:0, done:0, end:null, day:mkDay(), fx:[]}; NMI[id].init(NM);
+  $('#nmT').textContent = `${MK_GAMES[id].em} ${MK_GAMES[id].n}`; $('#nmTip').textContent = MK_GAMES[id].tip; $('#nmEnd').hidden = true; el.hidden = false; Music.sfx('pop');
+  let last = performance.now(); const loop = now2 => { if (!NM || NM.tok !== tok) return; const dt = Math.min(.05, (now2 - last) / 1000); last = now2; NM.t += dt; if (!NM.done) NMI[id].step(NM, dt); nmDraw(); if (NM.done && !NM.end) nmFinish(); requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
+}
+function nmXY(e) { const r = $('#nmC').getBoundingClientRect(); return [(e.clientX - r.left) / r.width * NMW, (e.clientY - r.top) / r.height * NMH]; }
+function nmDraw() {
+  const x = $('#nmC').getContext('2d'); x.clearRect(0, 0, NMW, NMH); NMI[NM.id].draw(x, NM);
+  NM.fx = NM.fx.filter(f => NM.t - f.t < 1); for (const f of NM.fx) { const k = (NM.t - f.t); x.globalAlpha = 1 - k; x.fillStyle = f.c || '#fff59d'; x.font = '900 22px sans-serif'; x.textAlign = 'center'; x.strokeStyle = '#4e342e'; x.lineWidth = 4; x.strokeText(f.s, f.x, f.y - k * 40); x.fillText(f.s, f.x, f.y - k * 40); x.globalAlpha = 1; }
+  $('#nmS').textContent = `${NM.score} 分`;
+}
+const nmFx = (s, x, y, c) => NM && NM.fx.push({s, x, y, c, t:NM.t});
+async function nmFinish() {
+  const G = NM, id = G.id, sc = G.score; G.end = 1;
+  const r = await txMe(f => { const M = mkOf(f); M.tk += sc; M.n[G.day] = (M.n[G.day] || 0) + sc; M.best[id] = Math.max(M.best[id] || 0, sc); const ks = Object.keys(M.n).sort(); while (ks.length > 5) { const k = ks.shift(); delete M.n[k]; delete M.cl[k]; } gainExp(f, 3 + Math.floor(sc / 20)); return {}; }).catch(() => null);
+  const M = mkView(S.my);
+  $('#nmEnd').innerHTML = `<div class="rc"><div class="big">${sc >= 60 ? '🎉' : sc >= 25 ? '😄' : '😅'}</div><b>${MK_GAMES[id].n}：${sc} 分</b><div>得到 🎟️ ${sc} 張獎品券（現在有 ${M.tk || 0} 張）<br>今晚總分 ${M.n?.[G.day] || 0} 分</div><div class="mgbtn"><button class="b o" data-act="nmAgain">🔁 再玩一次 💰${MK_COST}</button> <button class="b" data-act="nmQuit">回夜市</button></div></div>`;
+  $('#nmEnd').hidden = false; if (sc >= 40) { Music.sfx('coin'); Music.sparkle(); } else Music.sfx('ding');
+}
+function mkStop() { NM = null; $('#nmGame').hidden = true; }
+const NMI = {};
+// --- 撈金魚 ---
+NMI.goldfish = {
+  init(G) { G.fish = []; for (let i = 0; i < 12; i++) G.fish.push(this.nf(i === 0 ? 'gold' : i < 4 ? 'black' : 'red')); G.poi = 100; G.T = 25; G.rip = []; },
+  nf(k) { const a = Math.random() * 6.28, r = Math.random() * 120, sp = k === 'gold' ? 95 : k === 'black' ? 70 : 55; const d = Math.random() * 6.28; return {k, x:180 + Math.cos(a) * r, y:250 + Math.sin(a) * r * .8, vx:Math.cos(d) * sp, vy:Math.sin(d) * sp, sp, tt:0}; },
+  step(G, dt) { G.T -= dt; G.poi -= dt * 2.2; if (G.T <= 0 || G.poi <= 0) { G.poi = Math.max(0, G.poi); G.done = 1; return; }
+    for (const f of G.fish) { f.tt -= dt; if (f.tt <= 0) { f.tt = .6 + Math.random() * 1.4; const d = Math.atan2(f.vy, f.vx) + (Math.random() - .5) * 2; f.vx = Math.cos(d) * f.sp; f.vy = Math.sin(d) * f.sp; }
+      f.x += f.vx * dt; f.y += f.vy * dt; const dx = f.x - 180, dy = (f.y - 250) / .8; if (Math.hypot(dx, dy) > 140) { const a = Math.atan2(dy, dx); f.x = 180 + Math.cos(a) * 139; f.y = 250 + Math.sin(a) * 139 * .8; f.vx = -f.vx; f.vy = -f.vy; } }
+    if (G.fish.length < 7) G.fish.push(this.nf(Math.random() < .08 ? 'gold' : Math.random() < .3 ? 'black' : 'red'));
+    G.rip = G.rip.filter(r => G.t - r.t < .6); },
+  tap(G, x, y) {
+    G.rip.push({x, y, t:G.t}); let best = null, bd = 1e9; for (const f of G.fish) { const d = Math.hypot(f.x - x, f.y - y); if (d < (f.k === 'gold' ? 26 : 30) && d < bd) { bd = d; best = f; } }
+    if (best) { const v = {red:5, black:10, gold:30}[best.k]; G.score += v; G.poi -= {red:9, black:13, gold:18}[best.k]; G.fish.splice(G.fish.indexOf(best), 1); nmFx(`+${v}`, x, y - 10, best.k === 'gold' ? '#ffd54f' : '#fff'); Music.sfx(best.k === 'gold' ? 'coin' : 'ding'); }
+    else { G.poi -= 14; Music.sfx('splash'); }
+    if (G.poi <= 0) { G.poi = 0; G.done = 1; nmFx('紙網破了！', 180, 120, '#ff8a80'); }
+  },
+  draw(x, G) {
+    x.fillStyle = '#5d4037'; x.fillRect(0, 0, NMW, NMH); x.fillStyle = '#8d6e63'; x.fillRect(8, 60, NMW - 16, NMH - 70);
+    x.fillStyle = '#90a4ae'; x.beginPath(); x.ellipse(180, 250, 160, 132, 0, 0, 6.29); x.fill();
+    const gr = x.createRadialGradient(170, 230, 20, 180, 250, 150); gr.addColorStop(0, '#81d4fa'); gr.addColorStop(1, '#0288d1'); x.fillStyle = gr; x.beginPath(); x.ellipse(180, 250, 148, 120, 0, 0, 6.29); x.fill();
+    for (const f of G.fish) { const a = Math.atan2(f.vy, f.vx), col = {red:'#ff5722', black:'#263238', gold:'#ffc107'}[f.k]; x.save(); x.translate(f.x, f.y); x.rotate(a); x.fillStyle = col;
+      x.beginPath(); x.ellipse(0, 0, 13, 7, 0, 0, 6.29); x.fill(); const wag = Math.sin(G.t * 14 + f.x) * 4; x.beginPath(); x.moveTo(-10, 0); x.lineTo(-22, -7 + wag); x.lineTo(-22, 7 + wag); x.closePath(); x.fill();
+      x.fillStyle = '#fff'; x.beginPath(); x.arc(7, -2.5, 2.4, 0, 6.29); x.fill(); x.fillStyle = '#000'; x.beginPath(); x.arc(7.6, -2.5, 1.2, 0, 6.29); x.fill(); if (f.k === 'gold') { x.strokeStyle = '#fff59d'; x.lineWidth = 2; x.stroke(); } x.restore(); }
+    for (const r of G.rip) { const k = (G.t - r.t) / .6; x.strokeStyle = `rgba(255,255,255,${1 - k})`; x.lineWidth = 3; x.beginPath(); x.ellipse(r.x, r.y, 10 + k * 30, 6 + k * 18, 0, 0, 6.29); x.stroke(); }
+    if (G.rip.length) { const r = G.rip[G.rip.length - 1]; x.strokeStyle = '#ffffff'; x.lineWidth = 5; x.beginPath(); x.arc(r.x, r.y, 24, 0, 6.29); x.stroke(); x.fillStyle = `rgba(255,255,255,${.15 + G.poi / 100 * .35})`; x.fill(); x.strokeStyle = '#ffeb3b'; x.lineWidth = 4; x.beginPath(); x.moveTo(r.x + 17, r.y + 17); x.lineTo(r.x + 45, r.y + 45); x.stroke(); }
+    nmBar(x, 12, 14, 200, '紙網', G.poi / 100, G.poi > 40 ? '#66bb6a' : G.poi > 20 ? '#ffa726' : '#ef5350'); nmTxt(x, `⏱ ${Math.max(0, Math.ceil(G.T))}s`, 300, 30);
+  },
+};
+// --- 套圈圈 ---
+NMI.ring = {
+  init(G) { const em = ['🧸', '🍶', '🎎', '🐷', '🤖', '🦆', '🍭', '🎁', '🐱', '🚗', '🪀', '🥤']; G.pz = []; const gold = Math.floor(Math.random() * 4); for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) G.pz.push({x:60 + c * 80, y:130 + r * 75, v:r === 0 && c === gold ? 60 : [30, 20, 10][r], e:em[r * 4 + c], got:0, gold:r === 0 && c === gold});
+    G.rings = 6; G.ph = 'x'; G.ax = 180; G.ay = 200; G.pt = 0; },
+  step(G, dt) { G.pt += dt; if (G.ph === 'x') G.ax = 180 + Math.sin(G.pt * 2.4) * 150; else if (G.ph === 'y') G.ay = 205 + Math.sin(G.pt * 2.1) * 115;
+    else if (G.ph === 'fly') { const k = (G.t - G.f0) / .6; if (k >= 1) { G.ph = 'land'; G.f0 = G.t; let hit = null; for (const p of G.pz) if (!p.got && Math.hypot(p.x - G.tx, p.y - G.ty) < 21) hit = p;
+        G.marks.push({x:G.tx, y:G.ty, hit:!!hit}); if (hit) { hit.got = 1; G.score += hit.v; nmFx(`+${hit.v}`, hit.x, hit.y - 20, hit.gold ? '#ffd54f' : '#fff'); Music.sfx(hit.gold ? 'coin' : 'ding'); } else Music.sfx('pop'); } }
+    else if (G.ph === 'land' && G.t - G.f0 > .7) { if (G.rings <= 0 || G.pz.every(p => p.got)) G.done = 1; else { G.ph = 'x'; G.pt = Math.random() * 3; } } },
+  tap(G) { if (G.ph === 'x') { G.ph = 'y'; G.pt = Math.random() * 3; Music.sfx('pop'); } else if (G.ph === 'y') { G.tx = G.ax + (Math.random() - .5) * 18; G.ty = G.ay + (Math.random() - .5) * 18; G.rings--; G.ph = 'fly'; G.f0 = G.t; G.marks ??= []; } },
+  draw(x, G) {
+    x.fillStyle = '#4e342e'; x.fillRect(0, 0, NMW, NMH); x.fillStyle = '#2e7d32'; x.fillRect(10, 70, NMW - 20, 290); x.fillStyle = '#388e3c'; for (let i = 0; i < 3; i++) x.fillRect(10, 92 + i * 75, NMW - 20, 4);
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    for (const p of G.pz) { x.fillStyle = p.gold ? '#ffd54f' : '#a1887f'; x.beginPath(); x.ellipse(p.x, p.y + 16, 22, 7, 0, 0, 6.29); x.fill(); x.font = `${p.y < 150 ? 26 : p.y < 220 ? 30 : 34}px sans-serif`; x.globalAlpha = p.got ? .35 : 1; x.fillText(p.e, p.x, p.y); x.globalAlpha = 1;
+      x.font = '800 11px sans-serif'; x.fillStyle = p.gold ? '#ffeb3b' : '#fff'; x.fillText(p.got ? '✔ 套中' : p.v + '分', p.x, p.y + 30); }
+    for (const m of G.marks || []) { x.strokeStyle = m.hit ? '#ffeb3b' : '#ef9a9a'; x.lineWidth = 5; x.beginPath(); x.ellipse(m.x, m.y + 10, 20, 8, 0, 0, 6.29); x.stroke(); }
+    if (G.ph === 'x') { x.strokeStyle = 'rgba(255,255,255,.85)'; x.setLineDash([8, 6]); x.lineWidth = 3; x.beginPath(); x.moveTo(G.ax, 72); x.lineTo(G.ax, 360); x.stroke(); x.setLineDash([]); nmTxt(x, '👆 點一下停「左右」', 180, 395); }
+    if (G.ph === 'y') { x.strokeStyle = 'rgba(255,255,255,.5)'; x.lineWidth = 2; x.beginPath(); x.moveTo(G.ax, 72); x.lineTo(G.ax, 360); x.stroke(); x.strokeStyle = '#ffeb3b'; x.lineWidth = 4; x.beginPath(); x.arc(G.ax, G.ay, 16, 0, 6.29); x.stroke(); nmTxt(x, '👆 再點一下停「遠近」', 180, 395); }
+    if (G.ph === 'fly') { const k = Math.min(1, (G.t - G.f0) / .6), px = 180 + (G.tx - 180) * k, py = 420 + (G.ty - 420) * k - Math.sin(k * Math.PI) * 90; x.strokeStyle = '#ff7043'; x.lineWidth = 6; x.beginPath(); x.ellipse(px, py, 22 - k * 4, 9 + Math.sin(G.t * 20) * 4, G.t * 6, 0, 6.29); x.stroke(); }
+    for (let i = 0; i < G.rings; i++) { x.strokeStyle = '#ff7043'; x.lineWidth = 4; x.beginPath(); x.arc(24 + i * 22, 30, 8, 0, 6.29); x.stroke(); }
+  },
+};
+// --- 射氣球 ---
+NMI.balloon = {
+  init(G) { const cols = ['#e53935', '#1e88e5', '#43a047', '#fdd835', '#ab47bc', '#ff7043']; G.bl = []; for (let r = 0; r < 4; r++) for (let c = 0; c < 6; c++) G.bl.push({x:45 + c * 54, y:110 + r * 62, c:cols[(r + c) % 6], gold:0, pop:0}); for (let i = 0; i < 3; i++) rnd(G.bl).gold = 1;
+    G.shots = 10; G.cx = 180; G.cy = 200; G.flash = -1; },
+  step(G) { const t = G.t; G.cx = 180 + Math.sin(t * 1.6) * 105 + Math.sin(t * 3.7) * 22; G.cy = 200 + Math.cos(t * 1.25) * 85 + Math.sin(t * 2.9) * 20;
+    if (G.fin && G.t - G.fin > .8) G.done = 1; },
+  tap(G) { if (G.shots <= 0 || G.fin) return; G.shots--; G.flash = G.t; let hit = null; for (const b of G.bl) if (!b.pop && Math.hypot(b.x - G.cx, b.y - G.cy) < 23) hit = b;
+    if (hit) { hit.pop = G.t; const v = hit.gold ? 15 : 5; G.score += v; nmFx(`+${v}`, hit.x, hit.y - 20, hit.gold ? '#ffd54f' : '#fff'); Music.sfx(hit.gold ? 'coin' : 'pop'); } else Music.sfx('bad');
+    if (G.shots <= 0 || G.bl.every(b => b.pop)) G.fin = G.t; },
+  draw(x, G) {
+    x.fillStyle = '#3e2723'; x.fillRect(0, 0, NMW, NMH); x.fillStyle = '#efebe9'; x.fillRect(12, 70, NMW - 24, 300); x.fillStyle = '#d7ccc8'; for (let i = 0; i < 60; i++) x.fillRect(20 + (i * 53) % 320, 80 + (i * 37) % 280, 3, 3);
+    for (const b of G.bl) { if (b.pop) { const k = (G.t - b.pop); if (k < .4) { x.strokeStyle = b.c; x.lineWidth = 3; for (let i = 0; i < 8; i++) { const a = i / 8 * 6.28; x.beginPath(); x.moveTo(b.x + Math.cos(a) * 8, b.y + Math.sin(a) * 8); x.lineTo(b.x + Math.cos(a) * (14 + k * 40), b.y + Math.sin(a) * (14 + k * 40)); x.stroke(); } } continue; }
+      x.strokeStyle = '#9e9e9e'; x.lineWidth = 1; x.beginPath(); x.moveTo(b.x, b.y + 20); x.lineTo(b.x, b.y + 34); x.stroke();
+      x.fillStyle = b.gold ? '#ffc107' : b.c; x.beginPath(); x.ellipse(b.x, b.y, 16, 20, 0, 0, 6.29); x.fill(); x.fillStyle = 'rgba(255,255,255,.55)'; x.beginPath(); x.ellipse(b.x - 5, b.y - 7, 4, 6, -.5, 0, 6.29); x.fill();
+      if (b.gold) { x.fillStyle = '#fff'; x.font = '900 13px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('★', b.x, b.y + 2); } }
+    x.strokeStyle = G.t - G.flash < .12 ? '#ffeb3b' : '#d50000'; x.lineWidth = 3; x.beginPath(); x.arc(G.cx, G.cy, 18, 0, 6.29); x.moveTo(G.cx - 28, G.cy); x.lineTo(G.cx + 28, G.cy); x.moveTo(G.cx, G.cy - 28); x.lineTo(G.cx, G.cy + 28); x.stroke();
+    x.fillStyle = '#5d4037'; x.fillRect(150, 395, 60, 40); x.fillStyle = '#212121'; x.fillRect(172, 375, 16, 30);
+    for (let i = 0; i < G.shots; i++) { x.fillStyle = '#ffca28'; x.fillRect(16 + i * 14, 22, 8, 18); }
+    nmTxt(x, '👆 點畫面任何地方射擊', 180, 420 - 36);
+  },
+};
+// --- 彈珠台 ---
+const PB_SLOTS = [5, 15, 3, 40, 3, 15, 5], PB_L = 20, PB_R = 300;
+NMI.pinball = {
+  init(G) { G.pegs = []; for (let r = 0; r < 7; r++) for (let x = PB_L + 22 + (r % 2 ? 20 : 0); x < PB_R - 10; x += 40) G.pegs.push({x, y:115 + r * 38}); G.balls = 5; G.ph = 'aim'; G.pw = 0; G.hold = 0; G.slotHit = -1; },
+  step(G, dt) {
+    if (G.ph === 'aim' && G.hold) { G.pt = (G.pt || 0) + dt; G.pw = Math.abs(((G.pt / 1.1) % 2) - 1) * -1 + 1; }
+    if (G.ph !== 'run') { if (G.ph === 'over' && G.t - G.o0 > .9) { if (G.balls <= 0) G.done = 1; else G.ph = 'aim'; } return; }
+    const b = G.b; if (!b.lane && G.t - G.r0 > 7) b.y = 421; if (!b.lane && Math.hypot(b.vx, b.vy) < 25) b.vx += (Math.random() < .5 ? -1 : 1) * 60;
+    for (let s = 0; s < 4; s++) { const h = dt / 4;
+      if (b.lane) { b.vy += 700 * h; b.y += b.vy * h; if (b.y < 52) { b.lane = 0; b.x = PB_R - 8; b.y = 52; b.vx = -(90 + b.p * 330); b.vy = 30; } else if (b.y > 415 && b.vy > 0) { G.ph = 'over'; G.o0 = G.t; G.balls--; nmFx('力道太小！', 300, 380, '#ff8a80'); return; } continue; }
+      b.vy += 700 * h; b.x += b.vx * h; b.y += b.vy * h;
+      if (b.x < PB_L + 7) { b.x = PB_L + 7; b.vx = Math.abs(b.vx) * .6; } if (b.x > PB_R - 7) { b.x = PB_R - 7; b.vx = -Math.abs(b.vx) * .6; } if (b.y < 40) { b.y = 40; b.vy = Math.abs(b.vy) * .5; }
+      if (b.y < 70 && b.x > PB_R - 60) { const dx = b.x - (PB_R - 60), dy = b.y - 70, d = Math.hypot(dx, dy); if (d > 52) { b.x = PB_R - 60 + dx / d * 52; b.y = 70 + dy / d * 52; const nx = dx / d, ny = dy / d, vn = b.vx * nx + b.vy * ny; if (vn > 0) { b.vx -= 1.6 * vn * nx; b.vy -= 1.6 * vn * ny; } } }
+      for (const p of G.pegs) { const dx = b.x - p.x, dy = b.y - p.y, d = Math.hypot(dx, dy); if (d < 12 && d > 0) { const nx = dx / d, ny = dy / d, vn = b.vx * nx + b.vy * ny; b.x = p.x + nx * 12; b.y = p.y + ny * 12; if (vn < 0) { b.vx -= 1.55 * vn * nx; b.vy -= 1.55 * vn * ny; b.vx += (Math.random() - .5) * 30; } p.hit = G.t; } }
+      for (let i = 1; i < 7; i++) { const dx2 = PB_L + i * 40; if (b.y > 392 && Math.abs(b.x - dx2) < 9) { b.vx = (b.x < dx2 ? -1 : 1) * Math.abs(b.vx) * .5; b.x = dx2 + (b.x < dx2 ? -9 : 9); } }
+      if (b.y > 420) { const i = Math.max(0, Math.min(6, Math.floor((b.x - PB_L) / 40))), v = PB_SLOTS[i]; G.score += v; G.slotHit = i; G.sh0 = G.t; nmFx(`+${v}`, PB_L + 20 + i * 40, 380, v >= 40 ? '#ffd54f' : '#fff'); Music.sfx(v >= 40 ? 'coin' : v >= 15 ? 'ding' : 'pop'); G.ph = 'over'; G.o0 = G.t; G.balls--; return; } }
+  },
+  tap(G) { if (G.ph === 'aim') { G.hold = 1; G.pt = 0; G.pw = 0; } },
+  up(G) { if (G.ph === 'aim' && G.hold) { G.hold = 0; const p = Math.max(.05, G.pw); G.b = {x:322, y:400, vx:0, vy:-(520 + p * 520), lane:1, p}; G.ph = 'run'; G.r0 = G.t; Music.sfx('pop'); } },
+  draw(x, G) {
+    x.fillStyle = '#4a148c'; x.fillRect(0, 0, NMW, NMH); x.fillStyle = '#7b1fa2'; x.fillRect(PB_L, 36, PB_R - PB_L, 400); x.fillStyle = '#6a1b9a'; x.fillRect(PB_R + 6, 36, 34, 400);
+    x.strokeStyle = '#ce93d8'; x.lineWidth = 4; x.beginPath(); x.arc(PB_R - 60, 70, 60, -Math.PI / 2, 0); x.stroke();
+    for (const p of G.pegs) { x.fillStyle = G.t - (p.hit || -9) < .15 ? '#fff59d' : '#ffd54f'; x.beginPath(); x.arc(p.x, p.y, 5, 0, 6.29); x.fill(); }
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    PB_SLOTS.forEach((v, i) => { const sx = PB_L + i * 40; x.fillStyle = G.slotHit === i && G.t - G.sh0 < .8 ? '#fff59d' : v >= 40 ? '#e53935' : v >= 15 ? '#fb8c00' : '#5c6bc0'; x.fillRect(sx + 2, 398, 36, 38); x.fillStyle = '#fff'; x.font = '900 14px sans-serif'; x.fillText(v, sx + 20, 418); if (i) { x.fillStyle = '#e1bee7'; x.fillRect(sx - 2, 390, 4, 46); } });
+    const pl = G.ph === 'aim' ? G.pw : 0; x.fillStyle = '#9e9e9e'; x.fillRect(PB_R + 14, 412 + pl * 18, 18, 24); x.strokeStyle = '#bdbdbd'; x.lineWidth = 2; x.beginPath(); for (let i = 0; i < 6; i++) x.lineTo(PB_R + 14 + (i % 2 ? 18 : 0), 400 + i * (2 + pl * 2)); x.stroke();
+    if (G.ph === 'run' || G.ph === 'over') { const b = G.b; if (b && G.ph === 'run') { const gr = x.createRadialGradient(b.x - 2, b.y - 2, 1, b.x, b.y, 7); gr.addColorStop(0, '#ffffff'); gr.addColorStop(1, '#78909c'); x.fillStyle = gr; x.beginPath(); x.arc(b.x, b.y, 7, 0, 6.29); x.fill(); } }
+    if (G.ph === 'aim') { nmBar(x, 40, 14, 200, '力道', G.pw, '#ff7043'); nmTxt(x, G.hold ? '放開就發射！' : '👆 按住拉彈簧', 160, 60); }
+    for (let i = 0; i < G.balls; i++) { x.fillStyle = '#cfd8dc'; x.beginPath(); x.arc(262 + i * 16 - 40, 22, 6, 0, 6.29); x.fill(); }
+  },
+};
+function nmBar(x, X0, Y0, w, label, v, col) { x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(X0, Y0, w, 16); x.fillStyle = col; x.fillRect(X0, Y0, w * Math.max(0, Math.min(1, v)), 16); x.fillStyle = '#fff'; x.font = '800 11px sans-serif'; x.textAlign = 'left'; x.textBaseline = 'middle'; x.fillText(label, X0 + 6, Y0 + 8); }
+function nmTxt(x, s, X0, Y0) { x.font = '900 16px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.strokeStyle = '#3e2723'; x.lineWidth = 4; x.strokeText(s, X0, Y0); x.fillStyle = '#fff'; x.fillText(s, X0, Y0); }
+document.addEventListener('pointerdown', e => { if (!NM || NM.done || e.target.id !== 'nmC') return; e.preventDefault(); const [x, y] = nmXY(e); NMI[NM.id].tap(NM, x, y); }, {passive:false});
+document.addEventListener('pointerup', () => { if (NM && !NM.done && NMI[NM.id].up) NMI[NM.id].up(NM); });
+if (QS.has('debug')) { window.__hfNM = () => NM; window.__hfNmStart = id => nmStart(id); window.__hfNMI = NMI; }
+// ----- 換獎品、排行 -----
+function openMkShop() {
+  S.modal = () => { const M = mkView(S.my);
+    openModal('🎁 夜市換獎品', `<div class="popbox">🎟️ 你有 <b>${M.tk || 0}</b> 張獎品券<br><small>在夜市攤位玩遊戲拿到的分數就是獎品券</small></div>` + MK_PRIZE.map(([id, em, n, cost]) => `<div class="item"><div class="pic" style="font-size:28px">${em}</div><div class="info"><div class="t">${n}</div><div class="d">🎟️ ${cost} 張</div></div><button class="b ${(M.tk || 0) >= cost ? 'o' : 'g'}" data-act="mkBuy" data-id="${id}">換</button></div>`).join(''));
+  };
+  S.modal();
+}
+async function mkBuy(id) {
+  const P = MK_PRIZE.find(p => p[0] === id); if (!P) return; let got = '';
+  await fast(f => { const M = mkOf(f); if (M.tk < P[3]) return ab('獎品券不夠'); M.tk -= P[3]; const r = P[4](f); got = P[2] + (r ? `（${r}）` : ''); addLog(f, `🎁 用 ${P[3]} 張夜市獎品券換了 ${got}`); return {}; }, () => { toast(`🎁 換到 ${got}！`); Music.sfx('coin'); });
+}
+function openMkRank() {
+  S.modal = () => {
+    const d = mkDay(), cl = mkClaimable(S.my), today = dowOf() === 1;
+    let body = `<div class="popbox">🏆 <b>夜市高手</b>（每週一晚上）<br><small>當晚在攤位遊戲拿到的總分比高低，收攤後（隔天）公布。<br>🥇 ${rwText(MK_RW[0])}<br>🥈 ${rwText(MK_RW[1])}<br>🥉 ${rwText(MK_RW[2])}</small></div>`;
+    if (cl) body += `<div class="sec">🎉 ${hrDate(cl.day)} 夜市高手結果</div><div class="fcres">${cl.fl.map((x, i) => `<div class="${x.me ? 'me' : ''}">${['🥇', '🥈', '🥉'][i] || (i + 1) + '.'} ${esc(x.n)}　<b>${x.p} 分</b></div>`).join('')}</div><div class="mgbtn"><button class="b o" data-act="mkClaim">${cl.rw ? `🎁 領獎（第 ${cl.k + 1} 名：${rwText(cl.rw)}）` : `第 ${cl.k + 1} 名，下次加油！（確認）`}</button></div>`;
+    if (today) { const fl = mkField(d).filter(x => !x.npc); body += `<div class="sec">🔥 今晚目前分數（${marketOpen() ? '營業中' : '晚上 6 點開'}）</div><div class="fcres">${fl.length ? fl.map(x => `<div class="${x.me ? 'me' : ''}">${esc(x.n)}　<b>${x.p} 分</b></div>`).join('') : '<div>還沒有人玩，快去拿第一！</div>'}</div>`; }
+    else body += `<div class="mgres">下次夜市：${hrDate(addDays(twDay(), (8 - dowOf()) % 7 || 7))}（週一）晚上 6 點</div>`;
+    openModal('🏆 夜市高手', body);
+  };
+  S.modal();
+}
+async function mkClaim() {
+  const c = mkClaimable(S.my); if (!c) return;
+  const r = await txMe(f => { const M = mkOf(f); if (M.cl[c.day]) return ab('已經領過了'); M.cl[c.day] = c.k + 1; if (c.rw) giveRw(f, c.rw, 'market', `${hrDate(c.day)}・${c.fl[c.k].p}分`); addLog(f, `🏮 ${hrDate(c.day)} 夜市高手：第 ${c.k + 1} 名${c.rw ? `，獲得 ${rwText(c.rw)}` : ''}`); return {}; });
+  if (r.abort) return toast(r.msg); toast(c.rw ? `🎉 夜市高手第 ${c.k + 1} 名！獲得 ${rwText(c.rw)}` : `第 ${c.k + 1} 名，下週再來挑戰！`); if (c.rw) { Music.sfx('coin'); Music.sparkle(); }
+}
+
 /* ================= 溫室 ================= */
 
 const GH_MAX = 6, GH_START = 2, GH_PRICE = [0, 0, 1500, 3000, 5000, 8000], GH_SPEED = .8;
@@ -3648,7 +3910,7 @@ async function qianDraw(h) {
   if (lv <= 1) { Music.sfx('coin'); Music.sparkle(); } else if (lv >= 3) Music.sfx('bad'); renderAll();
 }
 // 點地面走過去
-const WALK_BOX = {farm:[-12, 12], ranch:[-12, 12], fish:[-12, 12], factory:[-12, 12], town:[-11, 11], green:[-8, 8], temple:[-10, 10], stable:[-13, 13], dock:[-15, 15]};
+const WALK_BOX = {farm:[-12, 12], ranch:[-12, 12], fish:[-12, 12], factory:[-12, 12], town:[-11, 11], green:[-8, 8], temple:[-10, 10], stable:[-13, 13], dock:[-15, 15], market:[-12, 12]};
 function walkTap(cx, cy) {
   if (!W.scene || W.race || S.decoMode || !S.my) return;
   const r = W.renderer.domElement.getBoundingClientRect(); W.ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1); W.ray.setFromCamera(W.ndc, W.camera);
@@ -3956,7 +4218,7 @@ function buildWorld() {
   // 窗戶晚上會亮
   W.winMat = new THREE.MeshLambertMaterial({color:'#bbdefb', emissive:'#000000'});
   const glass = mat('#bbdefb'); S3.traverse(o => { if (o.isMesh && o.material === glass) o.material = W.winMat; });
-  buildScenery(S3); buildFactory(S3); buildTown(S3); buildGreen(S3); buildTemple(S3); buildStable(S3); buildDock(S3); buildAquarium(S3); buildEnv(S3);
+  buildScenery(S3); buildFactory(S3); buildTown(S3); buildGreen(S3); buildTemple(S3); buildStable(S3); buildDock(S3); buildAquarium(S3); buildMarket(S3); buildEnv(S3);
   mergeStatic(S3);
   W.vilG = new THREE.Group(); W.decoG = new THREE.Group(); W.greenG = new THREE.Group(); W.templeG = new THREE.Group(); S3.add(W.vilG, W.decoG, W.greenG, W.templeG);
   W.stallG = stallModel(); W.stallGoods = new THREE.Group(); W.stallG.add(W.stallGoods); W.stallG.position.set(TOWN_T.x - 3.4, 0, -.6); W.stallG.traverse(o => o.userData.hit = {type:'stall'}); S3.add(W.stallG);
@@ -4000,7 +4262,7 @@ function setCam(scene, instant) {
 function pick(cx, cy) {
   const r = W.renderer.domElement.getBoundingClientRect(); W.ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1);
   W.ray.setFromCamera(W.ndc, W.camera);
-  const roots = [...(W.templeG ? [W.templeG] : []), ...(W.stableG ? [W.stableG] : []), ...(W.aqHit ? [W.aqHit] : []), ...(W.greenG ? [W.greenG] : []), ...(W.stallG ? [W.stallG] : []), ...(W.decoGrid ? [W.decoGrid] : []), ...(W.santaGift ? [W.santaGift.g] : []), ...(W.vilG ? [W.vilG] : []), ...(W.decoG ? [W.decoG] : []), ...W.people.map(p => p.m), ...W.plots.map(p => p.g), ...W.animals.map(a => a.g), ...W.poops.filter(p => p.visible), W.trough, ...W.ponds.map(p => p.g), ...W.machs.map(p => p.g), ...W.pets.map(p => p.m)];
+  const roots = [...(W.templeG ? [W.templeG] : []), ...(W.stableG ? [W.stableG] : []), ...(W.aqHit ? [W.aqHit] : []), ...(W.mkHit ? [W.mkHit] : []), ...(W.greenG ? [W.greenG] : []), ...(W.stallG ? [W.stallG] : []), ...(W.decoGrid ? [W.decoGrid] : []), ...(W.santaGift ? [W.santaGift.g] : []), ...(W.vilG ? [W.vilG] : []), ...(W.decoG ? [W.decoG] : []), ...W.people.map(p => p.m), ...W.plots.map(p => p.g), ...W.animals.map(a => a.g), ...W.poops.filter(p => p.visible), W.trough, ...W.ponds.map(p => p.g), ...W.machs.map(p => p.g), ...W.pets.map(p => p.m)];
   const hits = W.ray.intersectObjects(roots, true);
   for (const h of hits) { if (h.object.visible === false) continue; let o = h.object; while (o && !o.userData.hit) o = o.parent; if (o) return o.userData.hit.type === 'cell' ? {type:'cell', c:o.userData.cells[h.instanceId]} : o.userData.hit; }
   return null;
@@ -4316,7 +4578,7 @@ function loop() {
     if (waving) { const T2 = P.waveTo && W.people.find(q => q.uid === P.waveTo); if (T2) { const a2 = Math.atan2(-(T2.m.position.z - P.m.position.z), T2.m.position.x - P.m.position.x), ac = -Math.PI / 2; let dd = a2 - ac; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y = ac + dd * .6; } else P.m.rotation.y = -Math.PI / 2; if (u.head) u.head.rotation.z = Math.sin(t * 5) * .15; if (wa < 1400) P.m.position.y = Math.abs(Math.sin(wa / 1400 * Math.PI * 2)) * .45; const pop = wa < 300 ? wa / 300 : wa > 3400 ? (3800 - wa) / 400 : 1; P.m.scale.setScalar(1.25 * (1 + .22 * pop)); if (!P.hiFx || now() - P.hiFx > 1300) { P.hiFx = now(); fx3(P.m.position.x, 3.3, P.m.position.z, rnd(['👋', '👋✨', '💕']), '#e91e63'); } }
     else if (P.m.scale.x !== 1.25) P.m.scale.setScalar(1.25);
   }
-  fishTick(t, dt);
+  fishTick(t, dt); mkTick(t, dt);
   if (W.hoverRing.visible) W.hoverRing.material.opacity = .55 + Math.sin(t * 6) * .3;
   W.renderer.render(W.scene, W.camera);
   for (const o of OV.values()) projectTo(o.el, o.pos(_v.set(0, 0, 0)), w, h);
@@ -4464,6 +4726,7 @@ function renderTools() {
   else if (S.scene === 'ranch') T = own ? [['hand','✋','收集'], ['feedAll','🌾','餵食', 1], ['buyAni','🛒','買動物', 1], ['sellProducts','💰','賣產品', 1]]
                                    : [['hand','✋','偷產品'], ['feedFriend','🌾','幫餵食', 1], ['cleanTip','🧹','幫清便便', 1]];
   else if (S.scene === 'green') T = own ? [['hand','✋','手'], ['pump','🎃','南瓜大賽', 1], ['ghBuy','➕','擴建溫室', 1]] : [['hand','✋','參觀'], ['pump','🎃','南瓜大賽', 1]];
+  else if (S.scene === 'market') T = [['hand','✋','逛逛'], ['mkGames','🎮','攤位遊戲', 1], ['mkShop','🎁','換獎品', 1], ['mkRank','🏆','夜市高手', 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'dock') T = [['hand','✋','走走'], ['fishGo','🎣','釣魚', 1], ['aqShow','🐠','我的魚缸', 1], ['fishCup','🏆','釣魚大賽', 1], ['fishDex','📖','魚種圖鑑', 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'stable') T = own ? [['hand','✋','手'], ['horseList','🐎','我的馬', 1], ['horseRace','🏁','賽馬大賽', 1]] : [['hand','✋','參觀'], ['horseList','🐎','看馬', 1], ['horseRace','🏁','賽馬大賽', 1]];
   else if (S.scene === 'temple') T = [['hand','✋','手'], ['templeInfo','🏯','廟宇', 1], ['qianShow','📜','今日籤詩', 1], ['toTown','🏘️','回小鎮', 1]];
@@ -4492,6 +4755,7 @@ function renderScene() {
     const order = {farm:[syncField, syncDeco, syncPets, syncRanch, syncFish, syncFactory, syncTown], ranch:[syncRanch, syncPets, syncField, syncDeco, syncFish, syncFactory, syncTown], fish:[syncFish, syncPets, syncField, syncDeco, syncRanch, syncFactory, syncTown], factory:[syncFactory, syncPets, syncField, syncDeco, syncRanch, syncFish, syncTown], green:[syncGreen, syncPets, syncField, syncDeco, syncRanch, syncFish, syncFactory, syncTown], town:[syncTown, syncStall, syncPets, syncField, syncDeco, syncRanch, syncFish, syncFactory]}[S.scene] || [syncField, syncDeco, syncRanch, syncFish, syncPets, syncFactory, syncTown];
     for (const fn of order) fn(f, own); if (S.scene !== 'green') syncGreen(f, own); syncTemple(f, own); syncStable(f, own); syncAquarium(f, own); syncFest();
     { const T = templeView(f); setSign(W.templeSign, own ? '我的廟宇' : `${dn(f)}的廟`, T.lv >= HALLS.length ? '三座殿都蓋好了 🙏' : `${HALLS[T.lv].n} 建造中 ${Math.floor(tpProg(T) * 100)}%`); }
+    if (S.place === 'market') setSign(W.mkSign, '🏮 歡樂夜市', `${marketOpen() ? '營業中～12 點收攤' : '收攤囉'} · 現在 ${hereList().length} 人`);
     if (S.place === 'dock') setSign(W.dockSign, '🎣 釣魚碼頭', `${isNight() ? '🌙 夜釣時間' : '☀️ 白天'}${isRain() ? '・🌧️ 下雨' : ''} · 現在 ${hereList().length} 人`);
     { const L = horseView(f).list || []; setSign(W.stableSign, own ? '我的馬場' : `${dn(f)}的馬場`, `馬 ${L.length}/${H_MAX} 匹 · 🏁下一場 ${hrDate(hrOpen())}`); }
     setSign(W.greenSign, own ? '我的溫室' : `${dn(f)}的溫室`, `花圃 ${greenView(f).n || GH_START}/${GH_MAX} · 🎃南瓜大賽`); if (S.scene !== 'town') syncStall(f, own);
@@ -4564,6 +4828,7 @@ function pondText(i) {
   return t;
 }
 function tipFor(h) {
+  if (h.type === 'mk') { const G = MK_GAMES[h.id]; return `<b>${G.em} ${G.n}</b><br>${G.pts}<br>點一下玩（💰${MK_COST}）`; }
   if (h.type === 'aq') { const n = dockView(S.view).aq?.length || 0; return `<b>🐠 超大魚缸</b>（${n}/${AQ_MAX} 條）<br>點一下看魚`; }
   if (h.type === 'horse') { const x = horseView(S.view).list.find(y => y.id === h.id); return x ? `<b>${hSexE(x)} ${esc(x.n)}</b> ${hAgeT(x)}${hStatus(x) ? '<br>' + hStatus(x) : ''}<br>${isOwn() ? '點一下訓練、配種' : '點一下看看'}` : ''; }
   if (h.type === 'hall') { const H = HALLS[h.i], T = templeView(S.view); return `<b>${H.em} ${H.n}</b>（${H.god}）<br>${h.i < T.lv ? (qianToday(S.my) ? '今天已經抽過籤了，點一下看籤詩' : '點一下參拜抽籤 🙏') : h.i === T.lv ? `建造中 ${Math.floor(tpProg(T) * 100)}%，點一下捐材料` : '還沒開始蓋'}`; }
@@ -4599,6 +4864,7 @@ function clickHit(h) {
   if (h.type === 'gplot') { if (S.scene !== 'green') { S.scene = 'green'; setCam('green'); renderTools(); } return clickGh(h.i); }
   if (h.type === 'gpump') return openPump();
   if (h.type === 'aq') return openAquarium();
+  if (h.type === 'mk') return openMkGames();
   if (h.type === 'horse') { if (S.scene !== 'stable') { S.scene = 'stable'; setCam('stable'); renderTools(); } return openHorse(h.id); }
   if (h.type === 'hall') { if (S.scene !== 'temple') { S.scene = 'temple'; setCam('temple'); renderTools(); } return openHall(h.i); }
   if (h.type === 'cell') { if (!S.decoMode?.k) return toast('先從「🪑 換裝飾」選一個要擺的裝飾'); return run(() => decoPut(h.c)); }
@@ -5214,6 +5480,7 @@ function openHelp() {
     <p>🌱 <b>種菜</b>：共 ${Object.keys(CROPS).length} 種作物，有蔬菜、水果、花、果樹、草穀。選「播種」挑種子，點田地就能種。✋「手」會自動收成、翻地、播種或照顧作物。</p>
     <p>💧🌿🐞 <b>照顧</b>：作物會缺水、長草、長蟲，每個問題減產 10%。</p>
     <p>🐮 <b>牧場</b>：${Object.keys(ANIMALS).filter(k => !ANIMALS[k].gone).length} 種動物，吃<b>牧草</b>或<b>飼料</b>才會生產。產品可以賣錢、煮料理。</p>
+    <p>🏮 <b>夜市</b>：每週一晚上 6 點～12 點開，從「🗺️ 出門」進去。撈金魚、套圈圈、射氣球、彈珠台一次 💰50，分數會變成獎品券換獎品；當晚總分比「夜市高手」，隔天公布前三名！</p>
     <p>🎣 <b>釣魚碼頭</b>：點左上「🗺️ 出門」去碼頭，大家都在同一個碼頭！拋竿後等浮標<b>沉下去</b>再收線，然後<b>按住</b>慢慢收，張力太高要放開一下。釣到的魚放進魚塭旁的超大魚缸，村民會來買。每週三有釣魚大賽！</p>
     <p>🐎 <b>馬場</b>：每人有 3 匹馬（2 公 1 母）。每天可以訓練 3 次（用紅蘿蔔或金幣），母馬配種生小馬會遺傳爸媽的天分。每月 15、30 號舉辦<b>賽馬大賽</b>，前一天截止報名，前三名有大獎和獎盃！</p>
     <p>🐟 <b>魚塭</b>：${Object.keys(SEA).length} 種魚蝦貝類（吳郭魚、鮭魚、鮪魚、龍蝦、帝王蟹、牡蠣、海膽、章魚…），放魚苗養大就能撈。水面有垃圾記得撈掉。</p>
@@ -6130,7 +6397,8 @@ const ACT = {
   hEnter(d) { return run(() => hEnter(+d.id)); },
   map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, leaveP() { ACT.scene({s:'farm'}); },
   fishGo: fishStart, fishCast, fishHook, fishQuit() { fishStop(); renderTools(); }, fishKeep(d) { return run(() => fishKeep(d.m)); }, aqShow: openAquarium, aqSell(d) { return run(() => aqSell(+d.i)); }, fishDex: openFishDex, fishCup: openFishCup,
-  fcEnter(d) { return run(() => fcEnter(+d.i)); }, fcClaim() { return run(fcClaim); }, hRaceGo(d) { startHorseRace(d.r); }, toTown() { ACT.scene({s:'town'}); },
+  fcEnter(d) { return run(() => fcEnter(+d.i)); },
+  mkGames: openMkGames, mkShop: openMkShop, mkRank: openMkRank, nmStart(d) { return run(() => nmStart(d.id)); }, nmAgain() { const id = NM?.id; mkStop(); if (id) return run(() => nmStart(id)); }, nmQuit() { mkStop(); }, mkBuy(d) { return run(() => mkBuy(d.id)); }, mkClaim() { return run(mkClaim); }, fcClaim() { return run(fcClaim); }, hRaceGo(d) { startHorseRace(d.r); }, toTown() { ACT.scene({s:'town'}); },
   pump: openPump, pumpPlant() { return run(pumpPlant); }, pumpCare(d) { return run(() => pumpCare(d.k)); }, pumpHarvest() { return run(pumpHarvest); }, pumpClaim() { return run(pumpClaim); }, pumpEnter(d) { return run(() => pumpEnter(+d.i)); }, ghPlant(d) { return run(() => ghPlant(d.id)); }, ghBuy() { return run(ghBuy); },
   expPick(d) { openExp(d.k); }, expGo(d) { return run(() => expGo(d.k, d.d)); }, expBack(d) { return run(() => expBack(d.k)); },
   stall: openStall, stallOn(d) { return run(() => stallOn(d.k)); }, stallOff(d) { return run(() => stallOff(+d.i)); }, stallBuy(d) { return run(() => stallBuy(+d.i)); },
