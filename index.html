@@ -171,7 +171,7 @@ button{font-family:inherit;cursor:pointer;border:none}
 .fr.add .av{background:#bdbdbd}
 .fn{font-size:12px;font-weight:700;max-width:64px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .fl{font-size:11px;color:#8d6e63}
-.steal{position:absolute;bottom:-6px;right:-10px;font-style:normal;font-size:11px;background:#43a047;color:#fff;border-radius:8px;padding:0 4px;border:2px solid #fff;animation:pop 1.2s ease-in-out infinite}
+.steal{position:absolute;bottom:-6px;right:-10px;white-space:nowrap;width:max-content;line-height:1.35;font-style:normal;font-size:11px;background:#43a047;color:#fff;border-radius:8px;padding:0 4px;border:2px solid #fff;animation:pop 1.2s ease-in-out infinite}
 .dot{position:absolute;top:-2px;right:-2px;width:13px;height:13px;border-radius:50%;background:#4caf50;border:2px solid #fff}
 @keyframes pop{50%{transform:scale(1.15)}}
 
@@ -2227,7 +2227,7 @@ function makeSign(x, z) {
 function setSign(g, title, sub) { const k = title + '|' + sub; if (g.userData.txt === k) return; g.userData.txt = k; const m = g.userData.face.material; m.map?.dispose(); m.map = signTexture(title, sub); m.needsUpdate = true; }
 
 /* ================= 3D：真實農場背景 ================= */
-const FLAT_PADS = [[101, 0, 13, 10], [-80, 0, 15, 12], [128, 0, 14, 11], [-114, 0, 16, 13], [160, 0, 15, 11]];   // 廟宇、馬場、夜市、釣魚碼頭、展覽館
+const FLAT_PADS = [[101, 0, 13, 10], [-80, 0, 15, 12], [128, 0, 14, 11], [-114, 0, 16, 13], [160, 4, 24, 28]];   // 廟宇、馬場、夜市、釣魚碼頭、展覽館
 const padDist = (x, z) => Math.min(...FLAT_PADS.map(([cx, cz, hx, hz]) => Math.hypot(Math.max(0, Math.abs(x - cx) - hx), Math.max(0, Math.abs(z - cz) - hz))));
 const inLake = (x, z) => x > -133.5 && x < -94.5 && z < -.4 && z > -22;
 function terrainH(x, z) { if (inLake(x, z)) return -.6; const d = Math.hypot((x - 12) / 1.3, z); if (d <= 58) return 0; const k = d - 58, fl = Math.min(1, padDist(x, z) / 9); return fl * Math.max(0, k * .14 * (1 + Math.sin(x * .05) * .5 + Math.cos(z * .07) * .4) + Math.sin(x * .11 + z * .07) * 1.5 * Math.min(1, k / 10)); }
@@ -3513,7 +3513,7 @@ function buildMuseum(S3) {
   S3.add(blk('#eceff1', [28, .1, 14], [X, .05, -1]), blk('#b71c1c', [3, .12, 3.2], [X, .07, 4.7]), blk('#b71c1c', [22, .12, 1.2], [X, .07, -.6]));
   for (let i = 0; i < 14; i++) for (let j = 0; j < 7; j++) if ((i + j) % 2) S3.add(blk('#cfd8dc', [1.95, .11, 1.95], [X - 13 + i * 2, .055, -7 + j * 2]));
   S3.add(blk('#f5f0e6', [28, 6, .5], [X, 3, -7.9]), blk('#d7ccc8', [28.8, .5, 1], [X, 6.2, -7.8]), blk('#efebe9', [12, 1.8, .6], [X, 7.3, -7.9]), blk('#d7ccc8', [12.6, .3, .9], [X, 8.3, -7.8]));
-  for (const s of [-1, 1]) S3.add(blk('#f5f0e6', [.5, 5, 12], [X + s * 14, 2.5, -2]), blk('#d7ccc8', [.9, .4, 12.4], [X + s * 14, 5.1, -2]));
+  for (const s of [-1, 1]) S3.add(blk('#f5f0e6', [.5, 1.4, 12], [X + s * 14, .7, -2]), blk('#d7ccc8', [.8, .25, 12.3], [X + s * 14, 1.5, -2]));
   for (const x of [-10.4, -5.2, 0, 5.2, 10.4]) S3.add(rod('#fafafa', [.4, 5.6, .4], [X + x, 2.9, -7.25]), blk('#e0e0e0', [1, .3, 1], [X + x, .2, -7.25]), blk('#e0e0e0', [1, .3, 1], [X + x, 5.7, -7.25]));
   for (const s of [-1, 1]) S3.add(rod('#fafafa', [.6, 6.5, .6], [X + s * 13.4, 3.3, 5.2]), blk('#e0e0e0', [1.4, .4, 1.4], [X + s * 13.4, .2, 5.2]), blk('#e0e0e0', [1.4, .4, 1.4], [X + s * 13.4, 6.6, 5.2]));
   const ts = textPlane('🏛️ 歡樂展覽館', '#5d4037', '#ffe082', 10, 1.4, 120); ts.position.set(X, 7.3, -7.55); S3.add(ts);
@@ -3566,7 +3566,7 @@ function syncMuseum() {
       g.traverse(o => o.userData.hit = {type:'mus', k:'horse'}); W.musG.add(g); });
   }
   if (S.scene === 'museum') {
-    for (const [k, dx] of Object.entries(MU_SEC)) show[k].forEach((x, i) => { const [sx, sz, h] = MU_SLOT[i]; ov('mu' + k + i, `${x.npc ? '🏅 村民紀錄' : '🏆 冠軍'} ${esc(x.n)}${x.uid === S.uid ? '（我）' : ''}`, v => v.set(MU_X + dx + sx, h + 2.3, sz), 'tag mutag'); });
+    for (const [k, dx] of Object.entries(MU_SEC)) show[k].forEach((x, i) => { const [sx, sz, h] = MU_SLOT[i]; ov('mu' + k + i, `${x.npc ? '🏅' : '🏆'} ${esc(x.n)}${x.uid === S.uid ? '（我）' : ''}`, v => v.set(MU_X + dx + sx, h + 2.3, sz), 'tag mutag'); });
     hs.forEach((x, i) => ov('muH' + i, `${x.npc ? '🏅' : '🏆'} 「${esc(x.n)}」${esc(x.o)}${x.uid === S.uid ? '（我）' : ''}`, v => v.set(MU_X + MU_HX[i], [.9, .75, .75][i] + 2.1, 1.4), 'tag mutag')); }
 }
 function openMuseum(k0) {
