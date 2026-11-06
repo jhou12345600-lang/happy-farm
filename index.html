@@ -58,6 +58,7 @@ button{font-family:inherit;cursor:pointer;border:none}
 #stage canvas{display:block;width:100%;height:100%;touch-action:none}
 #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;font-weight:900;color:#5d3a12;background:linear-gradient(#bfe6ff,#9ad85f);z-index:3;font-size:16px}
 #ovl{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}
+#musCap{position:absolute;left:8px;right:84px;bottom:10px;z-index:2;pointer-events:none;font-size:12.5px;font-weight:700;color:#fff}#musCap>div{display:inline-block;background:rgba(62,39,35,.72);border-radius:10px;padding:3px 9px;margin-top:3px;max-width:100%}#musCap[hidden]{display:none}
 #stage.racing #ovl,#stage.racing #sceneTabs,#stage.racing #chatBtn,#stage.racing #wx,#stage.racing #visitBar,#stage.racing #hereBox,#stage.racing #hint{visibility:hidden}
 #fishUI{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:5;width:min(94%,420px);background:rgba(255,250,240,.96);border:3px solid #8d6e63;border-radius:18px;padding:10px 12px;box-shadow:0 6px 16px rgba(0,0,0,.25);text-align:center;user-select:none;-webkit-user-select:none;touch-action:none}#fishUI[hidden]{display:none}
 #fishUI .ft{font-weight:800;color:#5d4037;font-size:14.5px;margin-bottom:8px}#fishUI .ft.bite{color:#d32f2f;font-size:17px;animation:cdpop .5s infinite alternate}#fishUI .fm{font-size:13.5px;color:#6d4c41;margin-bottom:8px;font-weight:700}
@@ -348,6 +349,7 @@ button{font-family:inherit;cursor:pointer;border:none}
   <div id="stage">
     <div id="loading">🚜 正在載入 3D 農場…</div>
     <div id="ovl"></div>
+    <div id="musCap" hidden></div>
     <div id="sceneTabs"><button data-act="scene" data-s="farm" class="on">🌾<span class="tl"> 農場</span></button><button data-act="scene" data-s="ranch">🐮<span class="tl"> 牧場</span></button><button data-act="scene" data-s="stable">🐎<span class="tl"> 馬場</span><em class="badge" id="bdS"></em></button><button data-act="scene" data-s="fish">🐟<span class="tl"> 魚塭</span></button><button data-act="scene" data-s="factory">🏭<span class="tl"> 工廠</span></button><button data-act="scene" data-s="green">🌱<span class="tl"> 溫室</span><em class="badge" id="bdH"></em></button><button data-act="scene" data-s="town">🏘️<span class="tl"> 小鎮</span><em class="badge" id="bdV"></em></button><button data-act="scene" data-s="temple">🏯<span class="tl"> 廟宇</span></button><button data-act="map" id="mapTab">🗺️<span class="tl"> 出門</span><em class="badge" id="bdP"></em></button></div>
     <div id="wx"></div>
     <div id="visitBar" hidden><span>👀 在 <b id="visitName"></b> 的家</span><button data-act="trophies" class="tb">🏆</button><button data-act="home">🏠 回家</button></div>
@@ -3471,8 +3473,8 @@ async function fcEnter(i) {
 }
 async function fcClaim() {
   const c = fcClaimable(S.my); if (!c) return;
-  const r = await txMe(f => { const D = dockOf(f); if (D.cl[c.cid]) return ab('已經領過了'); D.cl[c.cid] = c.k + 1; giveRw(f, c.rw, 'fishing', `${hrDate(c.cid)}・${DFISH[c.fl[c.k].k].n} ${c.fl[c.k].cm}cm`); addLog(f, `🏆 ${hrDate(c.cid)} 釣魚大賽：第 ${c.k + 1} 名，獲得 ${rwText(c.rw)}`); return {}; });
-  if (r.abort) return toast(r.msg); toast(`🎉 第 ${c.k + 1} 名！獲得 ${rwText(c.rw)}`); if (c.k < 3) { Music.sfx('coin'); Music.sparkle(); } else Music.sfx('pop');
+  const r = await txMe(f => { const D = dockOf(f); if (D.cl[c.cid]) return ab('已經領過了'); D.cl[c.cid] = c.k + 1; giveRw(f, c.rw, 'fishing', `${hrDate(c.cid)}・${DFISH[c.fl[c.k].k].n} ${c.fl[c.k].cm}cm`); if (c.k === 0) { (D.mus ??= []).push({cid:c.cid, k:c.fl[0].k, cm:c.fl[0].cm}); if (D.mus.length > 12) D.mus = D.mus.slice(-12); } addLog(f, `🏆 ${hrDate(c.cid)} 釣魚大賽：第 ${c.k + 1} 名，獲得 ${rwText(c.rw)}`); return {}; });
+  if (r.abort) return toast(r.msg); toast(`🎉 第 ${c.k + 1} 名！獲得 ${rwText(c.rw)}${c.k === 0 ? '，冠軍魚會擺到展覽館 4F' : ''}`); if (c.k < 3) { Music.sfx('coin'); Music.sparkle(); } else Music.sfx('pop');
 }
 const dockBadge = f => (fcClaimable(f) ? 1 : 0);
 function openMap() {
@@ -3481,107 +3483,119 @@ function openMap() {
     openModal('🗺️ 出門去哪裡？', `<div class="popbox"><small>這些地方是<b>大家共用</b>的，好友也在的話會看到彼此，一起玩更熱鬧！</small></div>
       <div class="item" data-act="goDock" style="cursor:pointer"><div class="pic" style="font-size:34px">🎣</div><div class="info"><div class="t">釣魚碼頭</div><div class="d">真的要拋竿、等浮標、慢慢收線！天氣、白天晚上會出現不同的魚，有超稀有大魚。週三釣魚大賽。</div></div></div>
       <div class="item" data-act="goMarket" style="cursor:pointer;${mo ? '' : 'opacity:.6'}"><div class="pic" style="font-size:34px">🏮</div><div class="info"><div class="t">夜市 ${mo ? '<span class="rare" style="background:#e53935">營業中</span>' : ''}</div><div class="d">每週一晚上 6 點～12 點開！撈金魚、套圈圈、射氣球、彈珠台，玩分數換獎品，還有「夜市高手」排行。</div></div></div>
-      <div class="item" data-act="goMuseum" style="cursor:pointer"><div class="pic" style="font-size:34px">🏛️</div><div class="info"><div class="t">展覽館</div><div class="d">巨大蔬果大賽（南瓜／西瓜／冬瓜／絲瓜每週輪流）的得獎作品都展在這裡，和好友一起來參觀！</div></div></div>
+      <div class="item" data-act="goMuseum" style="cursor:pointer"><div class="pic" style="font-size:34px">🏛️</div><div class="info"><div class="t">展覽館</div><div class="d">四層樓的冠軍展覽：1F 賽馬、2F 巨大蔬果、3F 寵物選美、4F 釣魚大賽，和好友一起來參觀！</div></div></div>
       <div class="item" data-act="mapGo" data-s="town" style="cursor:pointer"><div class="pic" style="font-size:34px">🏘️</div><div class="info"><div class="t">小鎮</div><div class="d">村民委託、市集攤位、賓果。</div></div></div>
       <div class="item" data-act="mapGo" data-s="temple" style="cursor:pointer"><div class="pic" style="font-size:34px">🏯</div><div class="info"><div class="t">廟宇</div><div class="d">參拜抽籤、和好友一起蓋廟。</div></div></div>`);
   };
   S.modal();
 }
 
-/* ================= 🏛️ 展覽館（大家共用，展示巨大蔬果大賽得獎作品） ================= */
-const MU_X = 160, MU_SEC = {pumpkin:-7.8, watermelon:-2.6, wintermelon:2.6, luffa:7.8}, MU_SLOT = [[0, -3.3, 1.1]];
-const MU_NPC = {pumpkin:[['阿土伯', 96.5], ['美玉姨', 88.2], ['里長伯', 80.1]], watermelon:[['阿德師', 71.4], ['茉莉', 66], ['小豆', 60.3]], wintermelon:[['阿海伯', 108.6], ['廟公阿成', 99.1], ['美玉姨', 91.7]], luffa:[['小豆', 248], ['阿土伯', 231], ['茉莉', 214]]};
-const MEDAL = r => ['', '🥇', '🥈', '🥉'][r] || '🏅';
-const MU_HX = [0, -5.5, 5.5], MU_HNPC = [['阿土伯', '阿福', 2], ['里長伯', '黑旋風', 1], ['茉莉', '小白', 3]];
-function musHorses() {
-  const L = [], add = (f, uid, n) => { for (const x of (f?.horse?.mus || [])) L.push({...x, n:(x.id != null && f.horse.list?.find(h => h.id === x.id)?.n) || x.n, uid, o:n}); };
-  add(S.my, S.uid, myName()); for (const x of S.friends || []) add(x.farm, x.uid, dn(x.farm));
-  return L.sort((a, b) => (b.rid > a.rid ? 1 : b.rid < a.rid ? -1 : 0) || a.r - b.r);
+/* ================= 🏛️ 展覽館（大家共用，四層樓的冠軍展覽） ================= */
+// 1F 賽馬冠軍、2F 巨大蔬果冠軍、3F 寵物選美冠軍、4F 釣魚大賽冠軍。看哪一層，上面的樓層就隱藏，從正面看不會被擋住
+const MU_X = 160, MH = 5.4, MU_SX = [-7.8, -2.6, 2.6, 7.8], MU_Z = -3.3, MU_PH = 1.1;
+const MU_FL = [{n:'賽馬冠軍', em:'🐎', c:'#c62828'}, {n:'巨大蔬果冠軍', em:'🎃', c:'#2e7d32'}, {n:'寵物選美冠軍', em:'🐶', c:'#ad1457'}, {n:'釣魚大賽冠軍', em:'🎣', c:'#1565c0'}];
+const MU_NPC = {pumpkin:['阿土伯', 96.5], watermelon:['阿德師', 71.4], wintermelon:['阿海伯', 108.6], luffa:['小豆', 248]};
+const MU_HNPC = [['阿土伯', '阿福', 2], ['里長伯', '黑旋風', 1], ['茉莉', '小白', 3], ['美玉姨', '月光', 0]];
+const MU_PNPC = [['阿土伯', '大黃', 'dog', {top:'straw', neck:'scarf'}], ['美玉姨', '咪咪', 'tabby', {top:'crown', neck:'pearl'}], ['小豆', '豆豆', 'pom', {top:'hat', face:'mustache'}], ['茉莉', '雪球', 'corgi', {top:'bunny', back:'wings'}]];
+const MU_FNPC = [['阿海伯', 'd_marlin', 296], ['阿德師', 'd_tuna', 238], ['里長伯', 'd_sunfish', 251], ['小豆', 'd_mahi', 141]];
+const musY = (F = S.musF || 0) => F * MH;
+const musFriends = () => [[S.my, S.uid, myName()], ...(S.friends || []).map(x => [x.farm, x.uid, dn(x.farm)])];
+function musAll() { const L = []; for (const [f, uid, n] of musFriends()) for (const x of (f?.green?.mus || [])) if (GIANT[x.k]) L.push({...x, uid, n}); return L.sort((a, b) => b.w - a.w || a.r - b.r || b.v - a.v); }
+function musHorses() { const L = []; for (const [f, uid, o] of musFriends()) for (const x of (f?.horse?.mus || [])) L.push({...x, n:(x.id != null && f.horse.list?.find(h => h.id === x.id)?.n) || x.n, uid, o}); return L.sort((a, b) => (b.rid > a.rid ? 1 : b.rid < a.rid ? -1 : 0) || a.r - b.r); }
+function musPets() { const L = []; for (const [f, uid, o] of musFriends()) for (const x of (f?.pshow?.mus || [])) if (PETS[x.k]) L.push({...x, pn:esc(f.petx?.[x.k]?.nm || x.pn || PETS[x.k].n), uid, o}); return L.sort((a, b) => (b.cid > a.cid ? 1 : -1)); }
+function musFish() { const L = []; for (const [f, uid, o] of musFriends()) for (const x of (f?.dock?.mus || [])) if (DFISH[x.k]) L.push({...x, uid, o}); return L.sort((a, b) => (b.cid > a.cid ? 1 : -1) || b.cm - a.cm); }
+// 每層樓的四件展品：{who（冠軍名字）, what（產品）, date, npc, mk()（3D 模型）}
+function musFloor(F) {
+  if (F === 0) { const L = musHorses().filter(x => x.r === 1).slice(0, 4); while (L.length < 4) { const [o, n, col] = MU_HNPC[L.length]; L.push({o, n, col, npc:1}); }
+    return L.map(x => ({who:x.o, what:`🐎「${x.n}」`, date:x.npc ? '村民的馬' : `${hrDate(x.rid)} 賽馬冠軍`, npc:x.npc, me:x.uid === S.uid, key:'h' + x.n + x.col + x.rid, mk:() => horseStatue(x.col, 1, x.npc), fit:[2.4, 2.2]})); }
+  if (F === 1) { const all = musAll(); return GIANT_ORDER.map(k => { const x = all.find(y => y.k === k && y.r === 1) || {k, n:MU_NPC[k][0], v:MU_NPC[k][1], npc:1};
+    return {who:x.n, what:`${GIANT[k].em}${gNm(k)} ${x.v}${gU(k)}`, date:x.npc ? '村民紀錄' : `${wkRange(x.w).split('～')[0]} 那週冠軍`, npc:x.npc, me:x.uid === S.uid, key:'g' + k + x.v + x.n, mk:() => giantVeg(k, x.v), fit:[1.9, 1.7], glass:1}; }); }
+  if (F === 2) { const L = musPets().slice(0, 4); while (L.length < 4) { const [o, pn, k, on] = MU_PNPC[L.length]; L.push({o, pn, k:PETS[k] ? k : Object.keys(PETS)[L.length], on, npc:1}); }
+    return L.map(x => ({who:x.o, what:`🐾 ${x.pn} ${Object.values(x.on || {}).map(id => PACC[id]?.em || '').join('')}`, date:x.npc ? '村民的寵物' : `${hrDate(x.cid)} 選美冠軍${x.th ? '・' + x.th : ''}`, npc:x.npc, me:x.uid === S.uid, key:'p' + x.k + JSON.stringify(x.on) + x.pn, mk:() => { const m = petModel(x.k); petAccMesh(m, x.on); return m; }, fit:[2.1, 1.9]})); }
+  const L = musFish().slice(0, 4); while (L.length < 4) { const [o, k, cm] = MU_FNPC[L.length]; L.push({o, k, cm, npc:1}); }
+  return L.map(x => ({who:x.o, what:`${DFISH[x.k].em}${DFISH[x.k].n} ${x.cm}cm`, date:x.npc ? '村民紀錄' : `${hrDate(x.cid)} 釣魚冠軍`, npc:x.npc, me:x.uid === S.uid, key:'f' + x.k + x.cm + x.o, mk:() => { const m = seaModel(null, DFISH[x.k].m); m.rotation.z = .25; return m; }, fit:[2.4, 1.5], glass:1}));
 }
-function musHShow(all = musHorses()) { const L = all.filter(x => x.r === 1).slice(0, 3); while (L.length < 3) { const [o, n, col] = MU_HNPC[L.length]; L.push({o, n, col, npc:1, r:0}); } return L; }
 function horseStatue(col, r, npc) {
   const m = horseModel(col), c = npc ? '#9e9e9e' : ['', '#ffca28', '#cfd8dc', '#c88a4a'][r] || '#bdbdbd', mat = new THREE.MeshLambertMaterial({color:c, emissive:c, emissiveIntensity:npc ? 0 : .12});
   m.traverse(o => { if (o.isMesh) o.material = mat; }); return m;
 }
-function musAll() {
-  const L = [], add = (f, uid, n) => { for (const x of (f?.green?.mus || [])) if (GIANT[x.k]) L.push({...x, uid, n}); };
-  add(S.my, S.uid, myName()); for (const x of S.friends || []) add(x.farm, x.uid, dn(x.farm));
-  return L.sort((a, b) => b.w - a.w || a.r - b.r || b.v - a.v);
-}
-function musShow(k, all = musAll()) { const L = all.filter(x => x.k === k && x.r === 1).sort((a, b) => b.w - a.w || b.v - a.v).slice(0, 1); while (L.length < 1) { const [n, v] = MU_NPC[k][L.length]; L.push({k, v, n, npc:1, r:0}); } return L; }
 function buildMuseum(S3) {
-  const X = MU_X;
-  S3.add(blk('#eceff1', [28, .1, 14], [X, .05, -1]), blk('#b71c1c', [3, .12, 3.2], [X, .07, 4.7]), blk('#b71c1c', [22, .12, 1.2], [X, .07, -.6]));
-  for (let i = 0; i < 14; i++) for (let j = 0; j < 7; j++) if ((i + j) % 2) S3.add(blk('#cfd8dc', [1.95, .11, 1.95], [X - 13 + i * 2, .055, -7 + j * 2]));
-  S3.add(blk('#f5f0e6', [28, 6, .5], [X, 3, -7.9]), blk('#d7ccc8', [28.8, .5, 1], [X, 6.2, -7.8]), blk('#efebe9', [12, 1.8, .6], [X, 7.3, -7.9]), blk('#d7ccc8', [12.6, .3, .9], [X, 8.3, -7.8]));
-  for (const s of [-1, 1]) S3.add(blk('#f5f0e6', [.5, 1.4, 12], [X + s * 14, .7, -2]), blk('#d7ccc8', [.8, .25, 12.3], [X + s * 14, 1.5, -2]));
-  for (const x of [-10.4, -5.2, 0, 5.2, 10.4]) S3.add(rod('#fafafa', [.4, 5.6, .4], [X + x, 2.9, -7.25]), blk('#e0e0e0', [1, .3, 1], [X + x, .2, -7.25]), blk('#e0e0e0', [1, .3, 1], [X + x, 5.7, -7.25]));
-  for (const s of [-1, 1]) S3.add(rod('#fafafa', [.6, 6.5, .6], [X + s * 13.4, 3.3, 5.2]), blk('#e0e0e0', [1.4, .4, 1.4], [X + s * 13.4, .2, 5.2]), blk('#e0e0e0', [1.4, .4, 1.4], [X + s * 13.4, 6.6, 5.2]));
-  const ts = textPlane('🏛️ 歡樂展覽館', '#5d4037', '#ffe082', 10, 1.4, 120); ts.position.set(X, 7.3, -7.55); S3.add(ts);
-  for (const [k, dx] of Object.entries(MU_SEC)) { const p = textPlane(`${GIANT[k].em} 巨大${GIANT[k].n}`, '#4e342e', '#fff3e0', 4.2, .9, 90); p.position.set(X + dx, 4.7, -7.6); S3.add(p);
-    S3.add(blk('#8d6e63', [4.6, .08, 3.6], [X + dx, .1, -3])); }
-  for (const s of [-1, 1]) S3.add(blk('#6d4c41', [3, .12, .7], [X + s * 10.5, .55, 3.6]), blk('#4e342e', [.15, .5, .5], [X + s * 10.5 - 1.3, .27, 3.6]), blk('#4e342e', [.15, .5, .5], [X + s * 10.5 + 1.3, .27, 3.6]));
-  { const p = textPlane('🐎 賽馬冠軍雕像', '#4e342e', '#fff3e0', 3.6, .7, 80); p.position.set(X + 3.4, .62, 3.12); p.rotation.x = -.5; S3.add(p, blk('#5d4037', [3.8, .5, .3], [X + 3.4, .25, 3.05])); }
-  for (const x of [-14.5, 14.5]) S3.add(M(gBucket(), '#795548', [.45, .5, .45], [X + x, .25, 5.6]), ball('#43a047', [.6, .7, .6], [X + x, .95, 5.6]));
-  W.musG = new THREE.Group(); S3.add(W.musG);
+  const X = MU_X; W.musRoot = new THREE.Group(); S3.add(W.musRoot); W.musFl = []; W.musEx = [];
+  for (let F = 0; F < 4; F++) {
+    const Y = F * MH, g = new THREE.Group(), FL = MU_FL[F]; W.musRoot.add(g); W.musFl.push(g);
+    g.add(blk(F ? '#e8e2d6' : '#eceff1', [28.6, .3, 14.6], [X, Y - .1, -1]));
+    for (let i = 0; i < 14; i++) for (let j = 0; j < 7; j++) if ((i + j) % 2) g.add(blk(F % 2 ? '#d7ccc8' : '#cfd8dc', [1.95, .06, 1.95], [X - 13 + i * 2, Y + .07, -7 + j * 2]));
+    g.add(blk(FL.c, [3, .08, 4], [X, Y + .1, 4.3]), blk(FL.c, [22, .08, 1.1], [X, Y + .1, -.9]));
+    g.add(blk('#f5f0e6', [28.6, MH, .5], [X, Y + MH / 2, -7.9]), blk('#d7ccc8', [29, .35, .9], [X, Y + MH - .15, -7.8]));
+    for (const s of [-1, 1]) g.add(blk('#f5f0e6', [.5, 1.3, 12.6], [X + s * 14.1, Y + .65, -1.6]), blk('#d7ccc8', [.8, .22, 12.9], [X + s * 14.1, Y + 1.35, -1.6]), rod('#fafafa', [.35, MH, .35], [X + s * 14.1, Y + MH / 2, 5.2]));
+    for (const x of [-10.4, -5.2, 0, 5.2, 10.4]) g.add(rod('#fafafa', [.32, MH - .4, .32], [X + x, Y + MH / 2, -7.4]));
+    if (F) g.add(blk('#ffca28', [28.6, .12, .25], [X, Y + .08, 6.2]));
+    const t = textPlane(`${F + 1}F ${FL.em} ${FL.n}展覽`, '#4e342e', '#ffe082', 9, 1.2, 110); t.position.set(X, Y + MH - 1.05, -7.6); g.add(t);
+    const el = textPlane(`🛗 ${F + 1}F`, '#fff', '#5d4037', 1.6, .55, 70); el.position.set(X - 12.4, Y + 3, -7.6); g.add(el, blk('#90a4ae', [2, 2.6, .2], [X - 12.4, Y + 1.3, -7.6]), blk('#607d8b', [.06, 2.6, .22], [X - 12.4, Y + 1.3, -7.55]));
+    for (const s of [-1, 1]) g.add(blk('#6d4c41', [2.6, .12, .6], [X + s * 10.6, Y + .55, 3.9]), blk('#4e342e', [.12, .5, .5], [X + s * 10.6 - 1.1, Y + .27, 3.9]), blk('#4e342e', [.12, .5, .5], [X + s * 10.6 + 1.1, Y + .27, 3.9]));
+    const eg = new THREE.Group(); g.add(eg); W.musEx.push(eg);
+  }
   W.musSign = makeSign(X + 7.5, 6.6); S3.add(W.musSign);
 }
-const MU_SAY = ['哇～這個好大！', '冠軍果然不一樣', '這是誰種的呀？', '好想帶回家喔', '明年我也要參加！', '拍照拍照 📸', '這匹馬好帥！', '金色的獎盃好閃', '下週比什麼呢？', '好壯觀啊～'];
-function musSpots() { const L = []; for (const dx of Object.values(MU_SEC)) L.push([dx - 1.1, -1.3], [dx + 1.1, -1.3]); for (const hx of MU_HX) L.push([hx, 2.7]); return L; }
+const musGlass = new THREE.MeshLambertMaterial({color:'#e1f5fe', transparent:true, opacity:.16, depthWrite:false});
+function syncMuseum() {
+  if (!W.musRoot) return;
+  const here = S.scene === 'museum', cur = S.musF || 0; W.musRoot.visible = here || !S.place; const cap = $('#musCap'); if (cap) cap.hidden = !here;
+  W.musFl.forEach((g, F) => g.visible = !here || F <= cur);
+  if (W.musSign) W.musSign.visible = !here || cur === 0;
+  if (!here) return;
+  for (let F = 0; F < 4; F++) {
+    const ex = musFloor(F), key = ex.map(e => e.key).join('|'), eg = W.musEx[F], Y = F * MH;
+    if (eg.userData.key !== key) { eg.userData.key = key; eg.clear();
+      ex.forEach((e, i) => { const g = new THREE.Group(); g.position.set(MU_X + MU_SX[i], Y, MU_Z);
+        g.add(blk(e.npc ? '#e0e0e0' : '#fff8e1', [2.6, MU_PH, 2.2], [0, MU_PH / 2, 0]), blk(e.npc ? '#bdbdbd' : '#ffca28', [2.75, .1, 2.35], [0, MU_PH, 0]));
+        const m = e.mk(); m.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(m), z3 = bb.getSize(new THREE.Vector3()), c = bb.getCenter(new THREE.Vector3());
+        const s = Math.min(3, e.fit[0] / Math.max(z3.x, z3.z, .01), e.fit[1] / Math.max(z3.y, .01)); m.scale.multiplyScalar(s); m.position.set(-c.x * s, MU_PH + .05 - bb.min.y * s, -c.z * s); m.rotation.y += .35; g.add(m);
+        if (e.glass) { const gl = new THREE.Mesh(new THREE.BoxGeometry(2.5, 2, 2.1), musGlass); gl.position.y = MU_PH + 1; g.add(gl); }
+        const pl = textPlane(e.date, e.npc ? '#5d4037' : '#1b5e20', '#fffde7', 2.3, .42, 64); pl.position.set(0, MU_PH * .55, 1.11); g.add(pl);
+        g.traverse(o => o.userData.hit = {type:'mus', k:F}); eg.add(g); });
+    }
+    if (F === cur) ex.forEach((e, i) => ov('mu' + i, `<b>${e.npc ? '🏅' : '🏆'} ${esc(e.who)}${e.me ? '（我）' : ''}</b><br><small>${e.what}</small>`, v => v.set(MU_X + MU_SX[i], Y + MU_PH + 2.55, MU_Z), 'tag mutag'));
+  }
+}
+// 參觀的村民：每層樓一群，會走來走去看展品、聊天（聊天內容用字幕顯示在畫面下方，不會擋到展品名字）
+const MU_SAY = [['哇～這個好厲害！', '冠軍果然不一樣', '這是誰的呀？', '好想帶回家喔', '明年我也要參加！', '拍照拍照 📸', '好壯觀啊～', '下次換我拿冠軍'],
+  ['這匹馬好帥！', '金色雕像好閃', '跑最快的就是牠喔', '我也想養一匹'], ['這顆也太大了吧！', '要種多久才這麼大？', '絲瓜比我還長', '冬瓜好重的樣子'],
+  ['好可愛的打扮！', '這頂帽子好適合', '我家的狗狗也要這樣穿', '翅膀好夢幻'], ['這條魚好大！', '要怎麼釣到的啊？', '比我還長耶', '好想去碼頭釣魚']];
+function musSpots() { const L = []; for (const x of MU_SX) L.push([x - 1, -1.2], [x + 1, -1.2]); for (let i = 0; i < 6; i++) L.push([-11 + i * 4.4, 2.4 + (i % 2) * 1.8]); return L; }
 function buildMuseumPeople(S3) {
   W.musCrowd = []; const ids = VILS.map(v => v.id), sp = musSpots();
-  for (let i = 0; i < 12; i++) { const m = vilModel(ids[i % ids.length]); m.scale.setScalar(1.05); const [x, z] = i % 3 === 2 ? [-10 + i * 1.7, 3.8 + (i % 2) * 1.2] : i % 3 === 1 ? sp[8 + i % 3] : sp[(i * 5) % 8]; m.position.set(MU_X + x, 0, z); S3.add(m);
-    W.musCrowd.push({m, x, z, tx:x, tz:z, ph:i, stop:1 + (i % 4), say:null}); }
+  for (let F = 0; F < 4; F++) for (let i = 0; i < 9; i++) { const id = ids[(i * 3 + F * 5) % ids.length], m = vilModel(id); m.scale.setScalar(1.05); const [x, z] = sp[(i * 5 + F * 3) % sp.length];
+    m.position.set(MU_X + x, F * MH, z); W.musFl[F].add(m); W.musCrowd.push({m, F, id, x, z, tx:x, tz:z, ph:i + F, stop:1 + (i % 4)}); }
+  W.musTalk = [];
 }
 function musTick(t, dt) {
   if (!W.musCrowd || S.scene !== 'museum') return;
   if (t - (W.musSyncT || 0) > 2) { W.musSyncT = t; syncMuseum(); }
-  const sp = musSpots();
-  W.musCrowd.forEach((C, i) => { const u = C.m.userData;
-    if (C.say && now() - C.say.t < 3800) ov('musay' + i, `${VIL[VILS[i % VILS.length].id].n}：${esc(C.say.m)}`, v => v.copy(C.m.position).setY(1.95), 'bub musay');
-    if (C.stop > 0) { C.stop -= dt; C.m.rotation.y = Math.PI / 2; C.m.position.y = 0; if (u.legL) u.legL.rotation.z = u.legR.rotation.z = 0;
-      if (C.stop <= 0) { const r = Math.random(); [C.tx, C.tz] = r < .5 ? sp[Math.floor(Math.random() * 8)] : r < .75 ? sp[8 + Math.floor(Math.random() * 3)] : [-11 + Math.random() * 22, 3.6 + Math.random() * 1.6]; C.tx += (Math.random() - .5) * .8; }
-      return; }
+  const sp = musSpots(), cur = S.musF || 0, Y = cur * MH;
+  if (t - (W.musSayT || 0) > 3.2) { W.musSayT = t; const L = W.musCrowd.filter(C => C.F === cur && C.stop > 0); if (L.length && Math.random() < .8) { const C = rnd(L); C.talk = t;
+    W.musTalk.push(`${VIL[C.id]?.n || '村民'}：${rnd(Math.random() < .5 ? MU_SAY[0] : MU_SAY[cur + 1])}`); if (W.musTalk.length > 2) W.musTalk.shift(); const cap = $('#musCap'); if (cap) cap.innerHTML = W.musTalk.map(s => `<div>💬 ${esc(s)}</div>`).join(''); } }
+  for (const C of W.musCrowd) { if (C.F !== cur) continue; const u = C.m.userData;
+    if (C.stop > 0) { C.stop -= dt; C.m.rotation.y = Math.PI / 2; const hop = C.talk && t - C.talk < 1.2 ? Math.abs(Math.sin((t - C.talk) * 12)) * .12 : 0; C.m.position.y = Y + hop; if (u.legL) u.legL.rotation.z = u.legR.rotation.z = 0;
+      if (C.stop <= 0) { [C.tx, C.tz] = sp[Math.floor(Math.random() * sp.length)]; C.tx += (Math.random() - .5) * .8; } continue; }
     const dx = C.tx - C.x, dz = C.tz - C.z, d = Math.hypot(dx, dz);
-    if (d < .08) { C.stop = 2.5 + Math.random() * 5; if (C.z > 3.3 && Math.random() < .5 && !W.musCrowd.some(o => o.say && now() - o.say.t < 5000)) C.say = {m:rnd(MU_SAY), t:now()}; return; }
+    if (d < .08) { C.stop = 2.5 + Math.random() * 5; continue; }
     const st = Math.min(d, dt * 1.1); C.x += dx / d * st; C.z += dz / d * st;
-    C.m.position.set(MU_X + C.x, Math.abs(Math.sin(t * 7 + C.ph)) * .03, C.z); C.m.rotation.y = Math.atan2(-dz, dx);
-    const sw = Math.sin(t * 7 + C.ph) * .55; if (u.legL) { u.legL.rotation.z = sw; u.legR.rotation.z = -sw; } });
+    C.m.position.set(MU_X + C.x, Y + Math.abs(Math.sin(t * 7 + C.ph)) * .03, C.z); C.m.rotation.y = Math.atan2(-dz, dx);
+    const sw = Math.sin(t * 7 + C.ph) * .55; if (u.legL) { u.legL.rotation.z = sw; u.legR.rotation.z = -sw; } }
 }
-const musGlass = new THREE.MeshLambertMaterial({color:'#e1f5fe', transparent:true, opacity:.18, depthWrite:false});
-function syncMuseum() {
-  if (!W.musG) return;
-  const all = musAll(), show = Object.fromEntries(Object.keys(MU_SEC).map(k => [k, musShow(k, all)])), hs = musHShow(), key = JSON.stringify([show, hs]);
-  if (W.musKey !== key) { W.musKey = key; W.musG.clear();
-    for (const [k, dx] of Object.entries(MU_SEC)) show[k].forEach((x, i) => { const [sx, sz, h] = MU_SLOT[i], g = new THREE.Group(); g.position.set(MU_X + dx + sx, 0, sz);
-      g.add(blk('#fff8e1', [2.2, h, 2], [0, h / 2, 0]), blk('#ffca28', [2.35, .1, 2.15], [0, h, 0]), blk('#bdbdbd', [2.35, .1, 2.15], [0, .05, 0]));
-      const v = giantVeg(k, x.v); v.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(v), sz3 = bb.getSize(new THREE.Vector3()), s = Math.min(1.1, 1.85 / Math.max(sz3.x, sz3.z, .01), 1.7 / Math.max(sz3.y, .01));
-      v.scale.multiplyScalar(s); if (k === 'luffa') v.rotation.y = .5; v.position.y = h + .05; g.add(v);
-      const gl = new THREE.Mesh(new THREE.BoxGeometry(2.1, 1.9, 1.9), musGlass); gl.position.y = h + 1; g.add(gl);
-      const pl = textPlane(`${x.v} ${gU(k)}`, x.npc ? '#5d4037' : '#1b5e20', '#fffde7', 1.8, .45, 80); pl.position.set(0, h * .55, 1.01); g.add(pl);
-      g.traverse(o => o.userData.hit = {type:'mus', k}); W.musG.add(g); });
-    hs.forEach((x, i) => { const g = new THREE.Group(), h = [.9, .75, .75][i]; g.position.set(MU_X + MU_HX[i], 0, 1.4);
-      g.add(blk(x.npc ? '#bdbdbd' : '#fff8e1', [2.4, h, 1.3], [0, h / 2, 0]), blk(x.npc ? '#9e9e9e' : '#ffca28', [2.55, .1, 1.45], [0, h, 0]));
-      const m = horseStatue(x.col, 1, x.npc); m.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(m), z3 = bb.getSize(new THREE.Vector3()); m.scale.multiplyScalar(Math.min(2.1 / Math.max(z3.x, z3.z, .01), 1.9 / Math.max(z3.y, .01))); m.position.y = h + .05; m.rotation.y = .35; g.add(m);
-      const pl = textPlane(x.npc ? '村民的馬' : `${hrDate(x.rid)} 冠軍`, x.npc ? '#5d4037' : '#1b5e20', '#fffde7', 2, .42, 70); pl.position.set(0, Math.max(.28, h * .55), .66); g.add(pl);
-      g.traverse(o => o.userData.hit = {type:'mus', k:'horse'}); W.musG.add(g); });
-  }
-  if (S.scene === 'museum') {
-    for (const [k, dx] of Object.entries(MU_SEC)) show[k].forEach((x, i) => { const [sx, sz, h] = MU_SLOT[i]; ov('mu' + k + i, `${x.npc ? '🏅' : '🏆'} ${esc(x.n)}${x.uid === S.uid ? '（我）' : ''}`, v => v.set(MU_X + dx + sx, h + 2.3, sz), 'tag mutag'); });
-    hs.forEach((x, i) => ov('muH' + i, `${x.npc ? '🏅' : '🏆'} 「${esc(x.n)}」${esc(x.o)}${x.uid === S.uid ? '（我）' : ''}`, v => v.set(MU_X + MU_HX[i], [.9, .75, .75][i] + 2.1, 1.4), 'tag mutag')); }
+function musGo(F) {
+  S.musF = Math.max(0, Math.min(3, F)); SCENE_T.museum.y = musY(); W.musTalk = []; const cap = $('#musCap'); if (cap) cap.innerHTML = `<div>🛗 ${S.musF + 1}F ${MU_FL[S.musF].em} ${MU_FL[S.musF].n}展覽</div>`;
+  setCam('museum'); renderScene(); renderTools(); Music.sfx('pop');
 }
-function openMuseum(k0) {
+function openMuseum(F0) {
   S.modal = () => {
-    const all = musAll(), ck = giantOf();
-    let body = `<div class="popbox">🏛️ <b>歡樂展覽館</b><br><small>巨大蔬果大賽每週輪流比 🎃南瓜 → 🍉西瓜 → 🍈冬瓜 → 🥒絲瓜，每一種的<b>冠軍作品</b>會被村民搬來這裡展覽；賽馬大賽冠軍的馬也會做成冠軍雕像擺在這裡。冠軍換人時展品和名字會自動更新。這裡是<b>大家共用</b>的，好友也會來參觀！<br>本週比的是 ${GIANT[ck].em} <b>${gNm(ck)}</b>，週六公布排名。</small></div>`;
-    for (const k of GIANT_ORDER) { const L = all.filter(x => x.k === k && x.r === 1);
-      body += `<div class="sec">${GIANT[k].em} ${gNm(k)}大賽・歷屆冠軍</div>` + (L.length ? L.slice(0, 9).map(x => `<div class="log"><span style="width:30px">🏆</span><span style="flex:1">${esc(x.n)}${x.uid === S.uid ? '（我）' : ''} <small style="color:#8d6e63">${wkRange(x.w)}</small></span><b>${x.v} ${gU(k)}</b></div>`).join('')
-        : `<div class="empty">還沒有好友拿過冠軍，現在展出村民的紀錄：${MU_NPC[k][0][0]} ${MU_NPC[k][0][1]}${gU(k)}</div>`); }
-    { const L = musHorses().filter(x => x.r === 1); body += `<div class="sec">🐎 賽馬大賽・冠軍雕像</div>` + (L.length ? L.slice(0, 9).map(x => `<div class="log"><span style="width:30px">🏆</span><span style="flex:1">「${esc(x.n)}」<small style="color:#8d6e63">${esc(x.o)}${x.uid === S.uid ? '（我）' : ''}・${hrDate(x.rid)}</small></span><b>冠軍</b></div>`).join('')
-      : `<div class="empty">還沒有好友的馬拿過冠軍，現在展出村民的馬：${MU_HNPC.map(([o, n]) => `${o}的「${n}」`).join('、')}</div>`); }
-    body += `<div class="mgbtn"><button class="b o" data-act="pump">${GIANT[ck].em} 看本週比賽</button></div>`;
+    const ck = giantOf();
+    let body = `<div class="popbox">🏛️ <b>歡樂展覽館</b>（四層樓，大家共用）<br><small>每一場比賽的<b>冠軍</b>都會被村民搬來這裡展覽，上面寫著冠軍的名字。冠軍換人時會自動更新，好友也可以一起來參觀！<br>本週巨大蔬果大賽比的是 ${GIANT[ck].em} <b>${gNm(ck)}</b>。</small></div>`;
+    body += `<div class="mgbtn" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">${MU_FL.map((x, F) => `<button class="b ${F === (S.musF || 0) ? 'o' : ''}" data-act="musF" data-f="${F}">${F + 1}F ${x.em} ${x.n}</button>`).join('')}</div>`;
+    MU_FL.forEach((x, F) => { body += `<div class="sec">${F + 1}F ${x.em} ${x.n}</div>` + musFloor(F).map(e => `<div class="log"><span style="width:28px">${e.npc ? '🏅' : '🏆'}</span><span style="flex:1"><b>${esc(e.who)}</b>${e.me ? '（我）' : ''} ${e.what}</span><small style="color:#8d6e63">${e.date}</small></div>`).join(''); });
     openModal('🏛️ 展覽館', body);
-    if (k0) setTimeout(() => { const el = [...document.querySelectorAll('#modal .sec')].find(e => e.textContent.includes(k0 === 'horse' ? '賽馬' : gNm(k0))); el?.scrollIntoView({block:'start'}); }, 50);
+    if (F0 != null) setTimeout(() => { const el = [...document.querySelectorAll('#modal .sec')][F0]; el?.scrollIntoView({block:'start'}); }, 50);
   };
   S.modal();
 }
@@ -4002,8 +4016,8 @@ async function psVote() {
 }
 async function psClaim() {
   const c = psClaimable(S.my); if (!c) return;
-  const r = await txMe(f => { if (f.pshow.cl[c.cid]) return ab('已經領過了'); f.pshow.cl[c.cid] = c.k + 1; if (c.rw) giveRw(f, c.rw, 'petshow', `${hrDate(c.cid)}・${PETS[c.fl[c.k].k]?.n || ''}`); addLog(f, `🐶 ${hrDate(c.cid)} 寵物選美：第 ${c.k + 1} 名${c.rw ? `，獲得 ${rwText(c.rw)}` : ''}`); return {}; });
-  if (r.abort) return toast(r.msg); S.psv = null; toast(c.rw ? `🎉 寵物選美第 ${c.k + 1} 名！獲得 ${rwText(c.rw)}` : `第 ${c.k + 1} 名，下週再來！`);
+  const r = await txMe(f => { if (f.pshow.cl[c.cid]) return ab('已經領過了'); f.pshow.cl[c.cid] = c.k + 1; if (c.rw) giveRw(f, c.rw, 'petshow', `${hrDate(c.cid)}・${PETS[c.fl[c.k].k]?.n || ''}`); if (c.k === 0) { const e = c.fl[0]; (f.pshow.mus ??= []).push({cid:c.cid, k:e.k, on:{...e.on}, pn:f.petx?.[e.k]?.nm || PETS[e.k].n, th:psTheme(c.cid)[0]}); if (f.pshow.mus.length > 12) f.pshow.mus = f.pshow.mus.slice(-12); } addLog(f, `🐶 ${hrDate(c.cid)} 寵物選美：第 ${c.k + 1} 名${c.rw ? `，獲得 ${rwText(c.rw)}` : ''}`); return {}; });
+  if (r.abort) return toast(r.msg); S.psv = null; toast(c.rw ? `🎉 寵物選美第 ${c.k + 1} 名！獲得 ${rwText(c.rw)}${c.k === 0 ? '，冠軍打扮會擺到展覽館 3F' : ''}` : `第 ${c.k + 1} 名，下週再來！`);
 }
 
 /* ================= 🍂 四季變化 ================= */
@@ -4415,7 +4429,7 @@ const WALK_BOX = {farm:[-12, 12], ranch:[-12, 12], fish:[-12, 12], factory:[-12,
 function walkTap(cx, cy) {
   if (!W.scene || W.race || S.decoMode || !S.my) return;
   const r = W.renderer.domElement.getBoundingClientRect(); W.ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1); W.ray.setFromCamera(W.ndc, W.camera);
-  const o = W.ray.ray.origin, d = W.ray.ray.direction; if (d.y > -.01) return; const py = S.scene === 'home' ? HOME_T.y : 0, k = (py - o.y) / d.y, x = o.x + d.x * k, z = o.z + d.z * k;
+  const o = W.ray.ray.origin, d = W.ray.ray.direction; if (d.y > -.01) return; const py = S.scene === 'home' ? HOME_T.y : S.scene === 'museum' ? musY() : 0, k = (py - o.y) / d.y, x = o.x + d.x * k, z = o.z + d.z * k;
   if (S.scene === 'home' && S.homeEdit) { run(() => homePlace(x, z)); return; }
   if (S.scene === 'home') { S.myPos = {x:+Math.max(HOME_T.x - HW + .6, Math.min(HOME_T.x + HW - .6, x)).toFixed(2), z:+Math.max(-HD + .8, Math.min(HD - .3, z)).toFixed(2), sc:'home'}; S.pray = null; B.setPresence(S.uid, {pos:S.myPos, t:now()}); renderScene(); return; }
   const base = (SCENE_T[S.scene] || FARM_T).x, bx = WALK_BOX[S.scene] || [-12, 12];
@@ -4485,7 +4499,7 @@ function openPump() {
     body += `<div class="sec">🏆 ${dowOf() === 6 ? '本週' : '上週'}${gNm(rK)}大賽排名（${wkRange(rw)}）</div>` + (rk.length ? rk.map((x, k) => `<div class="log"><span style="width:32px">${['🥇', '🥈', '🥉'][k] || k + 1}</span><span style="flex:1">${esc(x.n)}${x.uid === S.uid ? '（我）' : ''}</span><b>${x.kg} ${gU(rK)}</b>${RW[k] ? `<small style="margin-left:6px;color:#e65100">${rwText(RW[k])}</small>` : ''}</div>`).join('') : '<div class="empty">這一週沒有人報名</div>');
     const cl = own && pumpClaimable(S.my);
     if (cl) body += `<div class="mgbtn"><button class="b o" data-act="pumpClaim">${cl.rw ? `🎁 領第 ${cl.k + 1} 名獎勵（${rwText(cl.rw)}）${cl.k === 0 ? '，冠軍作品送去展覽館' : '，作品給村民買走'}` : `📦 第 ${cl.k + 1} 名，結算（作品給村民買走）`}</button></div>`;
-    body += `<div class="mgbtn"><button class="b" data-act="goMuseum">🏛️ 去展覽館看冠軍作品</button></div>`;
+    body += `<div class="mgbtn"><button class="b" data-act="goMuseum" data-f="1">🏛️ 去展覽館 2F 看冠軍作品</button></div>`;
     if (mine.rec) body += `<div class="d" style="text-align:center;margin-top:6px">🏅 我的南瓜最重紀錄：${mine.rec} kg</div>`;
     openModal(`${GIANT[curK].em} 巨大蔬果大賽`, body);
   };
@@ -4589,7 +4603,7 @@ function mergeLocal(root) {
   return root;
 }
 function mergeStatic(S3) {
-  const keep = new Set([W.aqHit, W.mkHit, W.musG, W.stableG, W.sky, W.sunBall, W.blades, W.trough, W.animalsG, W.petsG, W.peopleG, W.hoverRing, W.farmSign, W.ranchSign, W.fishSign, W.facSign, W.festSign, W.festG, W.stars, W.moon, W.rain, W.snow, W.pond,
+  const keep = new Set([W.aqHit, W.mkHit, W.musRoot, W.stableG, W.sky, W.sunBall, W.blades, W.trough, W.animalsG, W.petsG, W.peopleG, W.hoverRing, W.farmSign, W.ranchSign, W.fishSign, W.facSign, W.festSign, W.festG, W.stars, W.moon, W.rain, W.snow, W.pond,
     ...W.ripples, ...W.ponds.map(p => p.g), ...W.plots.map(p => p.g), ...W.poops, ...W.birds.map(b => b.b), ...W.clouds, ...W.flies.map(f => f.b), ...W.machs.map(m => m.g), ...W.ffly.map(f => f.m), ...(W.hens || []).map(h => h.m)].filter(Boolean));
   S3.updateMatrixWorld(true);
   const list = [];
@@ -5093,7 +5107,7 @@ function loop() {
     else if (P.m.scale.x !== 1.25) P.m.scale.setScalar(1.25);
   }
   fishTick(t, dt); mkTick(t, dt); musTick(t, dt); walkTick(t, dt); homeTick(t);
-  { const py = S.scene === 'home' ? HOME_T.y : 0; for (const P of W.people || []) P.m.position.y = py; if (S.scene === 'home') { W.rain.visible = W.snow.visible = false; if (W.bub) W.bub.visible = false; } }
+  { const py = S.scene === 'home' ? HOME_T.y : S.scene === 'museum' ? musY() : 0; for (const P of W.people || []) P.m.position.y = py; if (S.scene === 'home') { W.rain.visible = W.snow.visible = false; if (W.bub) W.bub.visible = false; } }
   if (W.hoverRing.visible) W.hoverRing.material.opacity = .55 + Math.sin(t * 6) * .3;
   W.renderer.render(W.scene, W.camera);
   for (const o of OV.values()) projectTo(o.el, o.pos(_v.set(0, 0, 0)), w, h);
@@ -5243,7 +5257,7 @@ function renderTools() {
   else if (S.scene === 'green') T = own ? [['hand','✋','手'], ['pump', GIANT[giantOf()].em, '巨大大賽', 1], ['ghBuy','➕','擴建溫室', 1]] : [['hand','✋','參觀'], ['pump', GIANT[giantOf()].em, '巨大大賽', 1]];
   else if (S.scene === 'home') T = own ? (S.homeEdit ? [['homeDone','✅','完成', 1], ['homeDeco','🛋️','家具', 1]] : [['hand','✋','走走'], ['homeDeco','🛋️','裝潢', 1], ['homeArrange','🔧','擺設', 1], ['trophies','🏆','獎盃櫃', 1], ['leaveHome','🚪','出門', 1]]) : [['hand','✋','參觀'], ['trophies','🏆','獎盃櫃', 1], ['leaveHome','🚪','出門', 1]];
   else if (S.scene === 'market') T = [['hand','✋','逛逛'], ['mkGames','🎮','攤位遊戲', 1], ['mkShop','🎁','換獎品', 1], ['mkRank','🏆','夜市高手', 1], ['leaveP','🏠','回農場', 1]];
-  else if (S.scene === 'museum') T = [['hand','✋','參觀'], ['musList','📜','歷屆冠軍', 1], ['pump', GIANT[giantOf()].em, '本週比賽', 1], ['leaveP','🏠','回農場', 1]];
+  else if (S.scene === 'museum') T = [...MU_FL.map((x, F) => [`musF${F}`, x.em, `${F + 1}F${(S.musF || 0) === F ? '・在這' : ''}`, 1]), ['musList','📜','冠軍名單', 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'dock') T = [['hand','✋','走走'], ['fishGo','🎣','釣魚', 1], ['aqShow','🐠','我的魚缸', 1], ['fishCup','🏆','釣魚大賽', 1], ['fishDex','📖','魚種圖鑑', 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'stable') T = own ? [['hand','✋','手'], ['horseList','🐎','我的馬', 1], ['horseRace','🏁','賽馬大賽', 1], ['aqShow','🐠','魚缸', 1]] : [['hand','✋','參觀'], ['horseList','🐎','看馬', 1], ['horseRace','🏁','賽馬大賽', 1], ['aqShow','🐠','魚缸', 1]];
   else if (S.scene === 'temple') T = [['hand','✋','手'], ['templeInfo','🏯','廟宇', 1], ['qianShow','📜','今日籤詩', 1], ['toTown','🏘️','回小鎮', 1]];
@@ -5349,7 +5363,7 @@ function tipFor(h) {
   if (h.type === 'house') return `<b>🏠 ${isOwn() ? '我的' : esc(dn(S.view)) + '的'}農舍</b><br>點一下進屋${isOwn() ? '裝潢' : '參觀'}`;
   if (h.type === 'tcab') return `<b>🏆 獎盃櫃</b>（${(S.view?.trophy || []).length} 座）<br>點一下看全部`;
   if (h.type === 'hitem') { const a = homeAtOf(homeView(S.view))[h.i]; return a ? `<b>${HOME_ITEMS[a.id]?.em || ''} ${HOME_ITEMS[a.id]?.n || ''}</b>${isOwn() && S.homeEdit ? '<br>點一下移動、轉方向' : ''}` : ''; }
-  if (h.type === 'mus') return h.k === 'horse' ? '<b>🐎 賽馬冠軍雕像</b><br>點一下看歷屆冠軍' : `<b>${GIANT[h.k].em} ${gNm(h.k)}大賽冠軍作品</b><br>點一下看歷屆冠軍`;
+  if (h.type === 'mus') return `<b>${MU_FL[h.k].em} ${h.k + 1}F ${MU_FL[h.k].n}</b><br>點一下看冠軍名單`;
   if (h.type === 'mk') { const G = MK_GAMES[h.id]; return `<b>${G.em} ${G.n}</b><br>${G.pts}<br>點一下玩（💰${MK_COST}）`; }
   if (h.type === 'aq') { const n = dockView(S.view).aq?.length || 0; return `<b>🐠 超大魚缸</b>（${n}/${AQ_MAX} 條）<br>點一下看魚`; }
   if (h.type === 'horse') { const x = horseView(S.view).list.find(y => y.id === h.id); return x ? `<b>${hSexE(x)} ${esc(x.n)}</b> ${hAgeT(x)}${hStatus(x) ? '<br>' + hStatus(x) : ''}<br>${isOwn() ? '點一下訓練、配種' : '點一下看看'}` : ''; }
@@ -6927,7 +6941,7 @@ const ACT = {
   async hRename(d) { const v = ($('#hnm')?.value || '').trim(); if (!v || [...v].length > 8) return toast('名字要 1～8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { const h = horseOf(f).list.find(x => x.id === +d.id); if (!h) return ab('找不到這匹馬'); h.n = v; return {}; }, () => { toast(`🐎 改名成「${v}」了！`); Music.sfx('pop'); }); },
   async petRename(d) { const v = ($('#pnm_' + d.k)?.value || '').trim(); if ([...v].length > 8) return toast('名字最多 8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { if (!f.pets.includes(d.k)) return ab('沒有這隻寵物'); const x = px(f, d.k); if (v) x.nm = v; else delete x.nm; return {}; }, () => { toast(v ? `🐾 ${PETS[d.k].n}改名叫「${v}」了！` : `🐾 改回「${PETS[d.k].n}」`); Music.voice(PETS[d.k].kind); }); },
   hEnter(d) { return run(() => hEnter(+d.id)); },
-  map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, goMuseum() { goPlace('museum'); refreshFriends(); }, musList() { openMuseum(); }, leaveP() { ACT.scene({s:'farm'}); },
+  map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, goMuseum(d) { S.musF = +(d?.f || 0); SCENE_T.museum.y = musY(); goPlace('museum'); refreshFriends(); }, musF(d) { closeModal(); musGo(+d.f); }, musF0() { musGo(0); }, musF1() { musGo(1); }, musF2() { musGo(2); }, musF3() { musGo(3); }, musList() { openMuseum(); }, leaveP() { ACT.scene({s:'farm'}); },
   fishGo: fishStart, fishCast, fishHook, fishQuit() { fishStop(); renderTools(); }, fishKeep(d) { return run(() => fishKeep(d.m)); }, aqShow: openAquarium, aqSell(d) { return run(() => aqSell(+d.i)); }, fishDex: openFishDex, fishCup: openFishCup,
   fcEnter(d) { return run(() => fcEnter(+d.i)); },
   petShow() { S.psv = null; openPetShow(); }, petDress(d) { openPetDress(d.k); }, paccBuy(d) { return run(() => paccBuy(d.k, d.id)); }, paccOn(d) { return run(() => paccOn(d.k, d.id)); }, paccOff(d) { return run(() => paccOff(d.k, d.s)); }, petBath(d) { return run(() => petBath(d.k)); },
