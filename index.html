@@ -1357,6 +1357,7 @@ function tickOwn(f, msgs) {
   if (f.town?.stall && stallSim(f, msgs)) ch = true;
   if (!f.horse) { f.horse = horseStarter(f); addLog(f, '🐎 新的「馬場」開幕了！送你 3 匹馬：2 匹公馬、1 匹母馬，快去馬場看看吧'); msgs?.push('🐎 新設施「馬場」開幕！送你 3 匹馬'); ch = true; }
   if (hBirth(f, msgs)) ch = true;
+  if (hDungSim(f)) ch = true;
   if (aqSim(f, msgs)) ch = true;
   if (giantSellOld(f, msgs)) ch = true;
   return ch;
@@ -2899,6 +2900,17 @@ const hCanSire = h => h.sex === 'm' && hAge(h) >= 2;
 const hPrice = h => { const s = h.st.spd + h.st.sta + h.st.acc, a = hStage(h); return Math.round((250 + s * 4 + (h.g.spd + h.g.sta + h.g.acc) * 2) * (a === 'old' ? .6 : a === 'foal' ? .7 : 1) / 10) * 10; };
 const hStars = g => { const v = (g.spd + g.sta + g.acc) / 3; return '★'.repeat(Math.max(1, Math.min(5, Math.round(v / 20)))) + '☆'.repeat(5 - Math.max(1, Math.min(5, Math.round(v / 20)))); };
 const horseView = f => f?.horse || {list:[], ent:{}, cl:{}};
+// 馬場的馬（小馬以外）每 6 小時會產 1 份有機肥料，堆在馬廄，最多 12 份，要去馬場收
+const H_DUNG_H = 6, H_DUNG_MAX = 12;
+function hDungSim(f) {
+  const H = f.horse; if (!H?.list) return false; const iv = H_DUNG_H * 3600000 / SPEED, n = H.list.filter(h => hStage(h) !== 'foal').length;
+  if (!H.dt) { H.dt = now(); return true; } const k = Math.floor((now() - H.dt) / iv); if (k < 1) return false;
+  H.dt += k * iv; if (n) H.dung = Math.min(H_DUNG_MAX, (H.dung || 0) + k * n); return true;
+}
+async function hDung() {
+  await fast(f => { const H = horseOf(f); hDungSim(f); const n = H.dung || 0; if (!n) return ab('馬廄現在沒有有機肥料，晚點再來（每匹大馬每 6 小時產 1 份）'); f.wh.manure = (f.wh.manure || 0) + n; H.dung = 0; const up = gainExp(f, n * 2); addLog(f, `🧹 清馬廄，收了 ${n} 份有機肥料`); return {n, up}; },
+    r => { toast(`🧹 收了 ${r.n} 份有機肥料！可以當化肥用，也能做「有機菜籃」`); Music.sfx('pop'); lvToast(r.up); W.stableKey = null; });
+}
 function horseOf(f) { const H = f.horse ??= {}; H.list ??= []; H.ent ??= {}; H.cl ??= {}; H.nid ??= 1; return H; }
 function hName(H, R = Math.random) { const used = new Set(H.list.map(h => h.n)), pool = H_NAMES.filter(n => !used.has(n)); return pool.length ? pool[Math.floor(R() * pool.length)] : '小馬' + H.nid; }
 function horseStarter(f) {
@@ -2982,6 +2994,9 @@ function syncStable(f, own) {
       g.position.set(x, 0, z); g.traverse(o => o.userData.hit = {type:'horse', id:h.id}); W.stableG.add(g);
       W.horses.push({g, m, id:h.id, x, z, tx:x, tz:z, wait:Math.random() * 3, run:0, ph:i * 1.7, foal:hStage(h) === 'foal'}); });
   }
+  { const dn = Math.min(6, horseView(f).dung || 0); if (W.dungN !== dn) { W.dungN = dn; W.dungG ??= new THREE.Group(); W.stableG.parent?.add(W.dungG); W.dungG.clear();
+      for (let i = 0; i < dn; i++) { const g = grp(ball('#795548', [.42, .26, .42], [0, .13, 0]), ball('#6d4c41', [.28, .2, .28], [.05, .32, .03]), ball('#8d6e63', U(.12), [-.06, .45, 0])); g.position.set(STABLE_T.x - 3.4 + (i % 3) * .85, 0, STB_Z + 1.9 + Math.floor(i / 3) * .75); g.traverse(o => o.userData.hit = {type:'dung'}); W.dungG.add(g); } }
+    if (dn) ov('dung', `🧹 有機肥料 ×${horseView(f).dung}${own ? '（點我收）' : ''}`, v => v.set(STABLE_T.x - 2.6, 1.5, STB_Z + 2.2), 'tag'); }
   L.forEach((h, i) => { const P = W.horses[i]; if (!P) return;
     const st = h.preg ? (hPregDone(h) ? ' 🍼要生了！' : ' 🤰') : hStage(h) === 'foal' ? ' 🍼' : hStage(h) === 'old' ? ' 👴' : '';
     ov('hs' + i, `${hSexE(h)} ${esc(h.n)}${st}`, v => v.copy(P.g.position).setY(P.foal ? 1.8 : 2.9), 'tag'); });
@@ -3005,9 +3020,10 @@ function hStatus(h) { return h.preg ? (hPregDone(h) ? '🍼 快要生了' : `�
 function openHorses() {
   S.modal = () => {
     const own = isOwn(), f = own ? S.my : S.view, H = horseView(f), trLeft = own ? H_TRAIN - ((H.tr?.d === twDay() ? H.tr.n : 0)) : 0;
-    let body = `<div class="popbox">🐎 <b>${own ? '我的馬場' : esc(dn(f)) + '的馬場'}</b>（${H.list.length}/${H_MAX} 匹）<br><small>${own ? `母馬可以配種生小馬（懷孕 ${H_PREG / 864e5} 天），小馬會遺傳爸媽的天分。小馬滿 1 歲就能比賽，8 歲以後變成老馬，速度會變慢，可以賣掉。馬的 1 歲＝現實 3 天。<br>今天還能訓練 <b>${trLeft}</b> 次（每次用 ${H_TR_CARROT} 根紅蘿蔔，沒有的話 💰${H_TR_COIN}）` : '好友馬的數值是秘密喔 🤫'}</small></div>`;
+    let body = `<div class="popbox">🐎 <b>${own ? '我的馬場' : esc(dn(f)) + '的馬場'}</b>（${H.list.length}/${H_MAX} 匹）<br><small>${own ? `母馬可以配種生小馬（懷孕 ${H_PREG / 864e5} 天），小馬會遺傳爸媽的天分。小馬滿 1 歲就能比賽，8 歲以後變成老馬，速度會變慢，可以賣掉。馬的 1 歲＝現實 3 天。<br>今天還能訓練 <b>${trLeft}</b> 次（每次用 ${H_TR_CARROT} 根紅蘿蔔，沒有的話 💰${H_TR_COIN}）<br>🧹 大馬每 ${H_DUNG_H} 小時會產 1 份<b>有機肥料</b>，馬廄現在有 <b>${H.dung || 0}</b> 份（最多 ${H_DUNG_MAX}）` : '好友馬的數值是秘密喔 🤫'}</small></div>`;
     body += H.list.length ? H.list.map(h => `<div class="item" data-act="horse" data-id="${h.id}" style="cursor:pointer"><div class="pic" style="font-size:30px">${hStage(h) === 'foal' ? '🐴' : '🐎'}</div><div class="info"><div class="t">${hSexE(h)} ${esc(h.n)} <small style="color:#8d6e63">${hAgeT(h)} · ${H_STAGE_N[hStage(h)]} · ${H_COLS[h.col]?.[2] || ''}</small></div>
       <div class="d">${own ? Object.entries(H_STAT).map(([k, [n, e]]) => `${e}${n} <b>${h.st[k]}</b>`).join('　') + `　天分 <span style="color:#f9a825">${hStars(h.g)}</span>` : '數值：？？？'}${hStatus(h) ? '<br>' + hStatus(h) : ''}</div></div></div>`).join('') : `<div class="empty">${own ? '馬場還沒有馬' : '這個馬場還沒有馬'}</div>`;
+    if (own && H.dung) body += `<div class="mgbtn"><button class="b o" data-act="hDung">🧹 收 ${H.dung} 份有機肥料</button></div>`;
     openModal('🐎 馬場', body);
   };
   S.modal();
@@ -5259,7 +5275,7 @@ function renderTools() {
   else if (S.scene === 'market') T = [['hand','✋','逛逛'], ['mkGames','🎮','攤位遊戲', 1], ['mkShop','🎁','換獎品', 1], ['mkRank','🏆','夜市高手', 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'museum') T = [...MU_FL.map((x, F) => [`musF${F}`, x.em, `${F + 1}F${(S.musF || 0) === F ? '・在這' : ''}`, 1]), ['musList','📜','冠軍名單', 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'dock') T = [['hand','✋','走走'], ['fishGo','🎣','釣魚', 1], ['aqShow','🐠','我的魚缸', 1], ['fishCup','🏆','釣魚大賽', 1], ['fishDex','📖','魚種圖鑑', 1], ['leaveP','🏠','回農場', 1]];
-  else if (S.scene === 'stable') T = own ? [['hand','✋','手'], ['horseList','🐎','我的馬', 1], ['horseRace','🏁','賽馬大賽', 1], ['aqShow','🐠','魚缸', 1]] : [['hand','✋','參觀'], ['horseList','🐎','看馬', 1], ['horseRace','🏁','賽馬大賽', 1], ['aqShow','🐠','魚缸', 1]];
+  else if (S.scene === 'stable') T = own ? [['hand','✋','手'], ['horseList','🐎','我的馬', 1], ['hDung','🧹',`收肥料${S.my.horse?.dung ? '×' + S.my.horse.dung : ''}`, 1], ['horseRace','🏁','賽馬大賽', 1], ['aqShow','🐠','魚缸', 1]] : [['hand','✋','參觀'], ['horseList','🐎','看馬', 1], ['horseRace','🏁','賽馬大賽', 1], ['aqShow','🐠','魚缸', 1]];
   else if (S.scene === 'temple') T = [['hand','✋','手'], ['templeInfo','🏯','廟宇', 1], ['qianShow','📜','今日籤詩', 1], ['toTown','🏘️','回小鎮', 1]];
   else if (S.scene === 'town') T = own ? [['hand','✋','手'], ['vilList','📋','村民委託', 1], ['stall','🏪','我的攤位', 1], ['toTemple','🏯','去廟裡', 1], ['bingo','🎱','賓果', 1], ['petShow','🐶','寵物選美', 1]] : [['hand','✋','逛逛'], ['stall','🏪','逛攤位', 1], ['toTemple','🏯','去廟裡', 1]];
   else if (S.decoMode && own) T = [['decoDone','✅','完成', 1], ['decoTool','🪑','換裝飾', 1]];
@@ -5366,6 +5382,7 @@ function tipFor(h) {
   if (h.type === 'mus') return `<b>${MU_FL[h.k].em} ${h.k + 1}F ${MU_FL[h.k].n}</b><br>點一下看冠軍名單`;
   if (h.type === 'mk') { const G = MK_GAMES[h.id]; return `<b>${G.em} ${G.n}</b><br>${G.pts}<br>點一下玩（💰${MK_COST}）`; }
   if (h.type === 'aq') { const n = dockView(S.view).aq?.length || 0; return `<b>🐠 超大魚缸</b>（${n}/${AQ_MAX} 條）<br>點一下看魚`; }
+  if (h.type === 'dung') return `<b>🧹 有機肥料 ×${horseView(S.view).dung || 0}</b><br>馬每 6 小時會產 1 份${isOwn() ? '，點一下收起來' : ''}`;
   if (h.type === 'horse') { const x = horseView(S.view).list.find(y => y.id === h.id); return x ? `<b>${hSexE(x)} ${esc(x.n)}</b> ${hAgeT(x)}${hStatus(x) ? '<br>' + hStatus(x) : ''}<br>${isOwn() ? '點一下訓練、配種' : '點一下看看'}` : ''; }
   if (h.type === 'hall') { const H = HALLS[h.i], T = templeView(S.view); return `<b>${H.em} ${H.n}</b>（${H.god}）<br>${h.i < T.lv ? (qianToday(S.my) ? '今天已經抽過籤了，點一下看籤詩' : '點一下參拜抽籤 🙏') : h.i === T.lv ? `建造中 ${Math.floor(tpProg(T) * 100)}%，點一下捐材料` : '還沒開始蓋'}`; }
   if (h.type === 'gplot') { const G = greenView(S.view), p = (G.plots || [])[h.i]; if (h.i >= (G.n || GH_START)) return h.i === (G.n || GH_START) && isOwn() ? `🔒 點一下花 ${GH_PRICE[G.n || GH_START]} 金幣擴建` : '🔒 還沒擴建'; if (!p || p.s !== 'grow' || !CROPS[p.c]) return isOwn() ? '空花圃，點一下種東西' : '空花圃'; return `<b>${CROPS[p.c].gh ? '🌱 ' : ''}${CROPS[p.c].n}</b><br>${ghMature(p) ? '✨ 成熟了！點一下收成' : `還要 ${fmtDur(p.p + ghMs(p.c) - now())}`}`; }
@@ -5405,6 +5422,7 @@ function clickHit(h) {
   if (h.type === 'house') return goIn();
   if (h.type === 'tcab') return openTrophies();
   if (h.type === 'hitem') { const a = homeAtOf(homeView(S.view))[h.i]; if (!a) return; if (isOwn() && S.homeEdit) return homeItemMenu(h.i); return toast(`${HOME_ITEMS[a.id]?.em || ''} ${HOME_ITEMS[a.id]?.n || ''}${isOwn() ? '（按「🔧 擺設」可以移動家具）' : ''}`); }
+  if (h.type === 'dung') { if (S.scene !== 'stable') { S.scene = 'stable'; setCam('stable'); renderTools(); } return isOwn() ? run(hDung) : toast('這是好友馬場的有機肥料'); }
   if (h.type === 'horse') { if (S.scene !== 'stable') { S.scene = 'stable'; setCam('stable'); renderTools(); } return openHorse(h.id); }
   if (h.type === 'hall') { if (S.scene !== 'temple') { S.scene = 'temple'; setCam('temple'); renderTools(); } return openHall(h.i); }
   if (h.type === 'cell') { if (!S.decoMode?.k) return toast('先從「🪑 換裝飾」選一個要擺的裝飾'); return run(() => decoPut(h.c)); }
@@ -5534,7 +5552,7 @@ const ACT_PLOT = {
   async fert(i) {
     const r = await txMe(f => {
       const p = f.plots[i]; if (p.s !== 'grow' || !CROPS[p.c]) return ab('這塊地沒有作物'); if (isMature(p)) return ab('已經成熟了，直接收成吧'); if (p.f) return ab('這一季已經施過肥了');
-      if (f.fert > 0) f.fert--; else if (f.wh.manure > 0) f.wh.manure--; else return ab('沒有化肥了，去商店買或養馬產有機肥');
+      if (f.fert > 0) f.fert--; else if (f.wh.manure > 0) f.wh.manure--; else return ab('沒有化肥了，去商店買，或去馬場收有機肥料');
       p.f = Math.round(Math.min(matureAt(p) - now(), growMs(p.c) * 0.3)); return {saved:p.f};
     });
     if (r.abort) return toast(r.msg); fxPlot(i, `🧪 快了 ${fmtDur(r.saved)}，有機會大豐收！`, '#7b1fa2');
@@ -6937,7 +6955,7 @@ const ACT = {
   async buyPetfood(d) { const n = +d.n; const r = await txMe(f => { if (f.coins < PETFOOD_PRICE * n) return ab('金幣不夠'); f.coins -= PETFOOD_PRICE * n; f.petfood = (f.petfood || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 個寵物零食 🦴`); },
   templeInfo: openTemple, hall(d) { openHall(+d.i); }, pray(d) { startPray(+d.i); }, tpGive(d) { return run(() => tpGive(d.k, +d.n)); }, qianShow() { if (qianToday(S.my)) openQian(); else { toast('今天還沒抽籤，去廟裡參拜吧 🙏'); if (S.scene !== 'temple') ACT.toTemple(); } },
   toTemple() { ACT.scene({s:'temple'}); },
-  horseList: openHorses, horse(d) { openHorse(+d.id); }, horseRace: openHorseRace, hTrain(d) { return run(() => hTrain(+d.id, d.k)); }, hBreed(d) { return run(() => hBreed(+d.id, d.m)); }, hSell(d) { return run(() => hSell(+d.id)); },
+  horseList: openHorses, hDung() { return run(hDung); }, horse(d) { openHorse(+d.id); }, horseRace: openHorseRace, hTrain(d) { return run(() => hTrain(+d.id, d.k)); }, hBreed(d) { return run(() => hBreed(+d.id, d.m)); }, hSell(d) { return run(() => hSell(+d.id)); },
   async hRename(d) { const v = ($('#hnm')?.value || '').trim(); if (!v || [...v].length > 8) return toast('名字要 1～8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { const h = horseOf(f).list.find(x => x.id === +d.id); if (!h) return ab('找不到這匹馬'); h.n = v; return {}; }, () => { toast(`🐎 改名成「${v}」了！`); Music.sfx('pop'); }); },
   async petRename(d) { const v = ($('#pnm_' + d.k)?.value || '').trim(); if ([...v].length > 8) return toast('名字最多 8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { if (!f.pets.includes(d.k)) return ab('沒有這隻寵物'); const x = px(f, d.k); if (v) x.nm = v; else delete x.nm; return {}; }, () => { toast(v ? `🐾 ${PETS[d.k].n}改名叫「${v}」了！` : `🐾 改回「${PETS[d.k].n}」`); Music.voice(PETS[d.k].kind); }); },
   hEnter(d) { return run(() => hEnter(+d.id)); },
