@@ -2904,6 +2904,7 @@ const horseView = f => f?.horse || {list:[], ent:{}, cl:{}};
 const H_DUNG_H = 6, H_DUNG_MAX = 12;
 function hDungSim(f) {
   const H = f.horse; if (!H?.list) return false; const iv = H_DUNG_H * 3600000 / SPEED, n = H.list.filter(h => hStage(h) !== 'foal').length;
+  if (!H.d0) { H.d0 = 1; H.dt ??= now(); H.dung = Math.max(H.dung || 0, Math.min(H_DUNG_MAX, n * 2)); return true; }   // 剛開放時先送一堆，馬上就能用
   if (!H.dt) { H.dt = now(); return true; } const k = Math.floor((now() - H.dt) / iv); if (k < 1) return false;
   H.dt += k * iv; if (n) H.dung = Math.min(H_DUNG_MAX, (H.dung || 0) + k * n); return true;
 }
