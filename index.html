@@ -1358,6 +1358,8 @@ function tickOwn(f, msgs) {
   if (!f.horse) { f.horse = horseStarter(f); addLog(f, '🐎 新的「馬場」開幕了！送你 3 匹馬：2 匹公馬、1 匹母馬，快去馬場看看吧'); msgs?.push('🐎 新設施「馬場」開幕！送你 3 匹馬'); ch = true; }
   if (hBirth(f, msgs)) ch = true;
   if (hDungSim(f)) ch = true;
+  // 一次性修正：asd123 帳號的等級被重置了，恢復到原本的 Lv.28（只會執行一次）
+  if (!f.fixLv1 && ['asd123', 'asd 123'].includes(String(f.username || '').trim().toLowerCase())) { f.fixLv1 = 1; if ((f.exp || 0) < 30780) { f.exp = 30780; addLog(f, '🛠️ 等級已經恢復成 Lv.28 了，造成困擾很抱歉！'); msgs?.push('🛠️ 你的等級已經恢復成 Lv.28 了'); } ch = true; }
   if (aqSim(f, msgs)) ch = true;
   if (giantSellOld(f, msgs)) ch = true;
   return ch;
