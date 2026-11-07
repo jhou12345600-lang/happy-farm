@@ -1460,6 +1460,8 @@ async function makeFirebase(cfg) {
     async getFarm(uid) { const s = await F.getDoc(fref(uid)); return s.exists() ? s.data() : null; },
     async rebuildFarm(uid) {
       const u = auth.currentUser; if (!u || u.uid !== uid || !/^u[0-9a-f]+@hfarm\.game$/.test(u.email || '')) return false;
+      // 保護：只幫「剛註冊、農場還沒建好」的帳號補建；註冊超過 1 天的老帳號絕對不重建，避免讀取失敗時把舊農場蓋掉
+      if (Date.now() - Date.parse(u.metadata?.creationTime || 0) > 864e5) return false;
       const h = u.email.slice(1, u.email.indexOf('@')); const name = new TextDecoder().decode(new Uint8Array(h.match(/../g).map(x => parseInt(x, 16))));
       if ((await F.getDoc(fref(uid))).exists()) return false;
       const un = await F.getDoc(F.doc(db, 'usernames', nameKey(name)));
