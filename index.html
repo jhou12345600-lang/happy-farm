@@ -319,6 +319,7 @@ button{font-family:inherit;cursor:pointer;border:none}
       <div class="field"><label>帳號（2～10 個字，可用中文）</label><input id="aName" autocomplete="username" maxlength="60" placeholder="帳號（綁定過 Email 也可以用 Email 登入）" required></div>
       <div class="field"><label>密碼（至少 6 個字）</label><input id="aPass" type="password" autocomplete="current-password" required></div>
       <div class="field" id="aPass2Wrap" hidden><label>再輸入一次密碼</label><input id="aPass2" type="password" autocomplete="new-password"></div>
+      <div class="field" id="aMailWrap" hidden><label>Email（強烈建議填：忘記密碼時用來重設）</label><input id="aMail" type="email" autocomplete="email" maxlength="80" placeholder="例如 abc@gmail.com（可以不填）"></div>
       <button class="go" id="aGo" type="submit" disabled>載入中…</button>
     </form>
     <div id="authErr"></div>
@@ -6003,7 +6004,7 @@ function openMsgs() {
 const mailPend = () => { try { return store.getItem('hf_mailpend_' + S.uid) || ''; } catch { return ''; } };
 // 還沒綁 Email 的帳號：每 3 天提醒一次，忘記密碼時才救得回來
 function mailNag(uid) {
-  if (S.uid !== uid || S.mailB || !S.my || S.my.tut !== 'done' || !$('#modal').hidden) return;
+  if (S.uid !== uid || S.mailB || mailPend() || !S.my || S.my.tut !== 'done' || !$('#modal').hidden) return;
   const k = 'hf_mailnag_' + uid; try { if (Date.now() - (+store.getItem(k) || 0) < 3 * 864e5) return; store.setItem(k, Date.now()); } catch {}
   S.modal = () => openModal('🔐 保護你的帳號', `<div class="popbox">你的帳號<b>還沒有綁定 Email</b>。<br>如果哪天忘記密碼，沒有 Email 就<b>沒辦法自己重設</b>，只能請管理員幫忙。<br><small>密碼不會被任何人看到，連管理員也查不到，所以綁一個 Email 最保險！</small></div><div class="mgbtn" style="display:flex;gap:8px;justify-content:center"><button class="b o" data-act="mailBind">📧 現在綁定</button><button class="b" data-act="close">以後再說</button></div>`);
   S.modal();
@@ -6973,7 +6974,7 @@ async function finishTut(done) {
 let authMode = 'login';
 const ACT = {
   forgot() { const b = $('#forgotBox'); b.hidden = !b.hidden; if (!b.hidden) { $('#fgName').value = $('#aName').value; $('#fgMsg').textContent = ''; $('#fgName').focus(); } }, forgotGo() { return forgotGo(); }, mailBind: openMailBind, mailBindGo() { return mailBindGo(); }, passChg: openPassChg, passChgGo() { return passChgGo(); },
-  authTab(d) { authMode = d.t; document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === d.t)); $('#aPass2Wrap').hidden = d.t !== 'reg'; $('#aGo').textContent = d.t === 'reg' ? '註冊並開始' : '開始種田'; $('#aPass').autocomplete = d.t === 'reg' ? 'new-password' : 'current-password'; $('#authErr').textContent = ''; },
+  authTab(d) { authMode = d.t; document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === d.t)); $('#aPass2Wrap').hidden = d.t !== 'reg'; $('#aMailWrap').hidden = d.t !== 'reg'; $('#aGo').textContent = d.t === 'reg' ? '註冊並開始' : '開始種田'; $('#aPass').autocomplete = d.t === 'reg' ? 'new-password' : 'current-password'; $('#authErr').textContent = ''; },
   tool(d) { if (d.t === 'plant' && (!S.seed || S.tool === 'plant')) { S.tool = 'plant'; renderTools(); return openSeedPicker(-1); } if (d.t === 'stock' && (!S.fry || S.tool === 'stock')) { S.tool = 'stock'; renderTools(); return openFryPicker(-1); } S.tool = d.t; renderTools(); },
   scene(d) { if (W.zoomed) { W.zoomed = false; clearTimeout(W.zoomT); const o = (W.camAnim?.off1 || W.camera.position.clone().sub(W.controls.target)).clone().multiplyScalar(1 / .42); W.camAnim = null; W.camera.position.copy(W.controls.target).add(o); } const lp = !PLACES[d.s] && leavePlace(); if (S.scene === 'home' && d.s !== 'home') { S.homeEdit = null; const o = W.preHomeOff && W.preHomeOff.length() > 5 ? W.preHomeOff : new THREE.Vector3(0, 24, 28); W.camera.position.copy(W.controls.target).add(o); W.preHomeOff = null; } S.scene = d.s; S.tool = 'hand'; S.hover = null; S.myPos = null; S.pray = null; $('#tip').style.display = 'none'; setCam(d.s); renderTools(); renderScene(); if (lp) { travel('回農場ING', 1100); watchHere(); beat(); } },
   feedAll() { return run(feedAll); }, feedFriend() { return run(feedFriend); },
@@ -7105,6 +7106,9 @@ $('#authForm').addEventListener('submit', async e => {
   if (!byMail && !/^[A-Za-z0-9_㐀-鿿]{2,10}$/.test(name)) return err.textContent = '帳號要 2～10 個字，只能用中英文、數字或底線';
   if (pass.length < 6) return err.textContent = '密碼至少要 6 個字';
   if (authMode === 'reg' && pass !== $('#aPass2').value) return err.textContent = '兩次輸入的密碼不一樣';
+  const rmail = authMode === 'reg' ? ($('#aMail')?.value || '').trim() : '';
+  if (rmail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(rmail)) return err.textContent = 'Email 格式不對（不想綁可以留空）';
+  S.regMail = rmail ? {mail:rmail, pass} : null;
   $('#aGo').disabled = true;
   try { authMode === 'reg' ? await B.register(name, pass) : byMail ? await B.loginMail(name, pass) : await B.login(name, pass); } catch (ex) { err.textContent = ex.message; } finally { $('#aGo').disabled = false; }
 });
@@ -7208,6 +7212,9 @@ async function onAuth(u) {
   else if (!r.abort && f.lastSign !== today()) toast(isNew ? '🎉 歡迎來到 3D 農場！' : `☀️ 每日簽到 +${SIGN_COINS} 金幣，記得看看今天的任務和訂單 📋`);
   refreshFriends();
   setTimeout(() => { if (S.my && S.uid === u.uid) giveGrants(); }, 6500);
+  if (S.regMail) { const R = S.regMail; S.regMail = null; setTimeout(async () => { if (S.uid !== u.uid) return; try { await B.bindMail(R.pass, R.mail); try { store.setItem('hf_mailpend_' + u.uid, R.mail); } catch {}
+      if (B.mode === 'local') { S.mailB = R.mail; toast('📧 Email 綁定完成！'); } else openModal('📧 驗證信已寄出', `<div class="mgres">驗證信已經寄到 <b>${esc(R.mail)}</b><br>打開信點裡面的連結，就完成綁定！以後忘記密碼可以用「🔑 忘記密碼？」自己重設。<br><small>沒看到的話記得看「垃圾郵件」。</small></div>`);
+    } catch (e) { toast('📧 Email 綁定沒成功：' + e.message + '，可以之後到「個人資料 → 🔐 帳號安全」再綁'); } }, 2500); }
   S.mailB = ''; B.syncMail?.(S.my.username).then(m => { if (S.uid !== u.uid) return; S.mailB = m || ''; if (!m && !mailPend()) setTimeout(() => mailNag(u.uid), 9000); if (m && mailPend()) { toast('📧 Email 綁定完成！忘記密碼時可以收重設信'); try { store.removeItem('hf_mailpend_' + S.uid); } catch {} } }).catch(() => {});
 }
 let _tvT = 0;
