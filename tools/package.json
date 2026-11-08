@@ -1,0 +1,1 @@
+{ "name": "happy-farm-admin-tools", "private": true, "dependencies": { "firebase-admin": "^12.0.0" } }
