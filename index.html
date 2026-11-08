@@ -2255,10 +2255,18 @@ function fieldTex(kind) {
   for (let i = 0; i < 600; i++) { x.fillStyle = `rgba(${Math.random() < .5 ? '0,0,0' : '255,255,220'},.05)`; x.fillRect(Math.random() * 128, Math.random() * 128, 2, 2); }
   const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return FT[kind] = t;
 }
+// 大量重複的景物（樹、草、石頭…）：分區塊做成 InstancedMesh，鏡頭看不到的區塊整塊不畫；用低面數的形狀，手機比較不會燙
+const LOGEO = new Map();
+const loGeo = g => { if (g === gS()) return geoOf('sLo', () => new THREE.SphereGeometry(1, 7, 5)); if (g === gN()) return geoOf('nLo', () => new THREE.ConeGeometry(1, 1, 5)); if (g === gC()) return geoOf('cLo', () => new THREE.CylinderGeometry(1, 1, 1, 6)); return g; };
 function inst(geom, material, list, cast = false) {
-  const m = new THREE.InstancedMesh(geom, typeof material === 'string' ? mat(material) : material, list.length), o = new THREE.Object3D();
-  list.forEach((a, i) => { o.position.set(a[0], a[1], a[2]); o.scale.set(a[3], a[4], a[5]); o.rotation.set(a[7] || 0, a[6] || 0, 0); o.updateMatrix(); m.setMatrixAt(i, o.matrix); if (a[8] && m.setColorAt) m.setColorAt(i, new THREE.Color(a[8])); });
-  m.castShadow = cast; m.receiveShadow = true; return m;
+  const mt = typeof material === 'string' ? mat(material) : material, gg = loGeo(geom), cells = new Map(), root = new THREE.Group(), o = new THREE.Object3D();
+  for (const a of list) { const k = Math.floor(a[0] / 32) + ',' + Math.floor(a[2] / 32); let c = cells.get(k); if (!c) cells.set(k, c = []); c.push(a); }
+  for (const L of cells.values()) {
+    const m = new THREE.InstancedMesh(gg, mt, L.length);
+    L.forEach((a, i) => { o.position.set(a[0], a[1], a[2]); o.scale.set(a[3], a[4], a[5]); o.rotation.set(a[7] || 0, a[6] || 0, 0); o.updateMatrix(); m.setMatrixAt(i, o.matrix); if (a[8] && m.setColorAt) m.setColorAt(i, new THREE.Color(a[8])); });
+    m.computeBoundingSphere(); m.castShadow = cast; m.receiveShadow = true; root.add(m);
+  }
+  return root;
 }
 function fieldMesh(kind, x, z, w, d, rot) {
   const g = new THREE.PlaneGeometry(w, d), uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * w / 8, uv.getY(i) * d / 8);
@@ -2498,10 +2506,10 @@ function applyEnv(dt, t) {
   W.renderer.setClearColor(_c2);
   // 太陽、月亮
   const h = T.h, sa = (h - 6) / 12 * Math.PI, ma = (h - 18) / 12 * Math.PI;
-  W.sunBall.position.set(12 + Math.cos(sa) * 150, 18 + Math.sin(sa) * 115, -150); W.sunBall.visible = Math.sin(sa) > -.1 && rain < .6;
+  W.sunBall.position.set((W.skyX ?? 12) + Math.cos(sa) * 150, 18 + Math.sin(sa) * 115, -150); W.sunBall.visible = Math.sin(sa) > -.1 && rain < .6;
   W.sunBall.material.color.set(dusk > .3 ? '#ffc070' : '#fff3b0');
   const moonBig = W.festTh === 'moon';
-  W.moon.position.set(12 + Math.cos(ma) * 150, 18 + Math.sin(ma) * 115, -150); W.moon.scale.setScalar(moonBig ? 1.9 : 1); W.moon.material.color.set(moonBig ? '#ffe9a6' : '#fdf6d8');
+  W.moon.position.set((W.skyX ?? 12) + Math.cos(ma) * 150, 18 + Math.sin(ma) * 115, -150); W.moon.scale.setScalar(moonBig ? 1.9 : 1); W.moon.material.color.set(moonBig ? '#ffe9a6' : '#fdf6d8');
   W.moon.visible = Math.sin(ma) > -.1; W.moon.material.opacity = Math.min(1, night * 1.4) * (1 - rain * .7);
   U2.sunDir.value.copy(W.sunBall.position).sub(W.sky.position).normalize(); U2.glow.value = W.sunBall.visible ? (1 - rain) * (.5 + dusk) : 0;
   // 光線
@@ -3554,14 +3562,14 @@ function buildMuseum(S3) {
     const t = textPlane(`${F + 1}F ${FL.em} ${FL.n}展覽`, '#4e342e', '#ffe082', 9, 1.2, 110); t.position.set(X, Y + MH - 1.05, -7.6); g.add(t);
     const el = textPlane(`🛗 ${F + 1}F`, '#fff', '#5d4037', 1.6, .55, 70); el.position.set(X - 12.4, Y + 3, -7.6); g.add(el, blk('#90a4ae', [2, 2.6, .2], [X - 12.4, Y + 1.3, -7.6]), blk('#607d8b', [.06, 2.6, .22], [X - 12.4, Y + 1.3, -7.55]));
     for (const s of [-1, 1]) g.add(blk('#6d4c41', [2.6, .12, .6], [X + s * 10.6, Y + .55, 3.9]), blk('#4e342e', [.12, .5, .5], [X + s * 10.6 - 1.1, Y + .27, 3.9]), blk('#4e342e', [.12, .5, .5], [X + s * 10.6 + 1.1, Y + .27, 3.9]));
-    const eg = new THREE.Group(); g.add(eg); W.musEx.push(eg);
+    mergeLocal(g); const eg = new THREE.Group(); g.add(eg); W.musEx.push(eg);
   }
   W.musSign = makeSign(X + 7.5, 6.6); S3.add(W.musSign);
 }
 const musGlass = new THREE.MeshLambertMaterial({color:'#e1f5fe', transparent:true, opacity:.16, depthWrite:false});
 function syncMuseum() {
   if (!W.musRoot) return;
-  const here = S.scene === 'museum', cur = S.musF || 0; W.musRoot.visible = here || !S.place; const cap = $('#musCap'); if (cap) cap.hidden = !here;
+  const here = S.scene === 'museum', cur = S.musF || 0; W.musRoot.visible = here; const cap = $('#musCap'); if (cap) cap.hidden = !here;
   W.musFl.forEach((g, F) => g.visible = !here || F <= cur);
   if (W.musSign) W.musSign.visible = !here || cur === 0;
   if (!here) return;
@@ -4623,6 +4631,10 @@ function mergeLocal(root) {
   }
   return root;
 }
+// 效能模式：save 省電（24fps、不畫影子、解析度 1x）、std 標準（手機 30fps）、high 高畫質（不限 fps）
+const isMobileDev = () => matchMedia('(pointer:coarse)').matches || innerWidth < 700;
+const perfMode = () => { try { const v = localStorage.hf_perf; if (['save', 'std', 'high'].includes(v)) return v; } catch {} return 'std'; };
+const PERF_N = {save:'🔋 省電', std:'⚖️ 標準', high:'✨ 高畫質'};
 function mergeStatic(S3) {
   const keep = new Set([W.aqHit, W.mkHit, W.musRoot, W.stableG, W.sky, W.sunBall, W.blades, W.trough, W.animalsG, W.petsG, W.peopleG, W.hoverRing, W.farmSign, W.ranchSign, W.fishSign, W.facSign, W.festSign, W.festG, W.stars, W.moon, W.rain, W.snow, W.pond,
     ...W.ripples, ...W.ponds.map(p => p.g), ...W.plots.map(p => p.g), ...W.poops, ...W.birds.map(b => b.b), ...W.clouds, ...W.flies.map(f => f.b), ...W.machs.map(m => m.g), ...W.ffly.map(f => f.m), ...(W.hens || []).map(h => h.m)].filter(Boolean));
@@ -4631,7 +4643,8 @@ function mergeStatic(S3) {
   const walk = o => { if (keep.has(o)) return; if (o.isMesh && !o.isInstancedMesh && !Array.isArray(o.material) && !o.material.map && !o.material.transparent && o.visible && o.geometry.attributes.position) list.push(o); for (const c of o.children) walk(c); };
   walk(S3);
   const groups = new Map();
-  for (const o of list) { const k = o.material.uuid + (o.castShadow ? 's' : ''); let g = groups.get(k); if (!g) groups.set(k, g = {mat:o.material, cast:o.castShadow, items:[], n:0}); const geo = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry; g.items.push([o, geo]); g.n += geo.attributes.position.count; }
+  const wp = new THREE.Vector3();
+  for (const o of list) { o.getWorldPosition(wp); const k = o.material.uuid + (o.castShadow ? 's' : '') + '@' + Math.floor(wp.x / 30) + ',' + Math.floor(wp.z / 30); let g = groups.get(k); if (!g) groups.set(k, g = {mat:o.material, cast:o.castShadow, items:[], n:0}); const geo = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry; g.items.push([o, geo]); g.n += geo.attributes.position.count; }
   const v = new THREE.Vector3(), nm = new THREE.Matrix3();
   for (const g of groups.values()) {
     if (g.items.length < 2) continue;
@@ -4774,14 +4787,16 @@ function buildWorld() {
 
 function init3D() {
   const st = $('#stage');
-  const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
-  renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 700 ? 1.5 : 2)); renderer.shadowMap.enabled = true; renderer.shadowMap.type = innerWidth < 700 ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap; renderer.outputColorSpace = THREE.SRGBColorSpace;
+  const PM = perfMode(), mob = isMobileDev();
+  const renderer = new THREE.WebGLRenderer({antialias:PM === 'high' || (!mob && PM === 'std'), powerPreference:PM === 'save' ? 'low-power' : 'default'});
+  W.dprMax = PM === 'save' ? 1 : PM === 'high' ? Math.min(devicePixelRatio, 2) : Math.min(devicePixelRatio, mob ? 1.4 : 1.75); W.fpsCap = PM === 'high' ? 0 : PM === 'save' ? 24 : mob ? 30 : 45;
+  renderer.setPixelRatio(W.dprMax); renderer.shadowMap.enabled = PM !== 'save'; renderer.shadowMap.type = PM === 'high' && !mob ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap; renderer.outputColorSpace = THREE.SRGBColorSpace;
   st.prepend(renderer.domElement);
   const scene = new THREE.Scene(); scene.fog = new THREE.Fog('#cfeaff', 80, 230);
-  const camera = new THREE.PerspectiveCamera(42, 1, .1, 500);
+  const camera = new THREE.PerspectiveCamera(42, 1, .1, 300);
   const hemi = new THREE.HemisphereLight('#e3f4ff', '#5d8f3a', 1.25); scene.add(hemi);
   const sun = new THREE.DirectionalLight('#fff1d0', 1.9); sun.position.set(30, 38, 22); sun.target.position.set(12, 0, 0); sun.castShadow = true;
-  sun.shadow.mapSize.set(innerWidth < 700 ? 1024 : 2048, innerWidth < 700 ? 1024 : 2048); Object.assign(sun.shadow.camera, {left:-34, right:34, top:26, bottom:-26, near:5, far:110}); sun.shadow.bias = -.0005; sun.shadow.normalBias = .02;
+  { const ms = PM === 'high' && !mob ? 2048 : 1024; sun.shadow.mapSize.set(ms, ms); } Object.assign(sun.shadow.camera, {left:-34, right:34, top:26, bottom:-26, near:5, far:110}); sun.shadow.bias = -.0005; sun.shadow.normalBias = .02;
   scene.add(sun, sun.target); W.sun = sun; W.hemi = hemi;
   const controls = new OrbitControls(camera, renderer.domElement);
   Object.assign(controls, {enableDamping:true, dampingFactor:.08, enablePan:false, minDistance:8, maxDistance:36, minPolarAngle:.35, maxPolarAngle:1.25, rotateSpeed:.6, zoomSpeed:.8});
@@ -5028,12 +5043,18 @@ function syncPeople(list) {
 /* ----- 每一幀 ----- */
 function loop() {
   requestAnimationFrame(loop);
+  const pn = performance.now(); W.modalEl ??= document.getElementById('modal');
+  const cap = W.modalEl && !W.modalEl.hidden && !W.race ? 15 : W.fpsCap;   // 跳出視窗擋住畫面時降到 15fps，更省電
+  if (cap && pn - (W.lastF || 0) < 1000 / cap - 3) return;
+  { const d = pn - (W.lastF || pn); W.lastF = pn; if (!document.hidden && cap === W.fpsCap && d > 0 && d < 500) { W.fAvg = (W.fAvg ?? d) * .97 + d * .03; W.fCnt = (W.fCnt || 0) + 1;
+    // 太卡的話自動降低解析度（最低 1x），省電又順
+    if (W.fCnt > 90 && W.fAvg > Math.max(55, 1000 / (W.fpsCap || 60) * 1.6) && W.renderer.getPixelRatio() > 1) { W.fCnt = 0; W.renderer.setPixelRatio(Math.max(1, W.renderer.getPixelRatio() - .2)); const st = W.renderer.domElement.parentElement; W.renderer.setSize(st.clientWidth, st.clientHeight, false); } } }
   if (W.race) { raceFrame(performance.now() / 1000); return; }
   const t = performance.now() / 1000, w = W.renderer.domElement.clientWidth, h = W.renderer.domElement.clientHeight;
   if (W.camAnim) { const a = W.camAnim, k = a.dur ? Math.min(1, (performance.now() - a.t0) / a.dur) : 1, e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; const off = a.off1 ? a.off0.clone().lerp(a.off1, e) : W.camera.position.clone().sub(W.controls.target); W.controls.target.lerpVectors(a.from, a.to, e); W.camera.position.copy(W.controls.target).add(off); if (k >= 1) W.camAnim = null; }
   W.controls.update();
   const dt = Math.min(.1, t - (W.lastT || t)); W.lastT = t;
-  const tg = W.controls.target; W.sun.position.set(tg.x + 18, tg.y + 38, tg.z + 22); W.sun.target.position.set(tg.x, tg.y, tg.z);
+  const tg = W.controls.target; W.skyX = tg.x; W.sky.position.x = tg.x; if (W.stars) W.stars.position.x = tg.x - 12; W.sun.position.set(tg.x + 18, tg.y + 38, tg.z + 22); W.sun.target.position.set(tg.x, tg.y, tg.z);
   applyEnv(dt, t); animMachines(t); santaTick(t, dt); templeTick(t); stableTick(t, dt); animVils(t); for (const s2 of W.decoSpin || []) s2.rotation.x = t * 1.6;
   W.blades.rotation.z = -t * .9;
   for (const c of W.clouds) { c.position.x += .012; if (c.position.x > 90) c.position.x = -70; }
@@ -6154,6 +6175,7 @@ function openMore() {
       <button data-act="pets">🐾 我的寵物${g ? `<em class="badge on">${g}</em>` : ''}</button>
       <button data-act="fest">📅 節日行事曆</button>
       <button data-act="music">${Music.wanted ? '🎵 聲音：開' : '🔇 聲音：關'}</button>
+      <button data-act="perf">${PERF_N[perfMode()]}（畫面）</button>
       <button data-act="tut">📘 新手教學</button>
       <button data-act="help">❓ 玩法說明</button>
       <button data-act="profile">👤 個人資料</button>
@@ -6954,6 +6976,8 @@ const ACT = {
   shopCat(d) { S.shopCat = d.c; openShop('seed'); }, pickCat(d) { S.shopCat = d.c; openSeedPicker(S.pendingPlot); }, petKind(d) { S.petKind = d.k; openShop('pet'); },
   friends() { openFriends('list'); refreshFriends(); }, friendTab(d) { openFriends(d.t); },
   msgs: openMsgs, help: openHelp, tasks: openTasks, profile: openProfile, chat: openChat,
+  perf() { const o = ['save', 'std', 'high'], n = o[(o.indexOf(perfMode()) + 1) % 3]; try { localStorage.hf_perf = n; } catch {}
+    toast(`${PERF_N[n]}模式：${n === 'save' ? '最省電、不發燙（關影子、降低解析度）' : n === 'std' ? '順暢又省電（建議）' : '畫面最漂亮，比較耗電'}，重新整理後套用`); rerenderModal(); setTimeout(() => location.reload(), 1600); },
   music() { const on = Music.toggle(); toast(on ? '🎵 聲音開' : '🔇 聲音關'); renderTop(); rerenderModal(); },
   more: openMore, wxInfo, dex(d) { openDex(d.t); }, claimAch(d) { return run(() => claimAch(d.id)); },
   pets: openPets, petPat(d) { return run(() => petPat(d.k)); }, petFeed(d) { return run(() => petFeed(d.k)); }, petGift(d) { return run(() => petGift(d.k)); },

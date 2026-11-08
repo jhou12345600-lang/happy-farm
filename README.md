@@ -51,3 +51,4 @@
 - 後台：Firebase（Authentication 帳號密碼 + Firestore）
 - `firestore.rules`：資料庫安全規則
 - 網址加 `?local&speed=60` 可用單機加速模式測試；單機模式還能加 `&date=2026-12-25&hour=21&wx=rain&fest=xmas` 模擬日期、時間、天氣、節日
+- ⚡ 效能：遠方景物分區塊繪製、低面數樹草，手機預設 30fps；選單「畫面」可切換 🔋省電／⚖️標準／✨高畫質，太卡時自動降低解析度，跳出視窗時降到 15fps
