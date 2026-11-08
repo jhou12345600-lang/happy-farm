@@ -6001,6 +6001,13 @@ function openMsgs() {
 }
 /* ----- 帳號安全：綁定 Email、忘記密碼、改密碼 ----- */
 const mailPend = () => { try { return store.getItem('hf_mailpend_' + S.uid) || ''; } catch { return ''; } };
+// 還沒綁 Email 的帳號：每 3 天提醒一次，忘記密碼時才救得回來
+function mailNag(uid) {
+  if (S.uid !== uid || S.mailB || !S.my || S.my.tut !== 'done' || !$('#modal').hidden) return;
+  const k = 'hf_mailnag_' + uid; try { if (Date.now() - (+store.getItem(k) || 0) < 3 * 864e5) return; store.setItem(k, Date.now()); } catch {}
+  S.modal = () => openModal('🔐 保護你的帳號', `<div class="popbox">你的帳號<b>還沒有綁定 Email</b>。<br>如果哪天忘記密碼，沒有 Email 就<b>沒辦法自己重設</b>，只能請管理員幫忙。<br><small>密碼不會被任何人看到，連管理員也查不到，所以綁一個 Email 最保險！</small></div><div class="mgbtn" style="display:flex;gap:8px;justify-content:center"><button class="b o" data-act="mailBind">📧 現在綁定</button><button class="b" data-act="close">以後再說</button></div>`);
+  S.modal();
+}
 function openMailBind() {
   S.modal = () => openModal('📧 綁定 Email', `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">綁定之後，忘記密碼時可以在登入畫面按「🔑 忘記密碼？」收重設密碼信。綁定後一樣用原本的帳號登入。<br>Email 只用來找回密碼，不會顯示給其他玩家。</p>
     <div class="field"><label>你的 Email</label><input id="mbMail" type="email" autocomplete="email" placeholder="例如 abc@gmail.com"></div><div class="field"><label>目前的密碼（確認是你本人）</label><input id="mbPass" type="password" autocomplete="current-password"></div>
@@ -6033,7 +6040,7 @@ async function forgotGo() {
   if (!B) return (msg.textContent = '還在連線，請稍等一下再試');
   msg.textContent = '處理中…';
   try { const m = await B.resetPass(name); msg.innerHTML = `✅ 重設密碼信已寄到 <b>${esc(m)}</b><br>打開信點連結設定新密碼，再回來用新密碼登入。沒看到記得看「垃圾郵件」。`; }
-  catch (e) { msg.innerHTML = e.message === 'NOMAIL' ? '😢 這個帳號還沒有綁定 Email，沒辦法自己重設密碼。<br>請聯絡遊戲管理員幫忙重設。<br><small>想起密碼登入後，記得到「個人資料 → 🔐 帳號安全」綁定 Email。</small>' : '❌ ' + esc(e.message); }
+  catch (e) { msg.innerHTML = e.message === 'NOMAIL' ? '😢 這個帳號還沒有綁定 Email，沒辦法自己重設密碼。<br>請聯絡遊戲管理員幫你<b>設定一組新密碼</b>（密碼本身沒有人查得到）。<br><small>想起密碼登入後，記得到「個人資料 → 🔐 帳號安全」綁定 Email。</small>' : '❌ ' + esc(e.message); }
 }
 function openProfile() {
   S.modal = () => {
@@ -7201,7 +7208,7 @@ async function onAuth(u) {
   else if (!r.abort && f.lastSign !== today()) toast(isNew ? '🎉 歡迎來到 3D 農場！' : `☀️ 每日簽到 +${SIGN_COINS} 金幣，記得看看今天的任務和訂單 📋`);
   refreshFriends();
   setTimeout(() => { if (S.my && S.uid === u.uid) giveGrants(); }, 6500);
-  S.mailB = ''; B.syncMail?.(S.my.username).then(m => { if (S.uid !== u.uid) return; S.mailB = m || ''; if (m && mailPend()) { toast('📧 Email 綁定完成！忘記密碼時可以收重設信'); try { store.removeItem('hf_mailpend_' + S.uid); } catch {} } }).catch(() => {});
+  S.mailB = ''; B.syncMail?.(S.my.username).then(m => { if (S.uid !== u.uid) return; S.mailB = m || ''; if (!m && !mailPend()) setTimeout(() => mailNag(u.uid), 9000); if (m && mailPend()) { toast('📧 Email 綁定完成！忘記密碼時可以收重設信'); try { store.removeItem('hf_mailpend_' + S.uid); } catch {} } }).catch(() => {});
 }
 let _tvT = 0;
 function travel(text, ms = 1500) {
