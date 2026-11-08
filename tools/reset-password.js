@@ -15,7 +15,8 @@ admin.initializeApp({ credential: admin.credential.cert(require(path.resolve(key
 
 (async () => {
   const key = name.trim().toLowerCase();                      // 跟遊戲裡的帳號比對方式一樣（不分大小寫）
-  const doc = await admin.firestore().doc('usernames/' + key).get();
+  const db = admin.firestore(); db.settings({ preferRest: true });   // 有些網路擋 gRPC，改用 REST 比較穩
+  const doc = await db.doc('usernames/' + key).get();
   if (!doc.exists) { console.log(`❌ 找不到帳號「${name}」`); process.exit(1); }
   const uid = doc.data().uid;
   const user = await admin.auth().getUser(uid);
