@@ -3243,6 +3243,18 @@ const DOCK_LIST = [
   ['d_sunfish', '曼波魚', '🐡', 4, [100, 280], 650, 'any', 'rain', {t:'fish', c:'#9e9e9e', c2:'#eeeeee', len:.5, h:.55}],
   ['d_giantg', '龍膽石斑', '🐠', 4, [100, 230], 680, 'night', 'any', {t:'fish', c:'#5d4037', c2:'#d7ccc8', spots:'#ffd54f', len:.8, h:.36}],
   ['d_oarfish', '皇帶魚', '🐉', 5, [250, 500], 1500, 'night', 'rain', {t:'eel', c:'#eceff1'}],
+  ['d_sardine', '沙丁魚', '🐟', 1, [12, 25], 8, 'any', 'any', {t:'fish', c:'#607d8b', c2:'#eceff1', len:.42, h:.14}],
+  ['d_mackerel', '鯖魚', '🐟', 1, [20, 40], 12, 'any', 'any', {t:'fish', c:'#2e7d6b', c2:'#e0f2f1', stripe:'#1b4d3e', len:.55, h:.17}],
+  ['d_shrimp', '明蝦', '🦐', 1, [12, 25], 18, 'night', 'any', {t:'shrimp', c:'#ff8a65'}],
+  ['d_crab', '花蟹', '🦀', 2, [10, 22], 35, 'night', 'any', {t:'crab', c:'#e65100'}],
+  ['d_flounder', '比目魚', '🐟', 2, [25, 55], 42, 'any', 'any', {t:'fish', c:'#a1887f', c2:'#efebe9', spots:'#6d4c41', len:.5, h:.34}],
+  ['d_redeye', '紅目鰱', '🐟', 2, [20, 40], 36, 'night', 'any', {t:'fish', c:'#e53935', c2:'#ffcdd2', len:.48, h:.26}],
+  ['d_snapper', '紅魽', '🐠', 3, [40, 90], 120, 'any', 'sun', {t:'fish', c:'#d84315', c2:'#ffccbc', len:.7, h:.28}],
+  ['d_amberjack', '紅甘', '🐟', 3, [50, 110], 135, 'day', 'any', {t:'fish', c:'#78909c', c2:'#fff8e1', stripe:'#fdd835', len:.75, h:.24}],
+  ['d_lobster', '龍蝦', '🦞', 3, [25, 50], 150, 'night', 'any', {t:'claw', c:'#c62828'}],
+  ['d_octopus', '章魚', '🐙', 3, [30, 80], 120, 'night', 'rain', {t:'squid', c:'#ad1457'}],
+  ['d_shark', '鯊魚', '🦈', 4, [150, 300], 800, 'any', 'any', {t:'fish', c:'#607d8b', c2:'#eceff1', fin:'#455a64', len:1, h:.26}],
+  ['d_coela', '腔棘魚', '🐟', 5, [120, 200], 2000, 'night', 'any', {t:'fish', c:'#1a237e', c2:'#7986cb', spots:'#e8eaf6', len:.8, h:.32}],
 ];
 const DFISH = {}; for (const [k, n, em, r, cm, base, when, wx, m] of DOCK_LIST) DFISH[k] = {k, n, em, r, cm, base, when, wx, m};
 const DOCK_JUNK = [['舊靴子', '👢'], ['空罐子', '🥫'], ['一團海草', '🌿'], ['破漁網', '🕸️']];
@@ -3260,9 +3272,21 @@ function rollFish() {
   return {k:F.k, n:F.n, em:F.em, r:F.r, cm, v:fishVal(F.k, cm)};
 }
 // ----- 3D 碼頭 -----
+// 會動的水面：用格子平面，頂點跟著時間上下起伏（只在那個場景時更新）
+function waveWater(w, h, color, opacity = .88, seg = 1.2) {
+  const g = new THREE.PlaneGeometry(w, h, Math.max(4, Math.round(w / seg)), Math.max(4, Math.round(h / seg)));
+  const m = new THREE.Mesh(g, new THREE.MeshPhongMaterial({color, transparent:true, opacity, shininess:110, specular:'#e3f2fd', flatShading:true}));
+  m.rotation.x = -Math.PI / 2; m.userData.base = g.attributes.position.array.slice(); m.userData.wave = 1; return m;
+}
+function waveTick(m, t, amp = .12) {
+  if (!m?.userData.wave) return; const p = m.geometry.attributes.position, a = p.array, b = m.userData.base;
+  for (let i = 0; i < a.length; i += 3) { const x = b[i], y = b[i + 1]; a[i + 2] = Math.sin(x * .55 + t * 1.6) * amp + Math.cos(y * .7 - t * 1.3) * amp * .8 + Math.sin((x + y) * .3 + t * .9) * amp * .5; }
+  p.needsUpdate = true; m.geometry.computeVertexNormals();
+}
 function buildDock(S3) {
   const X = DOCK_X;
-  const water = new THREE.Mesh(new THREE.PlaneGeometry(40, 23), new THREE.MeshPhongMaterial({color:'#2f8fd8', transparent:true, opacity:.88, shininess:80, specular:'#bbdefb'})); water.rotation.x = -Math.PI / 2; water.position.set(X, -.06, -11); S3.add(water); W.dockWater = water;
+  const water = waveWater(40, 23, '#2f8fd8'); water.position.set(X, -.08, -11); S3.add(water); W.dockWater = water;
+  W.dockSpkG = new THREE.Group(); S3.add(W.dockSpkG); W.dockSpk = []; for (let i = 0; i < 14; i++) { const sp = new THREE.Mesh(gS(), new THREE.MeshBasicMaterial({color:'#ffffff', transparent:true, opacity:.8})); sp.scale.set(.18, .03, .18); sp.position.set(X - 18 + (i * 7.3) % 36, .1, -2.5 - (i * 3.1) % 19); sp.userData.x0 = sp.position.x; W.dockSpkG.add(sp); W.dockSpk.push(sp); } W.dockWater = water;
   S3.add(blk('#e8d5a3', [36, .05, 2.2], [X, .02, .3]), blk('#f1e3bd', [36, .05, 8], [X, .015, 5.2]), blk('#d2b07a', [40, .05, 2], [X + 16, .03, 9.6]));
   // 棧橋
   const wood = '#a1764a', wood2 = '#8d6239';
@@ -3316,7 +3340,7 @@ function rodFrame(R, sp, ph, t, k) {
 }
 function fishTick(t, dt) {
   if (!W.rods) return;
-  if (W.dockWater) W.dockWater.position.y = -.07 + Math.sin(t * .8) * .012;
+  if (W.dockWater && S.place === 'dock') { waveTick(W.dockWater, t, .1); W.dockSpk.forEach((sp, i) => { const k = (t * .25 + i * .37) % 1; sp.material.opacity = Math.sin(k * Math.PI) * .85; sp.position.x = sp.userData.x0 + k * 1.6; sp.scale.set(.1 + k * .25, .03, .1 + k * .25); }); }
   (W.dockBoats || []).forEach((b, i) => { b.position.y = Math.sin(t * 1.2 + i * 2) * .06; b.rotation.z = Math.sin(t + i) * .04; });
   for (const N of W.dockNpc || []) { const u = N.m.userData; if (u.armR) { u.armR.rotation.z = -.9; u.armR.rotation.x = -.3 + Math.sin(t * .7 + N.ph) * .05; } }
   aqTick(t);
@@ -4740,7 +4764,7 @@ const isMobileDev = () => matchMedia('(pointer:coarse)').matches || innerWidth <
 const perfMode = () => { try { const v = localStorage.hf_perf; if (['save', 'std', 'high'].includes(v)) return v; } catch {} return 'std'; };
 const PERF_N = {save:'🔋 省電', std:'⚖️ 標準', high:'✨ 高畫質'};
 function mergeStatic(S3) {
-  const keep = new Set([W.aqHit, W.mkHit, W.musRoot, W.stableG, W.sky, W.sunBall, W.blades, W.trough, W.animalsG, W.petsG, W.peopleG, W.hoverRing, W.farmSign, W.ranchSign, W.fishSign, W.facSign, W.festSign, W.festG, W.stars, W.moon, W.rain, W.snow, W.pond,
+  const keep = new Set([W.aqHit, W.mkHit, W.musRoot, W.dockWater, W.dockSpkG, W.stableG, W.sky, W.sunBall, W.blades, W.trough, W.animalsG, W.petsG, W.peopleG, W.hoverRing, W.farmSign, W.ranchSign, W.fishSign, W.facSign, W.festSign, W.festG, W.stars, W.moon, W.rain, W.snow, W.pond,
     ...W.ripples, ...W.ponds.map(p => p.g), ...W.plots.map(p => p.g), ...W.poops, ...W.birds.map(b => b.b), ...W.clouds, ...W.flies.map(f => f.b), ...W.machs.map(m => m.g), ...W.ffly.map(f => f.m), ...(W.hens || []).map(h => h.m)].filter(Boolean));
   S3.updateMatrixWorld(true);
   const list = [];
