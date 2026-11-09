@@ -139,6 +139,7 @@ button{font-family:inherit;cursor:pointer;border:none}
 #chatBtn:active{transform:translateY(3px);box-shadow:0 1px 0 #e68a00}
 #wx{position:absolute;left:8px;top:50px;z-index:2;display:flex;gap:4px;flex-wrap:wrap;max-width:62%}
 #wx button{background:rgba(255,248,230,.92);color:#6b3f1d;font-weight:700;font-size:12px;padding:3px 9px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+#wx button.own{background:#5d4037;color:#ffe082;font-weight:900}
 #wx button.fest{background:linear-gradient(#ffe0b2,#ffb74d);color:#7a2e00}
 .dex{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px}
 .dex>div{background:#fff;border:2px solid #f1e2c4;border-radius:12px;padding:4px 2px;text-align:center;font-size:11px;font-weight:700;color:#5d3a12}
@@ -584,7 +585,7 @@ for (const [id, n, cat, lv, min0, m] of SEA_LIST) {
   const y = YIELD;
   SEA[id] = {n, cat, lv, t:min * 60, cost, y, sell:Math.max(2, Math.ceil((cost * 1.8 + min * 0.9) / y)), exp:Math.max(2, Math.round(2 + min * 0.07 + lv)), m};
 }
-const MAXPOND = 8, START_POND = 2;
+const MAXPOND = 11, START_POND = 2;
 const pondPrice = n => 800 * (n - 2);
 const pondLv = n => n * 2;
 const PETS = {};
@@ -806,7 +807,7 @@ const WHEEL = [
   {t:'30經驗', e:30, w:12, col:'#90caf9'}, {t:'200金幣', c:200, w:10, col:'#ef9a9a'},
   {t:'種子包', seed:3, w:10, col:'#c5e1a5'}, {t:'500金幣', c:500, w:5, col:'#ffd54f'},
 ];
-const MAXP = 18, START_P = 6, PER_A = YIELD, MAX_STOCK = YIELD * 3, MAX_POOP = 6;
+const MAXP = 21, START_P = 6, PER_A = YIELD, MAX_STOCK = YIELD * 3, MAX_POOP = 6;
 const FERT_PRICE = 30, FEED_PRICE = 5, CAUGHT_COINS = 50, CAUGHT_ITEMS = 10;
 const plotPrice = n => 500 + (n - 7) * 400;
 const plotLv = n => n - 5;
@@ -1294,6 +1295,7 @@ function normalize(f) {
   f.seeds ??= {}; f.wh ??= {}; f.friends ??= []; f.log ??= []; f.orders ??= []; f.ordersDone ??= 0;
   f.orders = f.orders.filter(o => RECIPES[o.r]); f.orders.forEach(o => { o.got ??= {}; });
   f.gacha ??= Math.max(0, levelOf(f.exp).L - 1); f.fry ??= {};
+  f.plots ??= []; while (f.plots.length < MAXP) f.plots.push({s:'empty'});
   f.fish ??= {n:START_POND, ponds:[]}; f.fish.n ??= START_POND; f.fish.ponds ??= [];
   while (f.fish.ponds.length < MAXPOND) f.fish.ponds.push({s:'empty'});
   f.fish.ponds = f.fish.ponds.map(q => q.s === 'grow' && !SEA[q.c] ? {s:'empty'} : q);
@@ -1922,14 +1924,15 @@ function machineModel(k) {
 
 /* ================= 角色服裝、交通工具 ================= */
 const LOOK_DEF = {boy:{top:'#f3ead8', bot:'#3f7d4e', hat:'straw', hc:'#b98a56', st:'overall', ac:'none'}, girl:{top:'#f6c531', bot:'#f6c531', hat:'knit', hc:'#f6c531', st:'dress', ac:'none'}};
-const STYLES = {boy:{overall:'👨‍🌾 吊帶褲', tee:'👕 T恤短褲', hoodie:'🧥 帽T', sport:'🏃 運動服', suit:'🤵 西裝', robe:'🥋 古裝長袍'}, girl:{dress:'👗 毛線洋裝', skirt:'👚 上衣短裙', pinafore:'🎽 吊帶裙', hoodie:'🧥 帽T', sport:'🏃 運動服', gown:'👸 公主禮服', robe:'🥋 古裝長袍'}};
-const ST_PRICE = {suit:1000, gown:2000, robe:1500};
-const ACCS = {none:'🙅 不戴', glasses:'👓 眼鏡', shades:'🕶️ 墨鏡', scarf:'🧣 圍巾', bag:'🎒 小背包', bow:'🎀 蝴蝶結', cape:'🦸 披風', wings:'👼 天使翅膀'};
-const AC_PRICE = {cape:1500, wings:5000};
+const ST_MORE = {chef:'👨‍🍳 廚師服', jersey:'🏀 球衣', pajama:'😴 睡衣', raincoat:'🌂 雨衣', kimono:'👘 浴衣', pirate:'🏴‍☠️ 海盜裝', knight:'🛡️ 騎士盔甲', astronaut:'🧑‍🚀 太空裝'};
+const STYLES = {boy:{overall:'👨‍🌾 吊帶褲', tee:'👕 T恤短褲', hoodie:'🧥 帽T', sport:'🏃 運動服', suit:'🤵 西裝', robe:'🥋 古裝長袍', ...ST_MORE}, girl:{dress:'👗 毛線洋裝', skirt:'👚 上衣短裙', pinafore:'🎽 吊帶裙', hoodie:'🧥 帽T', sport:'🏃 運動服', gown:'👸 公主禮服', robe:'🥋 古裝長袍', tutu:'🩰 芭蕾紗裙', qipao:'🏮 旗袍', ...ST_MORE}};
+const ST_PRICE = {suit:1000, gown:2000, robe:1500, chef:600, jersey:500, pajama:400, raincoat:800, kimono:1500, pirate:2500, knight:5000, astronaut:8000, tutu:1500, qipao:2000};
+const ACCS = {none:'🙅 不戴', glasses:'👓 眼鏡', shades:'🕶️ 墨鏡', scarf:'🧣 圍巾', bag:'🎒 小背包', bow:'🎀 蝴蝶結', cape:'🦸 披風', wings:'👼 天使翅膀', tie:'👔 領帶', necklace:'📿 珍珠項鍊', mask:'🎭 眼罩面具', headphones:'🎧 耳機', balloon:'🎈 氣球', guitar:'🎸 吉他'};
+const AC_PRICE = {cape:1500, wings:5000, tie:300, necklace:1000, mask:700, headphones:800, balloon:300, guitar:2000};
 const partPrice = (part, v) => part === 'hat' ? HAT_PRICE[v] : part === 'st' ? ST_PRICE[v] : part === 'ac' ? AC_PRICE[v] : 0;
 const partKey = (part, v) => part === 'hat' ? v : part + ':' + v;
-const HATS = {straw:'🌾 草帽', knit:'🧶 毛線漁夫帽', cap:'🧢 棒球帽', beanie:'🎿 毛帽', flower:'🌼 花圈', cowboy:'🤠 牛仔帽', crown:'👑 皇冠', none:'🙆 不戴帽子'};
-const HAT_PRICE = {cowboy:800, crown:3000};
+const HATS = {straw:'🌾 草帽', knit:'🧶 毛線漁夫帽', cap:'🧢 棒球帽', beanie:'🎿 毛帽', flower:'🌼 花圈', cowboy:'🤠 牛仔帽', crown:'👑 皇冠', party:'🥳 派對帽', beret:'🎨 貝雷帽', chef:'👨‍🍳 廚師帽', helmet:'⛑️ 安全帽', bunny:'🐰 兔耳髮箍', santa:'🎅 聖誕帽', witch:'🧙 魔法帽', tophat:'🎩 紳士高帽', pirate:'🏴‍☠️ 海盜帽', halo:'😇 天使光環', none:'🙆 不戴帽子'};
+const HAT_PRICE = {cowboy:800, crown:3000, party:300, beret:400, chef:400, helmet:300, bunny:500, santa:600, witch:900, tophat:1200, pirate:1500, halo:2000};
 const CLOTH_COL = ['#f3ead8', '#ffffff', '#f6c531', '#ff8a65', '#e53935', '#ec407a', '#ab47bc', '#5c6bc0', '#29b6f6', '#26a69a', '#3f7d4e', '#8d6e63', '#424242'];
 const lookOf = (g, lk) => { const gg = g === 'girl' ? 'girl' : 'boy', L = {...LOOK_DEF[gg], ...(lk || {})}; if (!STYLES[gg][L.st]) L.st = LOOK_DEF[gg].st; if (!ACCS[L.ac]) L.ac = 'none'; return L; };
 const lookKey = lk => lk ? [lk.top, lk.bot, lk.hat, lk.hc, lk.st || '', lk.ac || ''].join(',') : '';
@@ -1943,6 +1946,16 @@ function hatOn(head, style, c) {
   else if (style === 'beanie') head.add(ball(c, [.36, .3, .36], [-.03, .17, 0]), rod(darken(c, .2), [.37, .09, .37], [-.03, .1, 0]), ball('#ffffff', U(.09), [-.03, .48, 0]));
   else if (style === 'flower') { for (let k = 0; k < 9; k++) { const a = k / 9 * Math.PI * 2; head.add(ball(['#ff80ab', '#ffeb3b', '#ffffff', '#ba68c8'][k % 4], U(.06), [-.02 + Math.cos(a) * .31, .19, Math.sin(a) * .31]), ball('#66bb6a', [.06, .02, .03], [-.02 + Math.cos(a + .35) * .32, .17, Math.sin(a + .35) * .32])); } }
   else if (style === 'cowboy') head.add(rod(c, [.7, .03, .7], [-.02, .19, 0]), blk(c, [.6, .03, .14], [-.02, .24, .33], [-.7, 0, 0]), blk(c, [.6, .03, .14], [-.02, .24, -.33], [.7, 0, 0]), rod(c, [.26, .24, .26], [-.03, .33, 0]), rod('#5d4037', [.265, .05, .265], [-.03, .25, 0]), blk(darken(c, .15), [.25, .03, .06], [-.03, .45, 0]));
+  else if (style === 'party') head.add(cone(c, [.17, .42, .17], [-.03, .46, 0]), ball('#fff59d', U(.06), [-.03, .69, 0]), rod(lighten(c, .4), [.172, .04, .172], [-.03, .3, 0]));
+  else if (style === 'beret') head.add(ball(c, [.37, .1, .37], [-.07, .28, 0], [0, 0, .25]), rod(darken(c, .2), [.03, .06, .03], [-.08, .37, 0]));
+  else if (style === 'chef') head.add(rod('#ffffff', [.3, .13, .3], [-.03, .26, 0]), ball('#ffffff', [.37, .24, .37], [-.03, .45, 0]), ball('#ffffff', U(.14), [-.03, .55, .15]), ball('#ffffff', U(.14), [-.03, .55, -.15]));
+  else if (style === 'helmet') head.add(ball(c, [.37, .25, .37], [-.03, .19, 0]), blk(c, [.13, .03, .4], [.3, .13, 0]), blk(darken(c, .12), [.34, .05, .07], [-.03, .43, 0]));
+  else if (style === 'bunny') { head.add(rod(c, [.34, .03, .34], [-.03, .24, 0])); for (const z of [.12, -.12]) head.add(ball('#ffffff', [.06, .25, .085], [-.05, .52, z], [z > 0 ? .15 : -.15, 0, 0]), ball('#f8bbd0', [.02, .18, .05], [0, .52, z], [z > 0 ? .15 : -.15, 0, 0])); }
+  else if (style === 'santa') head.add(cone('#e53935', [.3, .5, .3], [-.12, .44, 0], [0, 0, .55]), rod('#ffffff', [.34, .08, .34], [-.03, .22, 0]), ball('#ffffff', U(.07), [-.36, .58, 0]));
+  else if (style === 'witch') head.add(rod(c, [.62, .03, .62], [-.02, .2, 0]), cone(c, [.26, .58, .26], [-.07, .5, 0], [0, 0, .28]), rod('#fdd835', [.265, .05, .265], [-.03, .25, 0]));
+  else if (style === 'tophat') head.add(rod('#212121', [.44, .03, .44], [-.02, .22, 0]), rod('#212121', [.25, .36, .25], [-.03, .41, 0]), rod(c, [.255, .06, .255], [-.03, .28, 0]));
+  else if (style === 'pirate') head.add(ball('#212121', [.22, .16, .52], [-.03, .3, 0]), ball('#ffffff', U(.045), [.16, .33, 0]), blk('#ffffff', [.02, .015, .08], [.2, .29, 0]), rod('#c62828', [.35, .05, .35], [-.03, .2, 0]));
+  else if (style === 'halo') { const h = ring('#ffd54f', [.18, .18, .25], [-.02, .52, 0], [Math.PI / 2, 0, 0]); h.material = new THREE.MeshBasicMaterial({color:'#ffe082'}); head.add(h); }
   else if (style === 'crown') { head.add(rod('#ffca28', [.24, .12, .24], [-.03, .29, 0])); for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2; head.add(cone('#ffca28', [.05, .13, .05], [-.03 + Math.cos(a) * .2, .41, Math.sin(a) * .2]), ball(['#e53935', '#1e88e5', '#43a047'][k % 3], U(.03), [-.03 + Math.cos(a) * .24, .29, Math.sin(a) * .24])); } }
 }
 const VEH_LIST = [
@@ -2105,6 +2118,27 @@ function outfitBody(G, girl, L, fork) {
   else if (st === 'gown') { legs(SKIN, null, '#f8bbd0'); arms(T);
     add(M(gBucket(), T, [.36, .52, .34], [0, .45, 0], [Math.PI, 0, 0]), ...[.22, .36, .5].map((y, i) => ring(lighten(T, .35), [.34 - i * .05, .34 - i * .05, .3], [0, y, 0], [Math.PI / 2, 0, 0])), rod(T, [.15, .2, .14], [0, .8, 0]),
       ball(lighten(T, .2), U(.09), [0, .87, .2]), ball(lighten(T, .2), U(.09), [0, .87, -.2]), ball('#ffffff', [.04, .05, .1], [.16, .86, 0]), ball('#fff59d', U(.03), [.18, .7, 0])); }
+  else if (st === 'chef') { legs('#424242', null, '#212121'); arms('#ffffff');
+    add(rod('#424242', [.2, .12, .17], [0, .5, 0]), rod('#ffffff', [.22, .38, .19], [0, .71, 0]), blk(T, [.02, .3, .17], [.21, .58, 0]), rod('#c62828', [.16, .05, .16], [0, .91, 0]), ...[[.8, .05], [.8, -.05], [.7, .05], [.7, -.05]].map(([y, z]) => ball('#212121', U(.018), [.215, y, z]))); }
+  else if (st === 'jersey') { legs(SKIN, '#ffffff', '#212121'); for (const l of [legL, legR]) l.add(rod(Bt, [.085, .14, .085], [0, -.05, 0])); armR = chibiArm(girl ? .22 : .23, SKIN, SKIN); armL = chibiArm(girl ? -.22 : -.23, SKIN, SKIN, fork);
+    add(rod(Bt, [.21, .13, .18], [0, .48, 0]), rod(T, [.2, .35, .17], [0, .72, 0]), blk('#ffffff', [.02, .13, .1], [.2, .73, 0]), blk(T, [.022, .09, .02], [.205, .73, -.015]), blk(T, [.022, .09, .02], [.205, .73, .02]), rod('#ffffff', [.16, .04, .16], [0, .9, 0])); }
+  else if (st === 'pajama') { legs(Bt, null, '#f48fb1'); arms(T);
+    add(rod(Bt, [.2, .14, .17], [0, .5, 0]), rod(T, [.21, .36, .18], [0, .7, 0]), rod(lighten(T, .4), [.16, .05, .16], [0, .9, 0]), ...[0, 1, 2, 3, 4, 5].map(i => ball(lighten(T, .5), U(.025), [Math.cos(i) * .2, .6 + (i % 3) * .1, Math.sin(i) * .17]))); }
+  else if (st === 'raincoat') { legs(Bt, null, '#fdd835'); arms(T);
+    add(M(gBucket(), T, [.25, .42, .23], [0, .62, 0], [Math.PI, 0, 0]), rod(T, [.18, .2, .16], [0, .82, 0]), ball(T, [.14, .16, .23], [-.2, .96, 0]), ...[.82, .7, .58].map(y => ball('#ffffff', U(.022), [.22, y, 0]))); }
+  else if (st === 'kimono') { legs(SKIN, '#ffffff', '#8d6e63'); arms(T, true);
+    add(M(gBucket(), T, [.25, .5, .23], [0, .55, 0], [Math.PI, 0, 0]), rod(T, [.18, .22, .16], [0, .8, 0]), rod(Bt, [.21, .09, .19], [0, .66, 0]), ball(Bt, [.06, .09, .15], [-.21, .66, 0]), blk('#ffffff', [.02, .2, .03], [.18, .82, .04], [.5, 0, 0]), blk('#ffffff', [.02, .2, .03], [.18, .82, -.04], [-.5, 0, 0]),
+      ...[0, 1, 2, 3, 4].map(i => ball(lighten(T, .45), U(.03), [Math.cos(i * 1.3) * .22, .45 + (i % 2) * .12, Math.sin(i * 1.3) * .2]))); }
+  else if (st === 'pirate') { legs(Bt, null, '#3e2723'); for (const l of [legL, legR]) l.add(rod('#3e2723', [.085, .12, .085], [0, -.24, 0])); arms('#ffffff', true);
+    add(rod(Bt, [.2, .14, .17], [0, .5, 0]), rod('#ffffff', [.2, .36, .17], [0, .72, 0]), blk(T, [.03, .3, .06], [.18, .72, .11]), blk(T, [.03, .3, .06], [.18, .72, -.11]), rod('#c62828', [.21, .07, .18], [0, .57, 0]), ball('#c62828', [.04, .06, .08], [.19, .52, .1])); }
+  else if (st === 'knight') { legs('#90a4ae', null, '#607d8b'); arms('#b0bec5');
+    add(rod('#90a4ae', [.21, .14, .18], [0, .5, 0]), rod('#b0bec5', [.22, .38, .19], [0, .71, 0]), blk(T, [.02, .36, .17], [.21, .64, 0]), blk('#fdd835', [.022, .2, .03], [.215, .68, 0]), blk('#fdd835', [.022, .03, .12], [.215, .73, 0]), rod('#5d4037', [.225, .05, .195], [0, .53, 0]), ball('#b0bec5', [.12, .07, .12], [0, .88, .2]), ball('#b0bec5', [.12, .07, .12], [0, .88, -.2])); }
+  else if (st === 'astronaut') { legs('#eceff1', null, '#9e9e9e'); arms('#eceff1');
+    add(rod('#eceff1', [.22, .16, .19], [0, .5, 0]), rod('#eceff1', [.24, .4, .21], [0, .7, 0]), blk('#cfd8dc', [.13, .32, .28], [-.24, .72, 0]), blk(T, [.02, .12, .15], [.235, .74, 0]), ...[[.77, .04, '#e53935'], [.77, -.03, '#43a047'], [.71, .04, '#1e88e5']].map(([y, z, c]) => ball(c, U(.02), [.25, y, z])), rod('#90a4ae', [.19, .05, .19], [0, .92, 0])); }
+  else if (st === 'tutu') { legs(SKIN, '#ffffff', '#f8bbd0'); arms(T);
+    add(rod(T, [.16, .24, .14], [0, .77, 0]), ...[0, 1, 2].map(i => rod(lighten(T, .25 + i * .12), [.36 - i * .05, .04, .36 - i * .05], [0, .58 + i * .04, 0])), ball('#ffffff', U(.035), [.16, .86, 0])); }
+  else if (st === 'qipao') { legs(SKIN, null, '#c62828'); arms(T);
+    add(M(gBucket(), T, [.21, .52, .19], [0, .6, 0], [Math.PI, 0, 0]), rod(T, [.17, .2, .15], [0, .82, 0]), rod(T, [.09, .07, .09], [0, .94, 0]), blk('#fdd835', [.02, .14, .02], [.17, .86, .05], [.7, 0, 0]), ...[.8, .7].map(y => ball('#fdd835', U(.02), [.17, y, .07])), ...[0, 1, 2].map(i => ball(lighten(T, .4), U(.035), [.17, .5 + i * .1, -.05]))); }
   else { legs(Bt, null, '#4e342e'); arms(T, true);
     add(M(gBucket(), T, [.29, .5, .27], [0, .5, 0], [Math.PI, 0, 0]), rod(T, [.18, .24, .16], [0, .8, 0]), rod(Bt, [.2, .07, .2], [0, .62, 0]), blk('#ffffff', [.02, .2, .03], [.18, .82, .04], [.5, 0, 0]), blk('#ffffff', [.02, .2, .03], [.18, .82, -.04], [-.5, 0, 0]), blk(Bt, [.02, .2, .05], [.2, .5, 0])); }
   add(legL, legR, armR, armL);
@@ -2118,6 +2152,12 @@ function accOn(G, head, ac) {
   else if (ac === 'bag') G.add(blk('#8d6e63', [.12, .26, .24], [-.19, .72, 0]), blk('#6d4c41', [.13, .08, .25], [-.19, .8, 0]), blk('#ffca28', [.02, .04, .04], [-.25, .75, 0]), blk('#6d4c41', [.22, .03, .03], [-.05, .82, .1], [0, 0, -.5]), blk('#6d4c41', [.22, .03, .03], [-.05, .82, -.1], [0, 0, -.5]));
   else if (ac === 'bow') head.add(ball('#e91e63', [.05, .08, .1], [-.05, .27, .2], [.4, 0, 0]), ball('#e91e63', [.05, .08, .1], [-.05, .2, .32], [-.6, 0, 0]), ball('#c2185b', U(.04), [-.05, .24, .26]));
   else if (ac === 'cape') G.add(blk('#7b1fa2', [.03, .62, .34], [-.17, .6, 0], [0, 0, -.14]), blk('#7b1fa2', [.03, .5, .2], [-.21, .58, .2], [-.25, 0, -.14]), blk('#7b1fa2', [.03, .5, .2], [-.21, .58, -.2], [.25, 0, -.14]), rod('#ffca28', [.19, .05, .19], [0, .92, 0]));
+  else if (ac === 'tie') G.add(blk('#c62828', [.02, .22, .05], [.2, .73, 0]), blk('#b71c1c', [.025, .05, .07], [.205, .86, 0]), cone('#c62828', [.035, .05, .025], [.2, .6, 0], [Math.PI, 0, 0]));
+  else if (ac === 'necklace') { G.add(ring('#fafafa', [.17, .17, .14], [.02, .9, 0], [Math.PI / 2, 0, 0])); for (let i = 0; i < 3; i++) G.add(ball('#ffffff', U(.025), [.19, .86 - i * .04, 0])); }
+  else if (ac === 'mask') head.add(blk('#7b1fa2', [.02, .09, .34], [.335, .03, 0]), ...[.12, -.12].map(z => ball('#212121', [.015, .03, .045], [.346, .03, z])), blk('#fdd835', [.022, .015, .34], [.338, .08, 0]));
+  else if (ac === 'headphones') head.add(ring('#212121', [.36, .36, .3], [-.03, .05, 0], [0, Math.PI / 2, 0]), ...[.35, -.35].map(z => ball('#e53935', [.08, .11, .06], [0, 0, z])));
+  else if (ac === 'balloon') G.add(rod('#eeeeee', [.006, .62, .006], [.08, 1.0, .33]), ball('#e53935', [.15, .19, .15], [.08, 1.43, .33]), cone('#e53935', [.03, .04, .03], [.08, 1.23, .33], [Math.PI, 0, 0]));
+  else if (ac === 'guitar') { const gt = grp(ball('#d84315', [.05, .17, .15], [0, -.12, 0]), ball('#d84315', [.05, .12, .11], [0, .1, 0]), ball('#3e2723', U(.04), [.03, -.05, 0]), rod('#5d4037', [.02, .32, .02], [0, .36, 0]), blk('#3e2723', [.03, .07, .05], [0, .55, 0])); gt.position.set(-.23, .72, 0); gt.rotation.x = .6; G.add(gt); }
   else if (ac === 'wings') { for (const sz of [1, -1]) G.add(ball('#ffffff', [.04, .3, .17], [-.24, .88, sz * .18], [sz * .55, 0, -.2]), ball('#f5f5f5', [.04, .2, .12], [-.24, .66, sz * .2], [sz * .9, 0, -.2])); head.add(ring('#ffd54f', [.17, .17, .2], [-.02, .47, 0], [Math.PI / 2, 0, 0])); }
 }
 function charModel(g, uid = '', lk = null) {
@@ -2190,8 +2230,8 @@ const W = {};
 const FARM_T = new THREE.Vector3(0, 0, .8), RANCH_T = new THREE.Vector3(24, 0, .8), FISH_T = new THREE.Vector3(-30, 0, .8), TOWN_T = new THREE.Vector3(76, 0, .8), GREEN_T = new THREE.Vector3(-52, 0, .8), TEMPLE_T = new THREE.Vector3(101, 0, -.6), STABLE_T = new THREE.Vector3(-80, 0, -1.2);
 const DOCK_T = new THREE.Vector3(-114, 0, -3.6); const HOME_T = new THREE.Vector3(0, -60, 0);
 const SCENE_T = {home:HOME_T, museum:new THREE.Vector3(160, 0, -1), market:new THREE.Vector3(128, 0, -.4), dock:DOCK_T, farm:FARM_T, ranch:RANCH_T, fish:FISH_T, factory:new THREE.Vector3(50, 0, .8), town:TOWN_T, green:GREEN_T, temple:TEMPLE_T, stable:STABLE_T};
-const pondXZ = i => { const r = Math.floor(i / 4), c = i % 4; return [-30 + (c - 1.5) * 4.3, (r - .5) * 4.6 + .4]; };
-const plotXZ = i => { const r = Math.floor(i / 6), c = i % 6; return [(c - 2.5) * 2.75, (r - 1) * 2.75 - .3]; };
+const pondXZ = i => { const r = Math.floor(i / 4), c = i % 4; return [-30 + (c - 1.5) * 4.3, (r - 1) * 4 + .4]; };
+const plotXZ = i => { const r = Math.floor(i / 7), c = i % 7; return [(c - 3) * 2.6, (r - 1) * 2.75 - .3]; };
 const aniHome = i => { const r = Math.floor(i / 4), c = i % 4; return [24 + (c - 1.5) * 3.5, .3 + (r - 1.5) * 2.7]; };
 const POOP_XZ = [[20.5, -1.2], [27.6, 1.6], [22.3, 3.4], [26, -3.6], [19.6, 4.6], [29.6, -1.6]];
 const TROUGH_XZ = [31.2, 5];
@@ -3897,7 +3937,10 @@ const PACC = {
   halo:{n:'天使光環', em:'😇', slot:'top', st:['magic', 'elegant'], c:1200}, straw:{n:'小草帽', em:'👒', slot:'top', st:['nature'], c:400}, cowboy:{n:'牛仔帽', em:'🤠', slot:'top', st:['cool'], c:700},
   glasses:{n:'墨鏡', em:'🕶️', slot:'face', st:['cool'], c:500}, heartgl:{n:'愛心眼鏡', em:'😍', slot:'face', st:['cute', 'funny'], c:600}, roundgl:{n:'圓框眼鏡', em:'👓', slot:'face', st:['elegant'], c:500}, mustache:{n:'小鬍子', em:'🥸', slot:'face', st:['funny'], c:300},
   bowtie:{n:'紳士領結', em:'🎩', slot:'neck', st:['elegant', 'cool'], c:400}, scarf:{n:'圍巾', em:'🧣', slot:'neck', st:['cute', 'nature'], c:500}, bell:{n:'鈴鐺項圈', em:'🔔', slot:'neck', st:['cute', 'festive'], c:400}, pearl:{n:'珍珠項鍊', em:'📿', slot:'neck', st:['elegant'], c:1000}, lei:{n:'花環項鍊', em:'🌺', slot:'neck', st:['nature', 'festive'], c:600},
-  cape:{n:'英雄披風', em:'🦸', slot:'back', st:['cool', 'magic'], c:900}, wings:{n:'天使翅膀', em:'🪽', slot:'back', st:['magic', 'cute'], c:1300}, bfly:{n:'蝴蝶翅膀', em:'🦋', slot:'back', st:['nature', 'magic'], c:1100}, bag:{n:'小背包', em:'🎒', slot:'back', st:['cute', 'nature'], c:500},
+  chefhat:{n:'小廚師帽', em:'👨‍🍳', slot:'top', st:['cute', 'funny'], c:500}, beret:{n:'貝雷帽', em:'🎨', slot:'top', st:['elegant'], c:600}, pirate:{n:'海盜帽', em:'🏴‍☠️', slot:'top', st:['cool', 'funny'], c:900}, antenna:{n:'外星觸角', em:'👽', slot:'top', st:['funny', 'magic'], c:700}, tophat:{n:'紳士高帽', em:'🎩', slot:'top', st:['elegant', 'cool'], c:1100}, sunflower:{n:'向日葵', em:'🌻', slot:'top', st:['nature', 'cute'], c:500},
+  monocle:{n:'單片眼鏡', em:'🧐', slot:'face', st:['elegant'], c:800}, stargl:{n:'星星眼鏡', em:'🤩', slot:'face', st:['festive', 'funny'], c:600}, clown:{n:'小丑鼻', em:'🤡', slot:'face', st:['funny'], c:300},
+  tie:{n:'領帶', em:'👔', slot:'neck', st:['cool', 'elegant'], c:400}, bandana:{n:'牛仔領巾', em:'🧣', slot:'neck', st:['cool', 'nature'], c:400}, medal:{n:'金牌', em:'🥇', slot:'neck', st:['cool', 'festive'], c:1200},
+  cape:{n:'英雄披風', em:'🦸', slot:'back', st:['cool', 'magic'], c:900}, devil:{n:'小惡魔翅膀', em:'😈', slot:'back', st:['cool', 'magic'], c:1200}, shell:{n:'烏龜殼', em:'🐢', slot:'back', st:['funny', 'nature'], c:700}, balloon:{n:'愛心氣球', em:'🎈', slot:'back', st:['festive', 'cute'], c:500}, jetpack:{n:'火箭背包', em:'🚀', slot:'back', st:['cool', 'funny'], c:1500}, wings:{n:'天使翅膀', em:'🪽', slot:'back', st:['magic', 'cute'], c:1300}, bfly:{n:'蝴蝶翅膀', em:'🦋', slot:'back', st:['nature', 'magic'], c:1100}, bag:{n:'小背包', em:'🎒', slot:'back', st:['cute', 'nature'], c:500},
 };
 const PSLOT_N = {top:'頭上', face:'臉', neck:'脖子', back:'背上'};
 const PS_JUDGES = [['阿土伯', ['nature'], '有鄉下味，我喜歡！'], ['美玉姨', ['elegant'], '好有氣質喔～'], ['小豆', ['funny'], '哈哈哈太好笑了！'], ['阿德師', ['cool'], '帥！'], ['阿海伯', ['nature', 'cool'], '像海邊的男子漢'], ['茉莉', ['cute'], '可愛到融化了～'],
@@ -3954,15 +3997,27 @@ function petAccMesh(m, on) {
   if (top === 'santa') add(head, grp(cone('#e53935', [r * .45, r * 1, r * .45], [hx - r * .1, hy + r * .5, 0], [0, 0, .45]), rod('#fafafa', [r * .5, r * .15, r * .5], [hx, hy + r * .02, 0]), ball('#fafafa', U(r * .15), [hx - r * .55, hy + r * .9, 0])));
   if (top === 'halo') { const h = ring('#ffd54f', [r * .45, r * .45, r * .3], [hx, hy + r * .6, 0], [Math.PI / 2, 0, 0]); h.material = new THREE.MeshBasicMaterial({color:'#ffe082'}); add(head, h); }
   if (top === 'straw') add(head, grp(brim('#e6c870', .95), rod('#e6c870', [r * .45, r * .3, r * .45], [hx, hy + r * .15, 0]), rod('#e53935', [r * .47, r * .08, r * .47], [hx, hy + r * .07, 0])));
+  if (top === 'chefhat') add(head, grp(rod('#ffffff', [r * .42, r * .25, r * .42], [hx, hy + r * .12, 0]), ball('#ffffff', [r * .55, r * .38, r * .55], [hx, hy + r * .45, 0])));
+  if (top === 'beret') add(head, grp(ball('#c62828', [r * .62, r * .16, r * .62], [hx - r * .08, hy + r * .05, 0], [0, 0, .25]), rod('#7f0000', [r * .05, r * .1, r * .05], [hx - r * .1, hy + r * .2, 0])));
+  if (top === 'pirate') add(head, grp(ball('#212121', [r * .35, r * .25, r * .85], [hx, hy + r * .18, 0]), ball('#ffffff', U(r * .08), [hx + r * .3, hy + r * .22, 0])));
+  if (top === 'antenna') add(head, grp(rod('#7cb342', [r * .1, r * .1, r * .9], [hx, hy - r * .02, 0], [Math.PI / 2, 0, 0]), ...[-1, 1].flatMap(sg => [rod('#7cb342', [r * .04, r * .55, r * .04], [hx, hy + r * .3, sg * r * .3], [sg * .3, 0, 0]), ball('#c6ff00', U(r * .13), [hx, hy + r * .6, sg * r * .4])])));
+  if (top === 'tophat') add(head, grp(brim('#212121', .65), rod('#212121', [r * .38, r * .6, r * .38], [hx, hy + r * .32, 0]), rod('#c62828', [r * .39, r * .1, r * .39], [hx, hy + r * .1, 0])));
+  if (top === 'sunflower') { const g = new THREE.Group(); for (let i = 0; i < 10; i++) { const a = i / 10 * 6.28; g.add(ball('#fdd835', [r * .14, r * .06, r * .22], [Math.cos(a) * r * .32, 0, Math.sin(a) * r * .32], [0, -a, 0])); } g.add(ball('#5d4037', [r * .26, r * .1, r * .26])); g.position.set(hx + r * .1, hy + r * .1, r * .3); g.rotation.x = .3; add(head, g); }
   if (top === 'cowboy') add(head, grp(brim('#8d6e63', .9), rod('#795548', [r * .42, r * .38, r * .42], [hx, hy + r * .2, 0]), rod('#3e2723', [r * .44, r * .08, r * .44], [hx, hy + r * .08, 0]), ...[-1, 1].map(s => blk('#8d6e63', [r * .9, r * .05, r * .2], [hx, hy + r * .1, s * r * .82], [s * .4, 0, 0]))));
   const F = head.userData.face || {ex:r * .9, ey:r * .25, ez:r * .3, nx:r * 1.1, ny:-r * .1}, e = F.ez, gx = F.ex + e * .32;
   if (face === 'glasses') add(head, grp(...[-1, 1].map(z => blk('#212121', [e * .18, e * .8, e * 1.05], [gx, F.ey, z * F.ez])), blk('#212121', [e * .1, e * .14, e * .9], [gx, F.ey + e * .2, 0])));
   if (face === 'heartgl') add(head, grp(...[-1, 1].flatMap(z => [ball('#ec407a', [e * .12, e * .32, e * .3], [gx, F.ey + e * .1, z * F.ez - e * .2]), ball('#ec407a', [e * .12, e * .32, e * .3], [gx, F.ey + e * .1, z * F.ez + e * .2]), cone('#ec407a', [e * .4, e * .5, e * .12], [gx, F.ey - e * .25, z * F.ez], [Math.PI, Math.PI / 2, 0])]), blk('#ad1457', [e * .1, e * .12, e * .8], [gx, F.ey + e * .15, 0])));
   if (face === 'roundgl') add(head, grp(...[-1, 1].map(z => ring('#5d4037', [e * .48, e * .48, e * .6], [gx, F.ey, z * F.ez], [0, Math.PI / 2, 0])), blk('#5d4037', [e * .1, e * .1, e * .55], [gx, F.ey + e * .1, 0])));
+  if (face === 'monocle') add(head, grp(ring('#fdd835', [e * .5, e * .5, e * .6], [gx, F.ey, F.ez], [0, Math.PI / 2, 0]), rod('#fdd835', [e * .03, e * 1.2, e * .03], [gx, F.ey - e * .8, F.ez + e * .3], [.4, 0, 0])));
+  if (face === 'stargl') add(head, grp(...[-1, 1].map(z => { const st = new THREE.Group(); for (let i = 0; i < 5; i++) { const a = i / 5 * 6.28 + Math.PI / 2; st.add(cone('#ffca28', [e * .14, e * .35, e * .1], [0, Math.sin(a) * e * .28, Math.cos(a) * e * .28], [a - Math.PI / 2, 0, 0])); } st.add(ball('#ffca28', [e * .1, e * .32, e * .32])); st.position.set(gx, F.ey, z * F.ez); st.rotation.y = 0; return st; }), blk('#ffa000', [e * .1, e * .1, e * .6], [gx, F.ey + e * .1, 0])));
+  if (face === 'clown') add(head, ball('#e53935', U(e * .5), [F.nx + e * .2, F.ny + e * .1, 0]));
   if (face === 'mustache') add(head, grp(...[-1, 1].map(z => ball('#3e2723', [e * .2, e * .22, e * .6], [F.nx - e * .1, F.ny - e * .45, z * e * .45], [z * .35, 0, 0]))));
   const body = m; const nx = (head.position.x - r * .5), ny = head.position.y - r * .9, collar = c => ring(c, [r * .72, r * .72, r * .9], [nx + r * .1, ny + r * .1, 0], [0, 0, Math.PI / 2 - .35]);
   if (neck === 'bowtie') add(body, grp(cone('#e53935', [r * .3, r * .35, r * .3], [nx + r * .3, ny, r * .25], [Math.PI / 2, 0, 0]), cone('#e53935', [r * .3, r * .35, r * .3], [nx + r * .3, ny, -r * .25], [-Math.PI / 2, 0, 0]), ball('#b71c1c', U(r * .13), [nx + r * .32, ny, 0])));
   if (neck === 'scarf') add(body, grp(ring('#ef5350', [r * .75, r * .75, r * 1.1], [nx + r * .1, ny + r * .1, 0], [0, 0, Math.PI / 2 - .35]), blk('#ef5350', [r * .25, r * .7, r * .1], [nx + r * .35, ny - r * .35, r * .3])));
+  if (neck === 'tie') add(body, grp(collar('#fafafa'), blk('#1e88e5', [r * .1, r * .55, r * .2], [nx + r * .45, ny - r * .3, 0], [0, 0, -.3]), blk('#1565c0', [r * .12, r * .14, r * .25], [nx + r * .4, ny + r * .02, 0])));
+  if (neck === 'bandana') add(body, grp(collar('#e53935'), cone('#e53935', [r * .4, r * .5, r * .1], [nx + r * .38, ny - r * .2, 0], [Math.PI, 0, -.4]), ...[0, 1, 2].map(i => ball('#ffffff', U(r * .05), [nx + r * .4, ny - r * .1 - i * r * .1, (i - 1) * r * .1]))));
+  if (neck === 'medal') add(body, grp(collar('#1e88e5'), ball('#fdd835', [r * .08, r * .25, r * .25], [nx + r * .45, ny - r * .3, 0]), ball('#ffa000', [r * .09, r * .12, r * .12], [nx + r * .46, ny - r * .3, 0])));
   if (neck === 'bell') add(body, grp(collar('#e53935'), ball('#fdd835', U(r * .17), [nx + r * .42, ny - r * .18, 0])));
   if (neck === 'pearl') { const g = grp(collar('#fafafa')); for (let i = 0; i < 3; i++) g.add(ball('#ffffff', U(r * .09), [nx + r * .4, ny - r * .1 - i * r * .14, 0])); add(body, g); }
   if (neck === 'lei') { const g = new THREE.Group(); for (let i = 0; i < 12; i++) { const a = i / 12 * 6.28; g.add(ball(['#ff7043', '#f06292', '#fff176', '#ba68c8'][i % 4], U(r * .14), [Math.cos(a) * r * .25, Math.cos(a) * r * .68, Math.sin(a) * r * .7])); } g.position.set(nx + r * .15, ny + r * .05, 0); g.rotation.z = .35; add(body, g); }
@@ -3970,6 +4025,10 @@ function petAccMesh(m, on) {
     if (back === 'cape') add(body, grp(blk('#c62828', [r * 2.6, r * .08, r * 1.7], [nx - r * 1.2, tp - r * .55, 0], [0, 0, .1]), blk('#fdd835', [r * .22, r * .1, r * 1.75], [nx - r * .05, tp - r * .45, 0]), blk('#c62828', [r * .8, r * .9, r * .06], [nx - r * 2.3, tp - r * .9, r * .82]), blk('#c62828', [r * .8, r * .9, r * .06], [nx - r * 2.3, tp - r * .9, -r * .82])));
     if (back === 'wings') add(body, grp(...[-1, 1].flatMap(sg => [ball('#ffffff', [r * .75, r * .16, r * 1.0], [bx, tp + r * .15, sg * r * .95], [sg * .55, 0, .35]), ball('#e3f2fd', [r * .5, r * .14, r * .7], [bx - r * .45, tp + r * .35, sg * r * 1.3], [sg * .75, 0, .35])])));
     if (back === 'bfly') add(body, grp(...[-1, 1].flatMap(s => [ball('#ba68c8', [r * .55, r * .08, r * .7], [bx + r * .15, tp - r * .05, s * r * .75], [s * .6, 0, -.2]), ball('#ffb74d', [r * .4, r * .07, r * .45], [bx - r * .45, tp - r * .15, s * r * .65], [s * .6, 0, .2]), ball('#fff176', U(r * .1), [bx + r * .15, tp + r * .05, s * r * .85])])));
+    if (back === 'devil') add(body, grp(...[-1, 1].flatMap(sg => [ball('#4a148c', [r * .4, r * .1, r * .65], [bx, tp + r * .05, sg * r * .7], [sg * .7, 0, .3]), cone('#6a1b9a', [r * .14, r * .4, r * .14], [bx - r * .1, tp + r * .35, sg * r * 1.0], [sg * .9, 0, 0])]), cone('#e53935', [r * .1, r * .2, r * .1], [bx - r * .8, tp - r * .2, 0], [0, 0, 1.6])));
+    if (back === 'shell') add(body, grp(ball('#558b2f', [r * 1.1, r * .55, r * .95], [bx + r * .1, tp - r * .3, 0]), ...[0, 1, 2, 3, 4].map(i => ball('#33691e', [r * .25, r * .1, r * .25], [bx + r * .1 + Math.cos(i * 1.256) * r * .5, tp + r * .18, Math.sin(i * 1.256) * r * .45])), ball('#33691e', [r * .3, r * .1, r * .3], [bx + r * .1, tp + r * .25, 0])));
+    if (back === 'balloon') add(body, grp(rod('#eeeeee', [r * .02, r * 2.2, r * .02], [bx, tp + r * 1.0, 0]), ball('#ec407a', [r * .5, r * .5, r * .45], [bx, tp + r * 2.3, 0]), cone('#ec407a', [r * .15, r * .2, r * .15], [bx, tp + r * 1.85, 0], [Math.PI, 0, 0])));
+    if (back === 'jetpack') add(body, grp(...[-1, 1].flatMap(sg => [rod('#90a4ae', [r * .22, r * .8, r * .22], [bx, tp - r * .1, sg * r * .28]), cone('#ff7043', [r * .18, r * .4, r * .18], [bx, tp - r * .7, sg * r * .28], [Math.PI, 0, 0]), cone('#e53935', [r * .2, r * .25, r * .2], [bx, tp + r * .4, sg * r * .28])]), blk('#607d8b', [r * .3, r * .5, r * .3], [bx + r * .15, tp - r * .1, 0])));
     if (back === 'bag') add(body, grp(blk('#ff7043', [r * .8, r * .55, r * 1.0], [bx, tp - r * .3, 0]), blk('#e64a19', [r * .82, r * .2, r * 1.02], [bx, tp - r * .05, 0]), blk('#fdd835', [r * .1, r * .14, r * .14], [bx + r * .42, tp - r * .2, 0])));
   }
 }
@@ -3977,18 +4036,24 @@ function petAccMesh(m, on) {
 const PSHOT = new Map();
 function petShot(k, on, w = 300, h = 220) {
   if (!W.renderer || !PETS[k]) return ''; const key = k + JSON.stringify(on || {}) + w; if (PSHOT.has(key)) return PSHOT.get(key);
-  const sc = new THREE.Scene(); sc.background = new THREE.Color('#fff3e0');
+  const m = petModel(k); m.rotation.y = -.25; petAccMesh(m, on); const url = modelShot(m, w, h, .62); if (PSHOT.size > 40) PSHOT.clear(); PSHOT.set(key, url); return url;
+}
+// 把任何 3D 模型拍成一張照片（給介面用）
+function modelShot(m, w = 300, h = 220, up = .62, bg = '#fff3e0') {
+  if (!W.renderer) return '';
+  const sc = new THREE.Scene(); sc.background = new THREE.Color(bg);
   sc.add(new THREE.HemisphereLight('#ffffff', '#c8b8a0', 2.4)); const dl = new THREE.DirectionalLight('#ffffff', 1.5); dl.position.set(4, 6, 5); sc.add(dl);
-  const m = petModel(k); m.rotation.y = -.25; petAccMesh(m, on); sc.add(m); m.updateMatrixWorld(true);
+  sc.add(m); m.updateMatrixWorld(true);
   const bb = new THREE.Box3().setFromObject(m), c = bb.getCenter(new THREE.Vector3()), sz = bb.getSize(new THREE.Vector3()), R = Math.max(sz.x, sz.y, sz.z);
-  const cam = new THREE.PerspectiveCamera(30, w / h, .02, 50); cam.position.set(c.x + R * 1.45, c.y + R * .62, c.z + R * 1.05); cam.lookAt(c.x + R * .06, c.y + R * .08, c.z);
+  const cam = new THREE.PerspectiveCamera(30, w / h, .02, 50); cam.position.set(c.x + R * 1.45, c.y + R * up, c.z + R * 1.05); cam.lookAt(c.x + R * .06, c.y + R * .08, c.z);
   const rt = new THREE.WebGLRenderTarget(w, h); rt.texture.colorSpace = THREE.SRGBColorSpace;
   const px = new Uint8Array(w * h * 4); W.renderer.setRenderTarget(rt); W.renderer.render(sc, cam); W.renderer.readRenderTargetPixels(rt, 0, 0, w, h, px); W.renderer.setRenderTarget(null); rt.dispose();
   const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const x = cv.getContext('2d'), id = x.createImageData(w, h);
   for (let y = 0; y < h; y++) id.data.set(px.subarray((h - 1 - y) * w * 4, (h - y) * w * 4), y * w * 4);
-  x.putImageData(id, 0, 0); const url = cv.toDataURL(); if (PSHOT.size > 40) PSHOT.clear(); PSHOT.set(key, url); return url;
+  x.putImageData(id, 0, 0); return cv.toDataURL();
 }
 if (QS.has('debug')) window.__hfShot = (k, on) => petShot(k, on);
+if (QS.has('debug')) { window.__hfThumb = (t, id) => thumbURL(t, id); window.__hfItem = id => { const m = homeItemModel(id); m.rotation.y = -.6; return modelShot(m, 240, 200, .7); }; }
 const shotImg = (k, on, wd = 150) => { const u = petShot(k, on); return u ? `<img src="${u}" alt="" style="width:${wd}px;border-radius:10px;border:2px solid #ffe0b2;display:block;margin:0 auto">` : ''; };
 // 介面
 const stTxt = st => [...new Set(st)].map(s => PSTYLE[s]).join(' ');
@@ -4080,8 +4145,10 @@ const WALK_SCENES = ['farm', 'ranch', 'fish', 'factory', 'green', 'stable'];
 const WALK_SAY = ['今天天氣真好～', '哇，這片田照顧得真好！', '路過看看～ 👋', '聞到好香的味道！', '這裡的動物好可愛 😍', '要不要一起去碼頭釣魚？🎣', '週一晚上記得去夜市喔 🏮', '好想吃剛採的菜喔～', '你家的魚缸好漂亮！', '馬場的小馬好可愛 🐴'];
 function buildWalkers(S3) {
   W.walkers = []; const ids = VILS.map(v => v.id);
-  WALK_SCENES.forEach((sc, i) => { const id = ids[(i * 3 + 1) % ids.length], m = vilModel(id), cx = (SCENE_T[sc] || FARM_T).x, x = cx + (i % 2 ? 6 : -6);
-    m.position.set(x, 0, 9.6); S3.add(m); W.walkers.push({m, id, sc, cx, x, z:9.6, tx:x, tz:9.6, wait:2 + i, say:null, ph:i * 1.3}); });
+  // 每個場景都有路過的村民（農場最熱鬧）
+  const CNT = {farm:5, ranch:2, fish:2, factory:2, green:2, stable:2}; let n = 0;
+  WALK_SCENES.forEach((sc, i) => { for (let j = 0; j < (CNT[sc] || 1); j++, n++) { const id = ids[(n * 5 + 1) % ids.length], m = vilModel(id), cx = (SCENE_T[sc] || FARM_T).x, x = cx - 11 + ((j * 7 + i * 3) % 22), z = 8.2 + (j % 3) * .9;
+    m.position.set(x, 0, z); S3.add(m); W.walkers.push({m, id, sc, cx, x, z, tx:x, tz:z, wait:1 + j * 1.7 + i, say:null, ph:n * 1.3}); } });
 }
 function walkTick(t, dt) {
   for (const P of W.walkers || []) {
@@ -4111,8 +4178,18 @@ const HOME_ITEMS = {
   rg1:{n:'圓地毯', em:'⭕', slot:'rug', c:200}, rg2:{n:'長地毯', em:'🟥', slot:'rug', c:250},
   pl1:{n:'小盆栽', em:'🪴', slot:'plant', c:150}, pl2:{n:'大葉植物', em:'🌿', slot:'plant', c:250},
   lp1:{n:'立燈', em:'💡', slot:'lamp', c:300}, bk1:{n:'書櫃', em:'📚', slot:'shelf', c:500},
+  bed4:{n:'雙層床', em:'🛏️', slot:'bed', c:1800}, bed5:{n:'吊床', em:'🌴', slot:'bed', c:900},
+  tb4:{n:'吧台', em:'🍸', slot:'table', c:1200}, tb5:{n:'書桌椅', em:'✏️', slot:'table', c:800},
+  ch1:{n:'搖椅', em:'🪑', slot:'chair', c:600}, ch2:{n:'懶骨頭', em:'🫘', slot:'chair', c:400}, ch3:{n:'國王寶座', em:'👑', slot:'chair', c:3000},
+  pt6:{n:'星空', em:'🌌', slot:'paint', c:600}, pt7:{n:'全家福', em:'👨‍👩‍👧', slot:'paint', c:500}, pt8:{n:'海邊日落', em:'🌅', slot:'paint', c:500},
+  rg3:{n:'彩虹地毯', em:'🌈', slot:'rug', c:450},
+  pl3:{n:'仙人掌', em:'🌵', slot:'plant', c:200}, pl4:{n:'盆景松', em:'🌲', slot:'plant', c:800},
+  lp2:{n:'熔岩燈', em:'🫧', slot:'lamp', c:400},
+  fp1:{n:'壁爐', em:'🔥', slot:'deco', c:2500}, cl1:{n:'落地鐘', em:'🕰️', slot:'deco', c:1500}, gl1:{n:'地球儀', em:'🌍', slot:'deco', c:600}, xt1:{n:'聖誕樹', em:'🎄', slot:'deco', c:1000}, aq1:{n:'小魚缸', em:'🐠', slot:'deco', c:1200},
+  pi1:{n:'鋼琴', em:'🎹', slot:'fun', c:3500}, ar1:{n:'街機', em:'🕹️', slot:'fun', c:2200}, td1:{n:'大熊娃娃', em:'🧸', slot:'fun', c:500}, dr1:{n:'爵士鼓', em:'🥁', slot:'fun', c:2800},
+  fr1:{n:'冰箱', em:'🧊', slot:'kitchen', c:900}, kt1:{n:'流理台', em:'🍳', slot:'kitchen', c:1500}, bt1:{n:'浴缸', em:'🛁', slot:'kitchen', c:2000},
 };
-const HSLOT = {bed:'床', table:'桌子', tv:'電視', sofa:'沙發', paint:'牆上的畫', paint2:'牆上的畫（左牆）', rug:'地毯', plant:'盆栽', lamp:'燈', shelf:'書櫃'};
+const HSLOT = {bed:'床', table:'桌子', tv:'電視', sofa:'沙發', paint:'牆上的畫', paint2:'牆上的畫（左牆）', rug:'地毯', plant:'盆栽', lamp:'燈', shelf:'書櫃', chair:'椅子', deco:'擺設', fun:'娛樂', kitchen:'廚房浴室'};
 const HWALL = ['#fff3e0', '#e3f2fd', '#fce4ec', '#e8f5e9', '#fffde7', '#ede7f6'], HFLOOR = ['#c49a6c', '#8d6e63', '#e0c9a6', '#b0bec5'];
 const homeOf = f => { const H = f.home ??= {}; H.own ??= {}; H.set ??= {}; return H; };
 const homeView = f => f?.home || {own:{}, set:{}};
@@ -4123,6 +4200,9 @@ function paintTex(id) {
   else if (id === 'pt2') { x.fillStyle = '#f5efe0'; x.fillRect(0, 0, 256, 192); x.fillStyle = '#90a4ae'; x.beginPath(); x.moveTo(0, 150); x.lineTo(60, 60); x.lineTo(110, 130); x.lineTo(160, 40); x.lineTo(256, 150); x.fill(); x.fillStyle = '#546e7a'; x.beginPath(); x.moveTo(0, 170); x.lineTo(90, 100); x.lineTo(180, 170); x.fill(); x.fillStyle = '#e53935'; x.beginPath(); x.arc(205, 45, 14, 0, 6.29); x.fill(); }
   else if (id === 'pt3') { x.fillStyle = '#ffe0b2'; x.fillRect(0, 0, 256, 192); x.fillStyle = '#ff9800'; x.beginPath(); x.arc(128, 105, 58, 0, 6.29); x.fill(); x.beginPath(); x.moveTo(80, 70); x.lineTo(88, 20); x.lineTo(115, 55); x.fill(); x.beginPath(); x.moveTo(176, 70); x.lineTo(168, 20); x.lineTo(141, 55); x.fill(); x.fillStyle = '#212121'; x.beginPath(); x.arc(105, 98, 7, 0, 6.29); x.arc(151, 98, 7, 0, 6.29); x.fill(); x.fillStyle = '#f48fb1'; x.beginPath(); x.arc(128, 118, 6, 0, 6.29); x.fill(); }
   else if (id === 'pt4') { x.fillStyle = '#81d4fa'; x.fillRect(0, 0, 256, 192); x.fillStyle = '#9ccc65'; x.fillRect(0, 110, 256, 82); x.fillStyle = '#c0392b'; x.fillRect(150, 70, 60, 50); x.beginPath(); x.moveTo(145, 72); x.lineTo(180, 45); x.lineTo(215, 72); x.fill(); x.fillStyle = '#fdd835'; for (let i = 0; i < 6; i++) x.fillRect(10 + i * 22, 130 + (i % 2) * 15, 12, 30); x.fillStyle = '#fff59d'; x.beginPath(); x.arc(50, 40, 18, 0, 6.29); x.fill(); }
+  else if (id === 'pt6') { x.fillStyle = '#0d1b4a'; x.fillRect(0, 0, 256, 192); x.lineWidth = 6; for (let i = 0; i < 7; i++) { x.strokeStyle = ['#3949ab', '#5c6bc0', '#7986cb'][i % 3]; x.beginPath(); x.arc(60 + i * 30, 70 + (i % 2) * 20, 22, 0, 4.5); x.stroke(); } x.fillStyle = '#fff59d'; for (let i = 0; i < 14; i++) { x.beginPath(); x.arc((i * 53) % 256, (i * 37) % 120 + 10, 5, 0, 6.29); x.fill(); } x.beginPath(); x.arc(215, 35, 18, 0, 6.29); x.fill(); x.fillStyle = '#1b2a1b'; x.beginPath(); x.moveTo(20, 192); x.lineTo(40, 70); x.lineTo(58, 192); x.fill(); x.fillStyle = '#263238'; x.fillRect(0, 160, 256, 32); }
+  else if (id === 'pt7') { x.fillStyle = '#fff3e0'; x.fillRect(0, 0, 256, 192); for (const [cx, cy, r, c] of [[70, 95, 30, '#ffdcc0'], [130, 85, 34, '#ffdcc0'], [190, 105, 24, '#ffdcc0']]) { x.fillStyle = ['#5d4037', '#3e2723', '#6d4c41'][cx % 3]; x.beginPath(); x.arc(cx, cy - 8, r + 4, Math.PI, 0); x.fill(); x.fillStyle = c; x.beginPath(); x.arc(cx, cy, r, 0, 6.29); x.fill(); x.fillStyle = '#3b2414'; x.fillRect(cx - 11, cy - 4, 5, 7); x.fillRect(cx + 6, cy - 4, 5, 7); x.strokeStyle = '#8e3426'; x.lineWidth = 3; x.beginPath(); x.arc(cx, cy + 8, 9, .2, 2.9); x.stroke(); x.fillStyle = ['#e53935', '#1e88e5', '#fdd835'][cx % 3]; x.fillRect(cx - r, cy + r - 2, r * 2, 192); } }
+  else if (id === 'pt8') { const gr = x.createLinearGradient(0, 0, 0, 120); gr.addColorStop(0, '#ff7043'); gr.addColorStop(1, '#ffcc80'); x.fillStyle = gr; x.fillRect(0, 0, 256, 120); x.fillStyle = '#fff176'; x.beginPath(); x.arc(128, 115, 36, Math.PI, 0); x.fill(); x.fillStyle = '#0277bd'; x.fillRect(0, 115, 256, 77); x.fillStyle = '#ffcc80'; for (let i = 0; i < 6; i++) x.fillRect(100 - i * 4, 125 + i * 10, 56 + i * 8, 3); x.fillStyle = '#f5deb3'; x.fillRect(0, 170, 256, 22); }
   else { x.fillStyle = '#1a1a3a'; x.fillRect(0, 0, 256, 192); x.strokeStyle = '#5d4037'; x.lineWidth = 3; x.beginPath(); x.moveTo(0, 50); x.quadraticCurveTo(128, 90, 256, 50); x.stroke(); for (let i = 0; i < 7; i++) { const px = 20 + i * 36, py = 50 + Math.sin(i / 6 * Math.PI) * 28; x.fillStyle = ['#e53935', '#ff7043', '#fdd835'][i % 3]; x.beginPath(); x.ellipse(px, py + 14, 10, 13, 0, 0, 6.29); x.fill(); } x.fillStyle = '#ffcc80'; for (let i = 0; i < 4; i++) x.fillRect(20 + i * 60, 130, 44, 40); }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
@@ -4144,6 +4224,29 @@ function homeItemModel(id) {
     case 'pl1': g.add(M(gBucket(), '#d84315', [.35, .45, .35], [0, .22, 0]), ball('#43a047', [.45, .5, .45], [0, .75, 0]), ball('#66bb6a', U(.25), [.15, 1, .1])); break;
     case 'pl2': g.add(M(gBucket(), '#eceff1', [.45, .6, .45], [0, .3, 0]), ...[0, 1, 2, 3, 4, 5].map(i => blk('#2e7d32', [.12, 1.1, .45], [Math.cos(i) * .2, 1.1, Math.sin(i) * .2], [Math.cos(i) * .5, i, Math.sin(i) * .5]))); break;
     case 'lp1': g.add(rod('#424242', [.4, .06, .4], [0, .03, 0]), rod('#424242', [.05, 2, .05], [0, 1, 0]), cone('#fff8e1', [.45, .5, .45], [0, 2.1, 0])); { const L = new THREE.Mesh(gS(), new THREE.MeshLambertMaterial({color:'#fff59d', emissive:'#ffee58', emissiveIntensity:.8})); L.scale.setScalar(.2); L.position.y = 1.95; g.add(L); } break;
+    case 'bed4': g.add(...[0, 1].flatMap(k => [blk('#8d5a2b', [2.2, .2, 3.2], [0, .45 + k * 1.5, 0]), blk('#fafafa', [2, .25, 3], [0, .67 + k * 1.5, 0]), blk(k ? '#e57373' : '#64b5f6', [2.05, .1, 2], [0, .84 + k * 1.5, .45]), blk('#fff', [1.3, .2, .5], [0, .86 + k * 1.5, -1.1])]), ...[[-1.05, -1.55], [1.05, -1.55], [-1.05, 1.55], [1.05, 1.55]].map(([x, z]) => blk('#6d4c41', [.15, 2.6, .15], [x, 1.3, z])), ...[0, 1, 2, 3].map(i => blk('#6d4c41', [.08, .06, .5], [1.1, .5 + i * .45, 1.2]))); break;
+    case 'bed5': g.add(...[-1.6, 1.6].map(z => blk('#6d4c41', [.15, 1.8, .15], [0, .9, z])), M(gBucket(), '#ffb74d', [.8, .35, 1.5], [0, .85, 0], [0, 0, 0]), ...[0, 1, 2, 3].map(i => blk('#e65100', [.82, .02, .1], [0, .92, -1.2 + i * .8])), rod('#a1887f', [.02, .8, .02], [0, 1.3, -1.55], [.9, 0, 0]), rod('#a1887f', [.02, .8, .02], [0, 1.3, 1.55], [-.9, 0, 0])); break;
+    case 'tb4': g.add(blk('#5d4037', [2.8, 1.1, .8], [0, .55, 0]), blk('#3e2723', [3, .1, 1], [0, 1.15, 0]), ...[-.9, 0, .9].flatMap(x => [rod('#9e9e9e', [.06, .8, .06], [x, .4, .8]), rod('#e53935', [.28, .08, .28], [x, .82, .8])]), ...[0, 1, 2].map(i => rod(['#81c784', '#e57373', '#ffd54f'][i], [.08, .3, .08], [-.6 + i * .5, 1.35, 0]))); break;
+    case 'tb5': g.add(blk('#a1764a', [2, .1, 1], [0, 1.05, 0]), blk('#8d5a2b', [.5, 1, .9], [.7, .5, 0]), rod('#6d4c41', [.08, 1, .08], [-.9, .5, -.4]), rod('#6d4c41', [.08, 1, .08], [-.9, .5, .4]), blk('#fafafa', [.6, .02, .45], [-.2, 1.11, 0]), blk('#1e88e5', [.3, .25, .05], [-.6, 1.25, -.3]), blk('#e53935', [.7, .1, .7], [0, .6, .9]), blk('#e53935', [.7, .8, .1], [0, 1, 1.25]), rod('#424242', [.06, .55, .06], [0, .3, .9])); break;
+    case 'ch1': g.add(blk('#8d5a2b', [.9, .1, .8], [0, .5, 0]), blk('#8d5a2b', [.9, 1, .1], [0, 1, -.38], [-.2, 0, 0]), ...[-.4, .4].map(x => rod('#6d4c41', [.06, .5, .06], [x, .25, 0])), ...[-.4, .4].flatMap(x => [blk('#6d4c41', [.08, .07, 1.2], [x, .06, 0]), blk('#6d4c41', [.08, .07, .3], [x, .12, .62], [-.4, 0, 0]), blk('#6d4c41', [.08, .07, .3], [x, .12, -.62], [.4, 0, 0])])); break;
+    case 'ch2': g.add(ball('#ff7043', [.75, .45, .75], [0, .42, 0]), ball('#ff8a65', [.6, .4, .3], [0, .7, -.4])); break;
+    case 'ch3': g.add(blk('#c62828', [1.2, .5, 1.1], [0, .5, 0]), blk('#fdd835', [1.3, .15, 1.2], [0, .27, 0]), blk('#c62828', [1.2, 2, .2], [0, 1.4, -.5]), blk('#fdd835', [1.4, .2, .3], [0, 2.45, -.5]), ...[-.6, .6].flatMap(x => [blk('#fdd835', [.15, .6, 1], [x, .85, 0]), ball('#fdd835', U(.12), [x, 1.2, .45])]), ...[0, 1, 2].map(i => cone('#fdd835', [.1, .25, .1], [-.4 + i * .4, 2.7, -.5]))); break;
+    case 'rg3': for (let i = 0; i < 6; i++) g.add(rod(['#e53935', '#fb8c00', '#fdd835', '#43a047', '#1e88e5', '#8e24aa'][i], [2.6 - i * .4, .03 + i * .003, 2.6 - i * .4], [0, .02, 0])); break;
+    case 'pl3': g.add(M(gBucket(), '#bcaaa4', [.3, .35, .3], [0, .18, 0]), rod('#43a047', [.18, .9, .18], [0, .8, 0]), rod('#43a047', [.1, .4, .1], [.22, .9, 0], [0, 0, -.6]), rod('#43a047', [.1, .3, .1], [-.2, 1, 0], [0, 0, .6]), ball('#ec407a', U(.08), [0, 1.27, 0])); break;
+    case 'pl4': g.add(blk('#5d4037', [.9, .3, .6], [0, .15, 0]), rod('#6d4c41', [.1, .6, .1], [0, .55, 0], [0, 0, .3]), ball('#2e7d32', [.45, .2, .35], [-.15, .85, 0]), ball('#388e3c', [.35, .18, .3], [.25, 1.05, 0])); break;
+    case 'lp2': { g.add(rod('#9e9e9e', [.18, .2, .18], [0, .1, 0]), rod('#9e9e9e', [.18, .2, .18], [0, 1, 0])); const gl = new THREE.Mesh(gC(), new THREE.MeshBasicMaterial({color:'#ce93d8'})); gl.scale.set(.15, .7, .15); gl.position.y = .55; g.add(gl); for (let i = 0; i < 3; i++) { const b = new THREE.Mesh(gS(), new THREE.MeshBasicMaterial({color:'#ff7043'})); b.scale.setScalar(.07); b.position.set(0, .35 + i * .2, 0); g.add(b); } } break;
+    case 'fp1': { g.add(blk('#8d6e63', [2.4, 2, .8], [0, 1, 0]), blk('#3e2723', [1.4, 1.1, .1], [0, .65, .36]), blk('#5d4037', [2.7, .15, 1], [0, 2.05, 0]), blk('#a1887f', [1.2, 2.5, .6], [0, 3.3, -.1])); const fl = new THREE.Mesh(gN(), new THREE.MeshBasicMaterial({color:'#ff9800'})); fl.scale.set(.35, .6, .35); fl.position.set(0, .5, .3); g.add(fl, rod('#4e342e', [.5, .1, .1], [0, .2, .3], [0, 0, Math.PI / 2])); } break;
+    case 'cl1': g.add(blk('#5d4037', [.8, 2.6, .5], [0, 1.3, 0]), rod('#fffde7', [.3, .05, .3], [0, 2.2, .26], [Math.PI / 2, 0, 0]), blk('#3e2723', [.02, .2, .02], [0, 2.25, .3]), blk('#fdd835', [.4, .9, .05], [0, 1.1, .26]), rod('#fdd835', [.15, .05, .15], [0, .8, .3], [Math.PI / 2, 0, 0])); break;
+    case 'gl1': g.add(rod('#6d4c41', [.4, .08, .4], [0, .04, 0]), rod('#6d4c41', [.05, .6, .05], [0, .35, 0]), ball('#29b6f6', U(.4), [0, 1, 0]), ball('#66bb6a', [.2, .25, .2], [.25, 1.05, .15]), ball('#66bb6a', [.15, .2, .25], [-.2, .9, -.2]), ring('#fdd835', [.43, .43, .3], [0, 1, 0], [0, 0, .4])); break;
+    case 'xt1': g.add(M(gBucket(), '#c62828', [.4, .35, .4], [0, .18, 0]), ...[0, 1, 2].map(i => cone('#2e7d32', [1 - i * .25, .9, 1 - i * .25], [0, .9 + i * .55, 0])), cone('#fdd835', [.15, .25, .15], [0, 2.6, 0]), ...[0, 1, 2, 3, 4, 5, 6, 7].map(i => ball(['#e53935', '#fdd835', '#1e88e5', '#fff'][i % 4], U(.08), [Math.cos(i * 1.7) * (.7 - (i % 3) * .2), .8 + (i % 3) * .55, Math.sin(i * 1.7) * (.7 - (i % 3) * .2)]))); break;
+    case 'aq1': { g.add(blk('#5d4037', [1.8, .9, .8], [0, .45, 0]), blk('#37474f', [1.7, .1, .7], [0, .95, 0])); const wt = new THREE.Mesh(gB(), new THREE.MeshLambertMaterial({color:'#81d4fa', transparent:true, opacity:.55})); wt.scale.set(1.6, .8, .6); wt.position.y = 1.4; g.add(wt, blk('#212121', [1.7, .08, .7], [0, 1.84, 0]), ...[0, 1, 2].map(i => ball(['#ff7043', '#fdd835', '#ec407a'][i], [.12, .07, .04], [-.4 + i * .4, 1.25 + (i % 2) * .2, 0])), ...[0, 1].map(i => blk('#43a047', [.04, .4, .04], [-.6 + i * 1.1, 1.2, 0]))); } break;
+    case 'pi1': g.add(blk('#212121', [2.2, .9, 1], [0, 1, 0]), blk('#fafafa', [2.1, .06, .35], [0, 1.47, .4]), ...[0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => blk('#212121', [.06, .07, .2], [-.9 + i * .23, 1.52, .32])), blk('#212121', [2.2, .8, .1], [0, 1.85, -.45]), ...[[-1, -.4], [1, -.4], [-1, .4], [1, .4]].map(([x, z]) => rod('#212121', [.08, .55, .08], [x, .28, z])), blk('#3e2723', [1, .45, .5], [0, .23, 1.2])); break;
+    case 'ar1': g.add(blk('#3949ab', [1, 2.2, .9], [0, 1.1, 0]), blk('#212121', [.8, .6, .05], [0, 1.55, .46]), blk('#e53935', [.95, .3, .5], [0, 1, .6]), rod('#212121', [.03, .2, .03], [-.2, 1.25, .7]), ball('#e53935', U(.06), [-.2, 1.35, .7]), ...[0, 1].map(i => rod(['#fdd835', '#43a047'][i], [.06, .04, .06], [.1 + i * .18, 1.17, .7])), blk('#fdd835', [.9, .25, .05], [0, 2.05, .46])); { const sc = new THREE.Mesh(gB(), new THREE.MeshBasicMaterial({color:'#4fc3f7'})); sc.scale.set(.7, .5, .02); sc.position.set(0, 1.55, .49); g.add(sc); } break;
+    case 'td1': g.add(ball('#a1887f', [.5, .55, .45], [0, .55, 0]), ball('#a1887f', U(.35), [0, 1.3, 0]), ...[-1, 1].flatMap(z => [ball('#a1887f', U(.13), [0, 1.6, z * .25]), ball('#a1887f', [.18, .18, .15], [.25, .2, z * .3]), ball('#a1887f', [.15, .3, .15], [.1, .7, z * .45])]), ball('#d7ccc8', [.15, .12, .2], [.3, 1.22, 0]), ball('#3e2723', U(.05), [.42, 1.25, 0]), ...[-1, 1].map(z => ball('#3e2723', U(.04), [.3, 1.4, z * .13])), ball('#e53935', [.08, .1, .25], [.3, 1.02, 0])); break;
+    case 'dr1': g.add(...[[0, 0, .5, '#e53935'], [-.8, .5, .35, '#e53935'], [.8, .5, .35, '#e53935']].map(([x, z, r, c]) => grp(rod(c, [r, .4, r], [x, .45, z]), rod('#fafafa', [r, .02, r], [x, .66, z]))), rod('#e53935', [.6, .7, .6], [0, .35, -.5], [Math.PI / 2, 0, 0]), ...[[-1, -.5], [1, -.5]].flatMap(([x, z]) => [rod('#9e9e9e', [.03, 1.4, .03], [x, .7, z]), rod('#fdd835', [.4, .02, .4], [x, 1.4, z])])); break;
+    case 'fr1': g.add(blk('#eceff1', [1, 2.2, .9], [0, 1.1, 0]), blk('#cfd8dc', [.98, .03, .02], [0, 1.4, .46]), rod('#9e9e9e', [.03, .5, .03], [.38, 1.75, .48]), rod('#9e9e9e', [.03, .4, .03], [.38, .95, .48]), ball('#e53935', U(.06), [-.2, 1.9, .47]), ball('#fdd835', U(.05), [0, 1.85, .47])); break;
+    case 'kt1': g.add(blk('#eceff1', [2.6, 1, .9], [0, .5, 0]), blk('#9e9e9e', [2.7, .08, 1], [0, 1.04, 0]), blk('#b0bec5', [.7, .05, .5], [-.6, 1.09, 0]), rod('#9e9e9e', [.04, .3, .04], [-.6, 1.25, -.35]), ...[[.5, '#424242'], [.9, '#424242']].map(([x, c]) => rod(c, [.18, .03, .18], [x, 1.1, 0])), M(gBucket(), '#e53935', [.25, .2, .25], [.5, 1.2, 0]), ...[0, 1, 2].map(i => blk('#bcaaa4', [.8, .8, .03], [-.85 + i * .85, .5, .46]))); break;
+    case 'bt1': { g.add(blk('#fafafa', [2.4, .7, 1.2], [0, .35, 0]), ...[[-1, -.45], [1, -.45], [-1, .45], [1, .45]].map(([x, z]) => ball('#fdd835', U(.1), [x, .05, z])), rod('#9e9e9e', [.04, .5, .04], [-1.1, .9, 0]), ball('#9e9e9e', U(.08), [-1, 1.15, 0])); const w = blk('#81d4fa', [2.2, .05, 1], [0, .66, 0]); g.add(w); for (let i = 0; i < 6; i++) g.add(ball('#ffffff', U(.12 + (i % 3) * .04), [-.7 + i * .3, .72, (i % 2 - .5) * .4])); g.add(ball('#fdd835', [.12, .1, .1], [.5, .74, .2])); } break;
     case 'bk1': g.add(blk('#8d5a2b', [1.8, 2.6, .5], [0, 1.3, 0])); for (let r = 0; r < 4; r++) { g.add(blk('#6d4c41', [1.7, .06, .45], [0, .3 + r * .62, .02])); for (let i = 0; i < 6; i++) g.add(blk(['#e53935', '#1e88e5', '#43a047', '#fdd835', '#8e24aa', '#ff7043'][(i + r) % 6], [.16, .42, .3], [-.65 + i * .25, .55 + r * .62, .05])); } break;
   }
   if (HOME_ITEMS[id]?.slot === 'paint') { const fr = blk('#8d5a2b', [1.9, 1.45, .08], [0, 0, 0]), pic = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.27), new THREE.MeshLambertMaterial({map:paintTex(id)})); pic.position.z = .05; g.add(fr, pic); }
@@ -4242,7 +4345,7 @@ function openHomeShop() {
     body += `<div class="sec">📦 我的家具倉庫</div>` + (iv.length ? iv.map(([id, n]) => `<div class="item"><div class="pic" style="font-size:26px">${HOME_ITEMS[id].em}</div><div class="info"><div class="t">${HOME_ITEMS[id].n} × ${n}</div></div><button class="b o" data-act="homePut" data-id="${id}">擺放</button></div>`).join('') : '<div class="empty">倉庫是空的，在下面的家具店買吧</div>');
     body += `<div class="sec">🎨 牆壁顏色（💰100）</div><div class="hcols">${HWALL.map((c, i) => `<button style="background:${c}" class="${(H.wall || 0) === i ? 'on' : ''}" data-act="homeCol" data-k="wall" data-i="${i}"></button>`).join('')}</div>`;
     body += `<div class="sec">🪵 地板（💰100）</div><div class="hcols">${HFLOOR.map((c, i) => `<button style="background:${c}" class="${(H.floor || 0) === i ? 'on' : ''}" data-act="homeCol" data-k="floor" data-i="${i}"></button>`).join('')}</div>`;
-    const cats = [['bed', '🛏️ 床'], ['table', '🪑 桌子'], ['tv', '📺 電視'], ['sofa', '🛋️ 沙發'], ['paint', '🖼️ 牆上的畫'], ['rug', '🟥 地毯'], ['plant', '🪴 盆栽'], ['lamp', '💡 燈'], ['shelf', '📚 書櫃']];
+    const cats = [['bed', '🛏️ 床'], ['table', '🪑 桌子'], ['tv', '📺 電視'], ['sofa', '🛋️ 沙發'], ['paint', '🖼️ 牆上的畫'], ['rug', '🟥 地毯'], ['plant', '🪴 盆栽'], ['lamp', '💡 燈'], ['shelf', '📚 書櫃'], ['chair', '🪑 椅子'], ['deco', '🕰️ 擺設'], ['fun', '🎹 娛樂'], ['kitchen', '🍳 廚房浴室']];
     body += `<div class="sec">🛒 家具店</div>`;
     for (const [sl, nm] of cats) body += `<div class="d" style="font-weight:800;color:#8d5a2b;margin:6px 0 4px">${nm}</div>` + Object.entries(HOME_ITEMS).filter(([, I]) => I.slot === sl).map(([id, I]) => `<div class="item"><div class="pic" style="font-size:26px">${I.em}</div><div class="info"><div class="t">${I.n}</div><div class="d">擺了 ${at.filter(a => a.id === id).length} 個${inv[id] ? `・倉庫 ${inv[id]} 個` : ''}</div></div><button class="b" data-act="homeBuy" data-id="${id}">買 💰${I.c}</button></div>`).join('');
     openModal('🛋️ 裝潢', body);
@@ -4682,7 +4785,7 @@ function buildWorld() {
   // 遠山
   for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2 + .2, h = 28 + (i * 7) % 22, R = 24 + (i % 4) * 6; let r = 130 + (i % 3) * 18; while (padDist(12 + Math.cos(a) * r, Math.sin(a) * r) < R * .95 + 4 && r < 260) r += 6; const m = grp(cone(i % 2 ? '#4f7f4a' : '#5b8a52', [R, h, R], [0, h / 2, 0]), cone('#3f6e3d', [R * .45, h * .45, R * .45], [R * .25, h * .72, 0])); m.position.set(12 + Math.cos(a) * r, 0, Math.sin(a) * r); m.traverse(o => { o.castShadow = false; }); S3.add(m); }
   // 田地、牧場地面、小路
-  S3.add(blk('#9c6a3c', [17.6, .12, 9.6], [0, .04, -.3]));
+  S3.add(blk('#9c6a3c', [18.6, .12, 9.6], [0, .04, -.3]));
   S3.add(blk('#8fd16a', [17.6, .06, 12.6], [24, .02, .5]));
   S3.add(blk('#d2b07a', [100, .05, 2], [12, .03, 9.6]));
   S3.add(blk('#d2b07a', [2, .05, 3.6], [0, .03, 7.2]), blk('#d2b07a', [2, .05, 2.2], [24, .03, 7.9]), blk('#d2b07a', [2.2, .05, 14], [-14, .03, 2.6]));
@@ -4726,7 +4829,7 @@ function buildWorld() {
   const FF = new THREE.Group(); fence(FF, -40, -5.6, -20, -5.6); fence(FF, -40, -5.6, -40, 6.4); fence(FF, -20, -5.6, -20, 6.4); fence(FF, -40, 6.4, -20, 6.4, [-30, 1.3, 6.4]); S3.add(FF);
   const hut = grp(blk('#e1f5fe', [3.4, 2.4, 2.8], [0, 1.2, 0]), ...gableRoof(3.4, 2.8, 2.4, .55, '#1e88e5', '#e1f5fe', {cap:'#1565c0'}), blk('#8d5a2b', [.8, 1.5, .1], [.6, .75, 1.42]), blk('#bbdefb', [.8, .6, .1], [-.8, 1.4, 1.42]), rod('#8d6e63', [.03, 1.8, .03], [-1.9, .9, 1.2], [0, 0, .3]), blk('#ff7043', [.4, .3, .3], [1.9, .15, 1]));
   hut.position.set(-36.5, 0, -8.3); S3.add(hut);
-  S3.add(rod('#6d4c41', [.05, .7, .05], [-23.8, .35, 5.6]), ball('#f44336', U(.12), [-22.8, .1, 5.7]), blk('#8d6e63', [1.4, .1, .5], [-24, .4, 5.8]));
+  S3.add(rod('#6d4c41', [.05, .7, .05], [-18.8, .35, 7.6]), ball('#f44336', U(.12), [-17.8, .1, 7.7]), blk('#8d6e63', [1.4, .1, .5], [-19, .4, 7.8]));
   W.fishSign = makeSign(-34, -6.6); S3.add(W.fishSign);
   const waterMat = new THREE.MeshPhongMaterial({color:'#3aa6d8', transparent:true, opacity:.72, shininess:90, specular:'#ffffff'}); W.waterMat = waterMat;
   W.ponds = [];
@@ -6074,7 +6177,7 @@ function openHelp() {
     <p>💧🌿🐞 <b>照顧</b>：作物會缺水、長草、長蟲，每個問題減產 10%。</p>
     <p>🐮 <b>牧場</b>：${Object.keys(ANIMALS).filter(k => !ANIMALS[k].gone).length} 種動物，吃<b>牧草</b>或<b>飼料</b>才會生產。產品可以賣錢、煮料理。</p>
     <p>🏠 <b>我的房子</b>：農場下面按「🏠 進屋」走進農舍，用「🛋️ 裝潢」買家具，點地板自己決定擺在哪裡；按「🔧 擺設」可以移動、轉方向、收起家具，也能換牆壁地板顏色，獎盃櫃會擺出你拿到的獎盃。去好友家也能進屋參觀！</p>
-    <p>🐶 <b>寵物選美</b>：在「🐾 我的寵物」按「👗 打扮」幫寵物戴配件打扮（24 種配件、7 種風格）。不比數值，每一場主題和 15 位村民評審都不一樣，評審照自己的喜好和這場主題投票，看主題來搭配吧！每週四晚上 8 點開票（報名費 💰100），前三名有獎金和獎盃！</p>
+    <p>🐶 <b>寵物選美</b>：在「🐾 我的寵物」按「👗 打扮」幫寵物戴配件打扮（40 種配件、7 種風格）。不比數值，每一場主題和 15 位村民評審都不一樣，評審照自己的喜好和這場主題投票，看主題來搭配吧！每週四晚上 8 點開票（報名費 💰100），前三名有獎金和獎盃！</p>
     <p>🏮 <b>夜市</b>：每週一晚上 6 點～12 點開，從「🗺️ 出門」進去。撈金魚、套圈圈、射氣球、彈珠台一次 💰50，分數會變成獎品券換獎品；當晚總分比「夜市高手」，隔天公布前三名！</p>
     <p>🎣 <b>釣魚碼頭</b>：點左上「🗺️ 出門」去碼頭，大家都在同一個碼頭！拋竿後等浮標<b>沉下去</b>再收線，然後<b>按住</b>慢慢收，張力太高要放開一下。釣到的魚放進馬場旁的超大魚缸，村民會來買。每週三有釣魚大賽！</p>
     <p>🐎 <b>馬場</b>：每人有 3 匹馬（2 公 1 母）。每天可以訓練 3 次（用紅蘿蔔或金幣），母馬配種生小馬會遺傳爸媽的天分。每月 15、30 號舉辦<b>賽馬大賽</b>，前一天截止報名，前三名有大獎和獎盃！</p>
@@ -6102,7 +6205,8 @@ function renderWx() {
   const el = $('#wx'); if (!el || !S.my) return;
   const d = twNow(), hh = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
   const wx = weather(), [ic, nm] = WX_N[wx], night = isNight();
-  const SE = SEASONS[seasonNow()]; let html = `<button data-act="wxInfo">${SE.em}${night ? '🌙' : ic} ${night ? '夜晚' : nm}${night && wx === 'rain' ? '🌧️' : ''} ${hh}</button>`;
+  const SN = {farm:'農場', ranch:'牧場', stable:'馬場', fish:'魚塭', factory:'工廠', green:'溫室', town:'小鎮', temple:'廟宇', home:'農舍'}[S.scene], own = isOwn(), who = own ? myName() : dn(S.view || {});
+  const SE = SEASONS[seasonNow()]; let html = (SN && !S.place ? `<button class="own" ${own ? 'data-act="profile"' : ''}>${own ? '🏡' : '👀'} ${esc(who)}的${SN}</button>` : '') + `<button data-act="wxInfo">${SE.em}${night ? '🌙' : ic} ${night ? '夜晚' : nm}${night && wx === 'rain' ? '🌧️' : ''} ${hh}</button>`;
   for (const o of activeFests()) html += `<button class="fest" data-act="fest">${o.F.em} ${esc(o.F.n)}</button>`;
   { const q = qianToday(S.my); if (q) html += `<button class="fest" data-act="qianShow" style="color:${QIAN_LV[q.lv].c}">🏮 ${QIAN_LV[q.lv].n}</button>`; }
   if (el._h !== html) { el.innerHTML = html; el._h = html; }
