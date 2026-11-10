@@ -58,6 +58,8 @@ button{font-family:inherit;cursor:pointer;border:none}
 #stage canvas{display:block;width:100%;height:100%;touch-action:none}
 #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;font-weight:900;color:#5d3a12;background:linear-gradient(#bfe6ff,#9ad85f);z-index:3;font-size:16px}
 #ovl{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}
+.signpad{width:100%;height:auto;aspect-ratio:3/1;background:#fffdf5;border:2px dashed #8d6e63;border-radius:10px;touch-action:none;display:block}
+.pcGreet{position:absolute;left:8px;top:6px;font:italic 900 13px Georgia,serif;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}.pcpick .pcGreet{font-size:9px}.pcT{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 14px)}.pcpick .pcStamp{font-size:12px}.pcStamp small{display:block;font-size:8px;color:#c62828;font-weight:900}
 #tripCap{position:absolute;left:8px;right:84px;bottom:10px;z-index:2;pointer-events:none;font-size:12.5px;font-weight:700;color:#fff}#tripCap>div{display:inline-block;background:rgba(1,87,155,.72);border-radius:10px;padding:3px 9px;margin:2px 0;max-width:100%}
 #tripFx{position:fixed;inset:0;z-index:80;background:radial-gradient(circle at 50% 40%,#e1f5fe,#4fc3f7);display:flex;align-items:center;justify-content:center;animation:tfIn .35s;transition:opacity .4s}#tripFx.out{opacity:0}@keyframes tfIn{from{opacity:0}to{opacity:1}}
 .tfBox{width:min(88vw,420px);text-align:center}.tfBox svg{width:100%;max-height:66vh}.tfTop{font-size:22px;font-weight:900;color:#01579b;margin-bottom:4px}.tfTxt{font-weight:900;font-size:17px;color:#01579b;background:#fff;border-radius:999px;padding:8px 16px;display:inline-block;box-shadow:0 3px 0 #0277bd}
@@ -519,9 +521,17 @@ const TRIPS = {
   penghu:{i:5, n:'澎湖', em:'🐚', lv:10, fare:1200, by:'✈️', byN:'飛機', map:[15, 56], d:'雙心石滬、玄武岩和超藍的海。', g:'#c9c08f'},
   taroko:{i:6, n:'太魯閣', em:'🏞️', lv:12, fare:1000, by:'🚆', byN:'火車', map:[74, 36], d:'大理石峽谷、碧綠溪水、紅色吊橋和長春祠瀑布。', g:'#8d9a7a'},
   lanyu:{i:7, n:'蘭嶼', em:'🚣', lv:15, fare:1500, by:'⛴️', byN:'渡輪', map:[80, 95], d:'達悟族拼板舟、飛魚架和湛藍的太平洋。', g:'#7fae5a'},
+  tainan:{i:8, n:'台南府城', em:'🏯', lv:2, fare:550, by:'🚄', byN:'高鐵', map:[42, 83], d:'赤崁樓、安平古堡，還有吃不完的小吃。', g:'#c9b38a'},
+  yehliu:{i:9, n:'野柳', em:'🗿', lv:4, fare:600, by:'🚌', byN:'客運', map:[72, 5], d:'海邊的奇岩怪石，看看女王頭和蕈狀岩。', g:'#d7c49e'},
+  kaohsiung:{i:10, n:'高雄港都', em:'⚓', lv:7, fare:750, by:'🚄', byN:'高鐵', map:[46, 92], d:'愛河、85大樓、駁二藝術特區和輕軌。', g:'#b7c4a0'},
+  hehuan:{i:11, n:'合歡山', em:'❄️', lv:18, fare:1300, by:'🚌', byN:'客運', map:[61, 43], d:'冬天會下雪的高山，武嶺 3275 公尺！', g:'#eef3f6'},
+  greenisland:{i:12, n:'綠島', em:'🏝️', lv:20, fare:1600, by:'⛴️', byN:'渡輪', map:[88, 84], d:'睡美人岩、海底溫泉和梅花鹿。', g:'#8bb85a'},
+  kinmen:{i:13, n:'金門', em:'🦁', lv:24, fare:1800, by:'✈️', byN:'飛機', map:[5, 30], d:'風獅爺、閩南古厝、莒光樓和高粱田。', g:'#c8b07a'},
 };
 const TRIP_HI = {taipei:['哇～101 好高！🏙️', '台北我來了！', '先來一杯珍奶 🧋'], jiufen:['九份的燈籠好美 🏮', '來吃芋圓囉！', '山城好有氣氛～'], kenting:['墾丁我來了 🏖️', '海好藍！', '來曬太陽囉～'], sunmoon:['日月潭好美 🛶', '來搭船遊湖！', '空氣好清新～'],
-  alishan:['阿里山好涼 🌲', '來看神木囉！', '等等看日出～'], penghu:['澎湖的海超藍 🐚', '來看雙心石滬！', '飛機好快！'], taroko:['太魯閣好壯觀 🏞️', '峽谷好高！', '來走吊橋囉～'], lanyu:['蘭嶼到了 🚣', '好漂亮的拼板舟！', '海風好舒服～']};
+  alishan:['阿里山好涼 🌲', '來看神木囉！', '等等看日出～'], penghu:['澎湖的海超藍 🐚', '來看雙心石滬！', '飛機好快！'], taroko:['太魯閣好壯觀 🏞️', '峽谷好高！', '來走吊橋囉～'], lanyu:['蘭嶼到了 🚣', '好漂亮的拼板舟！', '海風好舒服～'],
+  tainan:['台南好多古蹟 🏯', '來吃擔仔麵！', '府城好有味道～'], yehliu:['野柳的石頭好奇妙 🗿', '女王頭在哪裡？', '海風好大～'], kaohsiung:['高雄港好美 ⚓', '85大樓好高！', '來逛駁二～'],
+  hehuan:['合歡山好冷 ❄️', '下雪了耶！', '來堆雪人～'], greenisland:['綠島到了 🏝️', '來泡海底溫泉！', '有梅花鹿耶～'], kinmen:['金門我來了 🦁', '風獅爺好威風！', '來買高粱～']};
 const TRIP_SAY = {
   taipei:['101 的電梯超快！', '晚上有燈光秀喔', '珍奶要半糖少冰', '捷運好方便', '這裡人好多喔'],
   jiufen:['芋圓加紅豆最好吃', '茶樓的燈籠亮了！', '石階好多階…', '從這裡看得到海耶', '來喝一壺老人茶'],
@@ -530,7 +540,13 @@ const TRIP_SAY = {
   alishan:['神木好幾千歲了！', '小火車要開了 🚂', '雲海好像棉花糖', '早上四點起來看日出', '高山茶好甘甜'],
   penghu:['兩顆愛心的石滬！', '玄武岩好像巧克力', '跨海大橋好長', '仙人掌冰好吃 🌵', '天人菊開滿地'],
   taroko:['小心落石喔', '溪水是碧綠色的', '長春祠的瀑布好美', '吊橋會搖耶！', '大理石好光滑'],
-  lanyu:['拼板舟是手工做的！', '飛魚季到了 🐟', '小心山羊過馬路', '這裡的海好清澈', '饅頭山好可愛']};
+  lanyu:['拼板舟是手工做的！', '飛魚季到了 🐟', '小心山羊過馬路', '這裡的海好清澈', '饅頭山好可愛'],
+  tainan:['赤崁樓好古色古香', '牛肉湯要早起喝', '安平古堡在那邊', '府城的廟好多', '虱目魚粥好好吃'],
+  yehliu:['女王頭好像真的人', '這些都是蕈狀岩', '不要踩到化石喔', '燭台石好特別', '海浪把石頭磨圓了'],
+  kaohsiung:['坐愛河的船吧', '85大樓晚上好漂亮', '駁二好多藝術品', '輕軌好方便', '旗津的海產好便宜'],
+  hehuan:['武嶺海拔 3275 公尺！', '小心路滑喔', '堆一個雪人吧 ⛄', '晚上星空超美', '高麗菜好甜'],
+  greenisland:['睡美人岩在海上', '海底溫泉好舒服', '梅花鹿好可愛', '燈塔好白', '浮潛看熱帶魚'],
+  kinmen:['風獅爺保佑大家', '莒光樓好壯觀', '高粱田好漂亮', '貢糖好好吃', '閩南古厝好有特色']};
 const LOC_CROP_LIST = [
   ['tp_calla','陽明山海芋','flower',1,90,{m:'flower',st:'lily',c:'#ffffff',loc:'taipei'}],
   ['tp_shoot','綠竹筍','veg',2,120,{m:'stalk',c2:'#dce775',loc:'taipei'}],
@@ -548,6 +564,18 @@ const LOC_CROP_LIST = [
   ['tk_maqaw','馬告','tree',12,700,{m:'tree',c2:'#263238',leaf:'#33691e',loc:'taroko'}],
   ['ly_taro','蘭嶼水芋','veg',15,400,{m:'tuber',c2:'#6a1b9a',loc:'lanyu'}],
   ['ly_lily','台灣野百合','flower',15,360,{m:'flower',st:'lily',c:'#fffde7',loc:'lanyu'}],
+  ['tn_lotus','白河蓮花','flower',2,110,{m:'flower',st:'lily',c:'#f8bbd0',loc:'tainan'}],
+  ['tn_mango','玉井芒果','tree',2,360,{m:'tree',c2:'#ffb300',leaf:'#2e7d32',loc:'tainan'}],
+  ['yl_pot','金山地瓜','veg',4,150,{m:'tuber',c2:'#a1453a',loc:'yehliu'}],
+  ['yl_leaf','地瓜葉','veg',4,90,{m:'leafy',c:'#558b2f',loc:'yehliu'}],
+  ['ks_guava','燕巢芭樂','fruit',7,260,{m:'bush',f:'round',c2:'#c5e1a5',loc:'kaohsiung'}],
+  ['ks_banana','旗山香蕉','tree',7,420,{m:'tree',c2:'#fdd835',leaf:'#43a047',loc:'kaohsiung'}],
+  ['hh_cabbage','高山高麗菜','veg',18,300,{m:'leafy',c:'#aed581',head:true,loc:'hehuan'}],
+  ['hh_peach','高山水蜜桃','tree',18,720,{m:'tree',c2:'#f8bbd0',leaf:'#558b2f',loc:'hehuan'}],
+  ['gi_grass','綠島香茅','grass',20,280,{m:'grain',c2:'#9ccc65',loc:'greenisland'}],
+  ['gi_yam','綠島山藥','veg',20,380,{m:'tuber',c2:'#d7ccc8',loc:'greenisland'}],
+  ['km_sorghum','金門高粱','grass',24,400,{m:'grain',c2:'#b71c1c',loc:'kinmen'}],
+  ['km_peanut','金門花生','veg',24,330,{m:'tuber',c2:'#d7a86e',loc:'kinmen'}],
 ];
 const LOC_IDS = LOC_CROP_LIST.map(r => r[0]);
 // 當地種子加進作物表，但不列舉（商店、訂單、隨機獎勵都不會出現），只能去旅遊時買
@@ -563,26 +591,61 @@ const SOUV = {
   sv_train:['alishan','森林小火車模型','🚂',1200], sv_tree:['alishan','神木木雕','🌲',1500], sv_sun:['alishan','雲海日出照','🌅',600],
   sv_heart:['penghu','雙心石滬模型','💞',1200], sv_basalt:['penghu','玄武岩擺飾','🪨',800], sv_coral:['penghu','珊瑚擺飾','🪸',1000],
   sv_marble:['taroko','大理石雕','🗿',1300], sv_shrine:['taroko','長春祠模型','⛩️',1200], sv_weave:['taroko','原住民織布','🧶',900],
+  sv_chihkan:['tainan','赤崁樓模型','🏯',1000,'tower','#c62828'], sv_noodle:['tainan','擔仔麵碗','🍜',500,'bowl','#fafafa'], sv_swlion:['tainan','安平劍獅','🦁',800,'statue','#ffb300'],
+  sv_queen:['yehliu','女王頭模型','🗿',1100,'queen','#bcaaa4'], sv_fossil:['yehliu','化石擺飾','🐚',700,'plate','#8d6e63'], sv_shellbox:['yehliu','貝殼盒','🦪',500,'box','#ffccbc'],
+  sv_85:['kaohsiung','85大樓模型','🏢',1100,'tower','#455a64'], sv_robot:['kaohsiung','駁二機器人','🤖',900,'statue','#90a4ae'], sv_gondola:['kaohsiung','愛河貢多拉','🛶',800,'boat','#1565c0'],
+  sv_snowman:['hehuan','雪人公仔','⛄',700,'snow','#fafafa'], sv_wuling:['hehuan','武嶺紀念石','🪨',900,'stone','#9e9e9e'], sv_stars:['hehuan','星空照片','🌌',800,'frame','#1a237e'],
+  sv_beauty:['greenisland','睡美人岩','🏝️',1200,'stone','#5d4037'], sv_spring:['greenisland','朝日溫泉池','♨️',1000,'bowl','#80deea'], sv_deer:['greenisland','梅花鹿玩偶','🦌',900,'statue','#a1662f'],
+  sv_windlion:['kinmen','風獅爺','🦁',1300,'statue','#bcaaa4'], sv_bottle:['kinmen','高粱酒瓶擺飾','🍶',800,'bottle','#fafafa'], sv_knife:['kinmen','金門菜刀','🔪',900,'plate','#b0bec5'],
   sv_tatala:['lanyu','拼板舟模型','🚣',1800], sv_fish:['lanyu','飛魚吊飾','🐟',900], sv_tao:['lanyu','達悟陶偶','🏺',1100],
 };
+// 明信片：每張都是從當地 3D 景點實際拍下來的照片（[標題, 相機位置 x,y,z, 看的位置 x,y,z]，以景點中心為原點）
 const CARDS = {
-  taipei1:['101 跨年煙火', 'linear-gradient(#1a237e,#5c6bc0)', '🎆🏙️🎆'], taipei2:['城市與珍奶', 'linear-gradient(#81d4fa,#e1f5fe)', '🏙️🧋🚇'],
-  jiufen1:['燈籠山城', 'linear-gradient(#4a148c,#ff8a65)', '🏮⛰️🏮'], jiufen2:['茶樓芋圓', 'linear-gradient(#ffcc80,#fff3e0)', '🫖🍡🏮'],
-  kenting1:['南灣夕陽', 'linear-gradient(#ff7043,#ffcc80 55%,#29b6f6 56%)', '🌅🏄🌴'], kenting2:['鵝鑾鼻燈塔', 'linear-gradient(#4fc3f7,#e1f5fe)', '🗼🌊⛵'],
-  sunmoon1:['湖上小船', 'linear-gradient(#a5d6a7,#4db6ac)', '⛰️🛶⛰️'], sunmoon2:['慈恩塔', 'linear-gradient(#ffe082,#81c784)', '🛕🌳🌙'],
-  alishan1:['雲海日出', 'linear-gradient(#ff8a65,#fff59d 45%,#eceff1 46%)', '🌄☁️☁️'], alishan2:['森林小火車', 'linear-gradient(#a5d6a7,#2e7d32)', '🌲🚂🌲'],
-  penghu1:['雙心石滬', 'linear-gradient(#4dd0e1,#00838f)', '💞🌊🐚'], penghu2:['跨海大橋', 'linear-gradient(#81d4fa,#0277bd)', '🌉⛵🐟'],
-  taroko1:['峽谷吊橋', 'linear-gradient(#b0bec5,#26a69a)', '⛰️🌉⛰️'], taroko2:['長春祠瀑布', 'linear-gradient(#c5e1a5,#558b2f)', '⛩️💦🌿'],
-  lanyu1:['拼板舟', 'linear-gradient(#29b6f6,#01579b)', '🚣🌊🐟'], lanyu2:['飛魚季', 'linear-gradient(#ffe082,#0288d1)', '🐟🐟🐐'],
+  taipei1:['台北101 天際線', [0, 3, 6, 0, 17, -22]], taipei2:['城市街景與珍奶', [-13, 4, 7, 4, 5, -18]],
+  jiufen1:['燈籠山城', [7, 5, 4, -3, 6, -16]], jiufen2:['山城茶樓', [-5, 9, -8, -12, 8, -21]],
+  kenting1:['南灣沙灘', [-6, 4, 4, 4, 1.5, -26]], kenting2:['鵝鑾鼻燈塔', [14, 8, -8, 26, 9, -26]],
+  sunmoon1:['日月潭湖光山色', [-2, 5, -2, 6, 3, -34]], sunmoon2:['慈恩塔', [16, 13, -18, 30, 18, -40]],
+  alishan1:['雲海日出', [0, 10, -12, -4, 9, -60]], alishan2:['千年神木', [5, 3, -3, 12, 9, -16]],
+  penghu1:['雙心石滬', [-6, 15, -10, -6, 0, -24]], penghu2:['玄武岩海岸', [8, 4, -5, 18, 2.5, -15]],
+  taroko1:['峽谷吊橋', [0, 4, -2, 0, 5, -22]], taroko2:['長春祠瀑布', [-1, 9, -14, -7, 8, -26]],
+  lanyu1:['海邊的拼板舟', [-1, 3, -1, -4, .5, -7]], lanyu2:['飛魚季', [8, 3, 9, 11, 1.5, 4]],
+  tainan1:['赤崁樓', [0, 5, 2, 0, 4, -20]], tainan2:['安平古堡', [12, 6, -10, 20, 5, -26]],
+  yehliu1:['女王頭', [2, 3, -6, 6, 3, -16]], yehliu2:['奇岩海岸', [-8, 6, -2, -4, 1, -22]],
+  kaohsiung1:['愛河與85大樓', [0, 4, -4, 0, 12, -34]], kaohsiung2:['駁二藝術特區', [-6, 4, -4, -15, 3, -22]],
+  hehuan1:['武嶺雪景', [0, 4, 2, 0, 3, -14]], hehuan2:['合歡山主峰', [6, 8, -4, -4, 10, -44]],
+  greenisland1:['睡美人岩', [-4, 4, -4, -15, 2, -30]], greenisland2:['綠島燈塔', [8, 5, -6, 16, 7, -20]],
+  kinmen1:['風獅爺', [0, 3, -4, 0, 2.5, -14]], kinmen2:['莒光樓', [8, 6, -8, 16, 7, -26]],
 };
-const cardImg = id => { const C = CARDS[id]; if (!C) return ''; const k = id.replace(/\d+$/, ''); return `<div class="pcard" style="background:${C[1]}"><div class="pcArt">${C[2]}</div><div class="pcT">${TRIPS[k]?.em || ''} ${esc(TRIPS[k]?.n || '')}・${esc(C[0])}</div><div class="pcStamp">${TRIPS[k]?.em || '📮'}</div></div>`; };
+const CARD_CACHE = {};
+function cardShot(id) {   // 用遊戲裡的 3D 景點拍一張白天的照片
+  if (CARD_CACHE[id] !== undefined) return CARD_CACHE[id];
+  const C = CARDS[id], k = id.replace(/\d+$/, ''), T = TRIPS[k]; if (!C || !T || !W.renderer || !W.sky) return '';
+  const w = 480, h = 320, X = TRIP_X(T.i), v = C[1], cam = new THREE.PerspectiveCamera(48, w / h, .1, 400); cam.position.set(X + v[0], v[1], v[2]); cam.lookAt(X + v[3], v[4], v[5]); cam.updateMatrixWorld();
+  const U2 = W.sky.material.uniforms, cc = new THREE.Color(); W.renderer.getClearColor(cc);
+  const sv = {top:U2.top.value.clone(), mid:U2.mid.value.clone(), fog:W.scene.fog.color.clone(), sunI:W.sun.intensity, sunC:W.sun.color.clone(), hI:W.hemi.intensity, hC:W.hemi.color.clone(), hG:W.hemi.groundColor.clone(), st:W.stars.material.opacity, skyX:W.sky.position.x, sunP:W.sun.position.clone(), sunT:W.sun.target.position.clone(), cc};
+  let url = '';
+  try {
+    U2.top.value.set(ENVC.dayTop); U2.mid.value.set(ENVC.dayMid); W.scene.fog.color.set(ENVC.dayMid); W.renderer.setClearColor(ENVC.dayMid); W.sun.intensity = 1.9; W.sun.color.set('#fff1d0'); W.hemi.intensity = 1.3; W.hemi.color.set('#e3f4ff'); W.hemi.groundColor.set('#5d8f3a'); W.stars.material.opacity = 0;
+    const hid = (W.trip?.[k]?.hideShot || []).filter(o => o.visible); hid.forEach(o => o.visible = false); sv.hid = hid;
+    W.sky.position.x = X; const off = sv.sunP.clone().sub(sv.sunT); W.sun.target.position.set(X + v[3], 0, v[5]); W.sun.position.copy(W.sun.target.position).add(off); W.sun.target.updateMatrixWorld(); W.sun.updateMatrixWorld();
+    const rt = new THREE.WebGLRenderTarget(w, h, {samples:4}); rt.texture.colorSpace = THREE.SRGBColorSpace; const px = new Uint8Array(w * h * 4);
+    W.renderer.setRenderTarget(rt); W.renderer.render(W.scene, cam); W.renderer.readRenderTargetPixels(rt, 0, 0, w, h, px); W.renderer.setRenderTarget(null); rt.dispose();
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const x = cv.getContext('2d'), im = x.createImageData(w, h);
+    for (let y = 0; y < h; y++) im.data.set(px.subarray((h - 1 - y) * w * 4, (h - y) * w * 4), y * w * 4);
+    x.putImageData(im, 0, 0); url = cv.toDataURL('image/jpeg', .86);
+  } catch (e) { console.warn(e); }
+  finally { (sv.hid || []).forEach(o => o.visible = true); U2.top.value.copy(sv.top); U2.mid.value.copy(sv.mid); W.scene.fog.color.copy(sv.fog); W.renderer.setClearColor(sv.cc); W.sun.intensity = sv.sunI; W.sun.color.copy(sv.sunC); W.hemi.intensity = sv.hI; W.hemi.color.copy(sv.hC); W.hemi.groundColor.copy(sv.hG); W.stars.material.opacity = sv.st; W.sky.position.x = sv.skyX; W.sun.position.copy(sv.sunP); W.sun.target.position.copy(sv.sunT); W.sun.target.updateMatrixWorld(); }
+  return CARD_CACHE[id] = url;
+}
+const cardImg = id => { const C = CARDS[id]; if (!C) return ''; const k = id.replace(/\d+$/, ''), T = TRIPS[k], u = cardShot(id);
+  return `<div class="pcard" style="${u ? `background:#90caf9 url(${u}) center/cover` : 'background:linear-gradient(#81d4fa,#e1f5fe)'}">${u ? '' : `<div class="pcArt">${T?.em || '🖼️'}</div>`}<div class="pcGreet">Greetings from Taiwan</div><div class="pcT">${T?.em || ''} ${esc(T?.n || '')}・${esc(C[0])}</div><div class="pcStamp">${T?.em || '📮'}<small>${esc(T?.n || '')}</small></div></div>`; };
 const tripOf = () => TRIPS[S.place] ? S.place : null;
 const TW_SVG = `<path d="M63,4 L71,5 L79,8 L85,13 L83,21 L80,31 L77,43 L73,57 L69,69 L64,81 L59,91 L56,103 L51,96 L46,88 L42,78 L38,66 L35,54 L33,44 L35,35 L41,27 L49,18 L56,10 Z" fill="#9ccc65" stroke="#558b2f" stroke-width="1.2"/>
   <path d="M60,22 L70,40 L64,70 L58,86" fill="none" stroke="#7cb342" stroke-width="5" stroke-linecap="round" opacity=".7"/>
-  <ellipse cx="15" cy="56" rx="3.2" ry="2.4" fill="#9ccc65" stroke="#558b2f"/><ellipse cx="11" cy="60" rx="1.6" ry="1.2" fill="#9ccc65" stroke="#558b2f"/><ellipse cx="80" cy="95" rx="2.2" ry="1.7" fill="#9ccc65" stroke="#558b2f"/>`;
+  <ellipse cx="15" cy="56" rx="3.2" ry="2.4" fill="#9ccc65" stroke="#558b2f"/><ellipse cx="11" cy="60" rx="1.6" ry="1.2" fill="#9ccc65" stroke="#558b2f"/><ellipse cx="88" cy="84" rx="1.8" ry="1.4" fill="#9ccc65" stroke="#558b2f"/><ellipse cx="5" cy="30" rx="3.4" ry="2" fill="#9ccc65" stroke="#558b2f"/><ellipse cx="80" cy="95" rx="2.2" ry="1.7" fill="#9ccc65" stroke="#558b2f"/>`;
 const TRIP_HOME = [45, 44];
 function tripMapSvg(sel, extra = '') {
-  return `<svg viewBox="0 0 100 110" class="twmap">${TW_SVG}<text x="${TRIP_HOME[0]}" y="${TRIP_HOME[1] + 2}" font-size="7" text-anchor="middle">🏡</text>${Object.entries(TRIPS).map(([k, T]) => `<g><circle cx="${T.map[0]}" cy="${T.map[1]}" r="${k === sel ? 3.2 : 2.2}" fill="${k === sel ? '#e53935' : '#fff'}" stroke="#c62828" stroke-width="1"/><text x="${T.map[0] + (T.map[0] > 60 ? -4 : 4)}" y="${T.map[1] + 1.5}" font-size="4.2" font-weight="900" fill="#3e2723" text-anchor="${T.map[0] > 60 ? 'end' : 'start'}">${T.n}</text></g>`).join('')}${extra}</svg>`;
+  return `<svg viewBox="0 0 100 110" class="twmap">${TW_SVG}<text x="${TRIP_HOME[0]}" y="${TRIP_HOME[1] + 2}" font-size="7" text-anchor="middle">🏡</text>${Object.entries(TRIPS).map(([k, T]) => `<g><circle cx="${T.map[0]}" cy="${T.map[1]}" r="${k === sel ? 3.2 : 2.2}" fill="${k === sel ? '#e53935' : '#fff'}" stroke="#c62828" stroke-width="1"/><text x="${T.map[0] + (T.map[0] > 60 ? -4 : 4)}" y="${T.map[1] + 1.5}" font-size="3.6" font-weight="900" fill="#3e2723" text-anchor="${T.map[0] > 60 ? 'end' : 'start'}">${T.n}</text></g>`).join('')}${extra}</svg>`;
 }
 // 出發動畫：台灣地圖上，交通工具從家裡沿著虛線開到目的地
 function tripFx(k, cb) {
@@ -664,11 +727,11 @@ function openTripCard(to) {
 async function cardSend() {
   const k = tripOf(), id = S.cardSel, to = $('#pcTo')?.value || S.uid, msg = ($('#pcMsg')?.value || '').trim().slice(0, 80); if (!k || !CARDS[id]) return;
   const nm = to === S.uid ? '自己' : dn(S.friends.find(x => x.uid === to)?.farm || {}); if (to !== S.uid && !S.friends.some(x => x.uid === to)) return toast('選一位好友');
-  const r = await txMe(f => { if (f.coins < TRIP_CARD) return ab(`明信片要 ${TRIP_CARD} 金幣`); f.coins -= TRIP_CARD; addTrade(f, `寄明信片給${nm}`, -TRIP_CARD); (f.sent ??= []).push({to, toName:nm, msg, item:'', n:0, card:id, t:now()}); if (f.sent.length > 20) f.sent = f.sent.slice(-20); return {}; });
+  const t0 = now(); const r = await txMe(f => { if (f.coins < TRIP_CARD) return ab(`明信片要 ${TRIP_CARD} 金幣`); f.coins -= TRIP_CARD; addTrade(f, `寄明信片給${nm}`, -TRIP_CARD); (f.sent ??= []).push({to, toName:nm, msg, item:'', n:0, card:id, t:t0, due:t0 + POST_DELAY}); if (f.sent.length > 20) f.sent = f.sent.slice(-20); return {}; });
   if (r.abort) return toast(r.msg);
-  try { await B.sendGift({from:S.uid, fromName:myName(), to, kind:'card', card:id, msg, paper:'plain', item:'letter', n:1, t:now()}); }
+  try { await B.sendGift({from:S.uid, fromName:myName(), to, kind:'card', card:id, msg, paper:'plain', item:'letter', n:1, t:t0, due:t0 + POST_DELAY}); }
   catch (e) { await txMe(f => { f.coins += TRIP_CARD; return {}; }).catch(() => {}); return toast('寄送失敗，錢已經退回：' + e.message); }
-  S.cardDraft = ''; closeModal(); Music.sfx('coin'); if (to === S.uid) setTimeout(() => refreshFriends().catch(() => {}), 600); toast(`📮 明信片寄出了！郵差會送到${nm === '自己' ? '你' : nm}的農場信箱`); renderTop();
+  S.cardDraft = ''; closeModal(); Music.sfx('coin'); if (to === S.uid) setTimeout(() => refreshFriends().catch(() => {}), 600); toast(`📮 明信片寄出了！郵差大約 ${fmtDur(POST_DELAY)} 後送到${nm === '自己' ? '你' : nm}的農場，${nm === '自己' ? '記得簽收' : '對方簽收後會通知你'}`); renderTop();
   const box = W.trip?.[k]?.box; if (box) fx3(box.x, 2.4, box.z, '✉️ 寄出！', '#c62828');
 }
 function openTripBook() {
@@ -707,7 +770,7 @@ function tripTourBoard(G, k, x, z) {   // 景點的攤位：種子攤、紀念�
   const mb = grp(rod('#c62828', [.45, 1.3, .45], [0, .65, 0]), ball('#c62828', [.46, .3, .46], [0, 1.3, 0]), blk('#212121', [.4, .05, .1], [0, 1.05, .42]), blk('#fff', [.5, .25, .05], [0, .7, .45])); mb.position.set(x + 3.6, 0, z + 1.2); mb.traverse(o => o.userData.hit = {type:'tripBox'}); G.add(mb);
   A.box = {x:TRIP_X(T.i) + x + 3.6, z:z + 1.2};
   const sg = textPlane(`${T.em} ${T.n}`, '#ffffff', '#1565c0', 6, 1.1, 110); sg.position.set(0, 5.4, -8); G.add(sg);
-  G.add(rod('#6d4c41', [.12, 5, .12], [-2.8, 2.5, -8.05]), rod('#6d4c41', [.12, 5, .12], [2.8, 2.5, -8.05]));
+  G.add(rod('#6d4c41', [.12, 5, .12], [-2.8, 2.5, -8.05]), rod('#6d4c41', [.12, 5, .12], [2.8, 2.5, -8.05])); A.hideShot = [sg, shT, sdT];
 }
 function buildTripScene(k, G) {
   const T = TRIPS[k], A = W.trip[k] = {anim:[]}; tripBase(G, T);
@@ -803,6 +866,62 @@ function buildTripScene(k, G) {
       ...Array.from({length:12}, (_, i) => blk('#90a4ae', [.12, .5, .25], [-1.7 + (i % 6) * .7, i < 6 ? 1.75 : 1.25, 0]))); rack.position.set(11, 0, 4); G.add(rack);
     G.add(M(gS(), '#689f38', [14, 11, 12], [-24, -1, -48]), M(gS(), '#558b2f', [18, 8, 12], [20, -1, -54]));
     for (const [x, z] of [[-14, 4], [14, 9]]) { const gt = grp(blk('#fafafa', [.9, .5, .4], [0, .6, 0]), blk('#fafafa', [.35, .35, .3], [.55, .9, 0]), ...[[-.3, -.12], [.3, -.12], [-.3, .12], [.3, .12]].map(([a, b]) => rod('#eeeeee', [.05, .4, .05], [a, .2, b])), cone('#795548', [.06, .2, .06], [.6, 1.15, .08])); gt.position.set(x, 0, z); G.add(gt); }
+  } else if (k === 'tainan') {
+    const red = '#b71c1c';
+    G.add(blk('#9e9e9e', [24, 2.4, 10], [0, 1.2, -20]), blk('#fafafa', [24.4, .3, 10.4], [0, 2.5, -20]), ...[0, 1, 2, 3, 4].map(i => blk('#bdbdbd', [4, .45, .9], [0, .22 + i * .45, -14.6 - i * .5])));
+    for (const x of [-6, 6]) { const p = new THREE.Group(); p.add(blk(red, [6, 3, 5], [0, 1.5, 0]), ...gableRoof(6.4, 5.4, 3, .5, '#5d4037', red, {t:.2}), blk(red, [4.6, 1.8, 3.8], [0, 4.6, 0]), ...gableRoof(5, 4.2, 5.5, .5, '#5d4037', red, {t:.2}));
+      for (const [a, b] of [[-3.3, -2.8], [3.3, -2.8], [-3.3, 2.8], [3.3, 2.8], [-2.6, -2.2], [2.6, -2.2], [-2.6, 2.2], [2.6, 2.2]]) p.add(cone('#5d4037', [.25, .7, .25], [a, Math.abs(b) > 2.5 ? 3.3 : 5.8, b], [0, 0, a > 0 ? -.9 : .9]));
+      for (let i = 0; i < 4; i++) p.add(blk('#ffcc80', [.8, 1.2, .1], [-1.8 + i * 1.2, 1.4, 2.52])); p.position.set(x, 2.6, -20); G.add(p); }
+    const fort = grp(blk('#a1452e', [12, 3, 8], [0, 1.5, 0]), ...[-5, -2.5, 0, 2.5, 5].map(x => blk('#8d3a26', [1, .7, 8.2], [x, 3.3, 0])), rod('#fafafa', [1.2, 6, 1.2], [3, 4, 0]), M(gS(), '#fafafa', [1.3, .9, 1.3], [3, 7.2, 0]), rod('#c62828', [.05, 2, .05], [3, 8.6, 0]), blk('#c62828', [.8, .5, .03], [3.4, 9.2, 0]));
+    fort.position.set(22, 0, -28); G.add(fort);
+    for (const [x, z] of [[-15, -8], [14, -10], [-18, -26]]) G.add(grp(rod('#6d4c41', [.8, 3, .8], [0, 1.5, 0]), ...[[-1.5, 0], [1.5, .5], [0, -1.2], [.5, 1.4]].map(([a, b]) => ball('#33691e', [2.4, 1.4, 2.2], [a, 4 + Math.abs(a) * .2, b])), ...[-1, 0, 1].map(a => rod('#8d6e63', [.05, 2.6, .05], [a * 1.4, 2.4, .2]))).translateX(x).translateZ(z));
+    for (let i = 0; i < 8; i++) { const l = grp(rod('#212121', [.02, .3, .02], [0, .15, 0]), ball('#e53935', [.3, .36, .3], [0, -.2, 0]), rod('#fdd835', [.3, .06, .3], [0, -.52, 0])); l.position.set(-10.5 + i * 3, 5.4, -14.8); G.add(l); A.anim.push(l); }
+    G.add(blk('#5d4037', [24, .1, .1], [0, 5.6, -14.8]));
+  } else if (k === 'yehliu') {
+    sea(170, 60, 0, -50, '#039be5');
+    G.add(blk('#cbb68a', [60, .3, 30], [0, .05, -14]));
+    const rock = (x, z, h, r) => { G.add(rod('#bca07a', [r * .35, h, r * .35], [x, h / 2, z]), ball('#a1887f', [r, r * .7, r], [x, h + r * .3, z]), ball('#d7ccc8', [r * .9, r * .2, r * .9], [x, h + r * .15, z])); };
+    for (let i = 0; i < 14; i++) rock(-22 + (i * 7.3 % 44), -10 - (i * 5 % 18), 1 + (i % 4) * .5, .9 + (i % 3) * .4);
+    const q = grp(blk('#c8b391', [3, 1, 3], [0, .5, 0]), rod('#c8b391', [.35, 3, .35], [0, 2.4, 0], [0, 0, .15]), ball('#bca07a', [1.2, 1.9, .9], [.6, 4.6, 0], [0, 0, .55]), ball('#bca07a', [.6, .7, .6], [-.3, 5.1, 0]));
+    q.position.set(6, 0, -16); G.add(q); const qt = textPlane('女王頭', '#ffffff', '#6d4c41', 2.2, .5, 90); qt.position.set(6, 1.5, -14.4); G.add(qt);
+    for (let i = 0; i < 6; i++) G.add(ball(['#8d6e63', '#a1887f'][i % 2], [1.6, 1.1, 1.2], [-25 + i * 10, .2, -24]));
+    G.add(grp(rod('#fafafa', [.6, 4, .6], [0, 2, 0]), rod('#212121', [.5, .8, .5], [0, 4.4, 0]), cone('#c62828', [.6, .5, .6], [0, 5.1, 0])).translateX(-20).translateZ(-18));
+  } else if (k === 'kaohsiung') {
+    const river = waveWater(170, 7, '#1e88e5', .9, 1.8); river.position.set(0, .15, -15); G.add(river); A.water = river;
+    G.add(blk('#90a4ae', [170, .5, .6], [0, .1, -11.3]), blk('#90a4ae', [170, .5, .6], [0, .1, -18.7]));
+    const tw = grp(blk('#455a64', [4, 22, 4], [-3.4, 11, 0]), blk('#455a64', [4, 22, 4], [3.4, 11, 0]), blk('#546e7a', [10.8, 8, 4.2], [0, 26, 0]), blk('#37474f', [6, 6, 3.6], [0, 33, 0]), blk('#263238', [3, 4, 3], [0, 38, 0]), rod('#cfd8dc', [.15, 5, .15], [0, 42.5, 0]));
+    for (let y = 2; y < 36; y += 2) tw.add(blk('#90caf9', [y > 22 ? 10.9 : 4.1, .5, 4.1], [y > 22 ? 0 : -3.4, y, 0]), ...(y <= 22 ? [blk('#90caf9', [4.1, .5, 4.1], [3.4, y, 0])] : []));
+    tw.position.set(4, 0, -36); G.add(tw);
+    for (let i = 0; i < 3; i++) G.add(grp(blk('#a1452e', [6, 4, 7], [0, 2, 0]), ...gableRoof(6.2, 7.2, 4, .35, '#5d4037', '#a1452e', {t:.15}), blk('#fdd835', [2, 2.4, .1], [0, 1.2, 3.55])).translateX(-20 + i * 7).translateZ(-26));
+    const rb = grp(blk('#90a4ae', [1.6, 2.2, 1], [0, 2.4, 0]), blk('#90a4ae', [1.2, 1, 1], [0, 4, 0]), ball('#ffeb3b', U(.15), [.3, 4.1, .5]), ball('#ffeb3b', U(.15), [-.3, 4.1, .5]), ...[-1.1, 1.1].map(x => blk('#78909c', [.5, 2, .5], [x, 2.4, 0])), ...[-.45, .45].map(x => blk('#78909c', [.55, 1.4, .55], [x, .7, 0])));
+    rb.position.set(-8, 0, -22); rb.scale.setScalar(1.6); G.add(rb);
+    A.boats = []; A.keep = []; for (const [x, c] of [[-10, '#fafafa'], [12, '#ffcc80']]) { const b = grp(blk(c, [3.2, .5, 1.1], [0, .3, 0]), blk('#c62828', [3.3, .1, 1.2], [0, .58, 0]), rod('#ffd54f', [.04, 1, .04], [-1.2, 1, 0])); b.position.set(x, 0, -15); b.rotation.y = 0; G.add(b); A.boats.push(b); A.keep.push(b); }
+    const tram = grp(blk('#fafafa', [8, 2, 1.8], [0, 1.4, 0]), blk('#43a047', [8.05, .5, 1.85], [0, .6, 0]), blk('#81d4fa', [7, .7, 1.86], [0, 1.7, 0])); tram.position.set(0, 0, -9.3); G.add(tram); A.taxi = tram; A.keep.push(tram);
+    for (const x of [-16, 16]) { const p = palmTree(4); p.position.set(x, 0, -6); G.add(p); }
+  } else if (k === 'hehuan') {
+    for (const [x, z, s2] of [[-30, -50, 30], [0, -58, 40], [28, -48, 28], [-12, -40, 18], [16, -38, 16]]) G.add(cone('#90a4ae', [s2 * .8, s2, s2 * .7], [x, s2 / 2 - 2, z]), cone('#fafafa', [s2 * .42, s2 * .5, s2 * .37], [x, s2 * .76 - 2, z]));
+    for (let i = 0; i < 16; i++) { const p = pine(4 + i % 3, '#2e5e2a'); p.add(cone('#ffffff', [1.1, 1, 1.1], [0, 4.6 + i % 3, 0])); p.position.set(-24 + (i * 11 % 48), 0, -10 - (i * 7 % 16)); if (Math.abs(p.position.x) > 4) G.add(p); }
+    const st = grp(ball('#757575', [3, 2.4, 1.6], [0, 1.8, 0]), blk('#c62828', [2.6, .9, .1], [0, 2.3, 1.5])); st.position.set(0, 0, -14); G.add(st); const stt = textPlane('武嶺 3275m', '#c62828', '#ffffff', 2.4, .6, 90); stt.position.set(0, 2.3, -12.4); G.add(stt);
+    const sm = grp(ball('#fafafa', U(.9), [0, .9, 0]), ball('#fafafa', U(.65), [0, 2.1, 0]), ball('#fafafa', U(.45), [0, 3, 0]), cone('#ff7043', [.1, .5, .1], [0, 3, .5], [Math.PI / 2, 0, 0]), ball('#212121', U(.07), [.18, 3.15, .4]), ball('#212121', U(.07), [-.18, 3.15, .4]), rod('#c62828', [.5, .15, .5], [0, 2.6, 0]));
+    sm.position.set(-7, 0, -6); G.add(sm);
+    for (let i = 0; i < 30; i++) G.add(ball('#ffffff', [.8 + i % 3 * .4, .2, .8], [-30 + (i * 13 % 60), .05, -4 - (i * 7 % 24)]));
+  } else if (k === 'greenisland') {
+    sea(170, 64, 0, -46, '#0097a7');
+    G.add(blk('#d7ccc8', [160, .05, 10], [0, .01, -9]));
+    const sl = grp(ball('#4e342e', [6, 2.2, 3], [0, 0, 0]), ball('#5d4037', [2.4, 2.6, 2.4], [-6.5, .6, 0]), ball('#5d4037', [1.2, 1.4, 1.2], [-8.6, 1.2, 0]), ball('#4e342e', [3, 1.8, 2.6], [5.5, .3, 0]), ball('#4e342e', [2, 1.3, 2], [9, 0, 0]));
+    sl.position.set(-14, 0, -32); G.add(sl);
+    G.add(grp(M(gTap(), '#fafafa', [1.2, 8, 1.2], [0, 4, 0]), rod('#fafafa', [1.4, .3, 1.4], [0, 8.1, 0]), rod('#ffe082', [.8, 1, .8], [0, 8.8, 0]), cone('#212121', [.9, .7, .9], [0, 9.6, 0])).translateX(16).translateZ(-20));
+    for (const [x, z, r] of [[-6, -13, 1.8], [-1.5, -14, 1.4], [-9.5, -15, 1.2]]) { G.add(rod('#9e9e9e', [r + .2, .5, r + .2], [x, .25, z]), rod('#80deea', [r, .1, r], [x, .5, z])); }
+    A.clouds = []; for (let i = 0; i < 6; i++) { const c2 = M(gS(), new THREE.MeshLambertMaterial({color:'#ffffff', transparent:true, opacity:.5}), [.6, .9, .6], [-6 + (i % 3) * 2.3, 1.2 + i * .2, -13.5 - (i % 2)]); G.add(c2); A.anim.push(c2); }
+    for (const [x, z] of [[-14, 3], [12, 6], [15, -2]]) { const d = grp(blk('#a1662f', [1.1, .55, .45], [0, .85, 0]), blk('#a1662f', [.3, .6, .3], [.6, 1.3, 0]), ball('#a1662f', [.3, .25, .25], [.75, 1.6, 0]), ...[[-.4, -.15], [.4, -.15], [-.4, .15], [.4, .15]].map(([a, b]) => rod('#8d5524', [.05, .6, .05], [a, .3, b])), ...[0, 1, 2, 3].map(i => ball('#ffffff', U(.05), [-.3 + i * .2, 1.1, .23])), rod('#6d4c41', [.03, .4, .03], [.75, 1.9, .1], [0, 0, -.4])); d.position.set(x, 0, z); G.add(d); }
+  } else if (k === 'kinmen') {
+    const house = (x, z) => { const h = grp(blk('#c62828', [6, 3, 4], [0, 1.5, 0]), ...gableRoof(6.4, 4.4, 3, .45, '#b23a2e', '#c62828', {t:.2}), blk('#5d4037', [1.2, 2, .1], [0, 1, 2.02]), ...[-2, 2].map(a => blk('#fafafa', [.9, .9, .1], [a, 1.7, 2.02])), cone('#b23a2e', [.25, 1.2, .25], [3.3, 4.2, 0], [0, 0, -.9]), cone('#b23a2e', [.25, 1.2, .25], [-3.3, 4.2, 0], [0, 0, .9])); h.position.set(x, 0, z); G.add(h); };
+    house(-14, -20); house(-6, -24); house(14, -18);
+    const L = grp(blk('#9e9e9e', [1.6, .8, 1.6], [0, .4, 0]), ball('#bcaaa4', [.8, 1.3, .7], [0, 1.9, 0]), ball('#bcaaa4', U(.65), [0, 3.4, 0]), ball('#212121', U(.12), [.25, 3.55, .55]), ball('#212121', U(.12), [-.25, 3.55, .55]), blk('#5d4037', [.8, .2, .2], [0, 3.1, .58]), blk('#c62828', [1.8, 1.6, .1], [0, 2.3, -.5]), blk('#c62828', [1.2, .3, .9], [0, 2.9, 0]), ...[-.8, .8].map(a => ball('#bcaaa4', [.25, .6, .25], [a, 2.1, .3])));
+    L.position.set(0, 0, -14); L.scale.setScalar(1.5); G.add(L);
+    const tw = new THREE.Group(); tw.add(blk('#9e9e9e', [8, 1.2, 8], [0, .6, 0])); for (let i = 0; i < 3; i++) tw.add(blk(i ? '#ffd54f' : '#fafafa', [6 - i * 1.4, 2.4, 6 - i * 1.4], [0, 2.4 + i * 3, 0]), ...gableRoof(6.6 - i * 1.4, 6.6 - i * 1.4, 3.6 + i * 3, .35, '#c62828', '#ffd54f', {t:.18}));
+    tw.position.set(18, 0, -30); G.add(tw);
+    for (let r = 0; r < 5; r++) for (let i = 0; i < 14; i++) G.add(rod('#8d9a3a', [.05, 1.6, .05], [-24 + i * .8, .8, -6 - r * .9]), ball('#b71c1c', [.14, .3, .14], [-24 + i * .8, 1.7, -6 - r * .9]));
   }
   tripTourBoard(G, k, 0, 3);
   for (const o of A.anim) o.userData.ry0 = o.rotation.z;
@@ -818,10 +937,11 @@ function tripTick(t, dt) {
   const k = tripOf(); const cap = $('#tripCap'); if (cap) cap.hidden = !k; if (!k || S.scene !== k) return;
   const A = W.trip[k]; if (!A) return;
   if (A.water) waveTick(A.water, t, k === 'taroko' ? .08 : .14);
-  for (const [i, b] of (A.boats || []).entries()) { b.position.y = .12 + Math.sin(t * 1.6 + i) * .1; b.rotation.z = Math.sin(t * 1.2 + i * 2) * .05; if (k === 'sunmoon' && i > 0) b.position.x = (i === 1 ? 6 : -14) + Math.sin(t * .15 + i) * 6; }
+  for (const [i, b] of (A.boats || []).entries()) { b.position.y = .12 + Math.sin(t * 1.6 + i) * .1; b.rotation.z = Math.sin(t * 1.2 + i * 2) * .05; if (k === 'sunmoon' && i > 0) b.position.x = (i === 1 ? 6 : -14) + Math.sin(t * .15 + i) * 6; if (k === 'kaohsiung') { b.position.x = ((t * 1.5 + i * 40) % 80) - 40; b.rotation.y = 0; } }
   for (const [i, o] of (A.anim || []).entries()) { if (k === 'taroko') { o.rotation.z = Math.sin(t * 1.4) * .012; continue; } o.rotation.z = Math.sin(t * 2 + i) * .12; }
   if (A.train) { A.train.position.x = ((t * 2.2) % 80) - 40; }
-  if (A.taxi) { A.taxi.position.x = ((t * 5) % 60) - 30; }
+  if (A.taxi) { A.taxi.position.x = ((t * (k === 'kaohsiung' ? 3 : 5)) % 60) - 30; }
+  if (k === 'greenisland') for (const [i, c] of (A.anim || []).entries()) { c.position.y = 1.2 + ((t * .6 + i * .3) % 2.2); c.material.opacity = .5 * (1 - ((t * .6 + i * .3) % 2.2) / 2.2); }
   for (const [i, c] of (A.clouds || []).entries()) { c.position.x = ((-60 + i * 8 + t * .6) % 128 + 128) % 128 - 64; }
   if (A.light) A.light.rotation.y = t * .8;
   for (const [i, f] of (A.fall || []).entries()) f.material.opacity = .55 + Math.sin(t * 9 + i * 2) * .2;
@@ -865,6 +985,19 @@ function souvModel(id, g) {
     case 'sv_weave': a(blk('#5d4037', [.7, .9, .04], [0, Y + .5, 0]), ...[0, 1, 2, 3].map(i => blk(['#c62828', '#212121', '#fdd835', '#fafafa'][i], [.62, .12, .05], [0, Y + .25 + i * .2, 0]))); break;
     case 'sv_tatala': a(blk('#fafafa', [.9, .18, .26], [0, Y + .12, 0]), blk('#c62828', [.91, .04, .27], [0, Y + .16, 0]), blk('#fafafa', [.06, .35, .22], [.45, Y + .25, 0], [0, 0, -.35]), blk('#fafafa', [.06, .35, .22], [-.45, Y + .25, 0], [0, 0, .35])); break;
     case 'sv_fish': a(rod('#8d6e63', [.02, .9, .02], [0, Y + .45, 0]), ...[0, 1, 2].map(i => blk('#90a4ae', [.25, .08, .04], [.1, Y + .4 + i * .18, 0]))); break;
+    default: { const sv = SOUV[id] || [], sh = sv[4], c = sv[5] || '#bcaaa4';
+      if (sh === 'tower') { for (let i = 0; i < 5; i++) a(blk(c, [.36 - i * .05, .28, .36 - i * .05], [0, Y + .14 + i * .28, 0]), blk('#ffd54f', [.4 - i * .05, .04, .4 - i * .05], [0, Y + .28 + i * .28, 0])); a(rod('#cfd8dc', [.02, .3, .02], [0, Y + 1.55, 0])); }
+      else if (sh === 'bowl') a(M(gBucket(), c, [.36, .22, .36], [0, Y + .11, 0]), rod('#ffcc80', [.3, .03, .3], [0, Y + .2, 0]), rod('#8d6e63', [.015, .4, .015], [.1, Y + .35, .05], [0, 0, .4]));
+      else if (sh === 'statue') a(ball(c, [.22, .3, .2], [0, Y + .3, 0]), ball(c, U(.17), [0, Y + .72, 0]), ball('#212121', U(.03), [.07, Y + .76, .14]), ball('#212121', U(.03), [-.07, Y + .76, .14]), blk('#c62828', [.3, .2, .03], [0, Y + .45, -.16]));
+      else if (sh === 'queen') a(blk('#a1887f', [.5, .15, .4], [0, Y + .07, 0]), rod(c, [.06, .45, .06], [0, Y + .35, 0], [0, 0, .15]), ball(c, [.16, .26, .14], [.05, Y + .68, 0], [0, 0, .5]));
+      else if (sh === 'plate') a(blk(c, [.6, .05, .4], [0, Y + .25, 0], [-.9, 0, 0]), blk('#5d4037', [.06, .25, .06], [0, Y + .12, .1]));
+      else if (sh === 'box') a(blk(c, [.45, .25, .32], [0, Y + .13, 0]), ball('#fff3e0', [.12, .06, .1], [0, Y + .3, 0]));
+      else if (sh === 'boat') a(blk(c, [.8, .14, .22], [0, Y + .1, 0]), blk(c, [.06, .3, .2], [.42, Y + .2, 0], [0, 0, -.4]), blk(c, [.06, .3, .2], [-.42, Y + .2, 0], [0, 0, .4]), rod('#ffd54f', [.015, .5, .015], [.2, Y + .35, 0]));
+      else if (sh === 'snow') a(ball('#fafafa', U(.25), [0, Y + .25, 0]), ball('#fafafa', U(.17), [0, Y + .6, 0]), cone('#ff7043', [.03, .12, .03], [0, Y + .6, .17], [Math.PI / 2, 0, 0]), rod('#c62828', [.18, .05, .18], [0, Y + .46, 0]));
+      else if (sh === 'stone') a(ball(c, [.4, .3, .26], [0, Y + .22, 0]), blk('#c62828', [.3, .1, .02], [0, Y + .28, .25]));
+      else if (sh === 'frame') a(blk('#5d4037', [.7, .55, .05], [0, Y + .35, 0], [-.15, 0, 0]), blk(c, [.62, .47, .06], [0, Y + .35, 0], [-.15, 0, 0]), ...[0, 1, 2, 3, 4].map(i => ball('#fff59d', U(.025), [-.2 + i * .1, Y + .3 + (i % 2) * .1, .06])));
+      else if (sh === 'bottle') a(rod(c, [.13, .4, .13], [0, Y + .2, 0]), rod(c, [.05, .2, .05], [0, Y + .5, 0]), rod('#c62828', [.06, .05, .06], [0, Y + .62, 0]), blk('#c62828', [.2, .15, .02], [0, Y + .22, .13]));
+      else a(ball(c, U(.25), [0, Y + .25, 0])); break; }
     case 'sv_tao': a(ball('#a1887f', [.18, .3, .18], [0, Y + .3, 0]), ball('#a1887f', U(.12), [0, Y + .7, 0]), ball('#212121', U(.025), [.05, Y + .72, .1]), ball('#212121', U(.025), [-.05, Y + .72, .1])); break;
   }
 }
@@ -963,12 +1096,16 @@ const MAXPOND = 11, START_POND = 2;
 const HB_X = -300, BOAT_PRICE = 15000, BOAT_LV = 10, FUEL_P = 20;
 const ENG = [{n:'小柴油引擎', sp:1, c:0}, {n:'渦輪柴油引擎', sp:1.2, c:8000}, {n:'雙引擎', sp:1.45, c:20000}, {n:'高速船外機', sp:1.75, c:45000}, {n:'遠洋巨型引擎', sp:2.1, c:90000}];
 const HOLD = [{n:'小貨艙', cap:6, c:0}, {n:'冷藏貨艙', cap:9, c:6000}, {n:'大冷凍艙', cap:12, c:15000}, {n:'雙層冷凍艙', cap:16, c:35000}, {n:'超大遠洋艙', cap:22, c:70000}];
-const TANK = e => 60 + e * 25;
+const HULL = [{n:'小漁船', em:'🚤', c:0, lv:10, cap:1, eMax:2, hMax:2}, {n:'中型漁船', em:'🛥️', c:60000, lv:15, cap:1.35, eMax:3, hMax:3}, {n:'大型遠洋漁船', em:'🚢', c:200000, lv:22, cap:1.7, eMax:4, hMax:4}];
+const hullOf = b => HULL[b?.hull || 0];
+const TANK = (e, h = 0) => 60 + e * 25 + h * 40;
 const ZONES = {
   near:{n:'近海', em:'🌊', fuel:6, h:1, lv:10, eng:0, tier:[1], w:[1], chest:.1, d:'離港 20 公里，安全好上手'},
   mid:{n:'外海', em:'🐬', fuel:14, h:2, lv:13, eng:0, tier:[1, 2], w:[.35, .65], chest:.2, d:'黑潮經過，鰹魚、金目鯛很多'},
   deep:{n:'深海', em:'🦑', fuel:28, h:3.5, lv:16, eng:2, tier:[1, 2, 3], w:[.15, .4, .45], chest:.35, d:'千公尺深的海溝，有奇怪的深海生物（要雙引擎）'},
-  far:{n:'遠洋漁場', em:'🐋', fuel:50, h:6, lv:20, eng:3, tier:[2, 3, 4], w:[.25, .4, .35], chest:.55, d:'太平洋正中央，傳說中的大魚（要高速船外機）'},
+  reef:{n:'珊瑚礁海域', em:'🪸', fuel:20, h:2.5, lv:15, eng:0, hull:1, tier:[1, 2, 3], w:[.3, .45, .25], chest:.3, k:['c'], d:'蝦、蟹、貝類的天堂（要中型漁船）'},
+  far:{n:'遠洋漁場', em:'🐋', fuel:50, h:6, lv:20, eng:3, tier:[2, 3, 4], w:[.25, .4, .35], chest:.55, k:['f'], d:'太平洋正中央，傳說中的大魚（要高速船外機）'},
+  arctic:{n:'北方冰洋', em:'🧊', fuel:70, h:8, lv:24, eng:3, hull:2, tier:[2, 3, 4], w:[.15, .4, .45], chest:.65, d:'冰冷的海裡有巨大的帝王蟹和藍龍蝦（要大型遠洋漁船）'},
 };
 const DEEP_LIST = [
   ['ds_filefish','剝皮魚',1,45,'fish',{t:'fish',c:'#8d8f6a',c2:'#d9d3b0',len:.5,h:.3}],
@@ -983,20 +1120,36 @@ const DEEP_LIST = [
   ['ds_sword','劍旗魚',4,800,'fish',{t:'fish',c:'#263238',c2:'#b0bec5',len:.95,h:.26,beak:true}],
   ['ds_gsquid','大王烏賊',4,950,'squid',{t:'squid',c:'#b71c1c'}],
   ['ds_frilled','皺鰓鯊',4,1100,'fish',{t:'eel',c:'#5d4037'}],
+  ['ds_sakura','櫻花蝦',1,40,'shrimp',{t:'shrimp',c:'#f48fb1'},'c'],
+  ['ds_mantis','蝦蛄',1,65,'shrimp',{t:'shrimp',c:'#a1887f'},'c'],
+  ['ds_flower','花蟹',1,70,'crab',{t:'crab',c:'#8d6e63',c2:'#ffcc80'},'c'],
+  ['ds_hairtail','白帶魚',1,50,'fish',{t:'fish',c:'#cfd8dc',c2:'#ffffff',len:.9,h:.12}],
+  ['ds_lobster','龍蝦',2,220,'shrimp',{t:'claw',c:'#c62828'},'c'],
+  ['ds_redcrab','紅蟳',2,180,'crab',{t:'crab',c:'#d84315',c2:'#ffab91'},'c'],
+  ['ds_scallop','北海道干貝',2,150,'shell',{t:'scallop',c:'#ffab91'},'c'],
+  ['ds_octo','大章魚',2,170,'squid',{t:'octopus',c:'#ad1457'},'c'],
+  ['ds_mahi','鬼頭刀',2,130,'fish',{t:'fish',c:'#43a047',c2:'#fff176',fin:'#1e88e5',len:.8,h:.3}],
+  ['ds_abalone','九孔鮑',3,300,'shell',{t:'abalone',c:'#6d4c41'},'c'],
+  ['ds_urchin','馬糞海膽',3,340,'shell',{t:'urchin',c:'#4a148c'},'c'],
+  ['ds_snowcrab','松葉蟹',3,420,'crab',{t:'crab',c:'#ff8a65',c2:'#ffe0b2'},'c'],
+  ['ds_bigeye','大目鮪',3,450,'fish',{t:'fish',c:'#1a237e',c2:'#e8eaf6',fin:'#fdd835',len:.95,h:.34}],
+  ['ds_kingcrab','鱈場帝王蟹',4,1300,'crab',{t:'crab',c:'#b71c1c',c2:'#ffcdd2'},'c'],
+  ['ds_bluelob','藍龍蝦',4,1500,'shrimp',{t:'claw',c:'#1565c0'},'c'],
+  ['ds_oyster','巨型生蠔',4,900,'shell',{t:'oyster',c:'#90a4ae'},'c'],
   ['ds_pearl','黑珍珠',0,1500,'shell',{t:'clam',c:'#37474f',c2:'#9e9e9e'}],
 ];
 const DEEP_IDS = DEEP_LIST.map(r => r[0]);
 // 深海魚加進海鮮表，但不列舉（魚塭商店、訂單、隨機獎勵都不會出現），只有漁船抓得到
-for (const [id, n, tier, sell, cat, m] of DEEP_LIST) Object.defineProperty(SEA, id, {value:{n, cat, lv:10, t:0, cost:0, y:1, sell, exp:Math.round(sell / 30) + 2, m, deep:tier || 5}, enumerable:false, writable:true, configurable:true});
+for (const [id, n, tier, sell, cat, m, kd] of DEEP_LIST) Object.defineProperty(SEA, id, {value:{n, cat, lv:10, t:0, cost:0, y:1, sell, exp:Math.round(sell / 30) + 2, m, deep:tier || 5, kd:kd || 'f'}, enumerable:false, writable:true, configurable:true});
 const boatOf = f => f?.boat?.own ? f.boat : null;
 const boatEnd = b => b?.go ? b.go.t0 + b.go.dur : 0;
 const boatState = b => !b ? 'none' : !b.go ? 'dock' : now() < boatEnd(b) ? 'sea' : 'back';
 function boatRoll(zk, b) {   // 出發前先決定漁獲（交易裡不能用亂數）
-  const Z = ZONES[zk], cap = HOLD[b.hold || 0].cap, n = Math.max(2, Math.round(cap * (.7 + Math.random() * .3))), cargo = {};
+  const Z = ZONES[zk], cap = Math.round(HOLD[b.hold || 0].cap * hullOf(b).cap), n = Math.max(2, Math.round(cap * (.7 + Math.random() * .3))), cargo = {};
   for (let i = 0; i < n; i++) { let r = Math.random(), tier = Z.tier[Z.tier.length - 1]; for (let j = 0; j < Z.tier.length; j++) { if (r < Z.w[j]) { tier = Z.tier[j]; break; } r -= Z.w[j]; }
-    const L = DEEP_LIST.filter(x => x[2] === tier), id = rnd(L)[0]; cargo[id] = (cargo[id] || 0) + 1; }
+    const L = DEEP_LIST.filter(x => x[2] === tier && (!Z.k || Z.k.includes(x[6] || 'f'))), id = rnd(L.length ? L : DEEP_LIST.filter(x => x[2] === tier))[0]; cargo[id] = (cargo[id] || 0) + 1; }
   let chest = null;
-  if (Math.random() < Z.chest) { const lv = Object.keys(ZONES).indexOf(zk); chest = {c:500 + Math.floor(Math.random() * 1500) * (lv + 1), pearl:Math.random() < .15 + lv * .1 ? 1 : 0, fert:Math.random() < .5 ? 2 + lv : 0, gold:Math.random() < .08 * (lv + 1) ? 1 : 0}; }
+  if (Math.random() < Z.chest) { const lv = Math.min(4, Object.keys(ZONES).indexOf(zk)); chest = {c:500 + Math.floor(Math.random() * 1500) * (lv + 1), pearl:Math.random() < .15 + lv * .1 ? 1 : 0, fert:Math.random() < .5 ? 2 + lv : 0, gold:Math.random() < .08 * (lv + 1) ? 1 : 0}; }
   return {cargo, chest};
 }
 async function boatBuy() {
@@ -1005,18 +1158,24 @@ async function boatBuy() {
   if (r.abort) return toast(r.msg); Music.sfx('coin'); toast('🚢 恭喜！你有自己的漁船了，送你 30 公升燃料'); renderTop(); renderScene(); rerenderModal();
 }
 async function boatUp(k) {
-  const L = k === 'eng' ? ENG : HOLD, r = await txMe(f => { const b = boatOf(f); if (!b) return ab('先買漁船'); if (b.go) return ab('漁船出海中，回港才能改裝'); const nx = (b[k] || 0) + 1; if (!L[nx]) return ab('已經是最高級了'); if (f.coins < L[nx].c) return ab(`升級要 ${L[nx].c} 金幣`);
+  const L = k === 'eng' ? ENG : HOLD, r = await txMe(f => { const b = boatOf(f); if (!b) return ab('先買漁船'); if (b.go) return ab('漁船出海中，回港才能改裝'); const nx = (b[k] || 0) + 1; if (!L[nx]) return ab('已經是最高級了'); if (nx > hullOf(b)[k === 'eng' ? 'eMax' : 'hMax']) return ab(`${hullOf(b).n}裝不下，先把船升級成更大的船`); if (f.coins < L[nx].c) return ab(`升級要 ${L[nx].c} 金幣`);
     f.coins -= L[nx].c; b[k] = nx; addTrade(f, `漁船升級${L[nx].n}`, -L[nx].c); return {}; });
   if (r.abort) return toast(r.msg); Music.sfx('ding'); toast(`🔧 換上了${L[boatOf(S.my)[k]].n}！`); renderTop(); renderScene(); rerenderModal();
 }
+async function boatHull() {
+  const nx = HULL[(boatOf(S.my)?.hull || 0) + 1]; if (!nx) return toast('已經是最大的船了');
+  const r = await txMe(f => { const b = boatOf(f); if (!b) return ab('先買漁船'); if (b.go) return ab('漁船出海中，回港才能換船'); if (levelOf(f.exp).L < nx.lv) return ab(`Lv.${nx.lv} 才能換${nx.n}`); if (f.coins < nx.c) return ab(`換船要 ${nx.c} 金幣`);
+    f.coins -= nx.c; b.hull = (b.hull || 0) + 1; addTrade(f, `漁船升級：${nx.n}`, -nx.c); addLog(f, `🚢 漁船升級成${nx.n}`); return {}; });
+  if (r.abort) return toast(r.msg); Music.sfx('ding'); toast(`${nx.em} 換成${nx.n}了！貨艙更大、能裝更好的引擎，還能去新的漁場`); renderTop(); renderScene(); rerenderModal();
+}
 async function boatFuel(n) {
-  const r = await txMe(f => { const b = boatOf(f); if (!b) return ab('先買漁船'); const room = TANK(b.eng || 0) - (b.fuel || 0), m = Math.min(room, n === 'max' ? room : +n); if (m <= 0) return ab('油箱已經滿了');
+  const r = await txMe(f => { const b = boatOf(f); if (!b) return ab('先買漁船'); const room = TANK(b.eng || 0, b.hull || 0) - (b.fuel || 0), m = Math.min(room, n === 'max' ? room : +n); if (m <= 0) return ab('油箱已經滿了');
     if (f.coins < m * FUEL_P) return ab(`加 ${m} 公升要 ${m * FUEL_P} 金幣`); f.coins -= m * FUEL_P; b.fuel = (b.fuel || 0) + m; addTrade(f, `漁船加油 ${m} 公升`, -m * FUEL_P); return {}; });
   if (r.abort) return toast(r.msg); Music.sfx('pop'); toast('⛽ 加好油了！'); renderTop(); rerenderModal();
 }
 async function boatGo(zk) {
   const Z = ZONES[zk], b0 = boatOf(S.my); if (!Z || !b0) return; const roll = boatRoll(zk, b0), dur = Math.round(Z.h * 3600000 / ENG[b0.eng || 0].sp / SPEED);
-  const r = await txMe(f => { const b = boatOf(f); if (!b) return ab('先買漁船'); if (b.go) return ab('漁船已經出海了'); if (levelOf(f.exp).L < Z.lv) return ab(`Lv.${Z.lv} 才能去${Z.n}`); if ((b.eng || 0) < Z.eng) return ab(`要先把引擎升級成「${ENG[Z.eng].n}」`);
+  const r = await txMe(f => { const b = boatOf(f); if (!b) return ab('先買漁船'); if (b.go) return ab('漁船已經出海了'); if (levelOf(f.exp).L < Z.lv) return ab(`Lv.${Z.lv} 才能去${Z.n}`); if ((b.eng || 0) < Z.eng) return ab(`要先把引擎升級成「${ENG[Z.eng].n}」`); if ((b.hull || 0) < (Z.hull || 0)) return ab(`要先把漁船升級成「${HULL[Z.hull].n}」`);
     if ((b.fuel || 0) < Z.fuel) return ab(`燃料不夠，要 ${Z.fuel} 公升（加油站可以加油）`); b.fuel -= Z.fuel; b.go = {z:zk, t0:now(), dur, cargo:roll.cargo, chest:roll.chest}; addLog(f, `🚢 漁船出海去${Z.n}`); return {}; });
   if (r.abort) return toast(r.msg); closeModal(); Music.sfx('ding'); toast(`🚢 出航！漁船開往${Z.n}，大約 ${fmtDur(dur)} 後回港`);
   W.hbLeave = {uid:S.uid, t0:performance.now()}; renderScene(); renderTop();
@@ -1062,21 +1221,22 @@ function openBoat() {
   S.modal = () => {
     const f = S.my, b = boatOf(f), L = levelOf(f.exp).L;
     if (!b) return openModal('🚢 深海漁船', `<div class="popbox">🚢 <b>深海漁船</b><br><small>有了漁船就能出海捕撈<b>碼頭釣不到的深海魚</b>，還有機會撈到<b>寶箱</b>！出海要花燃料、要等好幾個小時；開得越遠花越多，魚也越稀有。抓回來的魚可以交「外海訂單」賺大錢。好友在⚓漁港都看得到你的船！</small></div>
-      <div class="hbcatch">${DEEP_LIST.slice(0, 12).map(x => `<div class="hbf ${x[2] >= 4 ? 'rare' : ''}">${itemIcon(x[0])}<b>${x[1]}</b></div>`).join('')}</div>
+      <div class="hbcatch">${DEEP_LIST.filter(x => x[2]).map(x => `<div class="hbf ${x[2] >= 4 ? 'rare' : ''}">${itemIcon(x[0])}<b>${x[1]}</b></div>`).join('')}</div>
       <button class="b o" style="width:100%;font-size:16px" data-act="boatBuy" ${L < BOAT_LV ? 'disabled' : ''}>${L < BOAT_LV ? `Lv.${BOAT_LV} 解鎖` : `買漁船 💰${BOAT_PRICE}`}</button>`);
-    const st = boatState(b), E = ENG[b.eng || 0], H = HOLD[b.hold || 0], tank = TANK(b.eng || 0);
-    let body = `<div class="popbox">🚢 <b>${esc(myName())}的漁船</b>　出海 ${b.trips || 0} 次<br>🔧 ${E.n}（速度 ×${E.sp}）　📦 ${H.n}（${H.cap} 條）<br>⛽ 燃料 <b>${b.fuel || 0}</b>/${tank} 公升 <div class="hpbar" style="margin-top:4px"><i style="width:${Math.round((b.fuel || 0) / tank * 100)}%;background:#ffb300"></i></div></div>`;
+    const st = boatState(b), E = ENG[b.eng || 0], H = HOLD[b.hold || 0], HU = hullOf(b), tank = TANK(b.eng || 0, b.hull || 0), capN = Math.round(H.cap * HU.cap);
+    let body = `<div class="popbox">${HU.em} <b>${esc(myName())}的${HU.n}</b>　出海 ${b.trips || 0} 次<br>🔧 ${E.n}（速度 ×${E.sp}）　📦 ${H.n}（${capN} 條）<br>⛽ 燃料 <b>${b.fuel || 0}</b>/${tank} 公升 <div class="hpbar" style="margin-top:4px"><i style="width:${Math.round((b.fuel || 0) / tank * 100)}%;background:#ffb300"></i></div></div>`;
     if (st === 'sea') { const Z = ZONES[b.go.z], k = (now() - b.go.t0) / b.go.dur;
       body += `<div class="popbox" style="background:#e3f2fd">🌊 漁船正在 <b>${Z.em} ${Z.n}</b> 捕魚中…<div class="hpbar" style="margin:6px 0"><i style="width:${Math.round(k * 100)}%;background:#1e88e5"></i></div>還要 <b>${fmtDur(boatEnd(b) - now())}</b> 才會回港</div>`; }
     else if (st === 'back') body += `<div class="popbox" style="background:#e8f5e9">⚓ 漁船從 <b>${ZONES[b.go.z].n}</b> 回來了！<button class="b o" style="width:100%;margin-top:6px;font-size:16px" data-act="boatUnload">📦 卸貨</button></div>`;
-    else body += `<div class="sec">🧭 要去哪裡捕魚？</div>` + Object.entries(ZONES).map(([k, Z]) => { const lock = L < Z.lv ? `Lv.${Z.lv}` : (b.eng || 0) < Z.eng ? `要${ENG[Z.eng].n}` : '';
+    else body += `<div class="sec">🧭 要去哪裡捕魚？</div>` + Object.entries(ZONES).map(([k, Z]) => { const lock = L < Z.lv ? `Lv.${Z.lv}` : (b.hull || 0) < (Z.hull || 0) ? `要${HULL[Z.hull].n}` : (b.eng || 0) < Z.eng ? `要${ENG[Z.eng].n}` : '';
       return `<div class="item ${lock ? 'dim' : ''}"><div class="pic" style="font-size:30px">${lock ? '🔒' : Z.em}</div><div class="info"><div class="t">${Z.n} <small style="color:#0277bd">⛽${Z.fuel} 公升 · ⏱️${fmtDur(Z.h * 3600000 / E.sp / SPEED)}</small></div><div class="d">${Z.d}<br>${Z.tier.map(t => ['', '⭐', '⭐⭐', '⭐⭐⭐', '🌟傳說'][t]).join(' ')}　🧰 寶箱機率 ${Math.round(Z.chest * 100)}%</div></div>
         ${lock ? `<button class="b g" disabled>${lock}</button>` : `<button class="b o" data-act="boatGo" data-k="${k}" ${(b.fuel || 0) < Z.fuel ? 'disabled' : ''}>出海</button>`}</div>`; }).join('');
     body += `<div class="sec">⛽ 加油站（1 公升 💰${FUEL_P}）</div><div class="mgbtn" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap"><button class="b" data-act="boatFuel" data-n="10">+10 公升</button><button class="b" data-act="boatFuel" data-n="30">+30 公升</button><button class="b o" data-act="boatFuel" data-n="max">加滿（💰${Math.max(0, tank - (b.fuel || 0)) * FUEL_P}）</button></div>`;
-    const nE = ENG[(b.eng || 0) + 1], nH = HOLD[(b.hold || 0) + 1];
+    const nE = ENG[(b.eng || 0) + 1], nH = HOLD[(b.hold || 0) + 1], nU = HULL[(b.hull || 0) + 1], eCap = nE && (b.eng || 0) + 1 > HU.eMax, hCap = nH && (b.hold || 0) + 1 > HU.hMax;
     body += `<div class="sec">🔧 改裝</div>
-      <div class="item"><div class="pic" style="font-size:28px">⚙️</div><div class="info"><div class="t">引擎：${E.n}</div><div class="d">${nE ? `下一級 ${nE.n}：速度 ×${nE.sp}，油箱 ${TANK((b.eng || 0) + 1)} 公升` : '已經是最強的引擎了'}</div></div>${nE ? `<button class="b o" data-act="boatUp" data-k="eng">升級 💰${nE.c}</button>` : ''}</div>
-      <div class="item"><div class="pic" style="font-size:28px">📦</div><div class="info"><div class="t">貨艙：${H.n}</div><div class="d">${nH ? `下一級 ${nH.n}：一次可以載 ${nH.cap} 條魚` : '已經是最大的貨艙了'}</div></div>${nH ? `<button class="b o" data-act="boatUp" data-k="hold">升級 💰${nH.c}</button>` : ''}</div>`;
+      <div class="item"><div class="pic" style="font-size:28px">${nU ? nU.em : HU.em}</div><div class="info"><div class="t">船身：${HU.n}</div><div class="d">${nU ? `換成 ${nU.n}：貨艙 ×${nU.cap}、油箱更大、可以裝更好的引擎和貨艙${Object.values(ZONES).some(Z => Z.hull === (b.hull || 0) + 1) ? `，解鎖「${Object.values(ZONES).find(Z => Z.hull === (b.hull || 0) + 1).n}」` : ''}（Lv.${nU.lv}）` : '已經是最大的船了'}</div></div>${nU ? `<button class="b o" data-act="boatHull" ${L < nU.lv ? 'disabled' : ''}>升級 💰${nU.c}</button>` : ''}</div>
+      <div class="item"><div class="pic" style="font-size:28px">⚙️</div><div class="info"><div class="t">引擎：${E.n}</div><div class="d">${nE ? `下一級 ${nE.n}：速度 ×${nE.sp}，油箱 ${TANK((b.eng || 0) + 1, b.hull || 0)} 公升` : '已經是最強的引擎了'}</div></div>${nE ? (eCap ? '<button class="b g" disabled>先換大船</button>' : `<button class="b o" data-act="boatUp" data-k="eng">升級 💰${nE.c}</button>`) : ''}</div>
+      <div class="item"><div class="pic" style="font-size:28px">📦</div><div class="info"><div class="t">貨艙：${H.n}</div><div class="d">${nH ? `下一級 ${nH.n}：一次可以載 ${Math.round(nH.cap * HU.cap)} 條` : '已經是最大的貨艙了'}</div></div>${nH ? (hCap ? '<button class="b g" disabled>先換大船</button>' : `<button class="b o" data-act="boatUp" data-k="hold">升級 💰${nH.c}</button>`) : ''}</div>`;
     body += `<div class="mgbtn" style="display:flex;gap:6px;justify-content:center"><button class="b" data-act="offo">📋 外海訂單</button>${S.place !== 'harbor' ? '<button class="b" data-act="goHarbor">⚓ 去漁港看船</button>' : ''}</div>`;
     openModal('🚢 我的深海漁船', body);
   };
@@ -1084,7 +1244,7 @@ function openBoat() {
 }
 // ----- 3D 漁港 -----
 function boatModel(b) {
-  const e = b.eng || 0, h = b.hold || 0, len = 4.4 + h * .5, wd = 1.7 + h * .1, c = b.col || '#1565c0', G = new THREE.Group();
+  const e = b.eng || 0, h = b.hold || 0, hu = b.hull || 0, len = 4.4 + h * .5 + hu * 1.6, wd = 1.7 + h * .1 + hu * .35, c = b.col || '#1565c0', G = new THREE.Group();
   G.add(blk(c, [wd, .9, len], [0, .45, 0]), blk('#fafafa', [wd + .04, .2, len + .04], [0, .85, 0]), blk('#212121', [wd + .02, .18, len + .02], [0, .1, 0]),
     blk(c, [wd * .7, .9, 1.1], [0, .55, -len / 2 - .35], [0, Math.PI / 4, 0]), blk('#d7ccc8', [wd - .2, .06, len - .3], [0, .96, 0]));
   const ch = 1.1 + e * .15; G.add(blk('#fafafa', [wd * .82, ch, 1.5 + e * .1], [0, 1 + ch / 2, .4]), blk('#81d4fa', [wd * .84, .35, .1], [0, 1.2 + ch * .7, -.33 - e * .05]), blk(c, [wd * .9, .15, 1.7 + e * .1], [0, 1.05 + ch, .4]));
@@ -1093,6 +1253,8 @@ function boatModel(b) {
   if (h >= 2) G.add(rod('#ffb300', [.08, 1.6, .08], [-.4, 1.8, len / 2 - .7]), blk('#ffb300', [.08, .08, 1.6], [-.4, 2.6, len / 2 - 1.3], [.4, 0, 0]));
   for (let i = 0; i < h + 1; i++) G.add(blk('#90caf9', [.55, .35, .45], [(i % 2 ? .35 : -.35), 1.15, len / 2 - .5 - Math.floor(i / 2) * .55]));
   G.add(ball('#e53935', U(.1), [wd / 2, 1.1, -len / 2 + .3]), ball('#43a047', U(.1), [-wd / 2, 1.1, -len / 2 + .3]));
+  if (hu >= 1) G.add(blk('#fafafa', [wd * .6, .9, 1.1], [0, 2.2 + ch, .5]), blk('#81d4fa', [wd * .62, .3, .08], [0, 2.35 + ch, -.08]), rod('#eceff1', [.05, 1, .05], [0, 3.1 + ch, .6]), blk('#eceff1', [.8, .06, .12], [0, 3.6 + ch, .6]));
+  if (hu >= 2) G.add(blk('#c62828', [wd + .06, .3, len + .06], [0, .25, 0]), rod('#ffb300', [.1, 2.4, .1], [.5, 2.2, len / 2 - 1.2]), blk('#ffb300', [.1, .1, 2.4], [.5, 3.3, len / 2 - 2.2], [.3, 0, 0]), ...[0, 1, 2, 3].map(i => blk('#ff7043', [.6, .5, .6], [-.45 + (i % 2) * .9, 1.25, len / 2 - 1.6 - Math.floor(i / 2) * .7])), rod('#212121', [.25, .7, .25], [-.4, 2 + ch, 1.3]));
   G.userData.len = len; return G;
 }
 function buildHarbor(S3) {
@@ -1129,7 +1291,7 @@ function harborList() {
 function syncHarbor() {
   if (!W.hbG) return; const on = S.scene === 'harbor';
   const L = on ? harborList() : [], seen = new Set();
-  L.forEach((B, i) => { const key = B.uid + ':' + (B.b.eng || 0) + ':' + (B.b.hold || 0) + ':' + B.b.col; let E = W.hbBoats.get(B.uid);
+  L.forEach((B, i) => { const key = B.uid + ':' + (B.b.eng || 0) + ':' + (B.b.hold || 0) + ':' + (B.b.hull || 0) + ':' + B.b.col; let E = W.hbBoats.get(B.uid);
     if (!E || E.key !== key) { if (E) W.hbKeepG.remove(E.m); E = {key, m:boatModel(B.b)}; E.m.traverse(o => o.userData.hit = {type:'hbBoatOf', uid:B.uid}); W.hbKeepG.add(E.m); W.hbBoats.set(B.uid, E); }
     E.i = i; E.B = B; seen.add(B.uid); });
   for (const [u, E] of W.hbBoats) if (!seen.has(u)) { W.hbKeepG.remove(E.m); W.hbBoats.delete(u); }
@@ -1147,13 +1309,13 @@ function harborTick(t, dt) {
   for (const N of W.hbNpc || []) { const u = N.m.userData; if (u.armR) u.armR.rotation.z = Math.sin(t * 1.3 + N.ph) * .3; }
   if (t - (W.hbSayT || 0) > 4) { W.hbSayT = t; const N = rnd(W.hbNpc); fx3(N.m.position.x, 2.6, N.m.position.z, `💬 ${rnd(HB_SAY)}`, '#0d47a1'); }
   const pn = performance.now();
-  for (const [u, E] of W.hbBoats) { const b = E.B.b, st = boatState(b), bx = HB_X + [0, -4, 4, -8, 8, -12, 12, -16, 16][E.i], bz = -13.2, m = E.m;
+  for (const [u, E] of W.hbBoats) { const b = E.B.b, st = boatState(b), m = E.m, bx = HB_X + [0, -4, 4, -8, 8, -12, 12, -16, 16][E.i], bz = -13.2 - Math.max(0, (m.userData.len * (1.25 - (b.hull || 0) * .12) - 6) / 2);
     let x = bx, z = bz, ry = 0, y = .05 + Math.sin(t * 1.5 + E.i) * .08;
     const lv = W.hbLeave?.uid === u ? (pn - W.hbLeave.t0) / 7000 : 2, back = st === 'sea' ? 0 : b.go ? Math.max(0, 1 - (now() - boatEnd(b)) / 7000) : 0;
     if (st === 'sea' && lv < 1) { const k = lv * lv; z = bz - k * 30; x = bx + Math.max(0, lv - .4) * 30; ry = -Math.max(0, lv - .4) * 1.2; }
     else if (st === 'sea') { const a = t * .05 + E.i * 1.7; x = HB_X + Math.sin(a) * 40; z = -46 - (E.i % 3) * 5; ry = Math.cos(a) > 0 ? -Math.PI / 2 : Math.PI / 2; y = Math.sin(t * 1.2 + E.i) * .15; m.scale.setScalar(.9); }
     else if (back > 0) { z = bz - back * back * 30; ry = Math.PI; }
-    if (st !== 'sea') m.scale.setScalar(1.25);
+    if (st !== 'sea') m.scale.setScalar(1.25 - (b.hull || 0) * .12);
     m.position.set(x, y, z); m.rotation.set(Math.sin(t * 1.1 + E.i) * .03, ry, Math.sin(t * 1.3 + E.i) * .04);
     if (st === 'sea' && lv >= 1 && Math.random() < dt * .6) fx3(x, 1.2, z + 1.2, '〰️', '#e3f2fd'); }
 }
@@ -1936,7 +2098,7 @@ function tickOwn(f, msgs) {
   if (!f.fixLv1 && ['asd123', 'asd 123'].includes(String(f.username || '').trim().toLowerCase())) { f.fixLv1 = 1; if ((f.exp || 0) < 30780) { f.exp = 30780; addLog(f, '🛠️ 等級已經恢復成 Lv.28 了，造成困擾很抱歉！'); msgs?.push('🛠️ 你的等級已經恢復成 Lv.28 了'); } ch = true; }
   if (aqSim(f, msgs)) ch = true;
   if (giantSellOld(f, msgs)) ch = true;
-  if (helperWork(f, msgs)) ch = true;
+  if (helperRefund(f, msgs)) ch = true;
   if (restSim(f, msgs)) ch = true;
   return ch;
 }
@@ -4274,8 +4436,8 @@ function openMuseum(F0) {
 
 /* ================= 🍜 經營餐廳：裝潢、請廚師、設計菜單，村民來吃飯留評價 ================= */
 const REST_X = -470, REST_PRICE = 8000, REST_LVREQ = 8, REST_SERV = 4, REST_STOCK = 40;
-const REST_LV = [{n:'路邊小吃攤', em:'🛺', c:0, lv:8, seats:2, menu:2, base:0}, {n:'溫馨小餐館', em:'🏠', c:20000, lv:12, seats:3, menu:3, base:4},
-  {n:'家庭餐廳', em:'🍽️', c:60000, lv:16, seats:4, menu:4, base:9}, {n:'景觀餐廳', em:'🌇', c:150000, lv:22, seats:5, menu:5, base:15}, {n:'米其林餐廳', em:'⭐', c:350000, lv:28, seats:6, menu:6, base:24}];
+const REST_LV = [{n:'路邊小吃攤', em:'🛺', c:0, lv:8, seats:3, menu:4, base:0}, {n:'溫馨小餐館', em:'🏠', c:20000, lv:12, seats:5, menu:5, base:4},
+  {n:'家庭餐廳', em:'🍽️', c:60000, lv:16, seats:7, menu:6, base:9}, {n:'景觀餐廳', em:'🌇', c:150000, lv:22, seats:9, menu:7, base:15}, {n:'米其林餐廳', em:'⭐', c:350000, lv:28, seats:12, menu:8, base:24}];
 const RDECO = {
   floor:{n:'地板', em:'🟫', o:[['f0','水泥地','#9e9e9e',0,0], ['f1','原木地板','#c49a6c',300,2], ['f2','花磚','#80cbc4',600,3], ['f3','榻榻米','#d7cc8f',1200,4], ['f4','大理石','#eceff1',2000,6], ['f5','紅地毯','#b71c1c',3500,8]]},
   wall:{n:'牆壁', em:'🧱', o:[['w0','白牆','#fafafa',0,0], ['w1','粉彩牆','#f8bbd0',400,2], ['w2','紅磚牆','#a1452e',900,3], ['w3','木板牆','#8d6e63',1500,4], ['w4','花紋壁紙','#b39ddb',2500,5], ['w5','金箔牆','#d4af37',6000,9]]},
@@ -4288,7 +4450,10 @@ const RDECO = {
 };
 const RD = Object.fromEntries(Object.values(RDECO).flatMap(c => c.o.map(o => [o[0], o])));
 const CHEFS = {aunt:{n:'巧手阿姨', em:'👩‍🍳', q:0, wage:300, lv:8, d:'家常菜很拿手'}, cook:{n:'專業廚師', em:'🧑‍🍳', q:1, wage:900, lv:14, d:'刀工好、火候穩'}, master:{n:'大飯店主廚', em:'👨‍🍳', q:2, wage:2200, lv:20, d:'料理更好吃，評價更高'}, star:{n:'米其林大廚', em:'🌟', q:3, wage:5000, lv:28, d:'傳說中的廚藝，美食評論家也稱讚'}};
-const CUST = {vil:{n:'村民', em:'🙂', mult:1, ex:2, need:0}, office:{n:'上班族', em:'💼', mult:1.25, ex:2.8, need:8}, gourmet:{n:'美食家', em:'🧐', mult:1.7, ex:3.5, need:20}, critic:{n:'美食評論家', em:'🎩', mult:2.4, ex:4.2, need:34}};
+const CUST = {vil:{n:'村民', em:'🙂', mult:1, ex:2, need:0}, student:{n:'學生', em:'🎒', mult:.85, ex:1.8, need:0}, family:{n:'一家人', em:'👨‍👩‍👧', mult:1.5, ex:2.4, need:4}, office:{n:'上班族', em:'💼', mult:1.25, ex:2.8, need:8}, tourist:{n:'觀光客', em:'📸', mult:1.45, ex:3, need:13},
+  gourmet:{n:'美食家', em:'🧐', mult:1.7, ex:3.5, need:20}, critic:{n:'美食評論家', em:'🎩', mult:2.4, ex:4.2, need:34}, star:{n:'大明星', em:'🌟', mult:3.2, ex:4.6, need:45}};
+const CUST_LOOK = {student:{top:'#1e88e5', bot:'#283593', hat:'cap', hc:'#1e88e5', st:'tee', ac:'bag'}, family:{top:'#66bb6a', bot:'#5d4037', hat:'none', st:'tee', ac:'none'}, office:{top:'#37474f', bot:'#263238', hat:'none', st:'suit', ac:'tie'}, tourist:{top:'#ff7043', bot:'#8d6e63', hat:'straw', hc:'#d8b45a', st:'tee', ac:'bag'},
+  gourmet:{top:'#6a1b9a', bot:'#37474f', hat:'beret', hc:'#6a1b9a', st:'suit', ac:'glasses'}, critic:{top:'#212121', bot:'#212121', hat:'tophat', hc:'#212121', st:'suit', ac:'tie'}, star:{top:'#d4af37', bot:'#212121', hat:'none', st:'suit', ac:'shades'}};
 const PRICE_M = [{n:'便宜', k:.8, q:.45}, {n:'一般', k:1, q:0}, {n:'高級', k:1.35, q:-.45}];
 const REST_NONFOOD = new Set(['daisy_wreath', 'tulip_bq', 'rose_bq', 'sun_basket', 'scarf', 'fan', 'carn_gift', 'fur_hat', 'veg_box']);
 const REV_TXT = {5:['太好吃了！一定會再來 😍', '完美的一餐！', '環境好、東西好吃，五顆星！', '主廚是天才吧！'], 4:['很好吃，下次帶朋友來', '味道不錯，氣氛也好', '份量剛好，推薦！'], 3:['還可以，普普通通', '味道中規中矩', '價錢再便宜一點就好了'], 2:['有點失望…', '等太久了', '跟想像中不太一樣'], 1:['不推薦…', '這價錢太貴了吧', '下次不會再來了']};
@@ -4431,7 +4596,8 @@ function openRestRank() {
 }
 function restVisit(uid) { closeModal(); if (uid === S.uid) { if (!isOwn()) goHome(); } else if (S.viewUid !== uid) visit(uid); S.scene = 'rest'; setCam('rest'); renderTools(); renderScene(); }
 // ----- 3D 餐廳（看的是現在拜訪的農場的餐廳） -----
-const REST_TABLES = [[-4.6, -7.4], [0, -7.4], [4.6, -7.4], [-4.6, -3.4], [0, -3.4], [4.6, -3.4]];
+const restAisle = x => [-8.7, -4.4, 0, 4.4, 8.7].reduce((a, b) => Math.abs(b - x) < Math.abs(a - x) ? b : a);   // 桌子中間的走道
+const REST_TABLES = [[-2.2, -5], [2.2, -5], [-6.6, -5], [6.6, -5], [-2.2, -2.1], [2.2, -2.1], [-6.6, -2.1], [6.6, -2.1], [-2.2, -7.9], [2.2, -7.9], [6.6, -7.9], [-6.6, -7.9]];
 function buildRest(S3) {
   const X = REST_X, G = new THREE.Group(); G.position.x = X;
   const gr = new THREE.Mesh(geoOf('rsg', () => new THREE.PlaneGeometry(162, 130)), mat('#a5c97a')); gr.rotation.x = -Math.PI / 2; gr.position.set(0, -.03, -10); gr.receiveShadow = true; G.add(gr);
@@ -4442,22 +4608,22 @@ function buildRest(S3) {
 }
 function restDecoBuild(f) {
   const G = W.restDecoG; while (G.children.length) G.remove(G.children[0]); const R = restOf(f);
-  if (!R) { const t = textPlane('🍜 空店面・招租中', '#5d4037', '#fff8e1', 5, .9, 100); t.position.set(0, 2.5, -6); G.add(t, blk('#bcaaa4', [16, 5, .3], [0, 2.5, -11.6]), blk('#d7ccc8', [16, .2, 11], [0, .1, -6])); W.restChef = null; W.restSeats = []; return; }
+  if (!R) { const t = textPlane('🍜 空店面・招租中', '#5d4037', '#fff8e1', 5, .9, 100); t.position.set(0, 2.5, -6); G.add(t, blk('#bcaaa4', [20, 5, .3], [0, 2.5, -12]), blk('#d7ccc8', [20, .2, 12], [0, .1, -6.1])); W.restChef = null; W.restSeats = []; return; }
   const d = R.deco, c = id => RD[d[id]]?.[2], Lv = R.lv || 0;
-  G.add(blk(c('floor'), [16.4, .2, 11.4], [0, .1, -6]), blk(c('wall'), [16.4, 5.6, .3], [0, 2.8, -11.8]), blk(c('wall'), [.3, 5.4, 11.4], [-8.2, 2.7, -6]), blk(c('wall'), [.3, 5.4, 11.4], [8.2, 2.7, -6]), blk('#5d4037', [16.8, .3, .4], [0, 5.7, -11.8]));
-  if (d.floor === 'f2') for (let i = 0; i < 24; i++) G.add(blk(i % 2 ? '#e0f2f1' : '#4db6ac', [1.3, .02, 1.3], [-7.4 + (i % 8) * 2, .21, -10.8 + Math.floor(i / 8) * 3.6]));
-  if (d.floor === 'f5') G.add(blk('#ffd54f', [3, .03, 11], [0, .21, -6]));
-  if (d.wall === 'w2') for (let r = 0; r < 8; r++) G.add(blk('#7f3020', [16.3, .05, .02], [0, .5 + r * .65, -11.64]));
-  if (d.wall === 'w4') for (let i = 0; i < 10; i++) G.add(ball('#fff59d', U(.15), [-7 + i * 1.55, 3.6 + (i % 2) * .6, -11.62]));
+  G.add(blk(c('floor'), [20.4, .2, 12.2], [0, .1, -6.1]), blk(c('wall'), [20.4, 5.6, .3], [0, 2.8, -12.2]), blk(c('wall'), [.3, 5.4, 12.2], [-10.2, 2.7, -6.1]), blk(c('wall'), [.3, 5.4, 12.2], [10.2, 2.7, -6.1]), blk('#5d4037', [20.8, .3, .4], [0, 5.7, -12.2]));
+  if (d.floor === 'f2') for (let i = 0; i < 40; i++) G.add(blk(i % 2 ? '#e0f2f1' : '#4db6ac', [1.3, .02, 1.3], [-9 + (i % 10) * 2, .21, -11 + Math.floor(i / 10) * 3]));
+  if (d.floor === 'f5') G.add(blk('#ffd54f', [1.2, .03, 12], [0, .21, -6.1]));
+  if (d.wall === 'w2') for (let r = 0; r < 8; r++) G.add(blk('#7f3020', [20.3, .05, .02], [0, .5 + r * .65, -12.04]));
+  if (d.wall === 'w4') for (let i = 0; i < 13; i++) G.add(ball('#fff59d', U(.15), [-9.3 + i * 1.55, 3.6 + (i % 2) * .6, -12.02]));
   // 廚房吧台＋廚師
-  G.add(blk('#8d6e63', [6, 1.2, 1.2], [-4.5, .6, -10.2]), blk('#eceff1', [6.2, .1, 1.4], [-4.5, 1.25, -10.2]), blk('#424242', [1.4, .1, .9], [-6, 1.32, -10.3]), M(gBucket(), '#9e9e9e', [.35, .3, .35], [-6, 1.55, -10.3]), blk('#b0bec5', [1.6, 2.6, .5], [-2.2, 1.3, -11.4]));
+  G.add(blk('#8d6e63', [7, 1.2, 1.2], [-5.5, .6, -10.6]), blk('#eceff1', [7.2, .1, 1.4], [-5.5, 1.25, -10.6]), blk('#424242', [1.4, .1, .9], [-7.5, 1.32, -10.7]), M(gBucket(), '#9e9e9e', [.35, .3, .35], [-7.5, 1.55, -10.7]), M(gBucket(), '#b0bec5', [.3, .25, .3], [-6.4, 1.5, -10.7]), blk('#b0bec5', [1.6, 2.6, .5], [-2.6, 1.3, -11.8]));
   const ch = chefOn(R); W.restChef = null;
-  if (ch) { const m = charModel('boy', 'chef' + ch.q, {top:'#fafafa', bot:'#424242', hat:'chef', hc:'#fafafa', st:'chef', ac:ch.q >= 2 ? 'tie' : 'none'}); m.position.set(-4.5, 0, -11.1); m.scale.setScalar(1.15); G.add(m); W.restChef = m; }
-  const ct = textPlane(ch ? `${ch.em} ${ch.n}` : '🚫 沒有廚師', '#ffffff', ch ? '#2e7d32' : '#757575', 2.8, .5, 90); ct.position.set(-4.5, 3.4, -10.6); G.add(ct);
+  if (ch) { const m = charModel('boy', 'chef' + ch.q, {top:'#fafafa', bot:'#424242', hat:'chef', hc:'#fafafa', st:'chef', ac:ch.q >= 2 ? 'tie' : 'none'}); m.position.set(-6, 0, -11.5); m.scale.setScalar(1.15); G.add(m); W.restChef = m; }
+  const ct = textPlane(ch ? `${ch.em} ${ch.n}` : '🚫 沒有廚師', '#ffffff', ch ? '#2e7d32' : '#757575', 2.8, .5, 90); ct.position.set(-5.5, 3.4, -11); G.add(ct);
   // 招牌
   const sg = d.sign, sgC = {s0:['#5d4037', '#fff8e1'], s1:['#ffffff', '#4a148c'], s2:['#fff3e0', '#6d4c41'], s3:['#ffd54f', '#b71c1c']}[sg] || ['#5d4037', '#fff8e1'];
-  const st = textPlane(`${dn(f)}的餐廳`, sgC[0], sgC[1], 9, 1.15, 110); st.position.set(0, 4.45, -11.55); G.add(st);
-  if (sg === 's1') G.add(blk('#e040fb', [9.3, .08, .06], [0, 5.08, -11.5]), blk('#e040fb', [9.3, .08, .06], [0, 3.82, -11.5]));
+  const st = textPlane(`${dn(f)}的餐廳`, sgC[0], sgC[1], 9, 1.15, 110); st.position.set(1.5, 4.45, -11.95); G.add(st);
+  if (sg === 's1') G.add(blk('#e040fb', [9.3, .08, .06], [1.5, 5.08, -11.9]), blk('#e040fb', [9.3, .08, .06], [1.5, 3.82, -11.9]));
   // 桌椅
   const T = d.table, tc = c('table'); W.restSeats = [];
   REST_TABLES.slice(0, REST_LV[Lv].seats).forEach(([x, z]) => {
@@ -4471,29 +4637,31 @@ function restDecoBuild(f) {
     g.position.set(x, .2, z); G.add(g); const sy = T === 't3' ? .2 : .45; W.restSeats.push([x - (T === 't3' ? 1.4 : 1.2), z, sy, 0], [x + (T === 't3' ? 1.4 : 1.2), z, sy, Math.PI]);
   });
   // 燈
-  const lc = c('light'); for (const x of [-5, 0, 5]) { const L2 = d.light, lg = new THREE.Group(); lg.position.y = -1.1; G.add(lg);   // 燈往下掛，不擋住後牆的招牌
+  const lc = c('light'); for (const x of [-6.6, -2.2, 2.2, 6.6]) { const L2 = d.light, lg = new THREE.Group(); lg.position.y = -1.1; G.add(lg);   // 燈往下掛，不擋住後牆的招牌
     if (L2 === 'l1') lg.add(rod('#212121', [.02, .8, .02], [x, 4.9, -5.5]), ball('#e53935', [.35, .45, .35], [x, 4.3, -5.5]));
     else if (L2 === 'l5') lg.add(rod('#bdbdbd', [.03, .8, .03], [x, 4.9, -5.5]), ...[0, 1, 2, 3, 4, 5].map(i => ball('#e1f5fe', U(.12), [x + Math.cos(i) * .45, 4.1 + (i % 2) * .15, -5.5 + Math.sin(i) * .45])), cone('#fff9c4', [.5, .5, .5], [x, 4.4, -5.5]));
     else if (L2 === 'l4') lg.add(...Array.from({length:8}, (_, i) => ball(['#ffeb3b', '#ff80ab', '#80d8ff'][i % 3], U(.08), [x - 2 + i * .55, 4.6 - Math.sin(i / 7 * Math.PI) * .5, -8])));
     else lg.add(rod('#212121', [.02, .9, .02], [x, 4.95, -5.5]), L2 === 'l0' ? ball(lc, U(.18), [x, 4.4, -5.5]) : cone(lc, [.5, .4, .5], [x, 4.4, -5.5])); }
   // 植栽
-  const pl = d.plant; if (pl !== 'p0') for (const [x, z] of [[-7.4, -1], [7.4, -1], [7.4, -10.8]]) {
+  const pl = d.plant; if (pl !== 'p0') for (const [x, z] of [[-9.5, -.7], [9.5, -.7], [9.5, -11.6]]) {
     if (pl === 'p4') G.add(...[0, 1, 2].map(i => rod('#7cb342', [.08, 2.6 + i * .3, .08], [x - .2 + i * .2, 1.4, z])), M(gBucket(), '#795548', [.45, .4, .45], [x, .4, z]));
     else G.add(M(gBucket(), '#8d6e63', [pl === 'p1' ? .25 : .4, pl === 'p1' ? .3 : .5, pl === 'p1' ? .25 : .4], [x, pl === 'p1' ? .35 : .45, z]), ball(c('plant'), pl === 'p1' ? U(.35) : pl === 'p3' ? [.4, .5, .3] : [.7, 1.1, .7], [x, pl === 'p1' ? .75 : 1.5, z]), ...(pl === 'p3' ? [0, 1, 2].map(i => ball('#f3e5f5', U(.12), [x + .2 - i * .2, 1.9 + i * .1, z + .2])) : [])); }
   // 牆上擺飾
-  const ar = d.art; if (ar === 'a1') G.add(blk('#5d4037', [2.4, 1.6, .1], [6, 2.4, -11.6]), blk('#263238', [2.2, 1.4, .12], [6, 2.4, -11.58]));
-  if (ar === 'a2') G.add(blk('#ff7043', [1.4, 2, .08], [5.5, 2.4, -11.6]), blk('#ffee58', [1.4, 2, .08], [7.1, 2.4, -11.6]));
-  if (ar === 'a3') G.add(blk('#5d4037', [3, 1.8, .08], [6, 2.4, -11.6]), blk('#e8f5e9', [2.8, 1.6, .1], [6, 2.4, -11.58]), cone('#81c784', [.7, .9, .05], [5.4, 2.3, -11.5]), cone('#a5d6a7', [.6, .7, .05], [6.4, 2.2, -11.5]));
-  if (ar === 'a4') for (let i = 0; i < 8; i++) G.add(blk(['#fff59d', '#ffffff', '#ffe0b2'][i % 3], [.7, .9, .05], [4.6 + (i % 4) * .9, 1.9 + Math.floor(i / 4) * 1.1, -11.6]));
-  if (ar === 'a5') { G.add(blk('#37474f', [3.2, .5, 1], [6, .45, -11.1]), new THREE.Mesh(gB(), new THREE.MeshPhongMaterial({color:'#4fc3f7', transparent:true, opacity:.55, shininess:100})).translateX(6).translateY(1.6).translateZ(-11.1)); G.children[G.children.length - 1].scale.set(3, 1.8, .9); for (let i = 0; i < 4; i++) G.add(ball(['#ff7043', '#ffeb3b', '#ef5350', '#fff'][i], [.15, .1, .05], [5 + i * .6, 1.3 + (i % 2) * .5, -11.1])); }
+  const AG = new THREE.Group(); AG.position.set(1.8, 0, -.4); G.add(AG);
+  const ar = d.art; if (ar === 'a1') AG.add(blk('#5d4037', [2.4, 1.6, .1], [6, 2.4, -11.6]), blk('#263238', [2.2, 1.4, .12], [6, 2.4, -11.58]));
+  if (ar === 'a2') AG.add(blk('#ff7043', [1.4, 2, .08], [5.5, 2.4, -11.6]), blk('#ffee58', [1.4, 2, .08], [7.1, 2.4, -11.6]));
+  if (ar === 'a3') AG.add(blk('#5d4037', [3, 1.8, .08], [6, 2.4, -11.6]), blk('#e8f5e9', [2.8, 1.6, .1], [6, 2.4, -11.58]), cone('#81c784', [.7, .9, .05], [5.4, 2.3, -11.5]), cone('#a5d6a7', [.6, .7, .05], [6.4, 2.2, -11.5]));
+  if (ar === 'a4') for (let i = 0; i < 8; i++) AG.add(blk(['#fff59d', '#ffffff', '#ffe0b2'][i % 3], [.7, .9, .05], [4.6 + (i % 4) * .9, 1.9 + Math.floor(i / 4) * 1.1, -11.6]));
+  if (ar === 'a5') { AG.add(blk('#37474f', [3.2, .5, 1], [6, .45, -11.1]), new THREE.Mesh(gB(), new THREE.MeshPhongMaterial({color:'#4fc3f7', transparent:true, opacity:.55, shininess:100})).translateX(6).translateY(1.6).translateZ(-11.1)); AG.children[AG.children.length - 1].scale.set(3, 1.8, .9); for (let i = 0; i < 4; i++) AG.add(ball(['#ff7043', '#ffeb3b', '#ef5350', '#fff'][i], [.15, .1, .05], [5 + i * .6, 1.3 + (i % 2) * .5, -11.1])); }
   // 音樂
+  const MG = new THREE.Group(); MG.position.set(2.2, 0, -1.4); G.add(MG);
   const mu = d.music; if (mu === 'm1') G.add(blk('#8d6e63', [.8, .5, .35], [-1, 1.5, -10.2]), ball('#212121', U(.12), [-1.2, 1.5, -10]));
-  if (mu === 'm2') G.add(blk('#6d4c41', [1, .8, .8], [7, .4, -9.4]), rod('#212121', [.4, .05, .4], [7, .85, -9.4]), M(gN(), '#ffb300', [.2, .5, .2], [7.3, 1.2, -9.6], [0, 0, -.8]));
-  if (mu === 'm3') { G.add(blk('#111111', [2, 1, 1.4], [6.4, .9, -9.4]), blk('#fafafa', [1.9, .06, .4], [6.4, 1.03, -8.8]), rod('#111111', [.08, .9, .08], [5.6, .4, -8.9]), rod('#111111', [.08, .9, .08], [7.2, .4, -8.9])); const p = vilModel('li'); p.position.set(6.4, .2, -7.8); p.rotation.y = Math.PI; G.add(p); }
+  if (mu === 'm2') MG.add(blk('#6d4c41', [1, .8, .8], [7, .4, -9.4]), rod('#212121', [.4, .05, .4], [7, .85, -9.4]), M(gN(), '#ffb300', [.2, .5, .2], [7.3, 1.2, -9.6], [0, 0, -.8]));
+  if (mu === 'm3') { MG.add(blk('#111111', [2, 1, 1.4], [6.4, .9, -9.4]), blk('#fafafa', [1.9, .06, .4], [6.4, 1.03, -8.8]), rod('#111111', [.08, .9, .08], [5.6, .4, -8.9]), rod('#111111', [.08, .9, .08], [7.2, .4, -8.9])); const p = vilModel('li'); p.position.set(6.4, .2, -7.8); p.rotation.y = Math.PI; MG.add(p); }
   // 菜單看板（門口）
-  const mb = grp(blk('#5d4037', [.1, 1.6, .1], [-.5, .8, 0]), blk('#5d4037', [.1, 1.6, .1], [.5, .8, 0]), blk('#263238', [1.3, 1, .08], [0, 1.4, .05])); mb.position.set(-6.5, 0, .2); mb.rotation.y = .3; G.add(mb);
-  if (Lv >= 1) { const tc2 = ['#e53935', '#43a047', '#1e88e5', '#ffb300', '#8e24aa'][Lv % 5]; G.add(blk(tc2, [.4, .3, 11.6], [-8.2, 5.5, -6]), blk(tc2, [.4, .3, 11.6], [8.2, 5.5, -6]), blk(tc2, [16.8, .3, .45], [0, 5.95, -11.8])); }
-  if (Lv >= 3) for (const x of [-8.4, 8.4]) G.add(rod('#d4af37', [.2, 5.6, .2], [x, 2.8, -.3]));
+  const mb = grp(blk('#5d4037', [.1, 1.6, .1], [-.5, .8, 0]), blk('#5d4037', [.1, 1.6, .1], [.5, .8, 0]), blk('#263238', [1.3, 1, .08], [0, 1.4, .05])); mb.position.set(-9, 0, .4); mb.rotation.y = .3; G.add(mb);
+  if (Lv >= 1) { const tc2 = ['#e53935', '#43a047', '#1e88e5', '#ffb300', '#8e24aa'][Lv % 5]; G.add(blk(tc2, [.4, .3, 12.4], [-10.2, 5.5, -6.1]), blk(tc2, [.4, .3, 12.4], [10.2, 5.5, -6.1]), blk(tc2, [20.8, .3, .45], [0, 5.95, -12.2])); }
+  if (Lv >= 3) for (const x of [-10.4, 10.4]) G.add(rod('#d4af37', [.2, 5.6, .2], [x, 2.8, -.1]));
 }
 function syncRest() {
   if (!W.restG) return; const f = S.view || S.my, on = S.scene === 'rest', R = restOf(f);
@@ -4502,20 +4670,20 @@ function syncRest() {
   if (!on) return;
   if (!R) { ov('rsNone', isOwn() ? '🍜 點「開餐廳」開一間自己的餐廳！' : `${esc(dn(f))}還沒開餐廳`, v => v.set(REST_X, 4, -6), 'tag'); return; }
   const avg = restAvg(R);
-  ov('rsInfo', `<b>${REST_LV[R.lv || 0].em} ${esc(dn(f))}的${REST_LV[R.lv || 0].n}</b> ${restOpen(R) ? '🟢營業中' : '⚪休息中'}<br><small><span style="color:#ffb300">${avg ? starStr(avg) + ' ' + avg.toFixed(1) : '還沒有評價'}</span>・今天 ${R.day?.d === twDay() ? R.day.n : 0} 位客人・總共 ${R.st?.n || 0} 份</small>`, v => v.set(REST_X + 6, 2.8, .3), 'tag');
-  ov('rsMenu', `📋 今日菜單<br>${(R.menu || []).map(m => `${RECIPES[m.r].em}${RECIPES[m.r].n} ${m.n > 0 ? `💰${dishPrice(m.r, m.pm ?? 1)}` : '<s>賣完</s>'}`).join('<br>') || '還沒有菜'}`, v => v.set(REST_X - 6.5, 2.6, .3), 'tag');
-  if (isOwn() && R.cash) ov('rsCash', `💰 收銀機 ${R.cash}`, v => v.set(REST_X - 1.6, 2.2, -10), 'tag');
+  ov('rsInfo', `<b>${REST_LV[R.lv || 0].em} ${esc(dn(f))}的${REST_LV[R.lv || 0].n}</b> ${restOpen(R) ? '🟢營業中' : '⚪休息中'}<br><small><span style="color:#ffb300">${avg ? starStr(avg) + ' ' + avg.toFixed(1) : '還沒有評價'}</span>・今天 ${R.day?.d === twDay() ? R.day.n : 0} 位客人・總共 ${R.st?.n || 0} 份</small>`, v => v.set(REST_X + 8, 2.8, .5), 'tag');
+  ov('rsMenu', `📋 今日菜單<br>${(R.menu || []).map(m => `${RECIPES[m.r].em}${RECIPES[m.r].n} ${m.n > 0 ? `💰${dishPrice(m.r, m.pm ?? 1)}` : '<s>賣完</s>'}`).join('<br>') || '還沒有菜'}`, v => v.set(REST_X - 9, 2.6, .5), 'tag');
+  if (isOwn() && R.cash) ov('rsCash', `💰 收銀機 ${R.cash}`, v => v.set(REST_X - 2.4, 2.2, -10.4), 'tag');
 }
 function restTick(t, dt) {
   if (!W.restG || S.scene !== 'rest') return;
   const f = S.view || S.my, R = restOf(f); if (W.restChef) { const u = W.restChef.userData; if (u.armR) u.armR.rotation.z = -1 + Math.sin(t * 6) * .4; if (u.armL) u.armL.rotation.z = 1 + Math.sin(t * 6 + 1) * .3; }
   // 客人：從街上走進來、坐下、上菜、吃完給星星、離開
   const open = R && restOpen(R), seats = W.restSeats || [];
-  if (open && t - (W.restSpawnT || 0) > 3.5 && W.restCust.length < Math.min(seats.length, 3 + (R.lv || 0) * 2)) { W.restSpawnT = t;
+  if (open && t - (W.restSpawnT || 0) > 1.8 && W.restCust.length < Math.min(seats.length, 5 + (R.lv || 0) * 3)) { W.restSpawnT = t;
     const used = new Set(W.restCust.map(C => C.seat)), free = seats.map((_, i) => i).filter(i => !used.has(i)); if (free.length) {
-      const ids = Object.keys(VIL), si = rnd(free), D = restScore(R), pool = restCustPool(D), ck = rnd(pool)[0], m = ck === 'vil' ? vilModel(rnd(ids)) : charModel(Math.random() < .5 ? 'girl' : 'boy', 'c' + Math.random(), {top:ck === 'critic' ? '#212121' : ck === 'gourmet' ? '#6a1b9a' : '#1e88e5', bot:'#37474f', hat:ck === 'critic' ? 'tophat' : 'none', hc:'#212121', st:ck === 'office' || ck === 'critic' ? 'suit' : 'tee', ac:ck === 'gourmet' ? 'glasses' : ck === 'critic' ? 'tie' : 'none'});
-      if (ck !== 'vil') m.scale.setScalar(1.15); const x0 = REST_X + (Math.random() < .5 ? -16 : 16); m.position.set(x0, 0, 4); W.restCustG.add(m);
-      W.restCust.push({m, ck, seat:si, ph:'in', x:x0, z:4, path:[[REST_X + (x0 < REST_X ? -1 : 1), 2.5], [REST_X + seats[si][0] * .3 + (seats[si][0] > 0 ? 1 : -1), -1.2], [REST_X + seats[si][0], seats[si][1]]], wait:0, dish:null}); } }
+      const ids = Object.keys(VIL), si = rnd(free), D = restScore(R), pool = restCustPool(D), ck = rnd(pool)[0], m = ck === 'vil' ? vilModel(rnd(ids)) : charModel(Math.random() < .5 ? 'girl' : 'boy', 'c' + Math.random(), {...CUST_LOOK[ck], top:ck === 'family' ? rnd(['#66bb6a', '#ef5350', '#ffca28', '#ab47bc']) : CUST_LOOK[ck].top});
+      if (ck !== 'vil') m.scale.setScalar(1.15); const x0 = REST_X + (Math.random() < .5 ? -18 : 18); m.position.set(x0, 0, 4); W.restCustG.add(m);
+      W.restCust.push({m, ck, seat:si, ph:'in', x:x0, z:4, path:[[REST_X + (x0 < REST_X ? -1 : 1), 2.5], [REST_X + restAisle(seats[si][0]), -.6], [REST_X + restAisle(seats[si][0]), seats[si][1]], [REST_X + seats[si][0], seats[si][1]]], wait:0, dish:null}); } }
   for (const C of [...W.restCust]) { const u = C.m.userData, S2 = seats[C.seat];
     if (C.ph === 'in' || C.ph === 'out') { const p = C.path[0]; if (!p) { if (C.ph === 'in') { C.ph = 'sit'; C.wait = 3 + Math.random() * 2; C.m.position.set(REST_X + S2[0], S2[2], S2[1]); C.m.rotation.y = S2[3]; if (u.legL) { u.legL.rotation.z = u.legR.rotation.z = -1.3; } } else { W.restCustG.remove(C.m); W.restCust.splice(W.restCust.indexOf(C), 1); } continue; }
       const dx = p[0] - C.x, dz = p[1] - C.z, d = Math.hypot(dx, dz); if (d < .1) { C.path.shift(); continue; } const s = Math.min(d, dt * 2.4); C.x += dx / d * s; C.z += dz / d * s; C.m.position.set(C.x, .2 * (C.z < -.5), C.z); C.m.rotation.y = Math.atan2(-dz, dx); if (u.legL) { const sw = Math.sin(t * 9) * .6; u.legL.rotation.z = sw; u.legR.rotation.z = -sw; } continue; }
@@ -4524,7 +4692,7 @@ function restTick(t, dt) {
       C.dish = textPlane(mm ? RECIPES[mm.r].em : '🍽️', 'transparent', '#000', .7, .7, 80); C.dish.position.set(REST_X + tb[0] + (C.seat % 2 ? .35 : -.35), 1.5, tb[1]); W.restCustG.add(C.dish); }
     if (C.ph === 'eat') { if (u.armR) u.armR.rotation.z = -1.2 + Math.sin(t * 8) * .3; if (C.wait <= 0) { const avg = restAvg(R) || 3.5, s = Math.max(1, Math.min(5, Math.round(avg + (Math.random() - .5) * 1.6 - (CUST[C.ck].ex - 2.4) * .3)));
       fx3(C.m.position.x, 2.6, C.m.position.z, '⭐'.repeat(s), '#ffb300'); if (C.dish) W.restCustG.remove(C.dish); C.ph = 'out'; C.x = C.m.position.x; C.z = C.m.position.z; C.m.position.y = .2; if (u.armR) u.armR.rotation.z = 0;
-      C.path = [[C.x, -1.2], [REST_X + (C.x < REST_X ? -1 : 1), 2.5], [REST_X + (C.x < REST_X ? -16 : 16), 4]]; } }
+      const ax = REST_X + restAisle(C.x - REST_X); C.path = [[ax, C.z], [ax, -.6], [REST_X + (C.x < REST_X ? -1 : 1), 2.5], [REST_X + (C.x < REST_X ? -18 : 18), 4]]; } }
   }
 }
 
@@ -4533,6 +4701,11 @@ const POST_X = -150, POST_T = new THREE.Vector3(POST_X, 0, -1), POST_STAMP = 20,
 const PAPERS = {plain:{n:'白色信紙', em:'📄', c:'#fffdf5', b:'#d7ccc8', p:0}, flower:{n:'花朵信紙', em:'🌸', c:'#fce4ec', b:'#f48fb1', p:30}, star:{n:'星空信紙', em:'⭐', c:'#e8eaf6', b:'#7986cb', p:30},
   farm:{n:'農場信紙', em:'🌾', c:'#f1f8e9', b:'#9ccc65', p:30}, sea:{n:'海洋信紙', em:'🐳', c:'#e1f5fe', b:'#4fc3f7', p:40}, love:{n:'愛心信紙', em:'💕', c:'#ffebee', b:'#e57373', p:50}, gold:{n:'金箔信紙', em:'✨', c:'#fff8e1', b:'#ffca28', p:120}};
 const isMail = g => g && (g.kind === 'letter' || g.kind === 'card');
+const isRcpt = g => g?.kind === 'receipt';
+const POST_DELAY = 90000 / SPEED;   // 郵差送信要一點時間
+const mailDue = g => (g.due || g.t || 0) <= now();
+const toSign = () => (S.gifts || []).filter(g => isMail(g) && mailDue(g));     // 郵差送到、等簽收的信
+const mailUnread = () => (S.my?.mail || []).filter(m => m.unread).length;
 function buildPost(S3) {
   const X = POST_X;
   S3.add(blk('#e0d6c2', [28, .08, 16], [X, .04, -1]), blk('#cfc3aa', [3, .09, 7], [X, .05, 4.5]));
@@ -4559,6 +4732,9 @@ function postTick(t, dt) {
   // 郵局寄出時：郵差背著郵包跑出去
   const R = W.postRunner; if (R && S.scene === 'post') { const k = (now() - R.t0) / 3500; if (k >= 1) { R.m.visible = false; W.postRunner = null; } else { R.m.position.set(POST_X + .8 + k * 16, Math.abs(Math.sin(t * 12)) * .06, 3.5 - k * 1.5); R.m.rotation.y = .1; const u = R.m.userData; if (u.legL) { const sw = Math.sin(t * 14) * .7; u.legL.rotation.z = sw; u.legR.rotation.z = -sw; } } }
   // 送信到自己農場的郵差
+  if (t - (W.mailChkT || 0) > 1) { W.mailChkT = t; const L = toSign(); S.mailNoted ??= new Set();
+    const nw = L.filter(g => !S.mailNoted.has(g.id)); if (nw.length) { nw.forEach(g => S.mailNoted.add(g.id)); if (!(S.scene === 'farm' && isOwn())) toast(`📮 郵差送了 ${nw.length} 封${nw.some(g => g.kind === 'card') ? '信／明信片' : '信'}到你家，回農場簽收吧！`); renderTools(); }
+    if (L.length && !W.mailman?.on) mailmanGo(); }
   mailmanTick(t, dt);
 }
 function postmanModel() { const m = charModel('boy', 'postman', {top:'#2e7d32', bot:'#1b5e20', hat:'cap', hc:'#2e7d32', st:'suit', ac:'bag'}); m.scale.setScalar(1.25); m.traverse(o => { if (o.isMesh) o.userData.hit = {type:'mailman'}; }); return m; }
@@ -4567,21 +4743,25 @@ function syncMailbox(f, own) {
   if (!W.mailbox) { const g = grp(rod('#6d4c41', [.12, 1.1, .12], [0, .55, 0]), blk('#c62828', [.75, .55, .5], [0, 1.25, 0]), M(gBucket(), '#c62828', [.38, .2, .25], [0, 1.53, 0], [0, 0, 0]), blk('#212121', [.05, .06, .3], [.38, 1.35, 0]));
     const flag = grp(rod('#424242', [.03, .5, .03], [0, .25, 0]), blk('#fdd835', [.25, .16, .03], [.13, .45, 0])); flag.position.set(.1, 1.15, .27); g.add(flag); g.userData.flag = flag;
     g.position.set(MAILBOX_XZ[0], 0, MAILBOX_XZ[1]); g.rotation.y = -.25; g.scale.setScalar(1.3); g.traverse(o => o.userData.hit = {type:'mailbox'}); W.scene.add(g); W.mailbox = g; }
-  const on = S.scene === 'farm', unread = own && S.gifts.some(isMail); W.mailbox.visible = on;
-  W.mailbox.userData.flag.rotation.z = unread ? 0 : -1.4;
-  if (on && own && unread) ov('mailF', `📬 有 ${S.gifts.filter(isMail).length} 封信`, v => v.set(MAILBOX_XZ[0], 2.6, MAILBOX_XZ[1]), 'tag');
+  const on = S.scene === 'farm', nU = own ? mailUnread() : 0; W.mailbox.visible = on;
+  W.mailbox.userData.flag.rotation.z = nU ? 0 : -1.4;
+  if (on && own && nU) ov('mailF', `📬 有 ${nU} 封沒看的信`, v => v.set(MAILBOX_XZ[0], 2.6, MAILBOX_XZ[1]), 'tag');
 }
 function mailmanGo() {   // 郵差走到信箱放信
   if (W.mailman?.on) return; if (S.scene !== 'farm' || !isOwn()) { W.mailPending = true; return; }
   W.mailPending = false; if (!W.mailman) { W.mailman = {m:postmanModel()}; W.scene.add(W.mailman.m); }
-  Object.assign(W.mailman, {on:true, ph:0, x:7, z:10.4, t0:now()}); W.mailman.m.visible = true; Music.sfx('ding');
-  toast('📮 郵差來送信囉！');
+  Object.assign(W.mailman, {on:true, ph:0, x:7, z:10.4, t0:now(), wait:null}); W.mailman.m.visible = true; Music.sfx('ding');
+  toast('📮 郵差來送信囉！等一下要簽收喔');
 }
 function mailmanTick(t, dt) {
   const P = W.mailman; if (!P?.on) { if (W.mailPending && S.scene === 'farm' && isOwn()) mailmanGo(); return; }
   if (S.scene !== 'farm') { P.on = false; P.m.visible = false; W.mailPending = true; return; }
-  const path = [[MAILBOX_XZ[0] + 1, 10.4], [MAILBOX_XZ[0] + .9, MAILBOX_XZ[1] + .6], 'drop', [MAILBOX_XZ[0] + 1, 10.4], [7, 10.4]], u = P.m.userData;
+  const path = [[MAILBOX_XZ[0] + 1, 10.4], [MAILBOX_XZ[0] + 1.3, MAILBOX_XZ[1] + .9], 'sign', 'drop', [MAILBOX_XZ[0] + 1, 10.4], [7, 10.4]], u = P.m.userData;
   const st = path[P.ph]; if (st === undefined) { P.on = false; P.m.visible = false; return; }
+  if (st === 'sign') {   // 站在信箱旁邊等主人簽收
+    const n = toSign().length; if (!n) { P.ph++; return; }
+    P.m.rotation.y = -Math.PI / 2 + Math.sin(t * .8) * .2; P.m.position.y = Math.abs(Math.sin(t * 3)) * .04; if (u.legL) u.legL.rotation.z = u.legR.rotation.z = 0; if (u.armR) u.armR.rotation.z = -2.2 + Math.sin(t * 5) * .4;
+    ov('mailman', `📮 掛號信 ${n} 封！<b>點郵差簽收</b>`, v => v.set(P.x, 3.2, P.z), 'tag'); return; }
   if (st === 'drop') { P.wait ??= 1.6; P.wait -= dt; if (u.armR) u.armR.rotation.z = -1.4; if (u.legL) u.legL.rotation.z = u.legR.rotation.z = 0; P.m.rotation.y = Math.PI * .8;
     if (P.wait <= 0) { P.wait = null; P.ph++; W.mailbox && (W.mailbox.userData.flag.rotation.z = 0); fx3(MAILBOX_XZ[0], 2.2, MAILBOX_XZ[1], '✉️ 叮咚！', '#c62828'); renderScene(); } return; }
   const [tx, tz] = st, dx = tx - P.x, dz = tz - P.z, d = Math.hypot(dx, dz);
@@ -4610,38 +4790,74 @@ async function postSend() {
   const to = $('#pwTo')?.value, msg = ($('#pwMsg')?.value || '').trim().slice(0, 120), item = $('#pwItem')?.value || '', n = Math.max(1, Math.min(999, Math.floor(+$('#pwN')?.value || 1))), pk = S.postPaper || 'plain', P = PAPERS[pk];
   const fr = S.friends.find(x => x.uid === to); if (!fr) return toast('選一位好友');
   if (!msg && !item) return toast('寫點什麼，或附上東西吧');
-  const cost = POST_STAMP + (item ? POST_PARCEL : 0) + P.p;
+  const cost = POST_STAMP + (item ? POST_PARCEL : 0) + P.p, t0 = now();
   const r = await txMe(f => { if (f.coins < cost) return ab(`寄信要 ${cost} 金幣`); if (item && (f.wh[item] || 0) < n) return ab('東西數量不夠'); f.coins -= cost; if (item) f.wh[item] -= n; addTrade(f, `寄信給${dn(fr.farm)}`, -cost);
-    (f.sent ??= []).push({to, toName:dn(fr.farm), msg, item, n:item ? n : 0, paper:pk, t:now()}); if (f.sent.length > 20) f.sent = f.sent.slice(-20); bump(f, 'gift'); return {}; });
+    (f.sent ??= []).push({to, toName:dn(fr.farm), msg, item, n:item ? n : 0, paper:pk, t:t0, due:t0 + POST_DELAY}); if (f.sent.length > 20) f.sent = f.sent.slice(-20); bump(f, 'gift'); return {}; });
   if (r.abort) return toast(r.msg);
-  try { await B.sendGift({from:S.uid, fromName:myName(), to, kind:'letter', msg, paper:pk, item:item || 'letter', n:item ? n : 1, t:now()}); }
+  try { await B.sendGift({from:S.uid, fromName:myName(), to, kind:'letter', msg, paper:pk, item:item || 'letter', n:item ? n : 1, t:t0, due:t0 + POST_DELAY}); }
   catch (e) { await txMe(f => { f.coins += cost; if (item) f.wh[item] = (f.wh[item] || 0) + n; return {}; }).catch(() => {}); return toast('寄信失敗，錢和東西已經退回：' + e.message); }
-  S.postDraft = ''; closeModal(); toast(`📮 寄出了！郵差正把信送去 ${dn(fr.farm)} 的農場`); Music.sfx('coin');
+  S.postDraft = ''; closeModal(); toast(`📮 寄出了！郵差大約 ${fmtDur(POST_DELAY)} 後送到 ${dn(fr.farm)} 的農場，對方簽收後會通知你`); Music.sfx('coin');
   if (S.scene === 'post') { if (!W.postRunner) { const m = postmanModel(); W.scene.add(m); W.postRunner = {m, t0:now()}; } else { W.postRunner.t0 = now(); W.postRunner.m.visible = true; } }
 }
 // ----- 讀信 -----
 function openMailbox() {
   S.modal = () => {
-    const L = S.gifts.filter(isMail), old = [...(S.my.mail || [])].reverse();
-    let body = L.length ? `<div class="sec" style="margin-top:0">📬 新的信（${L.length}）</div>` + L.map(g => `<div class="item"><div class="pic" style="font-size:30px">${g.kind === 'card' ? '🖼️' : PAPERS[g.paper]?.em || '✉️'}</div><div class="info"><div class="t">${esc(g.fromName)} 寄來${g.kind === 'card' ? '一張明信片' : '一封信'}</div><div class="d">${fmtTime(g.t)}${g.item && g.item !== 'letter' ? ` · 📦 附上 ${itemInfo(g.item).n}×${g.n}` : ''}</div></div><button class="b o" data-act="readMail" data-id="${esc(g.id)}">拆信</button></div>`).join('') : '<div class="empty">信箱是空的，郵差還沒來</div>';
-    if (old.length) body += `<div class="sec">📂 看過的信</div>` + old.slice(0, 20).map((m, i) => `<div class="log" style="cursor:pointer" data-act="oldMail" data-i="${old.length - 1 - i}"><time>${fmtTime(m.t)}</time><span>${m.kind === 'card' ? '🖼️' : '✉️'} ${esc(m.fromName)}：${esc((m.msg || '').slice(0, 18))}${(m.msg || '').length > 18 ? '…' : ''}</span></div>`).join('');
+    const f = S.my, pend = toSign(), mail = f.mail || [], unread = mail.map((m, i) => [m, i]).filter(([m]) => m.unread).reverse(), old = mail.map((m, i) => [m, i]).filter(([m]) => !m.unread).reverse();
+    let body = pend.length ? `<div class="popbox" style="background:#e8f5e9">📮 <b>郵差在你家門口</b>，有 ${pend.length} 封要簽收！<button class="b o" style="width:100%;margin-top:6px" data-act="mailSign">✍️ 去簽收</button></div>` : '';
+    body += unread.length ? `<div class="sec" style="margin-top:0">📬 新的信（${unread.length}）</div>` + unread.map(([m, i]) => `<div class="item"><div class="pic" style="font-size:30px">${m.kind === 'card' ? '🖼️' : PAPERS[m.paper]?.em || '✉️'}</div><div class="info"><div class="t">${esc(m.fromName)} 寄來${m.kind === 'card' ? '一張明信片' : '一封信'}</div><div class="d">${fmtTime(m.t)} 寄出・${fmtTime(m.signed || m.t)} 簽收${m.item && m.item !== 'letter' ? ` · 📦 ${itemInfo(m.item).n}×${m.n}` : ''}</div></div><button class="b o" data-act="readMail" data-i="${i}">拆信</button></div>`).join('') : (pend.length ? '' : '<div class="empty">信箱是空的，郵差還沒來</div>');
+    if (old.length) body += `<div class="sec">📂 看過的信</div>` + old.slice(0, 20).map(([m, i]) => `<div class="log" style="cursor:pointer" data-act="oldMail" data-i="${i}"><time>${fmtTime(m.t)}</time><span>${m.kind === 'card' ? '🖼️' : '✉️'} ${esc(m.fromName)}：${esc((m.msg || '').slice(0, 18))}${(m.msg || '').length > 18 ? '…' : ''}</span></div>`).join('');
+    const sent = [...(f.sent || [])].reverse().slice(0, 12);
+    if (sent.length) body += `<div class="sec">📤 寄出的信</div>` + sent.map(m => { const due = m.due || m.t, st = now() < due ? `🚚 郵差送信中・約 ${fmtDur(due - now())} 後送到` : m.sg ? `✅ ${fmtTime(m.sg)} 對方簽收了` : m.due ? '📬 已經送到，等對方簽收' : '📬 已送到';
+      return `<div class="log"><time>${fmtTime(m.t)}</time><span>${m.card ? '🖼️' : '✉️'} 給 ${esc(m.toName || '')}：<b style="color:${m.sg ? '#2e7d32' : '#e65100'}">${st}</b></span></div>`; }).join('');
     body += `<div class="mgbtn"><button class="b" data-act="postWrite">✉️ 寫信</button></div>`;
     openModal('📬 我的信箱', body);
   };
   S.modal();
+}
+function openSign() {
+  const L = toSign(); if (!L.length) return openMailbox();
+  S.modal = () => {
+    openModal('📮 掛號信簽收', `<div class="popbox">👮 <b>郵差：</b>「您好！這裡有 <b>${L.length}</b> 封要給您的${L.some(g => g.kind === 'card') ? '信和明信片' : '信'}，麻煩在下面簽名喔！」</div>` +
+      L.map(g => `<div class="log"><time>${fmtTime(g.t)}</time><span>${g.kind === 'card' ? '🖼️ 明信片' : (PAPERS[g.paper]?.em || '✉️') + ' 信'}・寄件人 <b>${esc(g.fromName)}</b>${g.item && g.item !== 'letter' ? `・📦 附 ${itemInfo(g.item).n}×${g.n}` : ''}</span></div>`).join('') +
+      `<div class="sec">✍️ 收件人簽名</div><canvas id="signPad" width="600" height="200" class="signpad"></canvas><div style="text-align:right;font-size:12px;color:#8d6e63">用手指或滑鼠在框框裡簽名（不簽也可以）<button class="b g" style="padding:2px 8px;font-size:12px" data-act="signClear">重寫</button></div>
+      <button class="b o" style="width:100%;font-size:17px;margin-top:6px" data-act="mailSignGo">✍️ 簽收</button>`);
+    const cv = $('#signPad'); if (!cv) return; const x = cv.getContext('2d'); x.lineWidth = 6; x.lineCap = 'round'; x.lineJoin = 'round'; x.strokeStyle = '#1a237e'; let dn2 = false;
+    const P2 = e => { const r = cv.getBoundingClientRect(), p = e.touches ? e.touches[0] : e; return [(p.clientX - r.left) * cv.width / r.width, (p.clientY - r.top) * cv.height / r.height]; };
+    cv.onpointerdown = e => { e.preventDefault(); dn2 = true; cv.setPointerCapture?.(e.pointerId); const [a, b] = P2(e); x.beginPath(); x.moveTo(a, b); };
+    cv.onpointermove = e => { if (!dn2) return; e.preventDefault(); const [a, b] = P2(e); x.lineTo(a, b); x.stroke(); };
+    cv.onpointerup = cv.onpointercancel = () => dn2 = false;
+  };
+  S.modal();
+}
+async function signMail() {
+  const L = toSign(); if (!L.length) return openMailbox(); const got = [], ts = now();
+  for (const g0 of L) { const g = await B.takeGift(g0.id).catch(() => null); S.gifts = S.gifts.filter(x => x.id !== g0.id); if (g) got.push(g); }
+  if (!got.length) { toast('這些信已經簽收過了'); return openMailbox(); }
+  await txMe(f => { for (const g of got) { if (g.item && g.item !== 'letter' && isItem(g.item)) { f.wh[g.item] = (f.wh[g.item] || 0) + g.n; dexAdd(f, g.item, g.n); } if (g.kind === 'card' && g.card) (f.cards ??= {})[g.card] = (f.cards[g.card] || 0) + 1;
+      if (g.from === S.uid) { const m = (f.sent || []).find(x => x.to === S.uid && x.t === g.t); if (m) m.sg = ts; }
+      (f.mail ??= []).push({fromName:g.fromName, from:g.from, msg:g.msg || '', paper:g.paper || 'plain', kind:g.kind, card:g.card || '', item:g.item, n:g.n, t:g.t, signed:ts, unread:1}); }
+    if (f.mail.length > 40) f.mail = f.mail.slice(-40); return {}; }).catch(() => {});
+  for (const g of got) if (g.from && g.from !== S.uid) B.sendGift({from:S.uid, fromName:myName(), to:g.from, kind:'receipt', item:'letter', n:1, ref:g.t, t:ts}).catch(() => {});   // 回條：讓寄件人知道簽收了
+  Music.sfx('ding'); toast(`✍️ 簽收了 ${got.length} 封，放進信箱了！`); if (W.mailman?.on) fx3(W.mailman.x, 2.6, W.mailman.z, '謝謝您！👋', '#2e7d32');
+  renderScene(); renderTop(); renderTools(); openMailbox();
+}
+async function handleReceipts(list) {   // 寄件人收到回條：更新「寄出的信」狀態
+  const R = list.filter(isRcpt); if (!R.length) return; const done = [];
+  for (const g of R) { const x = await B.takeGift(g.id).catch(() => null); if (x) done.push(x); }
+  S.gifts = S.gifts.filter(g => !isRcpt(g)); if (!done.length) return;
+  await txMe(f => { for (const g of done) { const m = (f.sent || []).find(x => x.to === g.from && x.t === g.ref); if (m) m.sg = g.t; } return {}; }).catch(() => {});
+  for (const g of done) toast(`✍️ ${g.fromName} 簽收了你的信！`);
 }
 function letterHtml(m) {
   const P = PAPERS[m.paper] || PAPERS.plain;
   const card = m.kind === 'card' && typeof cardImg === 'function' ? cardImg(m.card) : '';
   return `<div style="background:${P.c};border:3px solid ${P.b};border-radius:14px;padding:14px 16px;box-shadow:0 3px 0 ${P.b}">${card}<div style="font-size:13px;color:#8d6e63">${P.em} ${fmtTime(m.t)}</div><div style="font-size:17px;line-height:1.7;white-space:pre-wrap;margin:8px 0;color:#4e342e;font-family:'Kaiti TC','STKaiti',serif">${esc(m.msg || '（沒有寫字）')}</div><div style="text-align:right;color:#6d4c41;font-weight:800">—— ${esc(m.fromName)}</div>${m.item && m.item !== 'letter' ? `<div class="mgres" style="margin-top:8px">📦 附上的東西：${itemInfo(m.item).n} ×${m.n}</div>` : ''}</div>`;
 }
-async function readMail(id) {
-  const g0 = S.gifts.find(x => x.id === id); if (!g0) return;
-  const g = await B.takeGift(id); S.gifts = S.gifts.filter(x => x.id !== id); if (!g) { toast('這封信已經拆過了'); return rerenderModal(); }
-  await txMe(f => { if (g.item && g.item !== 'letter' && isItem(g.item)) { f.wh[g.item] = (f.wh[g.item] || 0) + g.n; dexAdd(f, g.item, g.n); } if (g.kind === 'card' && g.card) (f.cards ??= {})[g.card] = (f.cards[g.card] || 0) + 1;
-    (f.mail ??= []).push({fromName:g.fromName, from:g.from, msg:g.msg || '', paper:g.paper || 'plain', kind:g.kind, card:g.card || '', item:g.item, n:g.n, t:g.t}); if (f.mail.length > 40) f.mail = f.mail.slice(-40); return {}; }).catch(() => {});
-  Music.sfx('pop'); renderScene(); renderTop();
-  S.modal = () => openModal(g.kind === 'card' ? '🖼️ 明信片' : '✉️ 信', letterHtml(g) + `<div class="mgbtn" style="display:flex;gap:6px;justify-content:center"><button class="b o" data-act="postReply" data-uid="${g.from}">↩️ 回信</button><button class="b" data-act="mailbox">📬 回信箱</button></div>`);
+async function readMail(i) {
+  const m = (S.my.mail || [])[i]; if (!m) return;
+  if (m.unread) await txMe(f => { const x = (f.mail || [])[i]; if (x) x.unread = 0; return {}; }).catch(() => {});
+  Music.sfx('pop'); renderScene(); renderTop(); renderTools();
+  S.modal = () => openModal(m.kind === 'card' ? '🖼️ 明信片' : '✉️ 信', letterHtml(m) + `<div class="mgbtn" style="display:flex;gap:6px;justify-content:center">${m.from && m.from !== S.uid ? `<button class="b o" data-act="postReply" data-uid="${m.from}">↩️ 回信</button>` : ''}<button class="b" data-act="mailbox">📬 回信箱</button></div>`);
   S.modal();
 }
 function openOldMail(i) { const m = (S.my.mail || [])[i]; if (!m) return; S.modal = () => openModal(m.kind === 'card' ? '🖼️ 明信片' : '✉️ 信', letterHtml(m) + `<div class="mgbtn"><button class="b" data-act="mailbox">📬 回信箱</button></div>`); S.modal(); }
@@ -5145,7 +5361,8 @@ function walkTick(t, dt) {
 // ----- 👨‍🌾 僱用幫手：付日薪，幫你澆水、除草、抓蟲（收成還是自己來） -----
 const HELPER_PLANS = [{d:1, c:500}, {d:3, c:1300}, {d:7, c:2800}, {d:30, c:10000}];
 const HELPER_N = '阿明';
-const helperOn = f => (f?.helper?.until || 0) > now();
+const helperOn = f => false;   // 小幫手功能已取消（剩下的天數會退錢）
+function helperRefund(f, msgs) { const H = f.helper; if (!H || H.refunded || !(H.until > now())) return false; const c = Math.ceil((H.until - now()) / 864e5 * 400); f.coins += c; H.until = now(); H.refunded = c; addTrade(f, '小幫手取消退費', c); addLog(f, `👨‍🌾 小幫手功能取消了，退還沒用完的薪水 💰${c}`); msgs && msgs.push(`👨‍🌾 小幫手功能取消了，退你沒用完的薪水 💰${c}`); return true; }
 function helperWork(f, msgs) {
   if (!helperOn(f)) return false; let n = 0;
   for (let i = 0; i < f.plotCount; i++) { const p = f.plots[i]; if (p.s !== 'grow') continue; if (p.d) { p.d = false; n++; } if (p.w) { n += p.w; p.w = 0; } if (p.b) { n += p.b; p.b = 0; } }
@@ -6464,7 +6681,7 @@ function renderTop() {
   $('#myName').innerHTML = esc(dn(f)) + (f.nick ? ` <small>@${esc(f.username)}</small>` : ' <small>✏️</small>');
   $('#myLv').textContent = 'Lv.' + lv.L; $('#myXp').style.width = (lv.cur / lv.need * 100) + '%'; $('#myXpT').textContent = `${lv.cur}/${lv.need}`;
   $('#myCoins').textContent = f.coins.toLocaleString();
-  const unread = (f.log || []).filter(l => l.t > (f.logSeen || 0)).length + S.gifts.length;
+  const unread = (f.log || []).filter(l => l.t > (f.logSeen || 0)).length + S.gifts.filter(g => !isRcpt(g) && (!isMail(g) || mailDue(g))).length;
   const set = (id, n) => { $(id).textContent = n; $(id).classList.toggle('on', n > 0); };
   set('#bdM', unread); set('#bdF', S.reqs.length); set('#bdT', taskClaimable(f)); set('#bdO', orderReady(f)); set('#bdG', f.gacha || 0);
   set('#bdV', vilPending(f)); { const G = greenView(f); set('#bdH', (G.plots || []).slice(0, G.n || GH_START).filter(ghMature).length + (pumpMature(G.pump) ? 1 : 0) + (pumpClaimable(f) ? 1 : 0)); } set('#bdC', coopReady(f)); set('#bdS', horseBadge(f)); set('#bdP', dockBadge(f) + (typeof mkBadge === 'function' ? mkBadge(f) : 0)); set('#bdE', festReady(f)); set('#bdX', achClaimable(f) + petGiftReady(f) + (bingoRes(f) && !f.bingo.cl ? 1 : 0) + (psClaimable(f) ? 1 : 0));
@@ -6472,9 +6689,9 @@ function renderTop() {
 function renderTools() {
   const own = isOwn(), f = S.my; let T;
   if (S.scene === 'factory') T = own ? [['hand','✋','手'], ['collectAll','📥','全部收取', 1], ['sellProc','💰','賣加工品', 1], ['machShop','🏗️','蓋機器', 1]] : [['hand','✋','幫加速']];
-  else if (S.scene === 'fish') T = own ? [['hand','✋','手'], ['stock','🐟', S.fry ? SEA[S.fry].n : '放魚苗'], ['sellSea','💰','賣海鮮', 1], ['buyPond','➕','擴建魚池', 1], ['aqShow','🐠','魚缸', 1]]
+  else if (S.scene === 'fish') T = own ? [['hand','✋','手'], ['stock','🐟', S.fry ? SEA[S.fry].n : '放魚苗'], ['pondAll','🧺','一鍵收成', 1], ['sellSea','💰','賣海鮮', 1], ['buyPond','➕','擴建魚池', 1], ['aqShow','🐠','魚缸', 1]]
                                   : [['hand','✋','偷撈'], ['cleanTip2','🧹','幫撈垃圾', 1]];
-  else if (S.scene === 'ranch') T = own ? [['hand','✋','收集'], ['feedAll','🌾','餵食', 1], ['buyAni','🛒','買動物', 1], ['sellProducts','💰','賣產品', 1]]
+  else if (S.scene === 'ranch') T = own ? [['hand','✋','收集'], ['aniAll','🧺','一鍵收成', 1], ['poopAll','🧹','清便便', 1], ['feedAll','🌾','餵食', 1], ['buyAni','🛒','買動物', 1], ['sellProducts','💰','賣產品', 1]]
                                    : [['hand','✋','偷產品'], ['feedFriend','🌾','幫餵食', 1], ['cleanTip','🧹','幫清便便', 1]];
   else if (S.scene === 'green') T = own ? [['hand','✋','手'], ['pump', GIANT[giantOf()].em, '巨大大賽', 1], ['ghBuy','➕','擴建溫室', 1]] : [['hand','✋','參觀'], ['pump', GIANT[giantOf()].em, '巨大大賽', 1]];
   else if (S.scene === 'home') { const hl = homeLv(S.view || S.my), flT = hl ? [['homeFloor','🪜', HFL_N[homeFl()].split(' ')[0] + '↕', 1]] : [];
@@ -6483,14 +6700,14 @@ function renderTools() {
   else if (S.scene === 'rest') T = isOwn() ? [['hand','✋','走走'], ['rest','🍜','餐廳'], ['restMenu','📋','菜單', 1], ['restDecoM','🎨','裝潢', 1], ['restChef','👨‍🍳','廚師', 1], ['restCash','💰', restOf(S.my)?.cash ? `收錢 ${restOf(S.my).cash}` : '收銀', 1], ['restRev','⭐','評價', 1], ['restRank','🏆','好友餐廳', 1]] : [['hand','✋','走走'], ['restRev','⭐','評價', 1], ['restRank','🏆','好友餐廳', 1]];
   else if (S.scene === 'harbor') T = [['hand','✋','走走'], ['boat','🚢', boatState(boatOf(S.my)) === 'back' ? '卸貨！' : '我的漁船', 1], ['offo','📋','外海訂單', 1], ['leaveP','🏠','回農場', 1]];
   else if (TRIPS[S.scene]) T = [['hand','✋','走走'], ['tripSeed','🌱','當地種子', 1], ['tripSouv','🎁','紀念品', 1], ['tripCard','🖼️','明信片', 1], ['tripBook','📔','手冊', 1], ['leaveP','🏠','回家', 1]];
-  else if (S.scene === 'post') T = [['hand','✋','走走'], ['postWrite','✉️','寫信', 1], ['mailbox','📬', `信箱${S.gifts.filter(isMail).length ? '×' + S.gifts.filter(isMail).length : ''}`, 1], ['leaveP','🏠','回農場', 1]];
+  else if (S.scene === 'post') T = [['hand','✋','走走'], ['postWrite','✉️','寫信', 1], ['mailbox','📬', `信箱${toSign().length + mailUnread() ? '×' + (toSign().length + mailUnread()) : ''}`, 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'museum') T = [...MU_FL.map((x, F) => [`musF${F}`, x.em, `${F + 1}F${(S.musF || 0) === F ? '・在這' : ''}`, 1]), ['musList','📜','冠軍名單', 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'dock') T = [['hand','✋','走走'], ['fishGo','🎣','釣魚', 1], ['aqShow','🐠','我的魚缸', 1], ['fishCup','🏆','釣魚大賽', 1], ['fishDex','📖','魚種圖鑑', 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'stable') T = own ? [['hand','✋','手'], ['horseList','🐎','我的馬', 1], ['hDung','🧹',`收肥料${S.my.horse?.dung ? '×' + S.my.horse.dung : ''}`, 1], ['horseRace','🏁','賽馬大賽', 1], ['aqShow','🐠','魚缸', 1]] : [['hand','✋','參觀'], ['horseList','🐎','看馬', 1], ['horseRace','🏁','賽馬大賽', 1], ['aqShow','🐠','魚缸', 1]];
   else if (S.scene === 'temple') T = [['hand','✋','手'], ['templeInfo','🏯','廟宇', 1], ['qianShow','📜','今日籤詩', 1], ['toTown','🏘️','回小鎮', 1]];
   else if (S.scene === 'town') T = own ? [['hand','✋','手'], ['vilList','📋','村民委託', 1], ['stall','🏪','我的攤位', 1], ['toTemple','🏯','去廟裡', 1], ['bingo','🎱','賓果', 1], ['petShow','🐶','寵物選美', 1]] : [['hand','✋','逛逛'], ['stall','🏪','逛攤位', 1], ['toTemple','🏯','去廟裡', 1]];
   else if (S.decoMode && own) T = [['decoDone','✅','完成', 1], ['decoTool','🪑','換裝飾', 1]];
-  else T = own ? [['hand','✋','手'], ['plant','🌱', S.seed ? CROPS[S.seed].n : '播種'], ['water','💧','澆水'], ['weed','🌿','除草'], ['bug','🐞','除蟲'], ['fert','🧪','施肥'], ['plow','⛏️','翻地'], ['helper','👨‍🌾', helperOn(S.my) ? '幫手✓' : '幫手', 1], ['decoTool','🪑','裝飾', 1], ['goIn','🏠','進屋', 1]]
+  else T = own ? [['hand','✋','手'], ['plant','🌱', S.seed ? CROPS[S.seed].n : '播種'], ['water','💧','澆水'], ['weed','🌿','除草'], ['bug','🐞','除蟲'], ['fert','🧪','施肥'], ['plow','⛏️','翻地'], ['harvestAll','🧺','一鍵收成', 1], ['decoTool','🪑','裝飾', 1], ['goIn','🏠','進屋', 1]]
                : [['hand','✋','偷菜'], ['water','💧','幫澆水'], ['weed','🌿','幫拔草'], ['bug','🐞','幫除蟲'], ['pbug','🐛','放蟲'], ['pweed','🌾','種草'], ['goIn','🏠','進屋', 1]];
   if (!T.some(t => t[0] === S.tool && !t[3])) S.tool = 'hand';
   const html = T.map(([id, ic, tl, instant]) => {
@@ -6498,6 +6715,10 @@ function renderTools() {
     if (id === 'fert' && f) em = `<em>${(f.fert || 0) + (f.wh.manure || 0)}</em>`;
     if (['water', 'weed', 'bug'].includes(id) && S.view) { const v = S.view, k = {water:p => dryNow(p), weed:p => p.w > 0, bug:p => p.b > 0}[id]; const n = v.plots.slice(0, v.plotCount).filter(p => p.s === 'grow' && CROPS[p.c] && k(p)).length; if (n) em = `<em class="r">${n}</em>`; }
     if (id === 'plant' && S.seed && f) em = `<em>${f.seeds[S.seed] || 0}</em>`;
+    if (id === 'harvestAll' && f) { const n = f.plots.slice(0, f.plotCount).filter(isMature).length; if (n) em = `<em class="r">${n}</em>`; }
+    if (id === 'pondAll' && f) { const n = f.fish.ponds.slice(0, f.fish.n).filter(pondMature).length; if (n) em = `<em class="r">${n}</em>`; }
+    if (id === 'aniAll' && f) { const n = f.ranch.animals.filter(a => aView(a).s > 0).length; if (n) em = `<em class="r">${n}</em>`; }
+    if (id === 'poopAll' && f && f.ranch.poop > 0) em = `<em class="r">${f.ranch.poop}</em>`;
     if (id === 'stock' && S.fry && f) em = `<em>${f.fry[S.fry] || 0}</em>`;
     if ((id === 'feedAll' || id === 'feedFriend') && f) em = `<em>${(f.wh.grass || 0) + (f.feed || 0)}</em>`;
     if ((id === 'pbug' || id === 'pweed') && f) em = `<em>${DAILY_PRANK - dailyView(f).prank}</em>`;
@@ -6591,7 +6812,7 @@ function tipFor(h) {
   if (h.type === 'house') return `<b>🏠 ${isOwn() ? '我的' : esc(dn(S.view)) + '的'}農舍</b><br>點一下進屋${isOwn() ? '裝潢' : '參觀'}`;
   if (h.type === 'tcab') return `<b>🏆 獎盃櫃</b>（${(S.view?.trophy || []).length} 座）<br>點一下看全部`;
   if (h.type === 'hitem') { const a = homeAtOf(homeView(S.view))[h.i]; return a ? `<b>${HOME_ITEMS[a.id]?.em || ''} ${HOME_ITEMS[a.id]?.n || ''}</b>${isOwn() && S.homeEdit ? '<br>點一下移動、轉方向' : ''}` : ''; }
-  if (h.type === 'mailbox') return `<b>📬 信箱</b><br>${isOwn() ? (S.gifts.some(isMail) ? '有新的信！點一下拆信' : '點一下看信') : ''}`;
+  if (h.type === 'mailbox') return `<b>📬 信箱</b><br>${isOwn() ? (toSign().length ? '郵差送信來了！點一下簽收' : mailUnread() ? '有新的信！點一下拆信' : '點一下看信') : ''}`;
   if (h.type === 'postBox') return '<b>📮 郵筒</b><br>點一下寫信給好友';
   if (h.type === 'tripSeed') return '<b>🌱 當地種子攤</b><br>這裡限定的種子';
   if (h.type === 'hbBoat') return '<b>⛽ 加油站</b><br>漁船加油、改裝、出海';
@@ -6640,16 +6861,16 @@ function clickHit(h) {
   if (h.type === 'aq') return openAquarium();
   if (h.type === 'mk') return openMkGames();
   if (h.type === 'mus') return openMuseum(h.k);
-  if (h.type === 'mailbox') return isOwn() ? openMailbox() : toast(`📮 ${dn(S.view)}的信箱`);
+  if (h.type === 'mailbox') return isOwn() ? (toSign().length ? openSign() : openMailbox()) : toast(`📮 ${dn(S.view)}的信箱`);
   if (h.type === 'postBox') return openPostWrite();
   if (h.type === 'tripSeed') return openTripSeeds();
   if (h.type === 'hbBoat') return openBoat();
   if (h.type === 'hbOrder') return openOffo();
-  if (h.type === 'hbBoatOf') { if (h.uid === S.uid) return openBoat(); const E = W.hbBoats?.get(h.uid), b = E?.B.b, st = boatState(b); return toast(`🚢 ${E?.B.nm || ''}的漁船：${ENG[b?.eng || 0].n}、${HOLD[b?.hold || 0].n}、出海 ${b?.trips || 0} 次${st === 'sea' ? `，現在在${ZONES[b.go.z].n}捕魚` : ''}`); }
+  if (h.type === 'hbBoatOf') { if (h.uid === S.uid) return openBoat(); const E = W.hbBoats?.get(h.uid), b = E?.B.b, st = boatState(b); return toast(`🚢 ${E?.B.nm || ''}的${hullOf(b).n}：${ENG[b?.eng || 0].n}、${HOLD[b?.hold || 0].n}、出海 ${b?.trips || 0} 次${st === 'sea' ? `，現在在${ZONES[b.go.z].n}捕魚` : ''}`); }
   if (h.type === 'tripSouv') return openTripSouv();
   if (h.type === 'tripBox') return openTripCard();
-  if (h.type === 'mailman') return toast('📮 郵差：「您好，送信來囉！」');
-  if (h.type === 'helper') return isOwn() ? openHelper() : toast(`👨‍🌾 這是${dn(S.view)}請的幫手${HELPER_N}，正在幫忙照顧田地`);
+  if (h.type === 'mailman') return isOwn() && toSign().length ? openSign() : toast('📮 郵差：「您好，送信來囉！」');
+  
   if (h.type === 'house') return goIn();
   if (h.type === 'tcab') return openTrophies();
   if (h.type === 'hitem') { const a = homeAtOf(homeView(S.view))[h.i]; if (!a) return; if (isOwn() && S.homeEdit) return homeItemMenu(h.i); return toast(`${HOME_ITEMS[a.id]?.em || ''} ${HOME_ITEMS[a.id]?.n || ''}${isOwn() ? '（按「🔧 擺設」可以移動家具）' : ''}`); }
@@ -6929,6 +7150,39 @@ async function feedFriend() {
   const g = await helpReward('feedf');
   fx3(TROUGH_XZ[0], 1.6, TROUGH_XZ[1], `🌾 幫忙餵了 ${r.fed} 隻 ${g.e ? '+2 經驗' : ''}`, '#8d6e63'); lvToast(g.up);
 }
+// ----- 🧺 一鍵收成／清便便 -----
+const gotStr = got => Object.entries(got).map(([id, n]) => `${itemInfo(id).n}×${n}`).join('、');
+async function harvestAllFarm() {
+  let idx = []; const r = await txMe(f => { const got = {}; let e = 0, up = 0, dbl = 0; idx = [];
+    for (let i = 0; i < f.plotCount; i++) if (isMature(f.plots[i])) { const h = doHarvest(f, i); got[h.c] = (got[h.c] || 0) + h.amt; e += h.exp; up = h.up || up; dbl += h.dbl ? 1 : 0; idx.push([i, h.amt, h.c]); }
+    return idx.length ? {got, e, up, dbl} : ab('田裡沒有成熟的作物'); });
+  if (r.abort) return toast(r.msg);
+  idx.forEach(([i, n, c], k) => setTimeout(() => fxPlot(i, `+${n} ${CROPS[c].n}`), k * 60)); Music.sfx('pop');
+  toast(`🧺 一鍵收成 ${idx.length} 塊田：${gotStr(r.got)}（+${r.e} 經驗）${r.dbl ? `，${r.dbl} 塊施肥大豐收！` : ''}`); lvToast(r.up);
+}
+async function harvestAllPond() {
+  let idx = []; const r = await txMe(f => { const got = {}; let e = 0, up = 0; idx = [];
+    for (let i = 0; i < f.fish.n; i++) { const p = f.fish.ponds[i]; if (!pondMature(p)) continue; const c = SEA[p.c], amt = pondAmt(p), ex = xb(c.exp); f.wh[p.c] = (f.wh[p.c] || 0) + amt; dexAdd(f, p.c, amt); f.fish.ponds[i] = {s:'empty'}; bump(f, 'fish'); e += ex; up = gainExp(f, ex) || up; got[p.c] = (got[p.c] || 0) + amt; idx.push(i); }
+    return idx.length ? {got, e, up} : ab('魚塭裡還沒有長大的魚'); });
+  if (r.abort) return toast(r.msg);
+  idx.forEach((i, k) => setTimeout(() => { const [x, z] = pondXZ(i); fx3(x, 1.4, z, '🎣 收成！'); }, k * 60)); Music.sfx('splash');
+  toast(`🧺 一鍵收成 ${idx.length} 個魚池：${gotStr(r.got)}（+${r.e} 經驗）`); lvToast(r.up);
+}
+async function collectAllAni() {
+  let idx = []; const r = await txMe(f => { const got = {}; let e = 0, up = 0; idx = [];
+    f.ranch.animals.forEach((x, i) => { settleA(x); if (!x.s) return; const A = ANIMALS[x.k], n = x.s, ex = xb(Math.max(1, Math.round(A.exp * n / PER_A))); f.wh[A.prod] = (f.wh[A.prod] || 0) + n; dexAdd(f, A.prod, n); x.s = 0; x.th = []; up = gainExp(f, ex) || up; bump(f, 'collect', n); e += ex; got[A.prod] = (got[A.prod] || 0) + n; idx.push(i); });
+    return idx.length ? {got, e, up} : ab('動物們還沒有產品可以收'); });
+  if (r.abort) return toast(r.msg);
+  idx.forEach((i, k) => setTimeout(() => fxAni(i, '🧺 收！'), k * 60)); Music.sfx('pop');
+  toast(`🧺 一鍵收成 ${idx.length} 隻動物：${gotStr(r.got)}（+${r.e} 經驗）`); lvToast(r.up);
+}
+async function cleanAllPoop() {
+  const n0 = S.my.ranch.poop || 0; if (!n0) return toast('牧場很乾淨，沒有便便');
+  const r = await txMe(f => { const n = f.ranch.poop || 0; if (!n) return ab('牧場很乾淨，沒有便便'); f.ranch.poop = 0; f.coins += n; bump(f, 'clean', n); return {n, up:gainExp(f, n)}; });
+  if (r.abort) return toast(r.msg);
+  POOP_XZ.slice(0, r.n).forEach(([x, z], k) => setTimeout(() => fx3(x, 1, z, '🧹✨', '#6d4c41'), k * 70)); Music.sfx('pop');
+  toast(`🧹 一次清掉 ${r.n} 坨便便！+${r.n} 經驗、+${r.n}💰`); lvToast(r.up);
+}
 async function cleanPoop(k) {
   const [x, z] = POOP_XZ[k];
   if (isOwn()) { const r = await txMe(f => { if (!(f.ranch.poop > 0)) return ab('已經很乾淨了'); f.ranch.poop--; f.coins += 1; bump(f, 'clean'); return {up:gainExp(f, 1)}; }); if (r.abort) return toast(r.msg); fx3(x, 1, z, '🧹 +1 經驗', '#6d4c41'); lvToast(r.up); return; }
@@ -7120,8 +7374,8 @@ async function refreshFriends() {
   try { onReqs(await B.listReq(S.uid)); } catch {}
   await refreshCoops();
   try { const g = await B.listGifts(S.uid), old = new Set(S.gifts.map(x => x.id)), nw = g.filter(x => !old.has(x.id));
-    if (S.giftsInit && nw.some(x => !isMail(x))) toast(`🎁 收到 ${nw.filter(x => !isMail(x)).length} 份禮物！到「消息」收下`);
-    if (nw.some(isMail) && (S.giftsInit || g.some(isMail))) mailmanGo();
+    if (S.giftsInit && nw.some(x => !isMail(x) && !isRcpt(x))) toast(`🎁 收到 ${nw.filter(x => !isMail(x) && !isRcpt(x)).length} 份禮物！到「消息」收下`);
+    if (g.some(isRcpt)) setTimeout(() => handleReceipts(S.gifts), 50);
     { const bs = boatState(boatOf(S.my)); if (bs === 'back' && S.boatNote !== S.my.boat.go?.t0) { S.boatNote = S.my.boat.go?.t0; toast('🚢 你的漁船滿載回港了！去⚓漁港卸貨'); renderTools(); } }
     S.gifts = g; S.giftsInit = true; } catch { S.gifts = []; }
   renderStrip(); renderTop(); rerenderModal();
@@ -7203,7 +7457,7 @@ async function acceptReq(r) {
 }
 function openMsgs() {
   const f = S.my; const seen = f.logSeen || 0; const logs = [...(f.log || [])].reverse();
-  S.modal = () => openModal('📜 消息與禮物', (S.gifts.some(isMail) ? `<div class="mgbtn" style="margin-top:0"><button class="b o" data-act="mailbox">📬 有 ${S.gifts.filter(isMail).length} 封新的信，去拆信</button></div>` : '') + (S.gifts.some(g => !isMail(g)) ? `<div class="sec" style="margin-top:0">🎁 收到的禮物</div>` + S.gifts.filter(g => !isMail(g)).map(g => `<div class="item"><div class="pic">${itemIcon(g.item)}</div><div class="info"><div class="t">${esc(g.fromName)} 送你 ${itemInfo(g.item).n} ×${g.n}</div><div class="d">${fmtTime(g.t)}</div></div><div class="acts"><button class="b o" data-act="takeGift" data-id="${esc(g.id)}">收下</button></div></div>`).join('') + '<div class="sec">📜 農場消息</div>' : '')
+  S.modal = () => openModal('📜 消息與禮物', (toSign().length + mailUnread() ? `<div class="mgbtn" style="margin-top:0"><button class="b o" data-act="mailbox">📬 ${toSign().length ? `郵差送來 ${toSign().length} 封要簽收` : `有 ${mailUnread()} 封新的信`}，去信箱</button></div>` : '') + (S.gifts.some(g => !isMail(g) && !isRcpt(g)) ? `<div class="sec" style="margin-top:0">🎁 收到的禮物</div>` + S.gifts.filter(g => !isMail(g) && !isRcpt(g)).map(g => `<div class="item"><div class="pic">${itemIcon(g.item)}</div><div class="info"><div class="t">${esc(g.fromName)} 送你 ${itemInfo(g.item).n} ×${g.n}</div><div class="d">${fmtTime(g.t)}</div></div><div class="acts"><button class="b o" data-act="takeGift" data-id="${esc(g.id)}">收下</button></div></div>`).join('') + '<div class="sec">📜 農場消息</div>' : '')
     + (logs.length ? logs.map(l => `<div class="log ${l.t > seen ? 'new' : ''}"><time>${fmtTime(l.t)}</time><span>${esc(l.m)}</span></div>`).join('') : '<div class="empty">目前沒有消息</div>')
     + `<div class="sec">💰 交易紀錄</div>` + ((S.my.trade || []).length ? [...S.my.trade].reverse().map(l => `<div class="log"><time>${fmtTime(l.t)}</time><span style="flex:1">${esc(l.m)}</span>${l.c ? `<b style="color:${l.c > 0 ? '#2e7d32' : '#c62828'};white-space:nowrap">${l.c > 0 ? '+' : ''}${l.c}💰</b>` : ''}</div>`).join('') : '<div class="empty">還沒有交易，賣東西、市集成交都會記在這裡</div>'));
   S.modal(); txMe(f => { f.logSeen = now(); return {}; }).catch(() => {});
@@ -8201,11 +8455,11 @@ const ACT = {
   async buyPetfood(d) { const n = +d.n; const r = await txMe(f => { if (f.coins < PETFOOD_PRICE * n) return ab('金幣不夠'); f.coins -= PETFOOD_PRICE * n; f.petfood = (f.petfood || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 個寵物零食 🦴`); },
   templeInfo: openTemple, hall(d) { openHall(+d.i); }, pray(d) { startPray(+d.i); }, tpGive(d) { return run(() => tpGive(d.k, +d.n)); }, qianShow() { if (qianToday(S.my)) openQian(); else { toast('今天還沒抽籤，去廟裡參拜吧 🙏'); if (S.scene !== 'temple') ACT.toTemple(); } },
   toTemple() { ACT.scene({s:'temple'}); },
-  helper: openHelper, hireHelper(d) { return run(() => hireHelper(+d.i)); }, homeUp: openHomeUp, homeUpGo() { return run(homeUpgrade); }, homeFloor() { const n = homeLv(S.view || S.my) + 1; homeFloorGo((homeFl() + 1) % n); }, horseList: openHorses, hDung() { return run(hDung); }, horse(d) { openHorse(+d.id); }, horseRace: openHorseRace, hTrain(d) { return run(() => hTrain(+d.id, d.k)); }, hBreed(d) { return run(() => hBreed(+d.id, d.m)); }, hSell(d) { return run(() => hSell(+d.id)); },
+  harvestAll() { return run(harvestAllFarm); }, pondAll() { return run(harvestAllPond); }, aniAll() { return run(collectAllAni); }, poopAll() { return run(cleanAllPoop); }, homeUp: openHomeUp, homeUpGo() { return run(homeUpgrade); }, homeFloor() { const n = homeLv(S.view || S.my) + 1; homeFloorGo((homeFl() + 1) % n); }, horseList: openHorses, hDung() { return run(hDung); }, horse(d) { openHorse(+d.id); }, horseRace: openHorseRace, hTrain(d) { return run(() => hTrain(+d.id, d.k)); }, hBreed(d) { return run(() => hBreed(+d.id, d.m)); }, hSell(d) { return run(() => hSell(+d.id)); },
   async hRename(d) { const v = ($('#hnm')?.value || '').trim(); if (!v || [...v].length > 8) return toast('名字要 1～8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { const h = horseOf(f).list.find(x => x.id === +d.id); if (!h) return ab('找不到這匹馬'); h.n = v; return {}; }, () => { toast(`🐎 改名成「${v}」了！`); Music.sfx('pop'); }); },
   async petRename(d) { const v = ($('#pnm_' + d.k)?.value || '').trim(); if ([...v].length > 8) return toast('名字最多 8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { if (!f.pets.includes(d.k)) return ab('沒有這隻寵物'); const x = px(f, d.k); if (v) x.nm = v; else delete x.nm; return {}; }, () => { toast(v ? `🐾 ${PETS[d.k].n}改名叫「${v}」了！` : `🐾 改回「${PETS[d.k].n}」`); Music.voice(PETS[d.k].kind); }); },
   hEnter(d) { return run(() => hEnter(+d.id)); },
-  map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, goPost() { goPlace('post'); }, goHarbor() { goPlace('harbor'); }, rest: openRest, restBuy() { return run(restBuy); }, restUp() { return run(restUp); }, restDeco(d) { return run(() => restDeco(d.c, d.id)); }, restDecoM: openRestDeco, restMenu: openRestMenu, restPick(d) { S.restPick = +d.i; rerenderModal(); }, restPickX() { S.restPick = null; rerenderModal(); }, restSet(d) { return run(() => restMenuSet(+d.i, d.r)); }, restCook(d) { return run(() => restCook(+d.i, +d.k, !!d.buy)); }, restPrice(d) { return run(() => restPrice(+d.i, +d.p)); }, restChef: openRestChef, restHire(d) { return run(() => restHire(d.k, +d.d)); }, restCash() { return run(restCash); }, restRev() { openRestRev(S.viewUid || S.uid); }, restRevOf(d) { openRestRev(d.uid); }, restRank: openRestRank, restVisit(d) { restVisit(d.uid); }, boat: openBoat, boatBuy() { return run(boatBuy); }, boatUp(d) { return run(() => boatUp(d.k)); }, boatFuel(d) { return run(() => boatFuel(d.n)); }, boatGo(d) { return run(() => boatGo(d.k)); }, boatUnload() { return run(boatUnload); }, offo: openOffo, offoGive(d) { return run(() => offoGive(+d.i)); }, trip: openTrip, tripGo(d) { return run(() => tripGo(d.k)); }, tripSeed: openTripSeeds, tripSeedBuy(d) { return run(() => tripSeedBuy(d.id, +d.n)); }, tripSouv: openTripSouv, tripSouvBuy(d) { return run(() => tripSouvBuy(d.id)); }, tripCard() { openTripCard(); }, cardSel(d) { S.cardDraft = $('#pcMsg')?.value || S.cardDraft; S.cardTo = $('#pcTo')?.value || S.cardTo; S.cardSel = d.id; rerenderModal(); }, cardSend() { return run(cardSend); }, tripBook: openTripBook, postWrite() { openPostWrite(); }, postReply(d) { openPostWrite(d.uid); }, postPaper(d) { S.postDraft = $('#pwMsg')?.value || S.postDraft; S.postTo = $('#pwTo')?.value || S.postTo; S.postPaper = d.k; rerenderModal(); }, postSend() { return run(postSend); }, mailbox: openMailbox, readMail(d) { return run(() => readMail(d.id)); }, oldMail(d) { openOldMail(+d.i); }, goMuseum(d) { S.musF = +(d?.f || 0); SCENE_T.museum.y = musY(); goPlace('museum'); refreshFriends(); }, musF(d) { closeModal(); musGo(+d.f); }, musF0() { musGo(0); }, musF1() { musGo(1); }, musF2() { musGo(2); }, musF3() { musGo(3); }, musList() { openMuseum(); }, leaveP() { ACT.scene({s:'farm'}); },
+  map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, goPost() { goPlace('post'); }, goHarbor() { goPlace('harbor'); }, rest: openRest, restBuy() { return run(restBuy); }, restUp() { return run(restUp); }, restDeco(d) { return run(() => restDeco(d.c, d.id)); }, restDecoM: openRestDeco, restMenu: openRestMenu, restPick(d) { S.restPick = +d.i; rerenderModal(); }, restPickX() { S.restPick = null; rerenderModal(); }, restSet(d) { return run(() => restMenuSet(+d.i, d.r)); }, restCook(d) { return run(() => restCook(+d.i, +d.k, !!d.buy)); }, restPrice(d) { return run(() => restPrice(+d.i, +d.p)); }, restChef: openRestChef, restHire(d) { return run(() => restHire(d.k, +d.d)); }, restCash() { return run(restCash); }, restRev() { openRestRev(S.viewUid || S.uid); }, restRevOf(d) { openRestRev(d.uid); }, restRank: openRestRank, restVisit(d) { restVisit(d.uid); }, boat: openBoat, boatBuy() { return run(boatBuy); }, boatUp(d) { return run(() => boatUp(d.k)); }, boatHull() { return run(boatHull); }, boatFuel(d) { return run(() => boatFuel(d.n)); }, boatGo(d) { return run(() => boatGo(d.k)); }, boatUnload() { return run(boatUnload); }, offo: openOffo, offoGive(d) { return run(() => offoGive(+d.i)); }, trip: openTrip, tripGo(d) { return run(() => tripGo(d.k)); }, tripSeed: openTripSeeds, tripSeedBuy(d) { return run(() => tripSeedBuy(d.id, +d.n)); }, tripSouv: openTripSouv, tripSouvBuy(d) { return run(() => tripSouvBuy(d.id)); }, tripCard() { openTripCard(); }, cardSel(d) { S.cardDraft = $('#pcMsg')?.value || S.cardDraft; S.cardTo = $('#pcTo')?.value || S.cardTo; S.cardSel = d.id; rerenderModal(); }, cardSend() { return run(cardSend); }, tripBook: openTripBook, postWrite() { openPostWrite(); }, postReply(d) { openPostWrite(d.uid); }, postPaper(d) { S.postDraft = $('#pwMsg')?.value || S.postDraft; S.postTo = $('#pwTo')?.value || S.postTo; S.postPaper = d.k; rerenderModal(); }, postSend() { return run(postSend); }, mailbox: openMailbox, readMail(d) { return run(() => readMail(+d.i)); }, mailSign() { openSign(); }, mailSignGo() { return run(signMail); }, signClear() { const c = $('#signPad'); c && c.getContext('2d').clearRect(0, 0, c.width, c.height); }, oldMail(d) { openOldMail(+d.i); }, goMuseum(d) { S.musF = +(d?.f || 0); SCENE_T.museum.y = musY(); goPlace('museum'); refreshFriends(); }, musF(d) { closeModal(); musGo(+d.f); }, musF0() { musGo(0); }, musF1() { musGo(1); }, musF2() { musGo(2); }, musF3() { musGo(3); }, musList() { openMuseum(); }, leaveP() { ACT.scene({s:'farm'}); },
   fishGo: fishStart, fishCast, fishHook, fishQuit() { fishStop(); renderTools(); }, fishKeep(d) { return run(() => fishKeep(d.m)); }, aqShow: openAquarium, aqSell(d) { return run(() => aqSell(+d.i)); }, fishDex: openFishDex, fishCup: openFishCup,
   fcEnter(d) { return run(() => fcEnter(+d.i)); },
   petShow() { S.psv = null; openPetShow(); }, petDress(d) { openPetDress(d.k); }, paccBuy(d) { return run(() => paccBuy(d.k, d.id)); }, paccOn(d) { return run(() => paccOn(d.k, d.id)); }, paccOff(d) { return run(() => paccOff(d.k, d.s)); }, petBath(d) { return run(() => petBath(d.k)); },
