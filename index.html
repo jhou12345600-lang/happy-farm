@@ -58,6 +58,12 @@ button{font-family:inherit;cursor:pointer;border:none}
 #stage canvas{display:block;width:100%;height:100%;touch-action:none}
 #loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;font-weight:900;color:#5d3a12;background:linear-gradient(#bfe6ff,#9ad85f);z-index:3;font-size:16px}
 #ovl{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}
+#tripCap{position:absolute;left:8px;right:84px;bottom:10px;z-index:2;pointer-events:none;font-size:12.5px;font-weight:700;color:#fff}#tripCap>div{display:inline-block;background:rgba(1,87,155,.72);border-radius:10px;padding:3px 9px;margin:2px 0;max-width:100%}
+#tripFx{position:fixed;inset:0;z-index:80;background:radial-gradient(circle at 50% 40%,#e1f5fe,#4fc3f7);display:flex;align-items:center;justify-content:center;animation:tfIn .35s;transition:opacity .4s}#tripFx.out{opacity:0}@keyframes tfIn{from{opacity:0}to{opacity:1}}
+.tfBox{width:min(88vw,420px);text-align:center}.tfBox svg{width:100%;max-height:66vh}.tfTop{font-size:22px;font-weight:900;color:#01579b;margin-bottom:4px}.tfTxt{font-weight:900;font-size:17px;color:#01579b;background:#fff;border-radius:999px;padding:8px 16px;display:inline-block;box-shadow:0 3px 0 #0277bd}
+.twmap{display:block;width:100%;max-width:260px;margin:4px auto 8px;background:#b3e5fc;border-radius:14px}
+.pcard{position:relative;width:100%;aspect-ratio:3/2;border-radius:10px;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25);overflow:hidden;color:#fff;margin-bottom:6px}.pcArt{font-size:42px;text-align:center;margin-top:12%;letter-spacing:4px;text-shadow:0 2px 4px rgba(0,0,0,.3)}.pcT{position:absolute;left:8px;bottom:6px;font-weight:900;font-size:13px;text-shadow:0 1px 3px rgba(0,0,0,.6)}.pcStamp{position:absolute;right:6px;top:6px;background:#fff;border:2px dashed #e53935;border-radius:4px;font-size:16px;padding:1px 3px}
+.pcpick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0}.pcpick button{border:3px solid transparent;border-radius:12px;padding:2px;background:none}.pcpick button.on{border-color:#ff9800}.pcpick .pcArt{font-size:28px}.pcpick .pcT{font-size:11px}
 #musCap{position:absolute;left:8px;right:84px;bottom:10px;z-index:2;pointer-events:none;font-size:12.5px;font-weight:700;color:#fff}#musCap>div{display:inline-block;background:rgba(62,39,35,.72);border-radius:10px;padding:3px 9px;margin-top:3px;max-width:100%}#musCap[hidden]{display:none}
 #stage.racing #ovl,#stage.racing #sceneTabs,#stage.racing #chatBtn,#stage.racing #wx,#stage.racing #visitBar,#stage.racing #hereBox,#stage.racing #hint{visibility:hidden}
 #fishUI{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:5;width:min(94%,420px);background:rgba(255,250,240,.96);border:3px solid #8d6e63;border-radius:18px;padding:10px 12px;box-shadow:0 6px 16px rgba(0,0,0,.25);text-align:center;user-select:none;-webkit-user-select:none;touch-action:none}#fishUI[hidden]{display:none}
@@ -351,7 +357,7 @@ button{font-family:inherit;cursor:pointer;border:none}
   <div id="stage">
     <div id="loading">🚜 正在載入 3D 農場…</div>
     <div id="ovl"></div>
-    <div id="musCap" hidden></div>
+    <div id="musCap" hidden></div><div id="tripCap" hidden></div>
     <div id="sceneTabs"><button data-act="scene" data-s="farm" class="on">🌾<span class="tl"> 農場</span></button><button data-act="scene" data-s="ranch">🐮<span class="tl"> 牧場</span></button><button data-act="scene" data-s="stable">🐎<span class="tl"> 馬場</span><em class="badge" id="bdS"></em></button><button data-act="scene" data-s="fish">🐟<span class="tl"> 魚塭</span></button><button data-act="scene" data-s="factory">🏭<span class="tl"> 工廠</span></button><button data-act="scene" data-s="green">🌱<span class="tl"> 溫室</span><em class="badge" id="bdH"></em></button><button data-act="scene" data-s="town">🏘️<span class="tl"> 小鎮</span><em class="badge" id="bdV"></em></button><button data-act="scene" data-s="temple">🏯<span class="tl"> 廟宇</span></button><button data-act="map" id="mapTab">🗺️<span class="tl"> 出門</span><em class="badge" id="bdP"></em></button></div>
     <div id="wx"></div>
     <div id="visitBar" hidden><span>👀 在 <b id="visitName"></b> 的家</span><button data-act="trophies" class="tb">🏆</button><button data-act="home">🏠 回家</button></div>
@@ -496,6 +502,367 @@ for (const [id, n, cat, lv, min0, m] of CROP_LIST) {
   CROPS[id] = {n, cat, lv, t:min * 60, cost, y, sell, exp:Math.max(1, Math.round(1 + min * 0.06 + lv * 0.8)), m};
 }
 for (const c of Object.values(CROPS)) { if (c.m.vil) { c.vil = c.m.vil; c.sell = Math.round(c.sell * 1.4); } if (c.m.gh) { c.gh = 1; c.sell = Math.round(c.sell * 1.6); } }
+
+/* ================= ✈️ 環島旅遊：付旅費搭車／飛機到台灣各地，買當地種子、紀念品、寄明信片 ================= */
+const TRIP_X = i => 330 + i * 160, TRIP_SEED_MAX = 20, TRIP_CARD = 50;
+const TRIPS = {
+  taipei:{i:0, n:'台北101', em:'🏙️', lv:1, fare:500, by:'🚄', byN:'高鐵', map:[66, 15], d:'登上台北 101，逛街喝一杯珍珠奶茶！', g:'#9e9e9e'},
+  jiufen:{i:1, n:'九份老街', em:'🏮', lv:3, fare:600, by:'🚌', byN:'客運', map:[77, 12], d:'山城裡的紅燈籠、石階和茶樓，還有好吃的芋圓。', g:'#7c8f5a'},
+  kenting:{i:2, n:'墾丁', em:'🏖️', lv:5, fare:800, by:'🚄', byN:'高鐵', map:[55, 99], d:'陽光、沙灘、椰子樹，還有白色的鵝鑾鼻燈塔。', g:'#f3dfa8'},
+  sunmoon:{i:3, n:'日月潭', em:'🛶', lv:6, fare:700, by:'🚌', byN:'客運', map:[54, 48], d:'湖光山色，搭船遊湖，看得到拉魯島和慈恩塔。', g:'#6fa84a'},
+  alishan:{i:4, n:'阿里山', em:'🌲', lv:8, fare:900, by:'🚂', byN:'森林小火車', map:[50, 61], d:'森林小火車、千年神木、雲海和日出。', g:'#4f7d3a'},
+  penghu:{i:5, n:'澎湖', em:'🐚', lv:10, fare:1200, by:'✈️', byN:'飛機', map:[15, 56], d:'雙心石滬、玄武岩和超藍的海。', g:'#c9c08f'},
+  taroko:{i:6, n:'太魯閣', em:'🏞️', lv:12, fare:1000, by:'🚆', byN:'火車', map:[74, 36], d:'大理石峽谷、碧綠溪水、紅色吊橋和長春祠瀑布。', g:'#8d9a7a'},
+  lanyu:{i:7, n:'蘭嶼', em:'🚣', lv:15, fare:1500, by:'⛴️', byN:'渡輪', map:[80, 95], d:'達悟族拼板舟、飛魚架和湛藍的太平洋。', g:'#7fae5a'},
+};
+const TRIP_HI = {taipei:['哇～101 好高！🏙️', '台北我來了！', '先來一杯珍奶 🧋'], jiufen:['九份的燈籠好美 🏮', '來吃芋圓囉！', '山城好有氣氛～'], kenting:['墾丁我來了 🏖️', '海好藍！', '來曬太陽囉～'], sunmoon:['日月潭好美 🛶', '來搭船遊湖！', '空氣好清新～'],
+  alishan:['阿里山好涼 🌲', '來看神木囉！', '等等看日出～'], penghu:['澎湖的海超藍 🐚', '來看雙心石滬！', '飛機好快！'], taroko:['太魯閣好壯觀 🏞️', '峽谷好高！', '來走吊橋囉～'], lanyu:['蘭嶼到了 🚣', '好漂亮的拼板舟！', '海風好舒服～']};
+const TRIP_SAY = {
+  taipei:['101 的電梯超快！', '晚上有燈光秀喔', '珍奶要半糖少冰', '捷運好方便', '這裡人好多喔'],
+  jiufen:['芋圓加紅豆最好吃', '茶樓的燈籠亮了！', '石階好多階…', '從這裡看得到海耶', '來喝一壺老人茶'],
+  kenting:['防曬要擦喔 ☀️', '下午去南灣衝浪！', '燈塔好白好漂亮', '晚上去逛大街', '椰子水好清涼'],
+  sunmoon:['坐船去拉魯島吧', '慈恩塔在山上那邊', '湖面好平靜', '阿薩姆紅茶好香', '騎腳踏車環湖！'],
+  alishan:['神木好幾千歲了！', '小火車要開了 🚂', '雲海好像棉花糖', '早上四點起來看日出', '高山茶好甘甜'],
+  penghu:['兩顆愛心的石滬！', '玄武岩好像巧克力', '跨海大橋好長', '仙人掌冰好吃 🌵', '天人菊開滿地'],
+  taroko:['小心落石喔', '溪水是碧綠色的', '長春祠的瀑布好美', '吊橋會搖耶！', '大理石好光滑'],
+  lanyu:['拼板舟是手工做的！', '飛魚季到了 🐟', '小心山羊過馬路', '這裡的海好清澈', '饅頭山好可愛']};
+const LOC_CROP_LIST = [
+  ['tp_calla','陽明山海芋','flower',1,90,{m:'flower',st:'lily',c:'#ffffff',loc:'taipei'}],
+  ['tp_shoot','綠竹筍','veg',2,120,{m:'stalk',c2:'#dce775',loc:'taipei'}],
+  ['jf_taro','九份芋頭','veg',3,150,{m:'tuber',c2:'#b39ddb',loc:'jiufen'}],
+  ['jf_grass','金瓜石芒草','grass',3,100,{m:'grain',c2:'#e8dcc8',loc:'jiufen'}],
+  ['kt_onion','恆春洋蔥','veg',5,160,{m:'bulb',c2:'#a1453a',loc:'kenting'}],
+  ['kt_bougain','九重葛','flower',5,200,{m:'flower',st:'carn',c:'#d81b60',loc:'kenting'}],
+  ['sm_ruby','紅玉紅茶','grass',6,240,{m:'leafy',c:'#7b2d26',up:true,loc:'sunmoon'}],
+  ['sm_jiao','茭白筍','veg',6,200,{m:'stalk',c2:'#f1f8e9',loc:'sunmoon'}],
+  ['al_tea','高山烏龍茶','grass',8,300,{m:'leafy',c:'#1b5e20',up:true,loc:'alishan'}],
+  ['al_wasabi','山葵','veg',8,280,{m:'leafy',c:'#7cb342',head:true,loc:'alishan'}],
+  ['ph_cactus','仙人掌果','fruit',10,420,{m:'bush',f:'round',c2:'#ad1457',loc:'penghu'}],
+  ['ph_gail','天人菊','flower',10,300,{m:'flower',st:'carn',c:'#ff7043',loc:'penghu'}],
+  ['tk_millet','小米','grass',12,320,{m:'grain',c2:'#fbc02d',loc:'taroko'}],
+  ['tk_maqaw','馬告','tree',12,700,{m:'tree',c2:'#263238',leaf:'#33691e',loc:'taroko'}],
+  ['ly_taro','蘭嶼水芋','veg',15,400,{m:'tuber',c2:'#6a1b9a',loc:'lanyu'}],
+  ['ly_lily','台灣野百合','flower',15,360,{m:'flower',st:'lily',c:'#fffde7',loc:'lanyu'}],
+];
+const LOC_IDS = LOC_CROP_LIST.map(r => r[0]);
+// 當地種子加進作物表，但不列舉（商店、訂單、隨機獎勵都不會出現），只能去旅遊時買
+for (const [id, n, cat, lv, min0, m] of LOC_CROP_LIST) {
+  const min = tShort(min0), cost = Math.round(6 + lv * 5 + min * 0.5), sell = Math.round(Math.max(1, Math.ceil((cost * 1.7 + min * 0.8) / YIELD)) * 1.8);
+  Object.defineProperty(CROPS, id, {value:{n, cat, lv, t:min * 60, cost, y:YIELD, sell, exp:Math.max(1, Math.round(1 + min * 0.06 + lv * 0.8)) + 2, m, loc:m.loc}, enumerable:false, writable:true, configurable:true});
+}
+const SOUV = {
+  sv_101:['taipei','台北101模型','🏙️',800], sv_boba:['taipei','珍奶抱枕','🧋',500], sv_mrt:['taipei','捷運列車模型','🚇',900],
+  sv_lantern:['jiufen','九份紅燈籠','🏮',400], sv_teapot:['jiufen','茶樓陶壺組','🫖',700], sv_jfsign:['jiufen','老街招牌','🪧',600],
+  sv_light:['kenting','鵝鑾鼻燈塔模型','🗼',900], sv_surf:['kenting','衝浪板','🏄',1000], sv_shell:['kenting','貝殼風鈴','🐚',500],
+  sv_pagoda:['sunmoon','慈恩塔模型','🛕',900], sv_boat:['sunmoon','遊湖船模型','🛶',800], sv_tea:['sunmoon','紅茶禮盒','🍵',400],
+  sv_train:['alishan','森林小火車模型','🚂',1200], sv_tree:['alishan','神木木雕','🌲',1500], sv_sun:['alishan','雲海日出照','🌅',600],
+  sv_heart:['penghu','雙心石滬模型','💞',1200], sv_basalt:['penghu','玄武岩擺飾','🪨',800], sv_coral:['penghu','珊瑚擺飾','🪸',1000],
+  sv_marble:['taroko','大理石雕','🗿',1300], sv_shrine:['taroko','長春祠模型','⛩️',1200], sv_weave:['taroko','原住民織布','🧶',900],
+  sv_tatala:['lanyu','拼板舟模型','🚣',1800], sv_fish:['lanyu','飛魚吊飾','🐟',900], sv_tao:['lanyu','達悟陶偶','🏺',1100],
+};
+const CARDS = {
+  taipei1:['101 跨年煙火', 'linear-gradient(#1a237e,#5c6bc0)', '🎆🏙️🎆'], taipei2:['城市與珍奶', 'linear-gradient(#81d4fa,#e1f5fe)', '🏙️🧋🚇'],
+  jiufen1:['燈籠山城', 'linear-gradient(#4a148c,#ff8a65)', '🏮⛰️🏮'], jiufen2:['茶樓芋圓', 'linear-gradient(#ffcc80,#fff3e0)', '🫖🍡🏮'],
+  kenting1:['南灣夕陽', 'linear-gradient(#ff7043,#ffcc80 55%,#29b6f6 56%)', '🌅🏄🌴'], kenting2:['鵝鑾鼻燈塔', 'linear-gradient(#4fc3f7,#e1f5fe)', '🗼🌊⛵'],
+  sunmoon1:['湖上小船', 'linear-gradient(#a5d6a7,#4db6ac)', '⛰️🛶⛰️'], sunmoon2:['慈恩塔', 'linear-gradient(#ffe082,#81c784)', '🛕🌳🌙'],
+  alishan1:['雲海日出', 'linear-gradient(#ff8a65,#fff59d 45%,#eceff1 46%)', '🌄☁️☁️'], alishan2:['森林小火車', 'linear-gradient(#a5d6a7,#2e7d32)', '🌲🚂🌲'],
+  penghu1:['雙心石滬', 'linear-gradient(#4dd0e1,#00838f)', '💞🌊🐚'], penghu2:['跨海大橋', 'linear-gradient(#81d4fa,#0277bd)', '🌉⛵🐟'],
+  taroko1:['峽谷吊橋', 'linear-gradient(#b0bec5,#26a69a)', '⛰️🌉⛰️'], taroko2:['長春祠瀑布', 'linear-gradient(#c5e1a5,#558b2f)', '⛩️💦🌿'],
+  lanyu1:['拼板舟', 'linear-gradient(#29b6f6,#01579b)', '🚣🌊🐟'], lanyu2:['飛魚季', 'linear-gradient(#ffe082,#0288d1)', '🐟🐟🐐'],
+};
+const cardImg = id => { const C = CARDS[id]; if (!C) return ''; const k = id.replace(/\d+$/, ''); return `<div class="pcard" style="background:${C[1]}"><div class="pcArt">${C[2]}</div><div class="pcT">${TRIPS[k]?.em || ''} ${esc(TRIPS[k]?.n || '')}・${esc(C[0])}</div><div class="pcStamp">${TRIPS[k]?.em || '📮'}</div></div>`; };
+const tripOf = () => TRIPS[S.place] ? S.place : null;
+const TW_SVG = `<path d="M63,4 L71,5 L79,8 L85,13 L83,21 L80,31 L77,43 L73,57 L69,69 L64,81 L59,91 L56,103 L51,96 L46,88 L42,78 L38,66 L35,54 L33,44 L35,35 L41,27 L49,18 L56,10 Z" fill="#9ccc65" stroke="#558b2f" stroke-width="1.2"/>
+  <path d="M60,22 L70,40 L64,70 L58,86" fill="none" stroke="#7cb342" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+  <ellipse cx="15" cy="56" rx="3.2" ry="2.4" fill="#9ccc65" stroke="#558b2f"/><ellipse cx="11" cy="60" rx="1.6" ry="1.2" fill="#9ccc65" stroke="#558b2f"/><ellipse cx="80" cy="95" rx="2.2" ry="1.7" fill="#9ccc65" stroke="#558b2f"/>`;
+const TRIP_HOME = [45, 44];
+function tripMapSvg(sel, extra = '') {
+  return `<svg viewBox="0 0 100 110" class="twmap">${TW_SVG}<text x="${TRIP_HOME[0]}" y="${TRIP_HOME[1] + 2}" font-size="7" text-anchor="middle">🏡</text>${Object.entries(TRIPS).map(([k, T]) => `<g><circle cx="${T.map[0]}" cy="${T.map[1]}" r="${k === sel ? 3.2 : 2.2}" fill="${k === sel ? '#e53935' : '#fff'}" stroke="#c62828" stroke-width="1"/><text x="${T.map[0] + (T.map[0] > 60 ? -4 : 4)}" y="${T.map[1] + 1.5}" font-size="4.2" font-weight="900" fill="#3e2723" text-anchor="${T.map[0] > 60 ? 'end' : 'start'}">${T.n}</text></g>`).join('')}${extra}</svg>`;
+}
+// 出發動畫：台灣地圖上，交通工具從家裡沿著虛線開到目的地
+function tripFx(k, cb) {
+  const T = TRIPS[k], [x0, y0] = TRIP_HOME, [x1, y1] = T.map, fly = T.by === '✈️' || T.by === '⛴️';
+  const cx = (x0 + x1) / 2 + (fly ? (y1 - y0) * .25 : 0), cy = (y0 + y1) / 2 - (fly ? 14 : 4), d = `M${x0},${y0} Q${cx},${cy} ${x1},${y1}`;
+  const el = document.createElement('div'); el.id = 'tripFx';
+  el.innerHTML = `<div class="tfBox"><div class="tfTop">✈️ 環島旅遊</div>${tripMapSvg(k, `<path id="tfPath" d="${d}" fill="none" stroke="#e53935" stroke-width="1.4" stroke-dasharray="2.5 2" stroke-linecap="round"/><text id="tfV" font-size="10" text-anchor="middle" dominant-baseline="middle">${T.by}</text>`)}<div class="tfTxt">${T.by} 搭${T.byN}前往 <b>${T.em} ${T.n}</b>…</div></div>`;
+  document.body.appendChild(el); Music.sfx('ding');
+  const P = el.querySelector('#tfPath'), V = el.querySelector('#tfV'), L = P.getTotalLength(), t0 = performance.now(), DUR = 2600;
+  P.style.strokeDashoffset = 0; const mask = P.cloneNode(); mask.removeAttribute('id'); mask.setAttribute('stroke', '#bbdefb'); mask.setAttribute('stroke-dasharray', L); mask.setAttribute('stroke-width', '2.2'); mask.removeAttribute('stroke-linecap'); P.after(mask);
+  const step = now0 => { const k2 = Math.min(1, (now0 - t0) / DUR), e = k2 < .5 ? 2 * k2 * k2 : 1 - Math.pow(-2 * k2 + 2, 2) / 2, p = P.getPointAtLength(L * e);
+    mask.setAttribute('stroke-dashoffset', -L * e); V.setAttribute('x', p.x); V.setAttribute('y', p.y - (fly ? Math.sin(e * Math.PI) * 2 : Math.abs(Math.sin(e * 40)) * .6));
+    if (k2 < 1) requestAnimationFrame(step); else { Music.sfx('coin'); setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 420); cb && cb(); }, 450); } };
+  requestAnimationFrame(step);
+}
+function openTrip() {
+  S.modal = () => {
+    const f = S.my, L = levelOf(f.exp).L, vis = f.tripN || {};
+    let body = `<div class="popbox">✈️ <b>環島旅遊</b><br><small>付旅費就能出發！每個地方都有<b>當地限定種子</b>、可以帶回家擺的<b>紀念品</b>，還能寄<b>明信片</b>給好友（郵差會送到好友的信箱）。好友也去同一個地方的話會遇到彼此！</small></div>${tripMapSvg('')}`;
+    body += Object.entries(TRIPS).sort((a, b) => a[1].lv - b[1].lv).map(([k, T]) => { const lock = L < T.lv;
+      return `<div class="item ${lock ? 'dim' : ''}"><div class="pic" style="font-size:32px">${lock ? '🔒' : T.em}</div><div class="info"><div class="t">${T.n} <small style="color:#0277bd">${T.by} ${T.byN}</small>${vis[k] ? ` <small style="color:#8d6e63">去過 ${vis[k]} 次</small>` : ' <small style="color:#e65100">✨ 第一次去有獎勵</small>'}</div><div class="d">${T.d}<br>🌱 ${LOC_IDS.filter(id => CROPS[id].loc === k).map(id => CROPS[id].n).join('、')}</div></div>
+        <div class="acts">${lock ? `<button class="b g" disabled>Lv.${T.lv} 解鎖</button>` : `<button class="b o" data-act="tripGo" data-k="${k}">出發 💰${T.fare}</button>`}</div></div>`; }).join('');
+    body += `<div class="mgbtn"><button class="b" data-act="tripBook">📔 我的旅遊手冊</button></div>`;
+    openModal('✈️ 環島旅遊', body);
+  };
+  S.modal();
+}
+async function tripGo(k) {
+  const T = TRIPS[k]; if (!T) return; let first = 0, gift = '';
+  const r = await txMe(f => { if (levelOf(f.exp).L < T.lv) return ab(`Lv.${T.lv} 才能去${T.n}`); if (f.coins < T.fare) return ab(`旅費要 ${T.fare} 金幣`);
+    f.coins -= T.fare; addTrade(f, `旅遊：${T.n}`, -T.fare); f.trip = {k, t:now(), sb:0}; f.tripN ??= {}; first = !f.tripN[k]; f.tripN[k] = (f.tripN[k] || 0) + 1;
+    if (first) { const ids = LOC_IDS.filter(id => CROPS[id].loc === k); for (const id of ids) f.seeds[id] = (f.seeds[id] || 0) + 2; gift = ids.map(id => CROPS[id].n).join('、'); gainExp(f, 100); }
+    addLog(f, `✈️ 去${T.n}旅遊`); return {}; });
+  if (r.abort) return toast(r.msg);
+  closeModal(); renderTop();
+  tripFx(k, () => { goPlace(k); if (first) setTimeout(() => toast(`🎉 第一次來${T.n}！送你當地種子：${gift} 各 2 包，+100 經驗`), 2600); });
+}
+function openTripSeeds() {
+  const k = tripOf(); if (!k) return;
+  S.modal = () => { const f = S.my, left = f.trip?.k === k ? TRIP_SEED_MAX - (f.trip.sb || 0) : 0;
+    openModal(`🌱 ${TRIPS[k].n}的當地種子`, `<div class="popbox"><small>這些種子<b>只有在${TRIPS[k].n}才買得到</b>！帶回家種在農場，賣的價錢比一般作物高。這趟旅行還可以買 <b>${left}</b> 包。</small></div>` + LOC_IDS.filter(id => CROPS[id].loc === k).map(id => { const c = CROPS[id], p = c.cost * 2, lock = levelOf(f.exp).L < c.lv;
+      return `<div class="item"><div class="pic">${icon('crop', id)}</div><div class="info"><div class="t">${c.n} <small style="color:#8d6e63">（有 ${f.seeds[id] || 0} 包）</small></div><div class="d">${CAT_N[c.cat]} · 成熟 ${fmtDur(c.t * 1000 / SPEED)} · 一塊地 ${c.y} 個 · 每個 ${c.sell}💰 · +${c.exp} 經驗</div></div>
+        <div class="acts">${lock ? `<button class="b g" disabled>Lv.${c.lv}</button>` : `<button class="b o" data-act="tripSeedBuy" data-id="${id}" data-n="1" ${left < 1 ? 'disabled' : ''}>買 1 包 ${p}💰</button><button class="b o" data-act="tripSeedBuy" data-id="${id}" data-n="5" ${left < 5 ? 'disabled' : ''}>買 5 包 ${p * 5}💰</button>`}</div></div>`; }).join(''));
+  };
+  S.modal();
+}
+async function tripSeedBuy(id, n) {
+  const c = CROPS[id], k = tripOf(); if (!c?.loc || c.loc !== k) return toast('要在當地才買得到');
+  const r = await txMe(f => { if (f.trip?.k !== k) return ab('先買票出發吧'); if ((f.trip.sb || 0) + n > TRIP_SEED_MAX) return ab(`這趟旅行最多買 ${TRIP_SEED_MAX} 包`); if (f.coins < c.cost * 2 * n) return ab('金幣不夠');
+    f.coins -= c.cost * 2 * n; f.trip.sb = (f.trip.sb || 0) + n; f.seeds[id] = (f.seeds[id] || 0) + n; addTrade(f, `買${c.n}種子`, -c.cost * 2 * n); return {}; });
+  if (r.abort) return toast(r.msg); Music.sfx('coin'); toast(`🌱 買了 ${c.n}種子 ×${n}，回家用「播種」就能種`); renderTop(); rerenderModal();
+}
+function openTripSouv() {
+  const k = tripOf(); if (!k) return;
+  S.modal = () => { const H = homeView(S.my), inv = homeInvOf(H), at = homeAtOf(H);
+    openModal(`🎁 ${TRIPS[k].n}紀念品店`, `<div class="popbox"><small>紀念品會放進<b>家具倉庫</b>，回家按「🛋️ 裝潢」就能擺在家裡展示，好友來參觀都看得到！</small></div>` + Object.entries(SOUV).filter(([, s]) => s[0] === k).map(([id, s]) => { const nn = (inv[id] || 0) + at.filter(a => a.id === id).length;
+      return `<div class="item"><div class="pic" style="font-size:30px">${s[2]}</div><div class="info"><div class="t">${s[1]}${nn ? ` <small style="color:#8d6e63">（有 ${nn} 個）</small>` : ''}</div><div class="d">${TRIPS[k].em} ${TRIPS[k].n}限定紀念品</div></div><button class="b o" data-act="tripSouvBuy" data-id="${id}">買 ${s[3]}💰</button></div>`; }).join(''));
+  };
+  S.modal();
+}
+async function tripSouvBuy(id) {
+  const s = SOUV[id], I = HOME_ITEMS[id]; if (!s || tripOf() !== s[0]) return toast('要在當地才買得到');
+  let ok = 0; await homeFast((f, H) => { if (f.coins < I.c) return ab('金幣不夠'); f.coins -= I.c; addTrade(f, `買紀念品${I.n}`, -I.c); (H.own ??= {})[id] = 1; H.inv[id] = (H.inv[id] || 0) + 1; ok = 1; }, '');
+  if (ok) { toast(`🎁 買了${I.n}！放在家具倉庫，回家就能擺出來`); rerenderModal(); renderTop(); }
+}
+function openTripCard(to) {
+  const k = tripOf(); if (!k) return; S.cardTo = to ?? S.cardTo ?? S.uid;
+  const ids = Object.keys(CARDS).filter(id => id.startsWith(k)); if (!ids.includes(S.cardSel)) S.cardSel = ids[0];
+  S.modal = () => {
+    let body = `<div class="popbox">🖼️ <b>從${TRIPS[k].n}寄明信片</b>（💰${TRIP_CARD}，含郵票）<br><small>郵差會把明信片送到對方農場的信箱！也可以寄給自己當紀念。</small></div>`;
+    body += `<div class="pcpick">${ids.map(id => `<button class="${S.cardSel === id ? 'on' : ''}" data-act="cardSel" data-id="${id}">${cardImg(id)}</button>`).join('')}</div>`;
+    body += `<div class="field"><label>寄給</label><select id="pcTo"><option value="${S.uid}">📮 自己（收藏）</option>${S.friends.map(x => `<option value="${x.uid}" ${x.uid === S.cardTo ? 'selected' : ''}>${esc(dn(x.farm))}</option>`).join('')}</select></div>`;
+    body += `<div class="field"><label>寫幾句話（最多 80 字）</label><textarea id="pcMsg" maxlength="80" rows="3" placeholder="例如：我在${TRIPS[k].n}玩得好開心！下次一起來 😄" style="width:100%;border-radius:10px;border:2px solid #90caf9;padding:8px;font-size:15px">${esc(S.cardDraft || '')}</textarea></div>`;
+    body += `<button class="b o" style="width:100%;font-size:16px" data-act="cardSend">📮 寄出明信片</button>`;
+    openModal('🖼️ 寄明信片', body);
+  };
+  S.modal();
+}
+async function cardSend() {
+  const k = tripOf(), id = S.cardSel, to = $('#pcTo')?.value || S.uid, msg = ($('#pcMsg')?.value || '').trim().slice(0, 80); if (!k || !CARDS[id]) return;
+  const nm = to === S.uid ? '自己' : dn(S.friends.find(x => x.uid === to)?.farm || {}); if (to !== S.uid && !S.friends.some(x => x.uid === to)) return toast('選一位好友');
+  const r = await txMe(f => { if (f.coins < TRIP_CARD) return ab(`明信片要 ${TRIP_CARD} 金幣`); f.coins -= TRIP_CARD; addTrade(f, `寄明信片給${nm}`, -TRIP_CARD); (f.sent ??= []).push({to, toName:nm, msg, item:'', n:0, card:id, t:now()}); if (f.sent.length > 20) f.sent = f.sent.slice(-20); return {}; });
+  if (r.abort) return toast(r.msg);
+  try { await B.sendGift({from:S.uid, fromName:myName(), to, kind:'card', card:id, msg, paper:'plain', item:'letter', n:1, t:now()}); }
+  catch (e) { await txMe(f => { f.coins += TRIP_CARD; return {}; }).catch(() => {}); return toast('寄送失敗，錢已經退回：' + e.message); }
+  S.cardDraft = ''; closeModal(); Music.sfx('coin'); if (to === S.uid) setTimeout(() => refreshFriends().catch(() => {}), 600); toast(`📮 明信片寄出了！郵差會送到${nm === '自己' ? '你' : nm}的農場信箱`); renderTop();
+  const box = W.trip?.[k]?.box; if (box) fx3(box.x, 2.4, box.z, '✉️ 寄出！', '#c62828');
+}
+function openTripBook() {
+  S.modal = () => {
+    const f = S.my, H = homeView(f), inv = homeInvOf(H), at = homeAtOf(H), vis = f.tripN || {}, cards = f.cards || {}, n = Object.keys(TRIPS).filter(k => vis[k]).length;
+    let body = `<div class="popbox">📔 <b>我的旅遊手冊</b>：去過 <b>${n}/${Object.keys(TRIPS).length}</b> 個地方${n === Object.keys(TRIPS).length ? ' 🏅 環島達人！' : ''}</div>`;
+    body += Object.entries(TRIPS).sort((a, b) => a[1].lv - b[1].lv).map(([k, T]) => {
+      const seeds = LOC_IDS.filter(id => CROPS[id].loc === k).map(id => `${(f.dex?.[id] || 0) > 0 ? '✅' : '⬜'}${CROPS[id].n}`).join(' '), sv = Object.entries(SOUV).filter(([, s]) => s[0] === k).map(([id, s]) => (inv[id] || at.some(a => a.id === id)) ? s[2] : '❔').join(' '),
+        cd = Object.keys(CARDS).filter(id => id.startsWith(k)).map(id => cards[id] ? '🖼️' : '⬜').join('');
+      return `<div class="item ${vis[k] ? '' : 'dim'}"><div class="pic" style="font-size:30px">${vis[k] ? T.em : '❔'}</div><div class="info"><div class="t">${T.n}${vis[k] ? ` <small style="color:#8d6e63">去過 ${vis[k]} 次</small>` : ' <small>還沒去過</small>'}</div><div class="d">🌱 收成過：${seeds}<br>🎁 紀念品：${sv}　🖼️ 明信片：${cd}</div></div></div>`; }).join('');
+    const got = Object.keys(cards).filter(id => CARDS[id]);
+    if (got.length) body += `<div class="sec">🖼️ 收到的明信片</div><div class="pcpick">${got.map(id => `<div>${cardImg(id)}<small>×${cards[id]}</small></div>`).join('')}</div>`;
+    openModal('📔 旅遊手冊', body);
+  };
+  S.modal();
+}
+// ----- 3D 景點 -----
+const gHex = () => geoOf('hx', () => new THREE.CylinderGeometry(1, 1, 1, 6)), gTap = () => geoOf('tap', () => new THREE.CylinderGeometry(.62, 1, 1, 8));
+function palmTree(h = 4) { const g = new THREE.Group(); for (let i = 0; i < 5; i++) g.add(rod('#8d6e63', [.18 - i * .015, h / 5 + .05, .18 - i * .015], [Math.sin(i * .5) * .25, h / 10 + i * h / 5, 0], [0, 0, .08]));
+  for (let i = 0; i < 7; i++) { const a = i / 7 * Math.PI * 2; g.add(blk('#43a047', [2.1, .06, .45], [Math.cos(a) * .9 + .35, h + .1 - .25, Math.sin(a) * .9], [0, -a, -.35])); } g.add(ball('#6d4c41', U(.18), [.4, h - .1, .15])); return g; }
+function pine(h = 5, c = '#2e7d32') { return grp(rod('#5d4037', [.2, h * .3, .2], [0, h * .15, 0]), cone(c, [h * .28, h * .5, h * .28], [0, h * .5, 0]), cone(c, [h * .21, h * .4, h * .21], [0, h * .78, 0]), cone(c, [h * .13, h * .3, h * .13], [0, h, 0])); }
+function bldg(w, h, d, c, win = '#b3e5fc') { const g = grp(blk(c, [w, h, d], [0, h / 2, 0])); for (let y = 1.2; y < h - .6; y += 1.3) g.add(blk(win, [w + .04, .5, d * .8], [0, y, 0])); g.add(blk('#757575', [w + .2, .2, d + .2], [0, h + .1, 0])); return g; }
+function tripBase(G, T) {
+  const gr = new THREE.Mesh(geoOf('tpl', () => new THREE.PlaneGeometry(162, 130)), mat(T.g)); gr.rotation.x = -Math.PI / 2; gr.position.set(0, -.03, -10); gr.receiveShadow = true; G.add(gr);
+  G.add(blk('#cfc3aa', [10, .06, 14], [0, .01, 4]));
+}
+function tripTourBoard(G, k, x, z) {   // 景點的攤位：種子攤、紀念品店、郵筒
+  const T = TRIPS[k], A = W.trip[k];
+  const st = grp(blk('#a1887f', [3, 1, 1.4], [0, .5, 0]), blk('#8d6e63', [3.2, .1, 1.6], [0, 1.02, 0]), ...[-1.4, 1.4].map(x2 => rod('#6d4c41', [.07, 2.4, .07], [x2, 1.2, -.6])), blk('#66bb6a', [3.4, .12, 1.9], [0, 2.4, -.2], [.25, 0, 0]),
+    ...[0, 1, 2, 3].map(i => M(gBucket(), ['#8d6e63', '#a1887f'][i % 2], [.3, .3, .3], [-1.1 + i * .73, 1.2, .1])), ...[0, 1, 2, 3].map(i => ball(['#81c784', '#fff176', '#ce93d8', '#ff8a65'][i], U(.18), [-1.1 + i * .73, 1.42, .1])));
+  st.position.set(x - 7, 0, z); st.traverse(o => o.userData.hit = {type:'tripSeed'}); G.add(st);
+  const sh = grp(blk('#fff8e1', [3.4, 2.6, 2.4], [0, 1.3, 0]), ...gableRoof(3.4, 2.4, 2.6, .5, '#ef6c00', '#fff8e1', {t:.18}), blk('#5d4037', [1, 1.7, .08], [0, .85, 1.21]), blk('#b3e5fc', [.9, .7, .08], [-1.1, 1.5, 1.21]), blk('#b3e5fc', [.9, .7, .08], [1.1, 1.5, 1.21]));
+  sh.position.set(x + 7, 0, z - .6); sh.traverse(o => o.userData.hit = {type:'tripSouv'}); G.add(sh);
+  const shT = textPlane('🎁 紀念品', '#ffffff', '#ef6c00', 2.6, .6, 90); shT.position.set(x + 7, 3.3, z + .7); G.add(shT);
+  const sdT = textPlane('🌱 當地種子', '#ffffff', '#2e7d32', 2.6, .6, 90); sdT.position.set(x - 7, 3.1, z + .2); G.add(sdT);
+  const mb = grp(rod('#c62828', [.45, 1.3, .45], [0, .65, 0]), ball('#c62828', [.46, .3, .46], [0, 1.3, 0]), blk('#212121', [.4, .05, .1], [0, 1.05, .42]), blk('#fff', [.5, .25, .05], [0, .7, .45])); mb.position.set(x + 3.6, 0, z + 1.2); mb.traverse(o => o.userData.hit = {type:'tripBox'}); G.add(mb);
+  A.box = {x:TRIP_X(T.i) + x + 3.6, z:z + 1.2};
+  const sg = textPlane(`${T.em} ${T.n}`, '#ffffff', '#1565c0', 6, 1.1, 110); sg.position.set(0, 5.4, -8); G.add(sg);
+  G.add(rod('#6d4c41', [.12, 5, .12], [-2.8, 2.5, -8.05]), rod('#6d4c41', [.12, 5, .12], [2.8, 2.5, -8.05]));
+}
+function buildTripScene(k, G) {
+  const T = TRIPS[k], A = W.trip[k] = {anim:[]}; tripBase(G, T);
+  const sea = (w, h, x, z, c = '#29b6f6') => { const s = waveWater(w, h, c, .9, 2.2); s.position.set(x, .2, z); G.add(s); A.water = s; return s; };
+  if (k === 'taipei') {
+    G.add(blk('#bdbdbd', [40, .05, 30], [0, .02, -18]));
+    const t = new THREE.Group(); t.add(blk('#78909c', [7, 3, 7], [0, 1.5, 0]));
+    for (let i = 0; i < 8; i++) t.add(M(gTap(), '#4f8a8b', [2.6, 3.2, 2.6], [0, 4.6 + i * 3.1, 0], [0, Math.PI / 8, 0]), blk('#b2dfdb', [3.8, .12, 3.8], [0, 3.05 + i * 3.1, 0]));
+    t.add(blk('#4f8a8b', [2.6, 3, 2.6], [0, 30.6, 0]), blk('#37474f', [1.6, 2, 1.6], [0, 33, 0]), rod('#cfd8dc', [.12, 6, .12], [0, 37, 0]), ball('#ef5350', U(.25), [0, 40, 0]));
+    t.position.set(0, 0, -22); G.add(t);
+    const cols = ['#90a4ae', '#b0bec5', '#78909c', '#bcaaa4', '#a1887f', '#cfd8dc'];
+    for (let i = 0; i < 14; i++) { const x = (i % 7 - 3) * 6.5 + (i > 6 ? 3 : 0); if (i <= 6 && Math.abs(x) < 10) continue; const b = bldg(4 + (i % 3), 6 + (i * 37 % 11), 4, cols[i % 6]); b.position.set(x === 0 ? 8 : x, 0, i > 6 ? -36 : -16 - (i % 2) * 3); if (Math.abs(b.position.x) < 4.5 && i <= 6) b.position.x += 9; G.add(b); }
+    G.add(blk('#424242', [60, .04, 3.4], [0, .03, -10.5]), ...[-24, -12, 0, 12, 24].map(x => blk('#fafafa', [3, .05, .3], [x, .05, -10.5])));
+    const taxi = grp(blk('#fdd835', [2.4, .7, 1.1], [0, .55, 0]), blk('#fdd835', [1.3, .55, 1], [-.1, 1.15, 0]), blk('#b3e5fc', [1.32, .4, 1.02], [-.1, 1.15, 0]), ...[[-.8, .55], [.8, .55], [-.8, -.55], [.8, -.55]].map(([x, z]) => rod('#212121', [.28, .2, .28], [x, .28, z], [Math.PI / 2, 0, 0])));
+    taxi.position.set(-20, 0, -10.5); G.add(taxi); A.taxi = taxi; A.keep = [taxi];
+    const boba = grp(blk('#f8bbd0', [3, 1.1, 1.4], [0, .55, 0]), blk('#ec407a', [3.3, .15, 1.8], [0, 2.4, 0]), ...[-1.4, 1.4].map(x => rod('#ad1457', [.07, 1.8, .07], [x, 1.5, -.6])), M(gBucket(), '#d7ccc8', [.35, .55, .35], [-.6, 1.4, .2]), M(gBucket(), '#d7ccc8', [.35, .55, .35], [.4, 1.4, .2]), ball('#3e2723', U(.08), [-.6, 1.3, .45]));
+    boba.position.set(9, 0, 2); G.add(boba); const bt = textPlane('🧋 珍珠奶茶', '#ffffff', '#ad1457', 2.6, .55, 90); bt.position.set(9, 2.9, 2.95); G.add(bt);
+    for (const [x, z] of [[-12, -4], [12, -4], [-12, 7], [12, 8]]) G.add(grp(rod('#6d4c41', [.15, 1.6, .15], [0, .8, 0]), ball('#43a047', U(1.1), [0, 2.2, 0])).translateX(x).translateZ(z));
+  } else if (k === 'jiufen') {
+    sea(80, 30, -45, -38, '#4fc3f7');
+    for (let r = 0; r < 4; r++) { G.add(blk('#8d8371', [44 - r * 4, 1.4 + r * 1.4, 5], [r % 2 ? 2 : -2, (1.4 + r * 1.4) / 2, -10 - r * 5]));
+      for (let i = 0; i < 5; i++) { const x = (i - 2) * 7.5 + (r % 2) * 3, y = 1.4 + r * 1.4, h = grp(blk(['#d7ccc8', '#bcaaa4', '#efebe9'][(i + r) % 3], [5, 2.6, 3.6], [0, 1.3, 0]), ...gableRoof(5, 3.6, 2.6, .45, '#3e2723', '#d7ccc8', {t:.15}), blk('#5d4037', [1, 1.6, .08], [0, .8, 1.81]));
+        h.position.set(x, y, -9.5 - r * 5); G.add(h); if (Math.abs(x) < 3) h.position.x += 6;
+        for (let j = 0; j < 2; j++) { const l = grp(rod('#212121', [.02, .3, .02], [0, .15, 0]), ball('#e53935', [.28, .34, .28], [0, -.2, 0]), rod('#fdd835', [.3, .06, .3], [0, -.52, 0])); l.position.set(x - 1.2 + j * 2.4, y + 2.5, -7.6 - r * 5); G.add(l); A.anim.push(l); } } }
+    for (let i = 0; i < 12; i++) G.add(blk('#9e9e9e', [3, .5, 1.3], [0, .25 + i * .45, -7.5 - i * 1.6]));
+    const tea = grp(blk('#6d4c41', [6, 3, 4], [0, 1.5, 0]), blk('#795548', [6.4, .3, 4.4], [0, 3.1, 0]), blk('#6d4c41', [5, 2.6, 3.4], [0, 4.5, 0]), ...gableRoof(5, 3.4, 5.8, .55, '#212121', '#6d4c41', {t:.2}), blk('#ffcc80', [4.6, 1.2, .1], [0, 1.6, 2.02]), blk('#ffcc80', [3.6, 1, .1], [0, 4.6, 1.72]));
+    tea.position.set(-12, 5.6, -21); G.add(tea); for (let j = 0; j < 6; j++) { const l = grp(rod('#212121', [.02, .3, .02], [0, .15, 0]), ball('#e53935', [.3, .36, .3], [0, -.2, 0])); l.position.set(-14.6 + j, 8.6, -18.7); G.add(l); A.anim.push(l); }
+    const tt = textPlane('茶樓', '#ffeb3b', '#b71c1c', 2, .8, 100); tt.position.set(-12, 12.6, -19); G.add(tt);
+    for (const [x, z, s] of [[-40, -55, 26], [-10, -60, 34], [25, -58, 30], [50, -50, 24]]) G.add(cone('#5d7d3a', [s * .9, s * .8, s * .7], [x, s * .4 - 2, z]));
+  } else if (k === 'kenting') {
+    sea(160, 50, 0, -35, '#26c6da');
+    G.add(blk('#f6e7b4', [160, .05, 12], [0, .01, -9]));
+    for (const [x, z, h] of [[-14, -5, 4.2], [-9, -3, 3.6], [11, -4, 4.4], [15, -1, 3.8], [-16, 4, 3.9], [17, 6, 4.1]]) { const p = palmTree(h); p.position.set(x, 0, z); p.rotation.y = x; G.add(p); }
+    for (const [x, z, c] of [[-4, -6, '#e53935'], [3, -7, '#1e88e5'], [8, -6, '#fdd835']]) G.add(grp(rod('#eeeeee', [.06, 2.2, .06], [0, 1.1, 0]), cone(c, [1.5, .6, 1.5], [0, 2.3, 0]), blk('#fff', [1.6, .1, .7], [.9, .1, .6])).translateX(x).translateZ(z));
+    for (const [x, c] of [[-7, '#ff7043'], [-6.2, '#29b6f6']]) G.add(blk(c, [.5, .08, 2.2], [x, 1, -7.6], [-.25, 0, 0]));
+    G.add(blk('#8d6e63', [14, 4, 10], [26, 2, -26]), cone('#7cb342', [8, 4, 6], [26, 5, -26]));
+    const lh = grp(M(gTap(), '#fafafa', [1.4, 7, 1.4], [0, 3.5, 0]), rod('#fafafa', [1.6, .3, 1.6], [0, 7.1, 0]), rod('#ffe082', [.8, 1, .8], [0, 7.75, 0]), cone('#212121', [1, .8, 1], [0, 8.6, 0]));
+    lh.position.set(26, 4, -26); G.add(lh); A.light = new THREE.Mesh(new THREE.ConeGeometry(.8, 10, 10, 1, true), new THREE.MeshBasicMaterial({color:'#fff59d', transparent:true, opacity:.18, side:THREE.DoubleSide, depthWrite:false})); A.light.rotation.z = Math.PI / 2; A.light.position.set(26, 11.75, -26); G.add(A.light);
+    G.add(cone('#558b2f', [12, 22, 10], [-30, 9, -48]));
+    const boat = grp(blk('#fafafa', [3, .6, 1.2], [0, .3, 0]), rod('#bdbdbd', [.05, 3, .05], [0, 1.8, 0]), blk('#ffffff', [.05, 2.2, 1.6], [.3, 2, 0], [0, 0, 0]));
+    boat.position.set(-8, 0, -22); G.add(boat); A.boats = [boat]; A.keep = [boat];
+  } else if (k === 'sunmoon') {
+    sea(120, 40, 0, -32, '#4db6ac');
+    G.add(blk('#8d6e63', [3, .3, 9], [-5, .25, -9]), ...[-8, -11].map(z => rod('#5d4037', [.12, 1.2, .12], [-6.3, 0, z])));
+    A.boats = []; A.keep = [];
+    for (const [x, z, c] of [[-2.5, -11, '#fafafa'], [6, -18, '#ffcc80'], [-14, -24, '#90caf9']]) { const b = grp(blk(c, [3.6, .7, 1.4], [0, .35, 0]), blk('#c62828', [3.7, .12, 1.5], [0, .72, 0]), blk('#fafafa', [2, .08, 1.3], [0, 1.7, 0]), ...[-.9, .9].map(xx => rod('#9e9e9e', [.04, 1, .04], [xx, 1.2, 0])));
+      b.position.set(x, 0, z); G.add(b); A.boats.push(b); A.keep.push(b); }
+    G.add(grp(M(gS(), '#689f38', [3, 1, 2.4], [0, 0, 0]), pine(3, '#33691e')).translateX(10).translateZ(-28));
+    G.add(cone('#5d7d3a', [26, 18, 18], [30, 6, -44]), cone('#4e6b31', [30, 22, 18], [-26, 8, -50]), cone('#6a8f43', [22, 14, 16], [0, 4, -56]));
+    const pg = new THREE.Group(); for (let i = 0; i < 6; i++) pg.add(M(gHex(), '#fafafa', [1.2 - i * .1, 1.3, 1.2 - i * .1], [0, .65 + i * 1.5, 0]), M(gHex(), '#c62828', [1.6 - i * .12, .2, 1.6 - i * .12], [0, 1.4 + i * 1.5, 0]));
+    pg.add(cone('#c62828', [.9, 1.4, .9], [0, 9.9, 0])); pg.position.set(30, 14.5, -40); G.add(pg);
+  } else if (k === 'alishan') {
+    G.add(blk('#5d4037', [80, .12, .3], [0, .08, -9.4]), blk('#5d4037', [80, .12, .3], [0, .08, -8.2]), ...Array.from({length:26}, (_, i) => blk('#3e2723', [.3, .08, 1.8], [-38 + i * 3, .04, -8.8])));
+    const tr = new THREE.Group(); for (let c = 0; c < 3; c++) tr.add(blk('#c62828', [2.8, 1.5, 1.4], [c * 3.1, 1.15, 0]), blk('#fff8e1', [2.82, .45, 1.42], [c * 3.1, 1.35, 0]), blk('#3e2723', [3, .2, 1.6], [c * 3.1, 2, 0]), ...[-.9, .9].map(x => rod('#212121', [.3, 1.5, .3], [c * 3.1 + x, .35, 0], [Math.PI / 2, 0, 0])));
+    tr.add(blk('#424242', [.8, .9, .8], [-1.9, 1.3, 0])); tr.position.set(-20, 0, -8.8); G.add(tr); A.train = tr; A.keep = [tr];
+    const tree = grp(rod('#6d4c41', [2, 14, 2], [0, 7, 0]), rod('#5d4037', [2.4, 2, 2.4], [0, 1, 0]), ...[[0, 14, 0, 4], [-2.4, 12, .6, 2.8], [2.3, 12.6, -.4, 3], [0, 16.5, 0, 2.6]].map(([x, y, z, r]) => ball('#2e5e2a', [r, r * .7, r], [x, y, z])), blk('#fff8e1', [1.4, .5, .1], [0, 2.6, 1.05]));
+    tree.position.set(12, 0, -16); G.add(tree);
+    for (let i = 0; i < 18; i++) { const p = pine(5 + (i * 7 % 5), i % 2 ? '#1b5e20' : '#2e7d32'); p.position.set(-28 + (i * 13 % 56), 0, -14 - (i * 7 % 12)); if (Math.abs(p.position.x - 12) > 4) G.add(p); }
+    for (let r = 0; r < 3; r++) for (let i = 0; i < 6; i++) G.add(ball('#33691e', [.8, .5, .8], [-16 + i * 1.8, .35, 4 + r * 1.6]));
+    A.clouds = []; for (let i = 0; i < 16; i++) { const c = M(gS(), new THREE.MeshLambertMaterial({color:'#ffffff', transparent:true, opacity:.92}), [6 + i % 4, 1.4, 4], [-60 + i * 8, 4 + (i % 3) * .4, -36 - (i % 2) * 6]); G.add(c); A.clouds.push(c); }
+    G.add(cone('#455a64', [20, 26, 14], [-20, 4, -56]), cone('#37474f', [24, 30, 16], [18, 6, -60]));
+    const sun = new THREE.Mesh(gS(), new THREE.MeshBasicMaterial({color:'#ff8a50', fog:false})); sun.scale.setScalar(4); sun.position.set(-4, 12, -70); G.add(sun);
+  } else if (k === 'penghu') {
+    sea(170, 66, 0, -45, '#00acc1');
+    G.add(blk('#e8d9a8', [160, .05, 10], [0, .01, -8]));
+    const heart = (cx, cz, s) => { for (let i = 0; i < 40; i++) { const t = i / 40 * Math.PI * 2, x = 16 * Math.pow(Math.sin(t), 3), z = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)); G.add(blk('#5d5d5d', [.7, .5, .5], [cx + x * s, .1, cz + z * s], [0, t, 0])); } };
+    heart(-6, -24, .45); heart(-6, -24.6, .27);
+    for (let i = 0; i < 22; i++) { const h = 2 + (i * 5 % 7) * .8; G.add(M(gHex(), i % 2 ? '#37474f' : '#455a64', [.75, h, .75], [16 + (i % 6) * 1.25 + (Math.floor(i / 6) % 2) * .6, h / 2, -14 - Math.floor(i / 6) * 1.1])); }
+    const br = new THREE.Group(); for (let i = 0; i < 12; i++) br.add(blk('#eeeeee', [5, .5, 2], [i * 5, 2.4 + Math.sin(i / 11 * Math.PI) * 1.6, 0]), rod('#bdbdbd', [.4, 3, .4], [i * 5, 1, 0])); br.position.set(-28, 0, -40); G.add(br);
+    G.add(M(gS(), '#9ccc65', [16, 3, 8], [36, -.5, -42]));
+    for (let i = 0; i < 40; i++) G.add(ball(['#ff7043', '#ffca28', '#e53935'][i % 3], U(.22), [(i % 2 ? 1 : -1) * (7.5 + (i * 7 % 10)), .25, -1 + (i * 3 % 12)]));
+    const cac = grp(rod('#558b2f', [.4, 2, .4], [0, 1, 0]), rod('#558b2f', [.25, .9, .25], [.55, 1.3, 0]), rod('#558b2f', [.25, .8, .25], [-.5, 1.5, 0]), ball('#ad1457', U(.18), [0, 2.1, 0])); for (const [x, z] of [[-14, -2], [14, 6]]) G.add(cac.clone().translateX(x).translateZ(z));
+  } else if (k === 'taroko') {
+    const water = waveWater(10, 72, '#26a69a', .92, 1.6); water.position.set(0, .15, -45); G.add(water); A.water = water;
+    for (const s of [-1, 1]) { for (let i = 0; i < 6; i++) G.add(blk(i % 2 ? '#b0bec5' : '#cfd8dc', [10, 22 + i * 3, 12], [s * (11 + i * .4), 11 + i * 1.5 - 2, -14 - i * 12], [0, s * .08, 0]));
+      G.add(blk('#90a4ae', [6, 6, 30], [s * 15, 3, 0])); }
+    const brg = new THREE.Group(); for (let i = 0; i < 14; i++) brg.add(blk('#c62828', [.9, .15, 1.6], [-6.5 + i, 3.6 - Math.sin(i / 13 * Math.PI) * .6, 0])); brg.add(...[-6.8, 6.8].map(x => blk('#b71c1c', [.3, 4.4, 1.8], [x, 2.2, 0])));
+    brg.position.set(0, 0, -17); G.add(brg); A.anim.push(brg);
+    const sh = grp(blk('#fafafa', [3, 2, 2.4], [0, 1, 0]), ...gableRoof(3, 2.4, 2, .5, '#2e7d32', '#fafafa', {t:.18}), blk('#c62828', [.3, 2, .3], [-1.2, 1, 1.25]), blk('#c62828', [.3, 2, .3], [1.2, 1, 1.25]));
+    sh.position.set(-8, 8, -26); G.add(sh);
+    A.fall = []; for (let i = 0; i < 3; i++) { const fl = new THREE.Mesh(geoOf('fallp', () => new THREE.PlaneGeometry(1, 1)), new THREE.MeshBasicMaterial({color:'#e3f2fd', transparent:true, opacity:.75, side:THREE.DoubleSide})); fl.scale.set(1.4 - i * .3, 8, 1); fl.position.set(-4.4 + i * .4, 4, -24.8 - i * .05); G.add(fl); A.fall.push(fl); }
+    for (let i = 0; i < 6; i++) { const p = pine(3 + i % 3, '#33691e'); p.position.set((i % 2 ? 1 : -1) * (6.5 + i % 3), 4 + i, -20 - i * 4); G.add(p); }
+    for (let i = 0; i < 10; i++) G.add(ball('#eceff1', [.6 + i % 3 * .3, .4, .5], [(i % 2 ? 1 : -1) * (2 + i % 4), .1, -12 - i * 3]));
+  } else if (k === 'lanyu') {
+    sea(170, 60, 0, -45, '#0288d1');
+    G.add(blk('#cfc8b6', [160, .05, 10], [0, .01, -7.5]));
+    for (let i = 0; i < 14; i++) G.add(M(gS(), '#37474f', [1 + i % 3, .9, 1], [-30 + i * 4.6, .2, -12 - (i % 3)]));
+    A.boats = []; A.keep = [];
+    const tatala = (c) => { const g = grp(blk('#fafafa', [4.2, .7, 1.1], [0, .45, 0]), blk('#c62828', [4.25, .14, 1.12], [0, .6, 0]), blk('#212121', [4.25, .1, 1.12], [0, .4, 0]), blk('#fafafa', [.3, 1.6, .9], [2.15, 1, 0], [0, 0, -.35]), blk('#fafafa', [.3, 1.6, .9], [-2.15, 1, 0], [0, 0, .35]),
+      ring('#c62828', [.22, .22, .3], [1.4, .55, .56]), ring('#c62828', [.22, .22, .3], [1.4, .55, -.56]), ball('#212121', U(.08), [1.4, .55, .6]), ball('#212121', U(.08), [1.4, .55, -.6])); return g; };
+    for (const [x, z, ry, sea2] of [[-6, -6.5, .2, 0], [-1.5, -7, -.15, 0], [9, -22, .4, 1]]) { const b = tatala(); b.position.set(x, 0, z); b.rotation.y = ry; G.add(b); if (sea2) { A.boats.push(b); A.keep.push(b); } }
+    const rack = grp(rod('#8d6e63', [.08, 2.2, .08], [-2, 1.1, 0]), rod('#8d6e63', [.08, 2.2, .08], [2, 1.1, 0]), rod('#8d6e63', [.05, 4, .05], [0, 2, 0], [0, 0, Math.PI / 2]), rod('#8d6e63', [.05, 4, .05], [0, 1.5, 0], [0, 0, Math.PI / 2]),
+      ...Array.from({length:12}, (_, i) => blk('#90a4ae', [.12, .5, .25], [-1.7 + (i % 6) * .7, i < 6 ? 1.75 : 1.25, 0]))); rack.position.set(11, 0, 4); G.add(rack);
+    G.add(M(gS(), '#689f38', [14, 11, 12], [-24, -1, -48]), M(gS(), '#558b2f', [18, 8, 12], [20, -1, -54]));
+    for (const [x, z] of [[-14, 4], [14, 9]]) { const gt = grp(blk('#fafafa', [.9, .5, .4], [0, .6, 0]), blk('#fafafa', [.35, .35, .3], [.55, .9, 0]), ...[[-.3, -.12], [.3, -.12], [-.3, .12], [.3, .12]].map(([a, b]) => rod('#eeeeee', [.05, .4, .05], [a, .2, b])), cone('#795548', [.06, .2, .06], [.6, 1.15, .08])); gt.position.set(x, 0, z); G.add(gt); }
+  }
+  tripTourBoard(G, k, 0, 3);
+  for (const o of A.anim) o.userData.ry0 = o.rotation.z;
+}
+function buildTrips(S3) {
+  W.trip = {}; W.tripKeep = [];
+  for (const [k, T] of Object.entries(TRIPS)) {
+    SCENE_T[k] = new THREE.Vector3(TRIP_X(T.i), 0, -6); WALK_BOX[k] = [-12, 12]; PLACES[k] = {n:T.n, em:T.em, trip:1};
+    const G = new THREE.Group(); G.position.x = TRIP_X(T.i); buildTripScene(k, G); S3.add(G); W.tripKeep.push(...(W.trip[k].keep || []), ...(W.trip[k].anim || []), ...(W.trip[k].clouds || []), ...(W.trip[k].fall || []));
+  }
+}
+function tripTick(t, dt) {
+  const k = tripOf(); const cap = $('#tripCap'); if (cap) cap.hidden = !k; if (!k || S.scene !== k) return;
+  const A = W.trip[k]; if (!A) return;
+  if (A.water) waveTick(A.water, t, k === 'taroko' ? .08 : .14);
+  for (const [i, b] of (A.boats || []).entries()) { b.position.y = .12 + Math.sin(t * 1.6 + i) * .1; b.rotation.z = Math.sin(t * 1.2 + i * 2) * .05; if (k === 'sunmoon' && i > 0) b.position.x = (i === 1 ? 6 : -14) + Math.sin(t * .15 + i) * 6; }
+  for (const [i, o] of (A.anim || []).entries()) { if (k === 'taroko') { o.rotation.z = Math.sin(t * 1.4) * .012; continue; } o.rotation.z = Math.sin(t * 2 + i) * .12; }
+  if (A.train) { A.train.position.x = ((t * 2.2) % 80) - 40; }
+  if (A.taxi) { A.taxi.position.x = ((t * 5) % 60) - 30; }
+  for (const [i, c] of (A.clouds || []).entries()) { c.position.x = ((-60 + i * 8 + t * .6) % 128 + 128) % 128 - 64; }
+  if (A.light) A.light.rotation.y = t * .8;
+  for (const [i, f] of (A.fall || []).entries()) f.material.opacity = .55 + Math.sin(t * 9 + i * 2) * .2;
+  // 當地的村民和觀光客
+  if (!A.crowd) { A.crowd = []; const ids = Object.keys(VIL);
+    for (let i = 0; i < 7; i++) { const tour = i % 2, m = tour ? charModel(i % 4 === 1 ? 'girl' : 'boy', 'tour' + i, {top:['#ef5350', '#42a5f5', '#66bb6a', '#ffca28'][i % 4], bot:'#455a64', hat:['cap', 'straw', 'none', 'beret'][i % 4], hc:'#fafafa', st:['tee', 'hoodie', 'sport', 'tee'][i % 4], ac:['shades', 'bag', 'none', 'glasses'][i % 4]}) : vilModel(ids[(i + T_IDX(k)) % ids.length]);
+      if (tour) m.scale.setScalar(1.15); const x = (i - 3) * 3, z = (i % 3) * 3 - 3; m.position.set(TRIP_X(TRIPS[k].i) + x, 0, z); W.scene.add(m); A.crowd.push({m, x, z, tx:x, tz:z, stop:Math.random() * 4, ph:i, n:tour ? ['背包客小安', '遊客阿凱', '自由行美美', '攝影師老王'][i % 4] : VIL[ids[(i + T_IDX(k)) % ids.length]].n}); } }
+  const X = TRIP_X(TRIPS[k].i);
+  if (t - (A.sayT || 0) > 3.4) { A.sayT = t; const C = rnd(A.crowd); C.talk = t; (A.talk ??= []).push(`${C.n}：${rnd(TRIP_SAY[k])}`); if (A.talk.length > 2) A.talk.shift(); if (cap) cap.innerHTML = A.talk.map(s => `<div>💬 ${esc(s)}</div>`).join(''); }
+  for (const C of A.crowd) { const u = C.m.userData;
+    if (C.stop > 0) { C.stop -= dt; const hop = C.talk && t - C.talk < 1.2 ? Math.abs(Math.sin((t - C.talk) * 12)) * .12 : 0; C.m.position.y = hop; if (u.legL) u.legL.rotation.z = u.legR.rotation.z = 0; if (C.stop <= 0) { C.tx = (Math.random() - .5) * 22; C.tz = -4 + Math.random() * 12; } continue; }
+    const dx = C.tx - C.x, dz = C.tz - C.z, d = Math.hypot(dx, dz); if (d < .1) { C.stop = 2 + Math.random() * 5; continue; }
+    const st = Math.min(d, dt * 1.2); C.x += dx / d * st; C.z += dz / d * st; C.m.position.set(X + C.x, Math.abs(Math.sin(t * 7 + C.ph)) * .03, C.z); C.m.rotation.y = Math.atan2(-dz, dx);
+    const sw = Math.sin(t * 7 + C.ph) * .55; if (u.legL) { u.legL.rotation.z = sw; u.legR.rotation.z = -sw; } }
+}
+const T_IDX = k => TRIPS[k]?.i || 0;
+// 紀念品擺在家裡：放在小展示台上
+function souvModel(id, g) {
+  g.add(blk('#8d6e63', [.9, .8, .9], [0, .4, 0]), blk('#a1887f', [1, .08, 1], [0, .82, 0])); const Y = .86, a = (...o) => g.add(...o);
+  switch (id) {
+    case 'sv_101': for (let i = 0; i < 6; i++) a(M(gTap(), '#4f8a8b', [.2, .25, .2], [0, Y + .15 + i * .25, 0])); a(rod('#cfd8dc', [.02, .4, .02], [0, Y + 1.7, 0])); break;
+    case 'sv_boba': a(M(gBucket(), '#f8bbd0', [.32, .6, .32], [0, Y + .3, 0]), ball('#3e2723', U(.06), [0, Y + .12, .22]), ball('#3e2723', U(.06), [.1, Y + .1, .2]), rod('#ec407a', [.03, .5, .03], [.08, Y + .75, 0])); break;
+    case 'sv_mrt': a(blk('#eceff1', [.8, .32, .3], [0, Y + .2, 0]), blk('#1e88e5', [.82, .08, .31], [0, Y + .2, 0]), blk('#81d4fa', [.6, .1, .32], [0, Y + .3, 0])); break;
+    case 'sv_lantern': a(rod('#5d4037', [.03, .9, .03], [0, Y + .45, 0]), ball('#e53935', [.3, .36, .3], [0, Y + .7, 0]), rod('#fdd835', [.3, .05, .3], [0, Y + .36, 0])); break;
+    case 'sv_teapot': a(ball('#6d4c41', [.25, .2, .25], [0, Y + .2, 0]), rod('#6d4c41', [.03, .2, .03], [.25, Y + .25, 0], [0, 0, -.8]), ...[-.3, .3].map(x => M(gBucket(), '#efebe9', [.08, .1, .08], [x, Y + .05, .25]))); break;
+    case 'sv_jfsign': a(blk('#3e2723', [.9, .4, .05], [0, Y + .55, 0]), blk('#ffcc80', [.8, .3, .06], [0, Y + .55, 0]), rod('#5d4037', [.03, .4, .03], [0, Y + .2, 0])); break;
+    case 'sv_light': a(M(gTap(), '#fafafa', [.18, .8, .18], [0, Y + .4, 0]), rod('#ffe082', [.12, .12, .12], [0, Y + .86, 0]), cone('#212121', [.14, .14, .14], [0, Y + 1, 0])); break;
+    case 'sv_surf': a(blk('#29b6f6', [.12, 1.6, .5], [0, Y + .8, 0], [0, 0, .05]), blk('#fafafa', [.13, 1.5, .08], [0, Y + .8, 0], [0, 0, .05])); break;
+    case 'sv_shell': a(rod('#8d6e63', [.02, .9, .02], [0, Y + .45, 0]), ...[0, 1, 2, 3, 4].map(i => ball(['#ffccbc', '#fff3e0', '#f8bbd0'][i % 3], [.08, .05, .08], [Math.cos(i * 1.26) * .2, Y + .4 + i * .05, Math.sin(i * 1.26) * .2]))); break;
+    case 'sv_pagoda': for (let i = 0; i < 5; i++) a(M(gHex(), '#fafafa', [.2 - i * .02, .2, .2 - i * .02], [0, Y + .1 + i * .25, 0]), M(gHex(), '#c62828', [.26 - i * .02, .04, .26 - i * .02], [0, Y + .22 + i * .25, 0])); break;
+    case 'sv_boat': a(blk('#fafafa', [.8, .18, .3], [0, Y + .1, 0]), blk('#c62828', [.82, .04, .31], [0, Y + .2, 0]), blk('#fafafa', [.5, .03, .3], [0, Y + .45, 0])); break;
+    case 'sv_tea': a(blk('#c62828', [.5, .5, .3], [0, Y + .25, 0]), blk('#fdd835', [.51, .12, .31], [0, Y + .3, 0])); break;
+    case 'sv_train': a(blk('#c62828', [.5, .3, .25], [-.25, Y + .2, 0]), blk('#c62828', [.5, .3, .25], [.28, Y + .2, 0]), blk('#424242', [1.1, .04, .1], [0, Y + .02, 0])); break;
+    case 'sv_tree': a(rod('#6d4c41', [.2, 1, .2], [0, Y + .5, 0]), ball('#2e5e2a', [.4, .3, .4], [0, Y + 1.05, 0])); break;
+    case 'sv_sun': a(blk('#8d6e63', [.8, .6, .05], [0, Y + .35, 0]), blk('#ffcc80', [.7, .25, .06], [0, Y + .45, 0]), blk('#eceff1', [.7, .2, .06], [0, Y + .25, 0]), ball('#ff7043', U(.07), [0, Y + .42, .04])); break;
+    case 'sv_heart': a(rod('#4dd0e1', [.42, .06, .42], [0, Y + .03, 0])); for (let i = 0; i < 16; i++) { const t = i / 16 * Math.PI * 2; a(blk('#616161', [.06, .08, .06], [16 * Math.pow(Math.sin(t), 3) * .018, Y + .1, -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t)) * .018])); } break;
+    case 'sv_basalt': for (let i = 0; i < 5; i++) a(M(gHex(), '#37474f', [.12, .3 + i * .1, .12], [(i % 3 - 1) * .2, Y + .15 + i * .05, (i % 2) * .18 - .08])); break;
+    case 'sv_coral': for (let i = 0; i < 5; i++) a(rod('#ff7043', [.04, .5, .04], [Math.cos(i) * .12, Y + .25, Math.sin(i) * .12], [Math.cos(i) * .4, 0, Math.sin(i) * .4]), ball('#ff8a65', U(.06), [Math.cos(i) * .22, Y + .5, Math.sin(i) * .22])); break;
+    case 'sv_marble': a(blk('#eceff1', [.5, .7, .5], [0, Y + .35, 0]), ball('#eceff1', U(.2), [0, Y + .85, 0])); break;
+    case 'sv_shrine': a(blk('#fafafa', [.5, .3, .4], [0, Y + .15, 0]), cone('#2e7d32', [.4, .25, .32], [0, Y + .42, 0], [0, Math.PI / 4, 0])); break;
+    case 'sv_weave': a(blk('#5d4037', [.7, .9, .04], [0, Y + .5, 0]), ...[0, 1, 2, 3].map(i => blk(['#c62828', '#212121', '#fdd835', '#fafafa'][i], [.62, .12, .05], [0, Y + .25 + i * .2, 0]))); break;
+    case 'sv_tatala': a(blk('#fafafa', [.9, .18, .26], [0, Y + .12, 0]), blk('#c62828', [.91, .04, .27], [0, Y + .16, 0]), blk('#fafafa', [.06, .35, .22], [.45, Y + .25, 0], [0, 0, -.35]), blk('#fafafa', [.06, .35, .22], [-.45, Y + .25, 0], [0, 0, .35])); break;
+    case 'sv_fish': a(rod('#8d6e63', [.02, .9, .02], [0, Y + .45, 0]), ...[0, 1, 2].map(i => blk('#90a4ae', [.25, .08, .04], [.1, Y + .4 + i * .18, 0]))); break;
+    case 'sv_tao': a(ball('#a1887f', [.18, .3, .18], [0, Y + .3, 0]), ball('#a1887f', U(.12), [0, Y + .7, 0]), ball('#212121', U(.025), [.05, Y + .72, .1]), ball('#212121', U(.025), [-.05, Y + .72, .1])); break;
+  }
+}
 // [id, 名稱, 等級, 價格, 生產分鐘, 產品id, 產品名, 產品售價, 食量]
 const ANI_LIST = [
   ['chicken','雞',1,100,30,'egg','雞蛋',15,1], ['duck','鴨子',2,180,60,'duckegg','鴨蛋',28,1],
@@ -3379,11 +3746,11 @@ function fishTick(t, dt) {
 // ----- 釣魚流程 -----
 function goPlace(pl) {
   if (pl === 'market' && typeof marketOpen === 'function' && !marketOpen()) return toast('🏮 夜市每週一晚上 6 點到 12 點才開喔');
-  closeModal(); travel(`前往${PLACES[pl].n}ING`);
+  closeModal(); if (!TRIPS[pl]) travel(`前往${PLACES[pl].n}ING`);
   if (!isOwn()) { S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; }
   unZoom(); clearSanta(); S.place = pl; S.scene = pl; S.tool = 'hand'; S.myPos = null; S.pray = null; S.decoMode = null; S.thief = null; S.fishing = null;
   setCam(pl); renderAll(); beat(); watchHere();
-  setTimeout(() => { if (S.place !== pl) return; const t = now(), m = pl === 'dock' ? rnd(['大家好～今天魚況怎麼樣？🎣', '我來釣魚囉！', '嗨～有人釣到大魚了嗎？']) : pl === 'museum' ? rnd(['哇～這些巨大蔬果好壯觀！🏛️', '來參觀展覽囉！', '這顆也太大了吧！']) : rnd(['夜市好熱鬧！🏮', '來玩遊戲囉～', '嗨～大家晚安！']); S.spokeT = t;
+  setTimeout(() => { if (S.place !== pl) return; const t = now(), m = TRIPS[pl] ? rnd(TRIP_HI[pl]) : pl === 'dock' ? rnd(['大家好～今天魚況怎麼樣？🎣', '我來釣魚囉！', '嗨～有人釣到大魚了嗎？']) : pl === 'museum' ? rnd(['哇～這些巨大蔬果好壯觀！🏛️', '來參觀展覽囉！', '這顆也太大了吧！']) : rnd(['夜市好熱鬧！🏮', '來玩遊戲囉～', '嗨～大家晚安！']); S.spokeT = t;
     B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), lk:S.my.look || null, vh:rideOf(S.my), at:hereAt(), t, off:false, say:{m, t, d:3500}, wave:t, waveTo:'', back:false, arr:true}); Music.babble(myGender(), m); }, 2100);
 }
 function leavePlace() { if (!S.place) return false; S.place = null; fishStop(true); $('#fishUI').hidden = true; if (typeof mkStop === 'function') mkStop(); return true; }
@@ -3578,6 +3945,7 @@ function openMap() {
     openModal('🗺️ 出門去哪裡？', `<div class="popbox"><small>這些地方是<b>大家共用</b>的，好友也在的話會看到彼此，一起玩更熱鬧！</small></div>
       <div class="item" data-act="goDock" style="cursor:pointer"><div class="pic" style="font-size:34px">🎣</div><div class="info"><div class="t">釣魚碼頭</div><div class="d">真的要拋竿、等浮標、慢慢收線！天氣、白天晚上會出現不同的魚，有超稀有大魚。週三釣魚大賽。</div></div></div>
       <div class="item" data-act="goMarket" style="cursor:pointer;${mo ? '' : 'opacity:.6'}"><div class="pic" style="font-size:34px">🏮</div><div class="info"><div class="t">夜市 ${mo ? '<span class="rare" style="background:#e53935">營業中</span>' : ''}</div><div class="d">每週一晚上 6 點～12 點開！撈金魚、套圈圈、射氣球、彈珠台，玩分數換獎品，還有「夜市高手」排行。</div></div></div>
+      <div class="item" data-act="trip" style="cursor:pointer;background:#e1f5fe"><div class="pic" style="font-size:34px">✈️</div><div class="info"><div class="t">環島旅遊</div><div class="d">付旅費去台北101、九份、墾丁、日月潭、阿里山、澎湖、太魯閣、蘭嶼！買當地種子、紀念品，寄明信片給好友</div></div></div>
       <div class="item" data-act="goPost" style="cursor:pointer"><div class="pic" style="font-size:34px">🏤</div><div class="info"><div class="t">開心郵局</div><div class="d">寫信、寄倉庫的東西給好友，郵差會送到好友農場的信箱！</div></div></div>
       <div class="item" data-act="goMuseum" style="cursor:pointer"><div class="pic" style="font-size:34px">🏛️</div><div class="info"><div class="t">展覽館</div><div class="d">四層樓的冠軍展覽：1F 賽馬、2F 巨大蔬果、3F 寵物選美、4F 釣魚大賽，和好友一起來參觀！</div></div></div>
       <div class="item" data-act="mapGo" data-s="town" style="cursor:pointer"><div class="pic" style="font-size:34px">🏘️</div><div class="info"><div class="t">小鎮</div><div class="d">村民委託、市集攤位、賓果。</div></div></div>
@@ -4378,6 +4746,7 @@ const HOME_ITEMS = {
   pi1:{n:'鋼琴', em:'🎹', slot:'fun', c:3500}, ar1:{n:'街機', em:'🕹️', slot:'fun', c:2200}, td1:{n:'大熊娃娃', em:'🧸', slot:'fun', c:500}, dr1:{n:'爵士鼓', em:'🥁', slot:'fun', c:2800},
   fr1:{n:'冰箱', em:'🧊', slot:'kitchen', c:900}, kt1:{n:'流理台', em:'🍳', slot:'kitchen', c:1500}, bt1:{n:'浴缸', em:'🛁', slot:'kitchen', c:2000},
 };
+for (const [id, [k, n, em, c]] of Object.entries(SOUV)) Object.defineProperty(HOME_ITEMS, id, {value:{n, em, slot:'souv', c, loc:k}, enumerable:false, writable:true, configurable:true});
 const HSLOT = {bed:'床', table:'桌子', tv:'電視', sofa:'沙發', paint:'牆上的畫', paint2:'牆上的畫（左牆）', rug:'地毯', plant:'盆栽', lamp:'燈', shelf:'書櫃', chair:'椅子', deco:'擺設', fun:'娛樂', kitchen:'廚房浴室'};
 const HWALL = ['#fff3e0', '#e3f2fd', '#fce4ec', '#e8f5e9', '#fffde7', '#ede7f6'], HFLOOR = ['#c49a6c', '#8d6e63', '#e0c9a6', '#b0bec5'];
 const homeOf = f => { const H = f.home ??= {}; H.own ??= {}; H.set ??= {}; return H; };
@@ -4438,6 +4807,7 @@ function homeItemModel(id) {
     case 'bt1': { g.add(blk('#fafafa', [2.4, .7, 1.2], [0, .35, 0]), ...[[-1, -.45], [1, -.45], [-1, .45], [1, .45]].map(([x, z]) => ball('#fdd835', U(.1), [x, .05, z])), rod('#9e9e9e', [.04, .5, .04], [-1.1, .9, 0]), ball('#9e9e9e', U(.08), [-1, 1.15, 0])); const w = blk('#81d4fa', [2.2, .05, 1], [0, .66, 0]); g.add(w); for (let i = 0; i < 6; i++) g.add(ball('#ffffff', U(.12 + (i % 3) * .04), [-.7 + i * .3, .72, (i % 2 - .5) * .4])); g.add(ball('#fdd835', [.12, .1, .1], [.5, .74, .2])); } break;
     case 'bk1': g.add(blk('#8d5a2b', [1.8, 2.6, .5], [0, 1.3, 0])); for (let r = 0; r < 4; r++) { g.add(blk('#6d4c41', [1.7, .06, .45], [0, .3 + r * .62, .02])); for (let i = 0; i < 6; i++) g.add(blk(['#e53935', '#1e88e5', '#43a047', '#fdd835', '#8e24aa', '#ff7043'][(i + r) % 6], [.16, .42, .3], [-.65 + i * .25, .55 + r * .62, .05])); } break;
   }
+  if (HOME_ITEMS[id]?.slot === 'souv') souvModel(id, g);
   if (HOME_ITEMS[id]?.slot === 'paint') { const fr = blk('#8d5a2b', [1.9, 1.45, .08], [0, 0, 0]), pic = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.27), new THREE.MeshLambertMaterial({map:paintTex(id)})); pic.position.z = .05; g.add(fr, pic); }
   return g;
 }
@@ -4980,7 +5350,7 @@ const isMobileDev = () => matchMedia('(pointer:coarse)').matches || innerWidth <
 const perfMode = () => { try { const v = localStorage.hf_perf; if (['save', 'std', 'high'].includes(v)) return v; } catch {} return 'std'; };
 const PERF_N = {save:'🔋 省電', std:'⚖️ 標準', high:'✨ 高畫質'};
 function mergeStatic(S3) {
-  const keep = new Set([W.houseG, W.aqHit, W.mkHit, W.musRoot, W.dockWater, W.dockSpkG, W.stableG, W.sky, W.sunBall, W.blades, W.trough, W.animalsG, W.petsG, W.peopleG, W.hoverRing, W.farmSign, W.ranchSign, W.fishSign, W.facSign, W.festSign, W.festG, W.stars, W.moon, W.rain, W.snow, W.pond,
+  const keep = new Set([W.houseG, W.aqHit, W.mkHit, W.musRoot, ...(W.tripKeep || []), W.dockWater, W.dockSpkG, W.stableG, W.sky, W.sunBall, W.blades, W.trough, W.animalsG, W.petsG, W.peopleG, W.hoverRing, W.farmSign, W.ranchSign, W.fishSign, W.facSign, W.festSign, W.festG, W.stars, W.moon, W.rain, W.snow, W.pond,
     ...W.ripples, ...W.ponds.map(p => p.g), ...W.plots.map(p => p.g), ...W.poops, ...W.birds.map(b => b.b), ...W.clouds, ...W.flies.map(f => f.b), ...W.machs.map(m => m.g), ...W.ffly.map(f => f.m), ...(W.hens || []).map(h => h.m)].filter(Boolean));
   S3.updateMatrixWorld(true);
   const list = [];
@@ -5120,7 +5490,7 @@ function buildWorld() {
   // 窗戶晚上會亮
   W.winMat = new THREE.MeshLambertMaterial({color:'#bbdefb', emissive:'#000000'});
   const glass = mat('#bbdefb'); S3.traverse(o => { if (o.isMesh && o.material === glass) o.material = W.winMat; });
-  buildScenery(S3); buildFactory(S3); buildTown(S3); buildGreen(S3); buildTemple(S3); buildStable(S3); buildDock(S3); buildAquarium(S3); buildMarket(S3); buildMuseum(S3); buildPost(S3); buildEnv(S3);
+  buildScenery(S3); buildFactory(S3); buildTown(S3); buildGreen(S3); buildTemple(S3); buildStable(S3); buildDock(S3); buildAquarium(S3); buildMarket(S3); buildMuseum(S3); buildPost(S3); buildTrips(S3); buildEnv(S3);
   mergeStatic(S3); prepSeason(S3); buildWalkers(S3); buildMuseumPeople(S3); buildHome(S3);
   W.vilG = new THREE.Group(); W.decoG = new THREE.Group(); W.greenG = new THREE.Group(); W.templeG = new THREE.Group(); S3.add(W.vilG, W.decoG, W.greenG, W.templeG);
   W.stallG = stallModel(); W.stallGoods = new THREE.Group(); W.stallG.add(W.stallGoods); W.stallG.position.set(TOWN_T.x - 3.4, 0, -.6); W.stallG.traverse(o => o.userData.hit = {type:'stall'}); S3.add(W.stallG);
@@ -5161,6 +5531,8 @@ function setCam(scene, instant) {
   const off = W.camera.position.clone().sub(W.controls.target);
   if (instant || off.length() < 1) { off.set(0, portrait ? 24 : 12, portrait ? 28 : 16.2); }
   W.camAnim = {from:W.controls.target.clone(), to:tgt.clone(), t0:performance.now(), dur:instant ? 0 : 900, off};
+  // 旅遊景點：鏡頭放低一點，看得到遠方的地標；離開時恢復
+  if (!instant && (TRIPS[scene] || W.camTrip)) { Object.assign(W.camAnim, {off0:off.clone(), off1:TRIPS[scene] ? new THREE.Vector3(0, portrait ? 15 : 8.5, portrait ? 31 : 19) : new THREE.Vector3(0, portrait ? 24 : 12, portrait ? 28 : 16.2)}); W.camTrip = !!TRIPS[scene]; }
   if (instant) { W.controls.target.copy(tgt); W.camera.position.copy(tgt).add(off); W.controls.update(); W.camAnim = null; }
 }
 function pick(cx, cy) {
@@ -5194,7 +5566,7 @@ function hoverAt(cx, cy) {
   else if (h.type === 'gplot') { const [x, z] = ghXZ(h.i); ring.position.set(x, .4, z); ring.scale.setScalar(1.4); }
   else if (h.type === 'gpump') { ring.position.set(PUMP_XZ[0], .4, PUMP_XZ[1]); ring.scale.setScalar(1.8); }
   else if (h.type === 'stall') { ring.position.set(TOWN_T.x - 3.4, .06, -.6); ring.scale.setScalar(1.6); }
-  else if (h.type === 'house' || h.type === 'tcab' || h.type === 'hitem' || h.type === 'mk' || h.type === 'mus' || h.type === 'helper' || h.type === 'mailbox' || h.type === 'postBox' || h.type === 'mailman') ring.visible = false;
+  else if (h.type === 'house' || h.type === 'tcab' || h.type === 'hitem' || h.type === 'mk' || h.type === 'mus' || h.type === 'helper' || h.type === 'mailbox' || h.type === 'postBox' || h.type === 'mailman' || h.type === 'tripSeed' || h.type === 'tripSouv' || h.type === 'tripBox') ring.visible = false;
   else if (h.type === 'vil') { const P = W.vils?.find(x => x.id === h.id); if (P) { ring.position.set(P.m.position.x, .06, P.m.position.z); ring.scale.setScalar(.6); } }
   else if (h.type === 'deco') { const d = S.view?.deco?.at?.[h.i]; if (d) { ring.position.set(d.x, .06, d.z); ring.scale.setScalar(.6); } }
   else if (h.type === 'cell') { ring.position.set(h.c[0], .08, h.c[1]); ring.scale.setScalar(.55); }
@@ -5489,7 +5861,7 @@ function loop() {
     if (waving) { const T2 = P.waveTo && W.people.find(q => q.uid === P.waveTo); if (T2) { const a2 = Math.atan2(-(T2.m.position.z - P.m.position.z), T2.m.position.x - P.m.position.x), ac = -Math.PI / 2; let dd = a2 - ac; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y = ac + dd * .6; } else P.m.rotation.y = -Math.PI / 2; if (u.head) u.head.rotation.z = Math.sin(t * 5) * .15; if (wa < 1400) P.m.position.y = Math.abs(Math.sin(wa / 1400 * Math.PI * 2)) * .45; const pop = wa < 300 ? wa / 300 : wa > 3400 ? (3800 - wa) / 400 : 1; P.m.scale.setScalar(1.25 * (1 + .22 * pop)); if (!P.hiFx || now() - P.hiFx > 1300) { P.hiFx = now(); fx3(P.m.position.x, 3.3, P.m.position.z, rnd(['👋', '👋✨', '💕']), '#e91e63'); } }
     else if (P.m.scale.x !== 1.25) P.m.scale.setScalar(1.25);
   }
-  fishTick(t, dt); mkTick(t, dt); musTick(t, dt); postTick(t, dt); walkTick(t, dt); helperTick(t, dt); homeTick(t);
+  fishTick(t, dt); mkTick(t, dt); musTick(t, dt); postTick(t, dt); tripTick(t, dt); walkTick(t, dt); helperTick(t, dt); homeTick(t);
   { const py = S.scene === 'home' ? HOME_T.y : S.scene === 'museum' ? musY() : 0; for (const P of W.people || []) P.m.position.y = py; if (S.scene === 'home') { W.rain.visible = W.snow.visible = false; if (W.bub) W.bub.visible = false; } }
   if (W.hoverRing.visible) W.hoverRing.material.opacity = .55 + Math.sin(t * 6) * .3;
   W.renderer.render(W.scene, W.camera);
@@ -5641,6 +6013,7 @@ function renderTools() {
   else if (S.scene === 'home') { const hl = homeLv(S.view || S.my), flT = hl ? [['homeFloor','🪜', HFL_N[homeFl()].split(' ')[0] + '↕', 1]] : [];
     T = own ? (S.homeEdit ? [['homeDone','✅','完成', 1], ['homeDeco','🛋️','家具', 1], ...flT] : [['hand','✋','走走'], ...flT, ['homeDeco','🛋️','裝潢', 1], ['homeArrange','🔧','擺設', 1], ['homeUp', MANSION[Math.min(3, hl + 1)].em, hl >= 3 ? '城堡' : '升級', 1], ['trophies','🏆','獎盃櫃', 1], ['leaveHome','🚪','出門', 1]]) : [['hand','✋','參觀'], ...flT, ['trophies','🏆','獎盃櫃', 1], ['leaveHome','🚪','出門', 1]]; }
   else if (S.scene === 'market') T = [['hand','✋','逛逛'], ['mkGames','🎮','攤位遊戲', 1], ['mkShop','🎁','換獎品', 1], ['mkRank','🏆','夜市高手', 1], ['leaveP','🏠','回農場', 1]];
+  else if (TRIPS[S.scene]) T = [['hand','✋','走走'], ['tripSeed','🌱','當地種子', 1], ['tripSouv','🎁','紀念品', 1], ['tripCard','🖼️','明信片', 1], ['tripBook','📔','手冊', 1], ['leaveP','🏠','回家', 1]];
   else if (S.scene === 'post') T = [['hand','✋','走走'], ['postWrite','✉️','寫信', 1], ['mailbox','📬', `信箱${S.gifts.filter(isMail).length ? '×' + S.gifts.filter(isMail).length : ''}`, 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'museum') T = [...MU_FL.map((x, F) => [`musF${F}`, x.em, `${F + 1}F${(S.musF || 0) === F ? '・在這' : ''}`, 1]), ['musList','📜','冠軍名單', 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'dock') T = [['hand','✋','走走'], ['fishGo','🎣','釣魚', 1], ['aqShow','🐠','我的魚缸', 1], ['fishCup','🏆','釣魚大賽', 1], ['fishDex','📖','魚種圖鑑', 1], ['leaveP','🏠','回農場', 1]];
@@ -5751,6 +6124,9 @@ function tipFor(h) {
   if (h.type === 'hitem') { const a = homeAtOf(homeView(S.view))[h.i]; return a ? `<b>${HOME_ITEMS[a.id]?.em || ''} ${HOME_ITEMS[a.id]?.n || ''}</b>${isOwn() && S.homeEdit ? '<br>點一下移動、轉方向' : ''}` : ''; }
   if (h.type === 'mailbox') return `<b>📬 信箱</b><br>${isOwn() ? (S.gifts.some(isMail) ? '有新的信！點一下拆信' : '點一下看信') : ''}`;
   if (h.type === 'postBox') return '<b>📮 郵筒</b><br>點一下寫信給好友';
+  if (h.type === 'tripSeed') return '<b>🌱 當地種子攤</b><br>這裡限定的種子';
+  if (h.type === 'tripSouv') return '<b>🎁 紀念品店</b><br>買回家擺著展示';
+  if (h.type === 'tripBox') return '<b>📮 郵筒</b><br>寄明信片給好友';
   if (h.type === 'helper') return `<b>👨‍🌾 幫手${HELPER_N}</b><br>正在幫忙澆水、除草、抓蟲`;
   if (h.type === 'mus') return `<b>${MU_FL[h.k].em} ${h.k + 1}F ${MU_FL[h.k].n}</b><br>點一下看冠軍名單`;
   if (h.type === 'mk') { const G = MK_GAMES[h.id]; return `<b>${G.em} ${G.n}</b><br>${G.pts}<br>點一下玩（💰${MK_COST}）`; }
@@ -5794,6 +6170,9 @@ function clickHit(h) {
   if (h.type === 'mus') return openMuseum(h.k);
   if (h.type === 'mailbox') return isOwn() ? openMailbox() : toast(`📮 ${dn(S.view)}的信箱`);
   if (h.type === 'postBox') return openPostWrite();
+  if (h.type === 'tripSeed') return openTripSeeds();
+  if (h.type === 'tripSouv') return openTripSouv();
+  if (h.type === 'tripBox') return openTripCard();
   if (h.type === 'mailman') return toast('📮 郵差：「您好，送信來囉！」');
   if (h.type === 'helper') return isOwn() ? openHelper() : toast(`👨‍🌾 這是${dn(S.view)}請的幫手${HELPER_N}，正在幫忙照顧田地`);
   if (h.type === 'house') return goIn();
@@ -6091,13 +6470,13 @@ function rerenderModal() { if (!$('#modal').hidden && S.modal) { const y = $('#m
 const catTabs = (cur, act) => `<div class="cat">${Object.entries(CAT_N).map(([k, n]) => `<button class="${cur === k ? 'on' : ''}" data-act="${act}" data-c="${k}">${n}</button>`).join('')}</div>`;
 function seedRows(mode) {
   const f = S.my, Lv = levelOf(f.exp).L;
-  return catTabs(S.shopCat, mode === 'pick' ? 'pickCat' : 'shopCat') + Object.entries(CROPS).filter(([, c]) => c.cat === S.shopCat && !(mode === 'pick' && c.gh)).map(([id, c]) => {
+  return catTabs(S.shopCat, mode === 'pick' ? 'pickCat' : 'shopCat') + [...Object.entries(CROPS), ...LOC_IDS.map(id => [id, CROPS[id]])].filter(([id, c]) => c.cat === S.shopCat && !(mode === 'pick' && c.gh) && (!c.loc || (f.seeds[id] || 0) > 0)).map(([id, c]) => {
     const vlock = !seedOK(f, id), lock = Lv < c.lv || vlock, have = f.seeds[id] || 0;
     const desc = `成熟 ${fmtDur(c.t * 1000 / SPEED)} · 一塊地收 ${c.y} 個（施肥可能雙倍）· 每個 ${c.sell}💰 · +${c.exp} 經驗${id === 'grass' ? '<br>🐄 可以當動物飼料' : ''}`;
-    const acts = vlock ? `<button class="b g" disabled>💕 ${VIL[c.vil].n} ${VIL_UNLOCK.seed} 顆心解鎖</button>` : lock ? `<button class="b g" disabled>Lv.${c.lv} 解鎖</button>`
+    const acts = c.loc && !(mode === 'pick' && have && !lock) ? `<button class="b g" disabled>✈️ 去${TRIPS[c.loc].n}才買得到</button>` : vlock ? `<button class="b g" disabled>💕 ${VIL[c.vil].n} ${VIL_UNLOCK.seed} 顆心解鎖</button>` : lock ? `<button class="b g" disabled>Lv.${c.lv} 解鎖</button>`
       : mode === 'pick' ? `<button class="b" data-act="pickSeed" data-id="${id}">${have ? `種這個（有 ${have}）` : `種（${c.cost}💰）`}</button>`
       : `<button class="b o" data-act="buySeed" data-id="${id}" data-n="1">買 1 包 ${c.cost}💰</button><button class="b o" data-act="buySeed" data-id="${id}" data-n="5">買 5 包 ${c.cost * 5}💰</button>`;
-    return `<div class="item ${lock ? 'dim' : ''}"><div class="pic">${lock ? '🔒' : icon('crop', id)}</div><div class="info"><div class="t">${c.n}${c.vil ? ` <small style="color:#d81b60">💕${VIL[c.vil].n}專屬</small>` : ''}${c.gh ? ' <small style="color:#00838f">🌱溫室限定</small>' : ''}${have ? ` <small style="color:#8d6e63">（庫存 ${have}）</small>` : ''}</div><div class="d">${desc}</div></div><div class="acts">${acts}</div></div>`;
+    return `<div class="item ${lock ? 'dim' : ''}"><div class="pic">${lock ? '🔒' : icon('crop', id)}</div><div class="info"><div class="t">${c.n}${c.vil ? ` <small style="color:#d81b60">💕${VIL[c.vil].n}專屬</small>` : ''}${c.gh ? ' <small style="color:#00838f">🌱溫室限定</small>' : ''}${c.loc ? ` <small style="color:#0277bd">✈️${TRIPS[c.loc].n}限定</small>` : ''}${have ? ` <small style="color:#8d6e63">（庫存 ${have}）</small>` : ''}</div><div class="d">${desc}</div></div><div class="acts">${acts}</div></div>`;
   }).join('');
 }
 function openSeedPicker(i) { S.pendingPlot = i; S.modal = () => openModal('🌱 選擇要種的種子', `<p class="d" style="font-size:13px;color:#8d6e63;margin-bottom:8px">選好之後，「播種」工具會記住這個種子，連點空地就能一直種。</p>${seedRows('pick')}`); S.modal(); }
@@ -6456,7 +6835,7 @@ function renderWx() {
   const d = twNow(), hh = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
   const wx = weather(), [ic, nm] = WX_N[wx], night = isNight();
   const SN = {farm:'農場', ranch:'牧場', stable:'馬場', fish:'魚塭', factory:'工廠', green:'溫室', town:'小鎮', temple:'廟宇', home:'農舍'}[S.scene], own = isOwn(), who = own ? myName() : dn(S.view || {});
-  const SE = SEASONS[seasonNow()]; let html = (SN && !S.place ? `<button class="own" ${own ? 'data-act="profile"' : ''}>${own ? '🏡' : '👀'} ${esc(who)}的${SN}</button>` : '') + `<button data-act="wxInfo">${SE.em}${night ? '🌙' : ic} ${night ? '夜晚' : nm}${night && wx === 'rain' ? '🌧️' : ''} ${hh}</button>`;
+  const SE = SEASONS[seasonNow()]; let html = (SN && !S.place ? `<button class="own" ${own ? 'data-act="profile"' : ''}>${own ? '🏡' : '👀'} ${esc(who)}的${SN}</button>` : '') + (TRIPS[S.place] ? `<button class="own" data-act="tripBook">✈️ ${TRIPS[S.place].n}</button>` : '') + `<button data-act="wxInfo">${SE.em}${night ? '🌙' : ic} ${night ? '夜晚' : nm}${night && wx === 'rain' ? '🌧️' : ''} ${hh}</button>`;
   for (const o of activeFests()) html += `<button class="fest" data-act="fest">${o.F.em} ${esc(o.F.n)}</button>`;
   { const q = qianToday(S.my); if (q) html += `<button class="fest" data-act="qianShow" style="color:${QIAN_LV[q.lv].c}">🏮 ${QIAN_LV[q.lv].n}</button>`; }
   if (el._h !== html) { el.innerHTML = html; el._h = html; }
@@ -7350,7 +7729,7 @@ const ACT = {
   async hRename(d) { const v = ($('#hnm')?.value || '').trim(); if (!v || [...v].length > 8) return toast('名字要 1～8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { const h = horseOf(f).list.find(x => x.id === +d.id); if (!h) return ab('找不到這匹馬'); h.n = v; return {}; }, () => { toast(`🐎 改名成「${v}」了！`); Music.sfx('pop'); }); },
   async petRename(d) { const v = ($('#pnm_' + d.k)?.value || '').trim(); if ([...v].length > 8) return toast('名字最多 8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { if (!f.pets.includes(d.k)) return ab('沒有這隻寵物'); const x = px(f, d.k); if (v) x.nm = v; else delete x.nm; return {}; }, () => { toast(v ? `🐾 ${PETS[d.k].n}改名叫「${v}」了！` : `🐾 改回「${PETS[d.k].n}」`); Music.voice(PETS[d.k].kind); }); },
   hEnter(d) { return run(() => hEnter(+d.id)); },
-  map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, goPost() { goPlace('post'); }, postWrite() { openPostWrite(); }, postReply(d) { openPostWrite(d.uid); }, postPaper(d) { S.postDraft = $('#pwMsg')?.value || S.postDraft; S.postTo = $('#pwTo')?.value || S.postTo; S.postPaper = d.k; rerenderModal(); }, postSend() { return run(postSend); }, mailbox: openMailbox, readMail(d) { return run(() => readMail(d.id)); }, oldMail(d) { openOldMail(+d.i); }, goMuseum(d) { S.musF = +(d?.f || 0); SCENE_T.museum.y = musY(); goPlace('museum'); refreshFriends(); }, musF(d) { closeModal(); musGo(+d.f); }, musF0() { musGo(0); }, musF1() { musGo(1); }, musF2() { musGo(2); }, musF3() { musGo(3); }, musList() { openMuseum(); }, leaveP() { ACT.scene({s:'farm'}); },
+  map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, goPost() { goPlace('post'); }, trip: openTrip, tripGo(d) { return run(() => tripGo(d.k)); }, tripSeed: openTripSeeds, tripSeedBuy(d) { return run(() => tripSeedBuy(d.id, +d.n)); }, tripSouv: openTripSouv, tripSouvBuy(d) { return run(() => tripSouvBuy(d.id)); }, tripCard() { openTripCard(); }, cardSel(d) { S.cardDraft = $('#pcMsg')?.value || S.cardDraft; S.cardTo = $('#pcTo')?.value || S.cardTo; S.cardSel = d.id; rerenderModal(); }, cardSend() { return run(cardSend); }, tripBook: openTripBook, postWrite() { openPostWrite(); }, postReply(d) { openPostWrite(d.uid); }, postPaper(d) { S.postDraft = $('#pwMsg')?.value || S.postDraft; S.postTo = $('#pwTo')?.value || S.postTo; S.postPaper = d.k; rerenderModal(); }, postSend() { return run(postSend); }, mailbox: openMailbox, readMail(d) { return run(() => readMail(d.id)); }, oldMail(d) { openOldMail(+d.i); }, goMuseum(d) { S.musF = +(d?.f || 0); SCENE_T.museum.y = musY(); goPlace('museum'); refreshFriends(); }, musF(d) { closeModal(); musGo(+d.f); }, musF0() { musGo(0); }, musF1() { musGo(1); }, musF2() { musGo(2); }, musF3() { musGo(3); }, musList() { openMuseum(); }, leaveP() { ACT.scene({s:'farm'}); },
   fishGo: fishStart, fishCast, fishHook, fishQuit() { fishStop(); renderTools(); }, fishKeep(d) { return run(() => fishKeep(d.m)); }, aqShow: openAquarium, aqSell(d) { return run(() => aqSell(+d.i)); }, fishDex: openFishDex, fishCup: openFishCup,
   fcEnter(d) { return run(() => fcEnter(+d.i)); },
   petShow() { S.psv = null; openPetShow(); }, petDress(d) { openPetDress(d.k); }, paccBuy(d) { return run(() => paccBuy(d.k, d.id)); }, paccOn(d) { return run(() => paccOn(d.k, d.id)); }, paccOff(d) { return run(() => paccOff(d.k, d.s)); }, petBath(d) { return run(() => petBath(d.k)); },
@@ -7408,7 +7787,7 @@ const ACT = {
   bingo() { S.bg = null; openBingo(); }, bingoPick(d) { bingoPick(+d.n); }, bingoRand, bingoBet() { return run(bingoBet); }, bingoShow() { return run(bingoShow); },
   home() { closeModal(); if (!isOwn()) travel('回家ING', 1100); goHome(); }, trophies: openTrophies, visit(d) { closeModal(); visit(d.uid); },
   async pickSeed(d) { const c = CROPS[d.id]; if (!(S.my.seeds[d.id] > 0) && S.my.coins < c.cost) return toast(`金幣不夠買${c.n}種子`); S.seed = d.id; S.tool = 'plant'; closeModal(); renderTools(); const i = S.pendingPlot; S.pendingPlot = -1; if (i >= 0 && isOwn()) clickPlot(i); else toast(`已選擇${c.n}，點空地播種`); },
-  async buySeed(d) { const c = CROPS[d.id], n = +d.n; const r = await txMe(f => { if (!seedOK(f, d.id)) return ab('還沒解鎖這個種子'); if (f.coins < c.cost * n) return ab('金幣不夠'); f.coins -= c.cost * n; f.seeds[d.id] = (f.seeds[d.id] || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 包${c.n}種子`); },
+  async buySeed(d) { const c = CROPS[d.id], n = +d.n; const r = await txMe(f => { if (c.loc) return ab(`去${TRIPS[c.loc].n}旅遊才買得到`); if (!seedOK(f, d.id)) return ab('還沒解鎖這個種子'); if (f.coins < c.cost * n) return ab('金幣不夠'); f.coins -= c.cost * n; f.seeds[d.id] = (f.seeds[d.id] || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 包${c.n}種子`); },
   async buyFert(d) { const n = +d.n; const r = await txMe(f => { if (f.coins < FERT_PRICE * n) return ab('金幣不夠'); f.coins -= FERT_PRICE * n; f.fert = (f.fert || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 包化肥`); },
   async buyFeed(d) { const n = +d.n; const r = await txMe(f => { if (f.coins < FEED_PRICE * n) return ab('金幣不夠'); f.coins -= FEED_PRICE * n; f.feed = (f.feed || 0) + n; return {}; }); toast(r.abort ? r.msg : `買了 ${n} 份飼料`); },
   async buyAnimal(d) {
