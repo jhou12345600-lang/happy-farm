@@ -63,6 +63,8 @@ button{font-family:inherit;cursor:pointer;border:none}
 .tfBox{width:min(88vw,420px);text-align:center}.tfBox svg{width:100%;max-height:66vh}.tfTop{font-size:22px;font-weight:900;color:#01579b;margin-bottom:4px}.tfTxt{font-weight:900;font-size:17px;color:#01579b;background:#fff;border-radius:999px;padding:8px 16px;display:inline-block;box-shadow:0 3px 0 #0277bd}
 .twmap{display:block;width:100%;max-width:260px;margin:4px auto 8px;background:#b3e5fc;border-radius:14px}
 .pcard{position:relative;width:100%;aspect-ratio:3/2;border-radius:10px;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25);overflow:hidden;color:#fff;margin-bottom:6px}.pcArt{font-size:42px;text-align:center;margin-top:12%;letter-spacing:4px;text-shadow:0 2px 4px rgba(0,0,0,.3)}.pcT{position:absolute;left:8px;bottom:6px;font-weight:900;font-size:13px;text-shadow:0 1px 3px rgba(0,0,0,.6)}.pcStamp{position:absolute;right:6px;top:6px;background:#fff;border:2px dashed #e53935;border-radius:4px;font-size:16px;padding:1px 3px}
+.rdeco{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px}.rdeco button{background:#fff;border:2px solid #e0d6c2;border-radius:10px;padding:5px;text-align:center;font-size:12px;color:#5d4037}.rdeco button.on{border-color:#ff9800;background:#fff3e0}.rdeco i{display:block;height:22px;border-radius:6px;margin-bottom:3px;border:1px solid rgba(0,0,0,.1)}.rdeco b{display:block}.rdeco small{color:#8d6e63}
+.revbar{margin-top:6px}.revbar div{display:flex;align-items:center;gap:6px;font-size:12px}.revbar span{width:24px;color:#ffb300;font-weight:900}.revbar i{flex:1;height:8px;background:#eee;border-radius:4px;overflow:hidden}.revbar b{display:block;height:100%;background:#ffb300}
 .hpbar{height:10px;background:#e0e0e0;border-radius:6px;overflow:hidden}.hpbar i{display:block;height:100%;border-radius:6px}
 .hbcatch{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px;margin:8px 0}.hbf{background:#e3f2fd;border-radius:10px;padding:4px;text-align:center;font-size:12px}.hbf img{width:56px;height:46px;object-fit:contain;display:block;margin:0 auto}.hbf b{display:block}.hbf.rare{background:linear-gradient(#fff8e1,#ffe082);box-shadow:0 0 0 2px #ffb300}
 .hbchest{background:#fff3e0;border:3px dashed #ff9800;border-radius:12px;padding:10px;text-align:center;margin:8px 0}.chestIco{font-size:46px;animation:chestPop 1s ease-out}@keyframes chestPop{0%{transform:scale(.3) rotate(-20deg)}60%{transform:scale(1.3) rotate(8deg)}100%{transform:scale(1)}}
@@ -361,7 +363,7 @@ button{font-family:inherit;cursor:pointer;border:none}
     <div id="loading">🚜 正在載入 3D 農場…</div>
     <div id="ovl"></div>
     <div id="musCap" hidden></div><div id="tripCap" hidden></div>
-    <div id="sceneTabs"><button data-act="scene" data-s="farm" class="on">🌾<span class="tl"> 農場</span></button><button data-act="scene" data-s="ranch">🐮<span class="tl"> 牧場</span></button><button data-act="scene" data-s="stable">🐎<span class="tl"> 馬場</span><em class="badge" id="bdS"></em></button><button data-act="scene" data-s="fish">🐟<span class="tl"> 魚塭</span></button><button data-act="scene" data-s="factory">🏭<span class="tl"> 工廠</span></button><button data-act="scene" data-s="green">🌱<span class="tl"> 溫室</span><em class="badge" id="bdH"></em></button><button data-act="scene" data-s="town">🏘️<span class="tl"> 小鎮</span><em class="badge" id="bdV"></em></button><button data-act="scene" data-s="temple">🏯<span class="tl"> 廟宇</span></button><button data-act="map" id="mapTab">🗺️<span class="tl"> 出門</span><em class="badge" id="bdP"></em></button></div>
+    <div id="sceneTabs"><button data-act="scene" data-s="farm" class="on">🌾<span class="tl"> 農場</span></button><button data-act="scene" data-s="ranch">🐮<span class="tl"> 牧場</span></button><button data-act="scene" data-s="stable">🐎<span class="tl"> 馬場</span><em class="badge" id="bdS"></em></button><button data-act="scene" data-s="fish">🐟<span class="tl"> 魚塭</span></button><button data-act="scene" data-s="factory">🏭<span class="tl"> 工廠</span></button><button data-act="scene" data-s="green">🌱<span class="tl"> 溫室</span><em class="badge" id="bdH"></em></button><button data-act="scene" data-s="town">🏘️<span class="tl"> 小鎮</span><em class="badge" id="bdV"></em></button><button data-act="scene" data-s="temple">🏯<span class="tl"> 廟宇</span></button><button data-act="scene" data-s="rest">🍜<span class="tl"> 餐廳</span><em class="badge" id="bdR"></em></button><button data-act="map" id="mapTab">🗺️<span class="tl"> 出門</span><em class="badge" id="bdP"></em></button></div>
     <div id="wx"></div>
     <div id="visitBar" hidden><span>👀 在 <b id="visitName"></b> 的家</span><button data-act="trophies" class="tb">🏆</button><button data-act="home">🏠 回家</button></div>
     <div id="hereBox" hidden></div>
@@ -1934,6 +1936,7 @@ function tickOwn(f, msgs) {
   if (aqSim(f, msgs)) ch = true;
   if (giantSellOld(f, msgs)) ch = true;
   if (helperWork(f, msgs)) ch = true;
+  if (restSim(f, msgs)) ch = true;
   return ch;
 }
 
@@ -2798,7 +2801,7 @@ const itemIcon = id => icon(CROPS[id] ? 'crop' : SEA[id] ? 'sea' : PROC[id] ? 'p
 const W = {};
 const FARM_T = new THREE.Vector3(0, 0, .8), RANCH_T = new THREE.Vector3(24, 0, .8), FISH_T = new THREE.Vector3(-30, 0, .8), TOWN_T = new THREE.Vector3(76, 0, .8), GREEN_T = new THREE.Vector3(-52, 0, .8), TEMPLE_T = new THREE.Vector3(101, 0, -.6), STABLE_T = new THREE.Vector3(-80, 0, -1.2);
 const DOCK_T = new THREE.Vector3(-114, 0, -3.6); const HOME_T = new THREE.Vector3(0, -60, 0);
-const SCENE_T = {home:HOME_T, harbor:new THREE.Vector3(-300, 0, -6), post:new THREE.Vector3(-150, 0, -1), museum:new THREE.Vector3(160, 0, -1), market:new THREE.Vector3(128, 0, -.4), dock:DOCK_T, farm:FARM_T, ranch:RANCH_T, fish:FISH_T, factory:new THREE.Vector3(50, 0, .8), town:TOWN_T, green:GREEN_T, temple:TEMPLE_T, stable:STABLE_T};
+const SCENE_T = {home:HOME_T, rest:new THREE.Vector3(-470, 0, -4.5), harbor:new THREE.Vector3(-300, 0, -6), post:new THREE.Vector3(-150, 0, -1), museum:new THREE.Vector3(160, 0, -1), market:new THREE.Vector3(128, 0, -.4), dock:DOCK_T, farm:FARM_T, ranch:RANCH_T, fish:FISH_T, factory:new THREE.Vector3(50, 0, .8), town:TOWN_T, green:GREEN_T, temple:TEMPLE_T, stable:STABLE_T};
 const pondXZ = i => { const r = Math.floor(i / 4), c = i % 4; return [-30 + (c - 1.5) * 4.3, (r - 1) * 4 + .4]; };
 const plotXZ = i => { const r = Math.floor(i / 7), c = i % 7; return [(c - 3) * 2.6, (r - 1) * 2.75 - .3]; };
 const aniHome = i => { const r = Math.floor(i / 4), c = i % 4; return [24 + (c - 1.5) * 3.5, .3 + (r - 1.5) * 2.7]; };
@@ -4266,6 +4269,263 @@ function openMuseum(F0) {
   S.modal();
 }
 
+
+/* ================= 🍜 經營餐廳：裝潢、請廚師、設計菜單，村民來吃飯留評價 ================= */
+const REST_X = -470, REST_PRICE = 8000, REST_LVREQ = 8, REST_SERV = 4, REST_STOCK = 40;
+const REST_LV = [{n:'路邊小吃攤', em:'🛺', c:0, lv:8, seats:2, menu:2, base:0}, {n:'溫馨小餐館', em:'🏠', c:20000, lv:12, seats:3, menu:3, base:4},
+  {n:'家庭餐廳', em:'🍽️', c:60000, lv:16, seats:4, menu:4, base:9}, {n:'景觀餐廳', em:'🌇', c:150000, lv:22, seats:5, menu:5, base:15}, {n:'米其林餐廳', em:'⭐', c:350000, lv:28, seats:6, menu:6, base:24}];
+const RDECO = {
+  floor:{n:'地板', em:'🟫', o:[['f0','水泥地','#9e9e9e',0,0], ['f1','原木地板','#c49a6c',300,2], ['f2','花磚','#80cbc4',600,3], ['f3','榻榻米','#d7cc8f',1200,4], ['f4','大理石','#eceff1',2000,6], ['f5','紅地毯','#b71c1c',3500,8]]},
+  wall:{n:'牆壁', em:'🧱', o:[['w0','白牆','#fafafa',0,0], ['w1','粉彩牆','#f8bbd0',400,2], ['w2','紅磚牆','#a1452e',900,3], ['w3','木板牆','#8d6e63',1500,4], ['w4','花紋壁紙','#b39ddb',2500,5], ['w5','金箔牆','#d4af37',6000,9]]},
+  table:{n:'桌椅', em:'🪑', o:[['t0','塑膠桌椅','#e53935',0,0], ['t1','木頭桌椅','#8d5a2b',800,2], ['t2','白桌巾圓桌','#fafafa',2000,4], ['t3','和風矮桌','#6d4c41',2500,4], ['t4','卡座沙發','#5c6bc0',4000,6], ['t5','水晶長桌','#b3e5fc',9000,10]]},
+  light:{n:'燈飾', em:'💡', o:[['l0','燈泡','#fff59d',0,0], ['l1','紅燈籠','#e53935',500,2], ['l2','木頭吊燈','#8d6e63',1500,3], ['l3','工業風吊燈','#424242',2500,4], ['l4','星空燈串','#ffeb3b',3500,5], ['l5','水晶燈','#e1f5fe',6000,8]]},
+  plant:{n:'植栽', em:'🪴', o:[['p0','沒有','',0,0], ['p1','小盆栽','#66bb6a',300,1], ['p2','大型綠植','#2e7d32',1000,3], ['p3','蝴蝶蘭','#ce93d8',2200,4], ['p4','竹子造景','#7cb342',3000,5]]},
+  art:{n:'牆上擺飾', em:'🖼️', o:[['a0','沒有','',0,0], ['a1','菜單黑板','#263238',200,1], ['a2','復古海報','#ff7043',900,2], ['a3','山水畫','#a5d6a7',1200,3], ['a4','名人簽名牆','#fff59d',2500,5], ['a5','大水族箱','#4fc3f7',5000,7]]},
+  music:{n:'音樂', em:'🎵', o:[['m0','安靜','',0,0], ['m1','收音機','#8d6e63',300,1], ['m2','爵士唱片機','#212121',1500,3], ['m3','鋼琴演奏','#111111',5000,7]]},
+  sign:{n:'招牌', em:'🪧', o:[['s0','手寫招牌','#fff8e1',0,0], ['s1','霓虹招牌','#e040fb',1500,3], ['s2','木雕招牌','#6d4c41',2500,4], ['s3','金字招牌','#b71c1c',6000,7]]},
+};
+const RD = Object.fromEntries(Object.values(RDECO).flatMap(c => c.o.map(o => [o[0], o])));
+const CHEFS = {aunt:{n:'巧手阿姨', em:'👩‍🍳', q:0, wage:300, lv:8, d:'家常菜很拿手'}, cook:{n:'專業廚師', em:'🧑‍🍳', q:1, wage:900, lv:14, d:'刀工好、火候穩'}, master:{n:'大飯店主廚', em:'👨‍🍳', q:2, wage:2200, lv:20, d:'料理更好吃，評價更高'}, star:{n:'米其林大廚', em:'🌟', q:3, wage:5000, lv:28, d:'傳說中的廚藝，美食評論家也稱讚'}};
+const CUST = {vil:{n:'村民', em:'🙂', mult:1, ex:2, need:0}, office:{n:'上班族', em:'💼', mult:1.25, ex:2.8, need:8}, gourmet:{n:'美食家', em:'🧐', mult:1.7, ex:3.5, need:20}, critic:{n:'美食評論家', em:'🎩', mult:2.4, ex:4.2, need:34}};
+const PRICE_M = [{n:'便宜', k:.8, q:.45}, {n:'一般', k:1, q:0}, {n:'高級', k:1.35, q:-.45}];
+const REST_NONFOOD = new Set(['daisy_wreath', 'tulip_bq', 'rose_bq', 'sun_basket', 'scarf', 'fan', 'carn_gift', 'fur_hat', 'veg_box']);
+const REV_TXT = {5:['太好吃了！一定會再來 😍', '完美的一餐！', '環境好、東西好吃，五顆星！', '主廚是天才吧！'], 4:['很好吃，下次帶朋友來', '味道不錯，氣氛也好', '份量剛好，推薦！'], 3:['還可以，普普通通', '味道中規中矩', '價錢再便宜一點就好了'], 2:['有點失望…', '等太久了', '跟想像中不太一樣'], 1:['不推薦…', '這價錢太貴了吧', '下次不會再來了']};
+const restOf = f => f?.rest?.own ? f.rest : null;
+const restDishes = L => Object.keys(RECIPES).filter(r => !REST_NONFOOD.has(r) && recipeOk(r, L) && Object.keys(RECIPES[r].need).every(id => isItem(id) && !PROC[id]));
+const dishVal = r => Object.entries(RECIPES[r].need).reduce((a, [id, n]) => a + itemInfo(id).sell * n, 0);
+const dishPrice = (r, pm = 1) => Math.max(10, Math.round(dishVal(r) * 1.7 / REST_SERV * PRICE_M[pm].k));
+const restScore = R => REST_LV[R.lv || 0].base + Object.values(R.deco || {}).reduce((a, id) => a + (RD[id]?.[4] || 0), 0);
+const chefOn = R => R?.chef && R.chef.until > now() && CHEFS[R.chef.k];
+const restOpen = R => !!(chefOn(R) && (R.menu || []).some(m => m.n > 0));
+const restAvg = R => R?.st?.cnt ? R.st.sum / R.st.cnt : 0;
+const starStr = v => '★'.repeat(Math.round(v)) + '☆'.repeat(5 - Math.round(v));
+function restCustPool(D) { return Object.entries(CUST).filter(([, c]) => D >= c.need).map(([k, c]) => [k, c.need === 0 ? Math.max(.25, 1 - D / 50) : .6 + Math.min(1, (D - c.need) / 15)]); }
+// 離線也會營業：依時間一位一位客人來（用時段當種子，結果固定）
+function restSim(f, msgs) {
+  const R = restOf(f); if (!R) return false; const t = now(); R.t ??= t; if (t - R.t < 60000 / SPEED) return false;
+  const L = REST_LV[R.lv || 0], slot = 3600000 / (2 + L.seats * 1.5) / SPEED, D = restScore(R), pool = restCustPool(D), wsum = pool.reduce((a, p) => a + p[1], 0);
+  let i0 = Math.floor(R.t / slot) + 1; const i1 = Math.floor(t / slot); let n = 0, cash = 0; if (i1 < i0) return false; if (i1 - i0 > 240) i0 = i1 - 240;
+  for (let i = i0; i <= i1; i++) {
+    const ts = i * slot; if (!(R.chef && R.chef.until > ts && (R.chef.from || 0) <= ts && CHEFS[R.chef.k])) continue;
+    const av = (R.menu || []).filter(m => m.n > 0); if (!av.length) break;
+    let s = hashStr((f.name || '') + ':' + i); const r = () => ((s = Math.imul(s ^ s >>> 15, 2246822507) + 1013904223 >>> 0) % 10000) / 10000;
+    if (r() < .25) continue;
+    let x = r() * wsum, ck = pool[0][0]; for (const [k, w] of pool) { if (x < w) { ck = k; break; } x -= w; } const C = CUST[ck];
+    const m = av[Math.floor(r() * av.length)], v = dishVal(m.r), pm = m.pm ?? 1;
+    const Q = 2.3 + CHEFS[R.chef.k].q * .65 + Math.min(1.3, D / 28) + (v > 300 ? .3 : 0) + (av.length >= 3 ? .3 : 0) + PRICE_M[pm].q + (r() - .5) * 1.3;
+    const st = Math.max(1, Math.min(5, Math.round(Q - (C.ex - 2.4) * .55))), pay = Math.round(dishPrice(m.r, pm) * C.mult * (st >= 5 ? 1.2 : st <= 1 ? .6 : 1));
+    m.n--; m.sold = (m.sold || 0) + 1; R.cash = (R.cash || 0) + pay; cash += pay; n++;
+    R.st ??= {sum:0, cnt:0, n:0}; R.st.sum += st; R.st.cnt++; R.st.n++;
+    const dk = twDay(); if (R.day?.d !== dk) R.day = {d:dk, n:0, c:0}; R.day.n++; R.day.c += pay;
+    if (r() < .55 || st <= 2 || st === 5 && ck !== 'vil') { const vn = ck === 'vil' ? VILS[Math.floor(r() * VILS.length)].n : `${C.em}${C.n}${'ABCDEFGHJK'[Math.floor(r() * 10)]}先生`; (R.rev ??= []).push({n:vn, k:ck, s:st, m:REV_TXT[st][Math.floor(r() * REV_TXT[st].length)], d:RECIPES[m.r].n, t:ts}); if (R.rev.length > 30) R.rev = R.rev.slice(-30); }
+  }
+  R.t = t; if (n && msgs && n >= 3) msgs.push(`🍜 餐廳來了 ${n} 位客人，收銀機多了 💰${cash}`);
+  return n > 0;
+}
+async function restBuy() {
+  const r = await txMe(f => { if (restOf(f)) return ab('已經有餐廳了'); if (levelOf(f.exp).L < REST_LVREQ) return ab(`Lv.${REST_LVREQ} 才能開餐廳`); if (f.coins < REST_PRICE) return ab(`開餐廳要 ${REST_PRICE} 金幣`);
+    f.coins -= REST_PRICE; f.rest = {own:1, lv:0, deco:{floor:'f0', wall:'w0', table:'t0', light:'l0', plant:'p0', art:'a0', music:'m0', sign:'s0'}, owned:{}, menu:[], cash:0, rev:[], st:{sum:0, cnt:0, n:0}, t:now()}; addTrade(f, '開餐廳', -REST_PRICE); addLog(f, '🍜 開了一間餐廳！'); return {}; });
+  if (r.abort) return toast(r.msg); Music.sfx('coin'); toast('🎉 餐廳開張！先請廚師、設計菜單，客人就會上門'); renderTop(); W.restKey = null; renderScene(); renderTools(); rerenderModal();
+}
+async function restUp() {
+  const R0 = restOf(S.my), nx = REST_LV[(R0?.lv || 0) + 1]; if (!nx) return toast('已經是最高級的餐廳了');
+  const r = await txMe(f => { restSim(f); const R = restOf(f); if (!R) return ab('先開餐廳'); if (levelOf(f.exp).L < nx.lv) return ab(`Lv.${nx.lv} 才能翻新成${nx.n}`); if (f.coins < nx.c) return ab(`翻新要 ${nx.c} 金幣`); f.coins -= nx.c; R.lv = (R.lv || 0) + 1; addTrade(f, `餐廳翻新：${nx.n}`, -nx.c); addLog(f, `🍜 餐廳翻新成${nx.n}`); return {}; });
+  if (r.abort) return toast(r.msg); Music.sfx('ding'); toast(`🔨 翻新完成！現在是${nx.em} ${nx.n}，座位和菜單變多了`); W.restKey = null; renderTop(); renderScene(); rerenderModal();
+}
+async function restDeco(cat, id) {
+  const o = RD[id]; if (!o) return;
+  const r = await txMe(f => { const R = restOf(f); if (!R) return ab('先開餐廳'); R.owned ??= {}; if (o[3] && !R.owned[id]) { if (f.coins < o[3]) return ab(`要 ${o[3]} 金幣`); f.coins -= o[3]; R.owned[id] = 1; addTrade(f, `餐廳裝潢：${o[1]}`, -o[3]); } R.deco[cat] = id; return {}; });
+  if (r.abort) return toast(r.msg); Music.sfx('pop'); toast(`🎨 換上了${o[1]}！`); W.restKey = null; renderTop(); renderScene(); rerenderModal();
+}
+async function restHire(k, days) {
+  const C = CHEFS[k], cost = C.wage * days;
+  const r = await txMe(f => { restSim(f); const R = restOf(f); if (!R) return ab('先開餐廳'); if (levelOf(f.exp).L < C.lv) return ab(`Lv.${C.lv} 才請得起${C.n}`); if (f.coins < cost) return ab(`要 ${cost} 金幣`);
+    f.coins -= cost; const base = R.chef?.k === k && R.chef.until > now() ? R.chef.until : now(); R.chef = {k, from:R.chef?.k === k && R.chef.until > now() ? (R.chef.from || now()) : now(), until:base + days * 86400000 / SPEED}; addTrade(f, `請${C.n} ${days} 天`, -cost); return {}; });
+  if (r.abort) return toast(r.msg); Music.sfx('coin'); toast(`${C.em} 請到${C.n}了！`); renderTop(); renderScene(); rerenderModal();
+}
+async function restCash() {
+  let got = 0; const r = await txMe(f => { restSim(f); const R = restOf(f); if (!R?.cash) return ab('收銀機是空的'); got = R.cash; f.coins += R.cash; addTrade(f, '餐廳營收', R.cash); R.cash = 0; return {}; });
+  if (r.abort) return toast(r.msg); Music.sfx('coin'); toast(`💰 收了 ${got} 金幣的營收！`); renderTop(); renderTools(); rerenderModal();
+}
+function restMissing(f, r, k) { const miss = {}; let c = 0; for (const [id, n] of Object.entries(RECIPES[r].need)) { const m = n * k - (f.wh[id] || 0); if (m > 0) { miss[id] = m; c += Math.ceil(itemInfo(id).sell * 2.5) * m; } } return {miss, c}; }
+async function restCook(i, k, buy) {
+  const R0 = restOf(S.my), m0 = R0?.menu?.[i]; if (!m0) return;
+  const r = await txMe(f => { restSim(f); const R = restOf(f), m = R?.menu?.[i]; if (!m) return ab('找不到這道菜'); if (m.n + k * REST_SERV > REST_STOCK) return ab(`這道菜最多備 ${REST_STOCK} 份`);
+    const M2 = restMissing(f, m.r, k); if (Object.keys(M2.miss).length && !buy) return ab('食材不夠，可以按「缺的跟 NPC 買」');
+    if (M2.c > f.coins) return ab(`買食材要 ${M2.c} 金幣`); f.coins -= M2.c; if (M2.c) addTrade(f, '跟 NPC 買食材', -M2.c);
+    for (const [id, n] of Object.entries(RECIPES[m.r].need)) { const use = Math.min(f.wh[id] || 0, n * k); f.wh[id] = (f.wh[id] || 0) - use; }
+    m.n += k * REST_SERV; return {}; });
+  if (r.abort) return toast(r.msg); Music.sfx('pop'); toast(`🍳 備好 ${k * REST_SERV} 份${RECIPES[m0.r].n}！`); renderTop(); rerenderModal(); W.restKey = null; renderScene();
+}
+async function restMenuSet(i, rk) {
+  const r = await txMe(f => { restSim(f); const R = restOf(f); if (!R) return ab('先開餐廳'); R.menu ??= []; const max = REST_LV[R.lv || 0].menu;
+    if (rk === '') { const m = R.menu[i]; if (!m) return {}; if (m.n > 0) return ab('還有備好的份數，賣完才能拿掉'); R.menu.splice(i, 1); return {}; }
+    if (R.menu.some(m => m.r === rk)) return ab('菜單上已經有這道菜了'); if (i >= R.menu.length) { if (R.menu.length >= max) return ab(`這間餐廳最多 ${max} 道菜，翻新可以增加`); R.menu.push({r:rk, n:0, pm:1}); } else { if (R.menu[i].n > 0) return ab('還有備好的份數，賣完才能換'); R.menu[i] = {r:rk, n:0, pm:1}; } return {}; });
+  if (r.abort) return toast(r.msg); S.restPick = null; Music.sfx('pop'); rerenderModal(); W.restKey = null; renderScene();
+}
+async function restPrice(i, pm) { await txMe(f => { const m = restOf(f)?.menu?.[i]; if (!m) return ab(''); m.pm = pm; return {}; }); rerenderModal(); }
+function openRest() {
+  S.modal = () => {
+    const f = S.my, R = restOf(f), L = levelOf(f.exp).L;
+    if (!R) return openModal('🍜 開餐廳', `<div class="popbox">🍜 <b>開一間自己的餐廳！</b><br><small>請<b>廚師</b>、用自己種的作物或跟 NPC 買食材<b>設計菜單</b>，村民客人會上門吃飯、留下<b>星級評價</b>。裝潢越好，越挑剔（但付錢越大方）的客人會來。不在線上也會繼續營業！好友都看得到你的餐廳經營狀況。</small></div>
+      <button class="b o" style="width:100%;font-size:16px" data-act="restBuy" ${L < REST_LVREQ ? 'disabled' : ''}>${L < REST_LVREQ ? `Lv.${REST_LVREQ} 解鎖` : `開餐廳 💰${REST_PRICE}`}</button>`);
+    const Lv = REST_LV[R.lv || 0], nx = REST_LV[(R.lv || 0) + 1], ch = chefOn(R), D = restScore(R), avg = restAvg(R);
+    let body = `<div class="popbox">${Lv.em} <b>${esc(myName())}的${Lv.n}</b>　${restOpen(R) ? '<span class="rare" style="background:#43a047">營業中</span>' : '<span class="rare" style="background:#9e9e9e">休息中</span>'}<br>⭐ <b>${avg ? avg.toFixed(1) : '－'}</b> ${avg ? starStr(avg) : ''}（${R.st?.cnt || 0} 位客人評分）　🪑 ${Lv.seats} 桌　📋 菜單 ${(R.menu || []).length}/${Lv.menu}<br>🎨 裝潢分數 <b>${D}</b>：${restCustPool(D).map(([k]) => CUST[k].em + CUST[k].n).join('、')}會來<br>📈 今天 ${R.day?.d === twDay() ? `${R.day.n} 位客人・💰${R.day.c}` : '還沒有客人'}</div>`;
+    if (!restOpen(R)) body += `<div class="popbox" style="background:#fff3e0"><small>${!ch ? '👨‍🍳 還沒有廚師，<b>請廚師</b>才能營業' : '📋 菜單上沒有備好的菜，去<b>菜單</b>備料'}</small></div>`;
+    body += `<div class="item"><div class="pic" style="font-size:28px">💰</div><div class="info"><div class="t">收銀機：💰${R.cash || 0}</div><div class="d">客人付的錢都在這裡</div></div><button class="b o" data-act="restCash" ${R.cash ? '' : 'disabled'}>收錢</button></div>`;
+    body += `<div class="item"><div class="pic" style="font-size:28px">${ch ? ch.em : '🚫'}</div><div class="info"><div class="t">${ch ? ch.n : '沒有廚師'}</div><div class="d">${ch ? `還有 ${fmtDur(R.chef.until - now())}` : '請廚師才能營業'}</div></div><button class="b" data-act="restChef">${ch ? '續約' : '請廚師'}</button></div>`;
+    body += `<div class="mgbtn" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap"><button class="b o" data-act="restMenu">📋 菜單備料</button><button class="b o" data-act="restDecoM">🎨 裝潢</button><button class="b" data-act="restRev">⭐ 評價</button><button class="b" data-act="restRank">🏆 好友餐廳</button></div>`;
+    if (nx) body += `<div class="item"><div class="pic" style="font-size:28px">${nx.em}</div><div class="info"><div class="t">翻新成${nx.n}</div><div class="d">${nx.seats} 桌、菜單 ${nx.menu} 道、裝潢基礎分 +${nx.base - Lv.base}（Lv.${nx.lv}）</div></div><button class="b o" data-act="restUp" ${L < nx.lv ? 'disabled' : ''}>💰${nx.c}</button></div>`;
+    openModal('🍜 我的餐廳', body);
+  };
+  S.modal();
+}
+function openRestMenu() {
+  S.modal = () => {
+    const f = S.my, R = restOf(f); if (!R) return openRest(); const max = REST_LV[R.lv || 0].menu, L = levelOf(f.exp).L;
+    if (S.restPick != null) { const list = restDishes(L);
+      return openModal('📋 選一道菜', `<div class="popbox"><small>用倉庫的作物、畜產、魚來做，不夠的可以跟 NPC 買（比較貴）。一份食材可以做 ${REST_SERV} 份餐點。</small></div>` + list.map(rk => { const Rc = RECIPES[rk];
+        return `<div class="item"><div class="pic" style="font-size:28px">${Rc.em}</div><div class="info"><div class="t">${Rc.n} <small style="color:#e65100">每份 💰${dishPrice(rk)}</small></div><div class="d">${Object.entries(Rc.need).map(([id, n]) => `${itemInfo(id).n}${n}（有${f.wh[id] || 0}）`).join('、')}</div></div><button class="b o" data-act="restSet" data-i="${S.restPick}" data-r="${rk}">放上菜單</button></div>`; }).join('') + `<div class="mgbtn"><button class="b" data-act="restPickX">↩️ 回菜單</button></div>`); }
+    let body = `<div class="popbox">📋 <b>菜單</b>（${(R.menu || []).length}/${max} 道）<br><small>每道菜要先<b>備料</b>（一次做 ${REST_SERV} 份），客人點了就會賣掉。訂價便宜評價比較好，高級賺比較多。</small></div>`;
+    body += (R.menu || []).map((m, i) => { const Rc = RECIPES[m.r], M1 = restMissing(f, m.r, 1), ok = !Object.keys(M1.miss).length;
+      return `<div class="item"><div class="pic" style="font-size:30px">${Rc.em}</div><div class="info"><div class="t">${Rc.n} <small style="color:#2e7d32">備好 ${m.n} 份</small>${m.sold ? ` <small style="color:#8d6e63">賣出 ${m.sold}</small>` : ''}</div><div class="d">${Object.entries(Rc.need).map(([id, n]) => `${itemInfo(id).n}${n}${(f.wh[id] || 0) < n ? `<b style="color:#e53935">（${f.wh[id] || 0}）</b>` : ''}`).join('、')}<br>${PRICE_M.map((P, j) => `<button class="b ${(m.pm ?? 1) === j ? 'o' : 'g'}" style="padding:2px 8px;font-size:12px" data-act="restPrice" data-i="${i}" data-p="${j}">${P.n} ${dishPrice(m.r, j)}💰</button>`).join(' ')}</div></div>
+        <div class="acts">${ok ? `<button class="b o" data-act="restCook" data-i="${i}" data-k="1">備料 +${REST_SERV}</button>` : `<button class="b" data-act="restCook" data-i="${i}" data-k="1" data-buy="1">缺的跟 NPC 買 💰${M1.c}</button>`}<button class="b g" data-act="restSet" data-i="${i}" data-r="">拿掉</button></div></div>`; }).join('');
+    if ((R.menu || []).length < max) body += `<button class="b o" style="width:100%" data-act="restPick" data-i="${(R.menu || []).length}">➕ 新增一道菜</button>`;
+    openModal('📋 菜單備料', body);
+  };
+  S.modal();
+}
+function openRestDeco() {
+  S.modal = () => {
+    const R = restOf(S.my); if (!R) return openRest(); const D = restScore(R);
+    let body = `<div class="popbox">🎨 <b>裝潢分數 ${D}</b><br><small>裝潢越好，越挑剔的客人會來：${Object.values(CUST).map(c => `${c.em}${c.n} ${c.need} 分`).join('、')}。挑剔的客人付比較多錢，但評分比較嚴格喔！買過的裝潢可以隨時免費換回來。</small></div>`;
+    for (const [cat, C] of Object.entries(RDECO)) body += `<div class="sec">${C.em} ${C.n}</div><div class="rdeco">${C.o.map(o => { const on = R.deco[cat] === o[0], own = !o[3] || R.owned?.[o[0]];
+      return `<button class="${on ? 'on' : ''}" data-act="restDeco" data-c="${cat}" data-id="${o[0]}"><i style="background:${o[2] || 'repeating-linear-gradient(45deg,#eee 0 4px,#fff 4px 8px)'}"></i><b>${o[1]}</b><small>${on ? '✅ 使用中' : own ? '換上' : `💰${o[3]}`}${o[4] ? ` · +${o[4]}分` : ''}</small></button>`; }).join('')}</div>`;
+    openModal('🎨 餐廳裝潢', body);
+  };
+  S.modal();
+}
+function openRestChef() {
+  S.modal = () => { const f = S.my, R = restOf(f), L = levelOf(f.exp).L, ch = chefOn(R);
+    openModal('👨‍🍳 請廚師', `<div class="popbox"><small>有廚師才能營業（不在線上也會做菜）。廚藝越好，客人評分越高。${ch ? `<br>現在是 ${ch.em}${ch.n}，還有 ${fmtDur(R.chef.until - now())}；請同一位會接著延長。` : ''}</small></div>` + Object.entries(CHEFS).map(([k, C]) => `<div class="item ${L < C.lv ? 'dim' : ''}"><div class="pic" style="font-size:30px">${C.em}</div><div class="info"><div class="t">${C.n} <small>${'🔥'.repeat(C.q + 1)}</small></div><div class="d">${C.d}・日薪 💰${C.wage}</div></div><div class="acts">${L < C.lv ? `<button class="b g" disabled>Lv.${C.lv}</button>` : [1, 3, 7].map(d => `<button class="b o" data-act="restHire" data-k="${k}" data-d="${d}">${d} 天 💰${C.wage * d}</button>`).join('')}</div></div>`).join(''));
+  };
+  S.modal();
+}
+function openRestRev(uid) {
+  S.modal = () => { const f = uid && uid !== S.uid ? S.friends.find(x => x.uid === uid)?.farm : S.view || S.my, R = restOf(f); if (!R) return openModal('⭐ 評價', '<div class="empty">還沒有餐廳</div>');
+    const avg = restAvg(R), by = [5, 4, 3, 2, 1].map(s => (R.rev || []).filter(v => v.s === s).length);
+    openModal(`⭐ ${esc(dn(f))}的餐廳評價`, `<div class="popbox" style="text-align:center"><div style="font-size:30px;color:#ffb300;font-weight:900">${avg ? avg.toFixed(1) : '－'} <span style="font-size:20px">${avg ? starStr(avg) : ''}</span></div><small>${R.st?.cnt || 0} 位客人評分・總共賣出 ${R.st?.n || 0} 份</small><div class="revbar">${[5, 4, 3, 2, 1].map((s, i) => `<div><span>${s}★</span><i><b style="width:${(R.rev || []).length ? by[i] / R.rev.length * 100 : 0}%"></b></i></div>`).join('')}</div></div>` +
+      ([...(R.rev || [])].reverse().map(v => `<div class="item"><div class="pic" style="font-size:24px">${CUST[v.k]?.em || '🙂'}</div><div class="info"><div class="t">${esc(v.n)} <span style="color:#ffb300">${starStr(v.s)}</span></div><div class="d">點了「${esc(v.d)}」：${esc(v.m)}<br><small>${fmtTime(v.t)}</small></div></div></div>`).join('') || '<div class="empty">還沒有評價</div>'));
+  };
+  S.modal();
+}
+function openRestRank() {
+  S.modal = () => {
+    const L = [{uid:S.uid, f:S.my}, ...S.friends.map(x => ({uid:x.uid, f:x.farm}))].filter(x => restOf(x.f)).sort((a, b) => restAvg(b.f.rest) - restAvg(a.f.rest) || (b.f.rest.st?.n || 0) - (a.f.rest.st?.n || 0));
+    openModal('🏆 好友的餐廳', `<div class="popbox"><small>看看大家的餐廳經營得怎麼樣，點「去看看」可以進去參觀！</small></div>` + (L.map((x, i) => { const R = x.f.rest, Lv = REST_LV[R.lv || 0], avg = restAvg(R);
+      return `<div class="item"><div class="pic" style="font-size:26px">${['🥇', '🥈', '🥉'][i] || Lv.em}</div><div class="info"><div class="t">${esc(dn(x.f))}的${Lv.n}${x.uid === S.uid ? '（我）' : ''} ${restOpen(R) ? '<span class="rare" style="background:#43a047">營業中</span>' : '<span class="rare" style="background:#9e9e9e">休息</span>'}</div><div class="d"><span style="color:#ffb300">${avg ? starStr(avg) + ' ' + avg.toFixed(1) : '還沒有評價'}</span>・賣出 ${R.st?.n || 0} 份・裝潢 ${restScore(R)} 分<br>菜單：${(R.menu || []).map(m => RECIPES[m.r]?.em + RECIPES[m.r]?.n).join('、') || '還沒有'}${R.day?.d === twDay() ? `<br>今天 ${R.day.n} 位客人` : ''}</div></div><div class="acts"><button class="b o" data-act="restVisit" data-uid="${x.uid}">去看看</button><button class="b" data-act="restRevOf" data-uid="${x.uid}">評價</button></div></div>`; }).join('') || '<div class="empty">大家都還沒開餐廳</div>'));
+  };
+  S.modal();
+}
+function restVisit(uid) { closeModal(); if (uid === S.uid) { if (!isOwn()) goHome(); } else if (S.viewUid !== uid) visit(uid); S.scene = 'rest'; setCam('rest'); renderTools(); renderScene(); }
+// ----- 3D 餐廳（看的是現在拜訪的農場的餐廳） -----
+const REST_TABLES = [[-4.6, -7.4], [0, -7.4], [4.6, -7.4], [-4.6, -3.4], [0, -3.4], [4.6, -3.4]];
+function buildRest(S3) {
+  const X = REST_X, G = new THREE.Group(); G.position.x = X;
+  const gr = new THREE.Mesh(geoOf('rsg', () => new THREE.PlaneGeometry(162, 130)), mat('#a5c97a')); gr.rotation.x = -Math.PI / 2; gr.position.set(0, -.03, -10); gr.receiveShadow = true; G.add(gr);
+  G.add(blk('#9e9e9e', [162, .04, 5], [0, .01, 5]), blk('#cfd8dc', [10, .05, 4], [0, .02, 1.2]));
+  for (const x of [-30, -20, 18, 28]) G.add(grp(rod('#6d4c41', [.18, 2, .18], [0, 1, 0]), ball('#43a047', U(1.3), [0, 2.7, 0])).translateX(x).translateZ(-6));
+  for (const [x, w, h, c] of [[-22, 8, 7, '#ffccbc'], [22, 9, 8, '#b3e5fc'], [-34, 7, 6, '#fff9c4'], [34, 8, 9, '#c5e1a5']]) G.add(grp(blk(c, [w, h, 6], [0, h / 2, 0]), blk('#795548', [w + .4, .4, 6.4], [0, h + .2, 0]), ...[-1, 1].map(s => blk('#90caf9', [1.4, 1.2, .1], [s * w / 4, h * .6, 3.02]))).translateX(x).translateZ(-12));
+  S3.add(G); W.restG = G; W.restDecoG = new THREE.Group(); W.restDecoG.position.x = X; S3.add(W.restDecoG); W.restCustG = new THREE.Group(); S3.add(W.restCustG); W.restCust = [];
+}
+function restDecoBuild(f) {
+  const G = W.restDecoG; while (G.children.length) G.remove(G.children[0]); const R = restOf(f);
+  if (!R) { const t = textPlane('🍜 空店面・招租中', '#5d4037', '#fff8e1', 5, .9, 100); t.position.set(0, 2.5, -6); G.add(t, blk('#bcaaa4', [16, 5, .3], [0, 2.5, -11.6]), blk('#d7ccc8', [16, .2, 11], [0, .1, -6])); W.restChef = null; W.restSeats = []; return; }
+  const d = R.deco, c = id => RD[d[id]]?.[2], Lv = R.lv || 0;
+  G.add(blk(c('floor'), [16.4, .2, 11.4], [0, .1, -6]), blk(c('wall'), [16.4, 5.4, .3], [0, 2.7, -11.8]), blk(c('wall'), [.3, 5.4, 11.4], [-8.2, 2.7, -6]), blk(c('wall'), [.3, 5.4, 11.4], [8.2, 2.7, -6]), blk('#5d4037', [16.8, .3, .4], [0, 5.5, -11.8]));
+  if (d.floor === 'f2') for (let i = 0; i < 24; i++) G.add(blk(i % 2 ? '#e0f2f1' : '#4db6ac', [1.3, .02, 1.3], [-7.4 + (i % 8) * 2, .21, -10.8 + Math.floor(i / 8) * 3.6]));
+  if (d.floor === 'f5') G.add(blk('#ffd54f', [3, .03, 11], [0, .21, -6]));
+  if (d.wall === 'w2') for (let r = 0; r < 8; r++) G.add(blk('#7f3020', [16.3, .05, .02], [0, .5 + r * .65, -11.64]));
+  if (d.wall === 'w4') for (let i = 0; i < 10; i++) G.add(ball('#fff59d', U(.15), [-7 + i * 1.55, 3.6 + (i % 2) * .6, -11.62]));
+  // 廚房吧台＋廚師
+  G.add(blk('#8d6e63', [6, 1.2, 1.2], [-4.5, .6, -10.2]), blk('#eceff1', [6.2, .1, 1.4], [-4.5, 1.25, -10.2]), blk('#424242', [1.4, .1, .9], [-6, 1.32, -10.3]), M(gBucket(), '#9e9e9e', [.35, .3, .35], [-6, 1.55, -10.3]), blk('#b0bec5', [1.6, 2.6, .5], [-2.2, 1.3, -11.4]));
+  const ch = chefOn(R); W.restChef = null;
+  if (ch) { const m = charModel('boy', 'chef' + ch.q, {top:'#fafafa', bot:'#424242', hat:'chef', hc:'#fafafa', st:'chef', ac:ch.q >= 2 ? 'tie' : 'none'}); m.position.set(-4.5, 0, -11.1); m.scale.setScalar(1.15); G.add(m); W.restChef = m; }
+  const ct = textPlane(ch ? `${ch.em} ${ch.n}` : '🚫 沒有廚師', '#ffffff', ch ? '#2e7d32' : '#757575', 2.8, .5, 90); ct.position.set(-4.5, 3.4, -10.6); G.add(ct);
+  // 招牌
+  const sg = d.sign, sgC = {s0:['#5d4037', '#fff8e1'], s1:['#ffffff', '#4a148c'], s2:['#fff3e0', '#6d4c41'], s3:['#ffd54f', '#b71c1c']}[sg] || ['#5d4037', '#fff8e1'];
+  const st = textPlane(`${dn(f)}的餐廳`, sgC[0], sgC[1], 8.4, 1.1, 110); st.position.set(2.4, 4.5, -11.55); G.add(st);
+  if (sg === 's1') G.add(blk('#e040fb', [8.7, .08, .06], [2.4, 5.1, -11.5]), blk('#e040fb', [8.7, .08, .06], [2.4, 3.9, -11.5]));
+  // 桌椅
+  const T = d.table, tc = c('table'); W.restSeats = [];
+  REST_TABLES.slice(0, REST_LV[Lv].seats).forEach(([x, z]) => {
+    const g = new THREE.Group();
+    if (T === 't3') g.add(blk(tc, [1.8, .1, 1.2], [0, .55, 0]), ...[[-.75, -.45], [.75, -.45], [-.75, .45], [.75, .45]].map(([a, b]) => rod('#4e342e', [.07, .45, .07], [a, .3, b])), blk('#e57373', [.8, .1, .8], [-1.4, .25, 0]), blk('#64b5f6', [.8, .1, .8], [1.4, .25, 0]));
+    else if (T === 't2') g.add(rod('#fafafa', [.9, .08, .9], [0, .95, 0]), rod('#eeeeee', [.95, .5, .95], [0, .7, 0]), rod('#9e9e9e', [.08, .9, .08], [0, .45, 0]), ...[-1.3, 1.3].map(a => grp(blk('#fafafa', [.6, .1, .6], [a, .5, 0]), blk('#fafafa', [.1, .7, .6], [a + Math.sign(a) * .3, .85, 0]), rod('#bdbdbd', [.05, .5, .05], [a, .25, 0]))));
+    else if (T === 't4') g.add(blk('#8d6e63', [1.6, .1, 1], [0, .9, 0]), rod('#5d4037', [.1, .85, .1], [0, .45, 0]), ...[-1.25, 1.25].map(a => grp(blk(tc, [.7, .5, 1.4], [a, .3, 0]), blk(tc, [.25, 1.1, 1.4], [a + Math.sign(a) * .35, .6, 0]))));
+    else if (T === 't5') g.add(blk('#b3e5fc', [2, .08, 1.1], [0, .92, 0]), ...[[-.9, -.45], [.9, -.45], [-.9, .45], [.9, .45]].map(([a, b]) => rod('#e1f5fe', [.05, .9, .05], [a, .45, b])), ...[-1.45, 1.45].map(a => grp(blk('#fafafa', [.6, .1, .6], [a, .5, 0]), blk('#ffd54f', [.08, 1, .6], [a + Math.sign(a) * .3, .9, 0]))));
+    else { const leg = T === 't1' ? '#5d4037' : '#bdbdbd'; g.add(blk(tc, [1.5, .1, 1], [0, .9, 0]), ...[[-.65, -.4], [.65, -.4], [-.65, .4], [.65, .4]].map(([a, b]) => rod(leg, [.05, .85, .05], [a, .45, b])), ...[-1.2, 1.2].map(a => grp(blk(tc, [.55, .08, .55], [a, .5, 0]), blk(tc, [.08, .65, .55], [a + Math.sign(a) * .27, .82, 0]), rod(leg, [.04, .5, .04], [a, .25, 0])))); }
+    if (Lv >= 2) g.add(M(gBucket(), '#fafafa', [.08, .15, .08], [0, 1.05, 0]), ball('#f48fb1', U(.08), [0, 1.2, 0]));
+    g.position.set(x, .2, z); G.add(g); const sy = T === 't3' ? .2 : .45; W.restSeats.push([x - (T === 't3' ? 1.4 : 1.2), z, sy, 0], [x + (T === 't3' ? 1.4 : 1.2), z, sy, Math.PI]);
+  });
+  // 燈
+  const lc = c('light'); for (const x of [-5, 0, 5]) { const L2 = d.light;
+    if (L2 === 'l1') G.add(rod('#212121', [.02, .8, .02], [x, 4.9, -5.5]), ball('#e53935', [.35, .45, .35], [x, 4.3, -5.5]));
+    else if (L2 === 'l5') G.add(rod('#bdbdbd', [.03, .8, .03], [x, 4.9, -5.5]), ...[0, 1, 2, 3, 4, 5].map(i => ball('#e1f5fe', U(.12), [x + Math.cos(i) * .45, 4.1 + (i % 2) * .15, -5.5 + Math.sin(i) * .45])), cone('#fff9c4', [.5, .5, .5], [x, 4.4, -5.5]));
+    else if (L2 === 'l4') G.add(...Array.from({length:8}, (_, i) => ball(['#ffeb3b', '#ff80ab', '#80d8ff'][i % 3], U(.08), [x - 2 + i * .55, 4.6 - Math.sin(i / 7 * Math.PI) * .5, -8])));
+    else G.add(rod('#212121', [.02, .9, .02], [x, 4.95, -5.5]), L2 === 'l0' ? ball(lc, U(.18), [x, 4.4, -5.5]) : cone(lc, [.5, .4, .5], [x, 4.4, -5.5])); }
+  // 植栽
+  const pl = d.plant; if (pl !== 'p0') for (const [x, z] of [[-7.4, -1], [7.4, -1], [7.4, -10.8]]) {
+    if (pl === 'p4') G.add(...[0, 1, 2].map(i => rod('#7cb342', [.08, 2.6 + i * .3, .08], [x - .2 + i * .2, 1.4, z])), M(gBucket(), '#795548', [.45, .4, .45], [x, .4, z]));
+    else G.add(M(gBucket(), '#8d6e63', [pl === 'p1' ? .25 : .4, pl === 'p1' ? .3 : .5, pl === 'p1' ? .25 : .4], [x, pl === 'p1' ? .35 : .45, z]), ball(c('plant'), pl === 'p1' ? U(.35) : pl === 'p3' ? [.4, .5, .3] : [.7, 1.1, .7], [x, pl === 'p1' ? .75 : 1.5, z]), ...(pl === 'p3' ? [0, 1, 2].map(i => ball('#f3e5f5', U(.12), [x + .2 - i * .2, 1.9 + i * .1, z + .2])) : [])); }
+  // 牆上擺飾
+  const ar = d.art; if (ar === 'a1') G.add(blk('#5d4037', [2.4, 1.6, .1], [6, 2.4, -11.6]), blk('#263238', [2.2, 1.4, .12], [6, 2.4, -11.58]));
+  if (ar === 'a2') G.add(blk('#ff7043', [1.4, 2, .08], [5.5, 2.4, -11.6]), blk('#ffee58', [1.4, 2, .08], [7.1, 2.4, -11.6]));
+  if (ar === 'a3') G.add(blk('#5d4037', [3, 1.8, .08], [6, 2.4, -11.6]), blk('#e8f5e9', [2.8, 1.6, .1], [6, 2.4, -11.58]), cone('#81c784', [.7, .9, .05], [5.4, 2.3, -11.5]), cone('#a5d6a7', [.6, .7, .05], [6.4, 2.2, -11.5]));
+  if (ar === 'a4') for (let i = 0; i < 8; i++) G.add(blk(['#fff59d', '#ffffff', '#ffe0b2'][i % 3], [.7, .9, .05], [4.6 + (i % 4) * .9, 1.9 + Math.floor(i / 4) * 1.1, -11.6]));
+  if (ar === 'a5') { G.add(blk('#37474f', [3.2, .5, 1], [6, .45, -11.1]), new THREE.Mesh(gB(), new THREE.MeshPhongMaterial({color:'#4fc3f7', transparent:true, opacity:.55, shininess:100})).translateX(6).translateY(1.6).translateZ(-11.1)); G.children[G.children.length - 1].scale.set(3, 1.8, .9); for (let i = 0; i < 4; i++) G.add(ball(['#ff7043', '#ffeb3b', '#ef5350', '#fff'][i], [.15, .1, .05], [5 + i * .6, 1.3 + (i % 2) * .5, -11.1])); }
+  // 音樂
+  const mu = d.music; if (mu === 'm1') G.add(blk('#8d6e63', [.8, .5, .35], [-1, 1.5, -10.2]), ball('#212121', U(.12), [-1.2, 1.5, -10]));
+  if (mu === 'm2') G.add(blk('#6d4c41', [1, .8, .8], [7, .4, -9.4]), rod('#212121', [.4, .05, .4], [7, .85, -9.4]), M(gN(), '#ffb300', [.2, .5, .2], [7.3, 1.2, -9.6], [0, 0, -.8]));
+  if (mu === 'm3') { G.add(blk('#111111', [2, 1, 1.4], [6.4, .9, -9.4]), blk('#fafafa', [1.9, .06, .4], [6.4, 1.03, -8.8]), rod('#111111', [.08, .9, .08], [5.6, .4, -8.9]), rod('#111111', [.08, .9, .08], [7.2, .4, -8.9])); const p = vilModel('li'); p.position.set(6.4, .2, -7.8); p.rotation.y = Math.PI; G.add(p); }
+  // 菜單看板（門口）
+  const mb = grp(blk('#5d4037', [.1, 1.6, .1], [-.5, .8, 0]), blk('#5d4037', [.1, 1.6, .1], [.5, .8, 0]), blk('#263238', [1.3, 1, .08], [0, 1.4, .05])); mb.position.set(-6.5, 0, .2); mb.rotation.y = .3; G.add(mb);
+  if (Lv >= 1) { const tc2 = ['#e53935', '#43a047', '#1e88e5', '#ffb300', '#8e24aa'][Lv % 5]; G.add(blk(tc2, [.4, .3, 11.6], [-8.2, 5.5, -6]), blk(tc2, [.4, .3, 11.6], [8.2, 5.5, -6]), blk(tc2, [16.8, .3, .45], [0, 5.8, -11.8])); }
+  if (Lv >= 3) for (const x of [-8.4, 8.4]) G.add(rod('#d4af37', [.2, 5.6, .2], [x, 2.8, -.3]));
+}
+function syncRest() {
+  if (!W.restG) return; const f = S.view || S.my, on = S.scene === 'rest', R = restOf(f);
+  const key = on ? (S.viewUid || S.uid) + JSON.stringify([R?.deco, R?.lv, chefOn(R)?.n, !!R]) : '';
+  if (on && W.restKey !== key) { W.restKey = key; restDecoBuild(f); for (const C of W.restCust) W.restCustG.remove(C.m); W.restCust = []; }
+  if (!on) return;
+  if (!R) { ov('rsNone', isOwn() ? '🍜 點「開餐廳」開一間自己的餐廳！' : `${esc(dn(f))}還沒開餐廳`, v => v.set(REST_X, 4, -6), 'tag'); return; }
+  const avg = restAvg(R);
+  ov('rsInfo', `<b>${REST_LV[R.lv || 0].em} ${esc(dn(f))}的${REST_LV[R.lv || 0].n}</b> ${restOpen(R) ? '🟢營業中' : '⚪休息中'}<br><small><span style="color:#ffb300">${avg ? starStr(avg) + ' ' + avg.toFixed(1) : '還沒有評價'}</span>・今天 ${R.day?.d === twDay() ? R.day.n : 0} 位客人・總共 ${R.st?.n || 0} 份</small>`, v => v.set(REST_X + 2.5, 6.6, -11.4), 'tag');
+  ov('rsMenu', `📋 今日菜單<br>${(R.menu || []).map(m => `${RECIPES[m.r].em}${RECIPES[m.r].n} ${m.n > 0 ? `💰${dishPrice(m.r, m.pm ?? 1)}` : '<s>賣完</s>'}`).join('<br>') || '還沒有菜'}`, v => v.set(REST_X - 6.5, 2.6, .3), 'tag');
+  if (isOwn() && R.cash) ov('rsCash', `💰 收銀機 ${R.cash}`, v => v.set(REST_X - 1.6, 2.2, -10), 'tag');
+}
+function restTick(t, dt) {
+  if (!W.restG || S.scene !== 'rest') return;
+  const f = S.view || S.my, R = restOf(f); if (W.restChef) { const u = W.restChef.userData; if (u.armR) u.armR.rotation.z = -1 + Math.sin(t * 6) * .4; if (u.armL) u.armL.rotation.z = 1 + Math.sin(t * 6 + 1) * .3; }
+  // 客人：從街上走進來、坐下、上菜、吃完給星星、離開
+  const open = R && restOpen(R), seats = W.restSeats || [];
+  if (open && t - (W.restSpawnT || 0) > 3.5 && W.restCust.length < Math.min(seats.length, 3 + (R.lv || 0) * 2)) { W.restSpawnT = t;
+    const used = new Set(W.restCust.map(C => C.seat)), free = seats.map((_, i) => i).filter(i => !used.has(i)); if (free.length) {
+      const ids = Object.keys(VIL), si = rnd(free), D = restScore(R), pool = restCustPool(D), ck = rnd(pool)[0], m = ck === 'vil' ? vilModel(rnd(ids)) : charModel(Math.random() < .5 ? 'girl' : 'boy', 'c' + Math.random(), {top:ck === 'critic' ? '#212121' : ck === 'gourmet' ? '#6a1b9a' : '#1e88e5', bot:'#37474f', hat:ck === 'critic' ? 'tophat' : 'none', hc:'#212121', st:ck === 'office' || ck === 'critic' ? 'suit' : 'tee', ac:ck === 'gourmet' ? 'glasses' : ck === 'critic' ? 'tie' : 'none'});
+      if (ck !== 'vil') m.scale.setScalar(1.15); const x0 = REST_X + (Math.random() < .5 ? -16 : 16); m.position.set(x0, 0, 4); W.restCustG.add(m);
+      W.restCust.push({m, ck, seat:si, ph:'in', x:x0, z:4, path:[[REST_X + (x0 < REST_X ? -1 : 1), 2.5], [REST_X + seats[si][0] * .3 + (seats[si][0] > 0 ? 1 : -1), -1.2], [REST_X + seats[si][0], seats[si][1]]], wait:0, dish:null}); } }
+  for (const C of [...W.restCust]) { const u = C.m.userData, S2 = seats[C.seat];
+    if (C.ph === 'in' || C.ph === 'out') { const p = C.path[0]; if (!p) { if (C.ph === 'in') { C.ph = 'sit'; C.wait = 3 + Math.random() * 2; C.m.position.set(REST_X + S2[0], S2[2], S2[1]); C.m.rotation.y = S2[3]; if (u.legL) { u.legL.rotation.z = u.legR.rotation.z = -1.3; } } else { W.restCustG.remove(C.m); W.restCust.splice(W.restCust.indexOf(C), 1); } continue; }
+      const dx = p[0] - C.x, dz = p[1] - C.z, d = Math.hypot(dx, dz); if (d < .1) { C.path.shift(); continue; } const s = Math.min(d, dt * 2.4); C.x += dx / d * s; C.z += dz / d * s; C.m.position.set(C.x, .2 * (C.z < -.5), C.z); C.m.rotation.y = Math.atan2(-dz, dx); if (u.legL) { const sw = Math.sin(t * 9) * .6; u.legL.rotation.z = sw; u.legR.rotation.z = -sw; } continue; }
+    C.wait -= dt;
+    if (C.ph === 'sit' && C.wait <= 0) { C.ph = 'eat'; C.wait = 6 + Math.random() * 4; const menu = (R?.menu || []).filter(m => m.n > 0), mm = rnd(menu.length ? menu : R?.menu || []), tb = REST_TABLES[Math.floor(C.seat / 2)];
+      C.dish = textPlane(mm ? RECIPES[mm.r].em : '🍽️', '#000', 'rgba(0,0,0,0)', .7, .7, 80); C.dish.position.set(REST_X + tb[0] + (C.seat % 2 ? .35 : -.35), 1.5, tb[1]); W.restCustG.add(C.dish); }
+    if (C.ph === 'eat') { if (u.armR) u.armR.rotation.z = -1.2 + Math.sin(t * 8) * .3; if (C.wait <= 0) { const avg = restAvg(R) || 3.5, s = Math.max(1, Math.min(5, Math.round(avg + (Math.random() - .5) * 1.6 - (CUST[C.ck].ex - 2.4) * .3)));
+      fx3(C.m.position.x, 2.6, C.m.position.z, '⭐'.repeat(s), '#ffb300'); if (C.dish) W.restCustG.remove(C.dish); C.ph = 'out'; C.x = C.m.position.x; C.z = C.m.position.z; C.m.position.y = .2; if (u.armR) u.armR.rotation.z = 0;
+      C.path = [[C.x, -1.2], [REST_X + (C.x < REST_X ? -1 : 1), 2.5], [REST_X + (C.x < REST_X ? -16 : 16), 4]]; } }
+  }
+}
+
 /* ================= 🏤 開心郵局（大家共用）：寫信給好友、寄倉庫的東西，郵差送到好友農場 ================= */
 const POST_X = -150, POST_T = new THREE.Vector3(POST_X, 0, -1), POST_STAMP = 20, POST_PARCEL = 10, MAILBOX_XZ = [-10.2, 8.7];
 const PAPERS = {plain:{n:'白色信紙', em:'📄', c:'#fffdf5', b:'#d7ccc8', p:0}, flower:{n:'花朵信紙', em:'🌸', c:'#fce4ec', b:'#f48fb1', p:30}, star:{n:'星空信紙', em:'⭐', c:'#e8eaf6', b:'#7986cb', p:30},
@@ -5370,7 +5630,7 @@ async function qianDraw(h) {
   if (lv <= 1) { Music.sfx('coin'); Music.sparkle(); } else if (lv >= 3) Music.sfx('bad'); renderAll();
 }
 // 點地面走過去
-const WALK_BOX = {farm:[-12, 12], ranch:[-12, 12], fish:[-12, 12], factory:[-12, 12], town:[-11, 11], green:[-8, 8], temple:[-10, 10], stable:[-13, 13], dock:[-15, 15], market:[-12, 12], museum:[-13, 13], post:[-12, 12], harbor:[-12, 12]};
+const WALK_BOX = {farm:[-12, 12], ranch:[-12, 12], fish:[-12, 12], factory:[-12, 12], town:[-11, 11], green:[-8, 8], temple:[-10, 10], stable:[-13, 13], dock:[-15, 15], market:[-12, 12], museum:[-13, 13], post:[-12, 12], harbor:[-12, 12], rest:[-8, 8]};
 function walkTap(cx, cy) {
   if (!W.scene || W.race || S.decoMode || !S.my) return;
   const r = W.renderer.domElement.getBoundingClientRect(); W.ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1); W.ray.setFromCamera(W.ndc, W.camera);
@@ -5552,7 +5812,7 @@ const isMobileDev = () => matchMedia('(pointer:coarse)').matches || innerWidth <
 const perfMode = () => { try { const v = localStorage.hf_perf; if (['save', 'std', 'high'].includes(v)) return v; } catch {} return 'std'; };
 const PERF_N = {save:'🔋 省電', std:'⚖️ 標準', high:'✨ 高畫質'};
 function mergeStatic(S3) {
-  const keep = new Set([W.houseG, W.aqHit, W.mkHit, W.musRoot, W.hbKeepG, W.hbSea, ...(W.tripKeep || []), W.dockWater, W.dockSpkG, W.stableG, W.sky, W.sunBall, W.blades, W.trough, W.animalsG, W.petsG, W.peopleG, W.hoverRing, W.farmSign, W.ranchSign, W.fishSign, W.facSign, W.festSign, W.festG, W.stars, W.moon, W.rain, W.snow, W.pond,
+  const keep = new Set([W.houseG, W.aqHit, W.mkHit, W.musRoot, W.hbKeepG, W.hbSea, W.restDecoG, W.restCustG, ...(W.tripKeep || []), W.dockWater, W.dockSpkG, W.stableG, W.sky, W.sunBall, W.blades, W.trough, W.animalsG, W.petsG, W.peopleG, W.hoverRing, W.farmSign, W.ranchSign, W.fishSign, W.facSign, W.festSign, W.festG, W.stars, W.moon, W.rain, W.snow, W.pond,
     ...W.ripples, ...W.ponds.map(p => p.g), ...W.plots.map(p => p.g), ...W.poops, ...W.birds.map(b => b.b), ...W.clouds, ...W.flies.map(f => f.b), ...W.machs.map(m => m.g), ...W.ffly.map(f => f.m), ...(W.hens || []).map(h => h.m)].filter(Boolean));
   S3.updateMatrixWorld(true);
   const list = [];
@@ -5692,7 +5952,7 @@ function buildWorld() {
   // 窗戶晚上會亮
   W.winMat = new THREE.MeshLambertMaterial({color:'#bbdefb', emissive:'#000000'});
   const glass = mat('#bbdefb'); S3.traverse(o => { if (o.isMesh && o.material === glass) o.material = W.winMat; });
-  buildScenery(S3); buildFactory(S3); buildTown(S3); buildGreen(S3); buildTemple(S3); buildStable(S3); buildDock(S3); buildAquarium(S3); buildMarket(S3); buildMuseum(S3); buildPost(S3); buildTrips(S3); buildHarbor(S3); buildEnv(S3);
+  buildScenery(S3); buildFactory(S3); buildTown(S3); buildGreen(S3); buildTemple(S3); buildStable(S3); buildDock(S3); buildAquarium(S3); buildMarket(S3); buildMuseum(S3); buildPost(S3); buildTrips(S3); buildHarbor(S3); buildRest(S3); buildEnv(S3);
   mergeStatic(S3); prepSeason(S3); buildWalkers(S3); buildMuseumPeople(S3); buildHome(S3);
   W.vilG = new THREE.Group(); W.decoG = new THREE.Group(); W.greenG = new THREE.Group(); W.templeG = new THREE.Group(); S3.add(W.vilG, W.decoG, W.greenG, W.templeG);
   W.stallG = stallModel(); W.stallGoods = new THREE.Group(); W.stallG.add(W.stallGoods); W.stallG.position.set(TOWN_T.x - 3.4, 0, -.6); W.stallG.traverse(o => o.userData.hit = {type:'stall'}); S3.add(W.stallG);
@@ -5734,7 +5994,7 @@ function setCam(scene, instant) {
   if (instant || off.length() < 1) { off.set(0, portrait ? 24 : 12, portrait ? 28 : 16.2); }
   W.camAnim = {from:W.controls.target.clone(), to:tgt.clone(), t0:performance.now(), dur:instant ? 0 : 900, off};
   // 旅遊景點：鏡頭放低一點，看得到遠方的地標；離開時恢復
-  if (!instant && (TRIPS[scene] || scene === 'harbor' || W.camTrip)) { Object.assign(W.camAnim, {off0:off.clone(), off1:TRIPS[scene] || scene === 'harbor' ? new THREE.Vector3(0, portrait ? 15 : 8.5, portrait ? 31 : 19) : new THREE.Vector3(0, portrait ? 24 : 12, portrait ? 28 : 16.2)}); W.camTrip = !!TRIPS[scene] || scene === 'harbor'; }
+  if (!instant && (TRIPS[scene] || scene === 'harbor' || scene === 'rest' || W.camTrip)) { Object.assign(W.camAnim, {off0:off.clone(), off1:scene === 'rest' ? new THREE.Vector3(0, portrait ? 15 : 9.5, portrait ? 19 : 13) : TRIPS[scene] || scene === 'harbor' ? new THREE.Vector3(0, portrait ? 15 : 8.5, portrait ? 31 : 19) : new THREE.Vector3(0, portrait ? 24 : 12, portrait ? 28 : 16.2)}); W.camTrip = !!TRIPS[scene] || scene === 'harbor' || scene === 'rest'; }
   if (instant) { W.controls.target.copy(tgt); W.camera.position.copy(tgt).add(off); W.controls.update(); W.camAnim = null; }
 }
 function pick(cx, cy) {
@@ -6063,7 +6323,7 @@ function loop() {
     if (waving) { const T2 = P.waveTo && W.people.find(q => q.uid === P.waveTo); if (T2) { const a2 = Math.atan2(-(T2.m.position.z - P.m.position.z), T2.m.position.x - P.m.position.x), ac = -Math.PI / 2; let dd = a2 - ac; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y = ac + dd * .6; } else P.m.rotation.y = -Math.PI / 2; if (u.head) u.head.rotation.z = Math.sin(t * 5) * .15; if (wa < 1400) P.m.position.y = Math.abs(Math.sin(wa / 1400 * Math.PI * 2)) * .45; const pop = wa < 300 ? wa / 300 : wa > 3400 ? (3800 - wa) / 400 : 1; P.m.scale.setScalar(1.25 * (1 + .22 * pop)); if (!P.hiFx || now() - P.hiFx > 1300) { P.hiFx = now(); fx3(P.m.position.x, 3.3, P.m.position.z, rnd(['👋', '👋✨', '💕']), '#e91e63'); } }
     else if (P.m.scale.x !== 1.25) P.m.scale.setScalar(1.25);
   }
-  fishTick(t, dt); mkTick(t, dt); musTick(t, dt); postTick(t, dt); tripTick(t, dt); harborTick(t, dt); walkTick(t, dt); helperTick(t, dt); homeTick(t);
+  fishTick(t, dt); mkTick(t, dt); musTick(t, dt); postTick(t, dt); tripTick(t, dt); harborTick(t, dt); restTick(t, dt); walkTick(t, dt); helperTick(t, dt); homeTick(t);
   { const py = S.scene === 'home' ? HOME_T.y : S.scene === 'museum' ? musY() : 0; for (const P of W.people || []) P.m.position.y = py; if (S.scene === 'home') { W.rain.visible = W.snow.visible = false; if (W.bub) W.bub.visible = false; } }
   if (W.hoverRing.visible) W.hoverRing.material.opacity = .55 + Math.sin(t * 6) * .3;
   W.renderer.render(W.scene, W.camera);
@@ -6215,6 +6475,7 @@ function renderTools() {
   else if (S.scene === 'home') { const hl = homeLv(S.view || S.my), flT = hl ? [['homeFloor','🪜', HFL_N[homeFl()].split(' ')[0] + '↕', 1]] : [];
     T = own ? (S.homeEdit ? [['homeDone','✅','完成', 1], ['homeDeco','🛋️','家具', 1], ...flT] : [['hand','✋','走走'], ...flT, ['homeDeco','🛋️','裝潢', 1], ['homeArrange','🔧','擺設', 1], ['homeUp', MANSION[Math.min(3, hl + 1)].em, hl >= 3 ? '城堡' : '升級', 1], ['trophies','🏆','獎盃櫃', 1], ['leaveHome','🚪','出門', 1]]) : [['hand','✋','參觀'], ...flT, ['trophies','🏆','獎盃櫃', 1], ['leaveHome','🚪','出門', 1]]; }
   else if (S.scene === 'market') T = [['hand','✋','逛逛'], ['mkGames','🎮','攤位遊戲', 1], ['mkShop','🎁','換獎品', 1], ['mkRank','🏆','夜市高手', 1], ['leaveP','🏠','回農場', 1]];
+  else if (S.scene === 'rest') T = isOwn() ? [['hand','✋','走走'], ['rest','🍜','餐廳'], ['restMenu','📋','菜單', 1], ['restDecoM','🎨','裝潢', 1], ['restChef','👨‍🍳','廚師', 1], ['restCash','💰', restOf(S.my)?.cash ? `收錢 ${restOf(S.my).cash}` : '收銀', 1], ['restRev','⭐','評價', 1], ['restRank','🏆','好友餐廳', 1]] : [['hand','✋','走走'], ['restRev','⭐','評價', 1], ['restRank','🏆','好友餐廳', 1]];
   else if (S.scene === 'harbor') T = [['hand','✋','走走'], ['boat','🚢', boatState(boatOf(S.my)) === 'back' ? '卸貨！' : '我的漁船', 1], ['offo','📋','外海訂單', 1], ['leaveP','🏠','回農場', 1]];
   else if (TRIPS[S.scene]) T = [['hand','✋','走走'], ['tripSeed','🌱','當地種子', 1], ['tripSouv','🎁','紀念品', 1], ['tripCard','🖼️','明信片', 1], ['tripBook','📔','手冊', 1], ['leaveP','🏠','回家', 1]];
   else if (S.scene === 'post') T = [['hand','✋','走走'], ['postWrite','✉️','寫信', 1], ['mailbox','📬', `信箱${S.gifts.filter(isMail).length ? '×' + S.gifts.filter(isMail).length : ''}`, 1], ['leaveP','🏠','回農場', 1]];
@@ -6245,7 +6506,7 @@ function renderScene() {
   if (f) {
     BUD = performance.now() + 10; BUILT = 0; W.syncPending = false;
     const order = {farm:[syncField, syncDeco, syncPets, syncRanch, syncFish, syncFactory, syncTown], ranch:[syncRanch, syncPets, syncField, syncDeco, syncFish, syncFactory, syncTown], fish:[syncFish, syncPets, syncField, syncDeco, syncRanch, syncFactory, syncTown], factory:[syncFactory, syncPets, syncField, syncDeco, syncRanch, syncFish, syncTown], green:[syncGreen, syncPets, syncField, syncDeco, syncRanch, syncFish, syncFactory, syncTown], town:[syncTown, syncStall, syncPets, syncField, syncDeco, syncRanch, syncFish, syncFactory]}[S.scene] || [syncField, syncDeco, syncRanch, syncFish, syncPets, syncFactory, syncTown];
-    for (const fn of order) fn(f, own); if (S.scene !== 'green') syncGreen(f, own); syncTemple(f, own); syncStable(f, own); syncAquarium(f, own); syncWalkers(); syncHelper(f); syncHouse(f); syncMailbox(f, own); syncHarbor(); syncHome(f); syncFest(); syncMuseum();
+    for (const fn of order) fn(f, own); if (S.scene !== 'green') syncGreen(f, own); syncTemple(f, own); syncStable(f, own); syncAquarium(f, own); syncWalkers(); syncHelper(f); syncHouse(f); syncMailbox(f, own); syncHarbor(); syncRest(); syncHome(f); syncFest(); syncMuseum();
     { const T = templeView(f); setSign(W.templeSign, `${dn(f)}的廟宇`, T.lv >= HALLS.length ? '三座殿都蓋好了 🙏' : `${HALLS[T.lv].n} 建造中 ${Math.floor(tpProg(T) * 100)}%`); }
     if (S.place === 'market') setSign(W.mkSign, '🏮 歡樂夜市', `${marketOpen() ? '營業中～12 點收攤' : '收攤囉'} · 現在 ${hereList().length} 人`);
     if (S.place === 'post') setSign(W.postSign, '🏤 開心郵局', `寫信、寄東西給好友 · 現在 ${hereList().length} 人`);
@@ -7044,7 +7305,7 @@ function renderWx() {
   const el = $('#wx'); if (!el || !S.my) return;
   const d = twNow(), hh = String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0');
   const wx = weather(), [ic, nm] = WX_N[wx], night = isNight();
-  const SN = {farm:'農場', ranch:'牧場', stable:'馬場', fish:'魚塭', factory:'工廠', green:'溫室', town:'小鎮', temple:'廟宇', home:'農舍'}[S.scene], own = isOwn(), who = own ? myName() : dn(S.view || {});
+  const SN = {farm:'農場', ranch:'牧場', stable:'馬場', fish:'魚塭', factory:'工廠', green:'溫室', town:'小鎮', temple:'廟宇', home:'農舍', rest:'餐廳'}[S.scene], own = isOwn(), who = own ? myName() : dn(S.view || {});
   const SE = SEASONS[seasonNow()]; let html = (SN && !S.place ? `<button class="own" ${own ? 'data-act="profile"' : ''}>${own ? '🏡' : '👀'} ${esc(who)}的${SN}</button>` : '') + (TRIPS[S.place] ? `<button class="own" data-act="tripBook">✈️ ${TRIPS[S.place].n}</button>` : '') + `<button data-act="wxInfo">${SE.em}${night ? '🌙' : ic} ${night ? '夜晚' : nm}${night && wx === 'rain' ? '🌧️' : ''} ${hh}</button>`;
   for (const o of activeFests()) html += `<button class="fest" data-act="fest">${o.F.em} ${esc(o.F.n)}</button>`;
   { const q = qianToday(S.my); if (q) html += `<button class="fest" data-act="qianShow" style="color:${QIAN_LV[q.lv].c}">🏮 ${QIAN_LV[q.lv].n}</button>`; }
@@ -7939,7 +8200,7 @@ const ACT = {
   async hRename(d) { const v = ($('#hnm')?.value || '').trim(); if (!v || [...v].length > 8) return toast('名字要 1～8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { const h = horseOf(f).list.find(x => x.id === +d.id); if (!h) return ab('找不到這匹馬'); h.n = v; return {}; }, () => { toast(`🐎 改名成「${v}」了！`); Music.sfx('pop'); }); },
   async petRename(d) { const v = ($('#pnm_' + d.k)?.value || '').trim(); if ([...v].length > 8) return toast('名字最多 8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { if (!f.pets.includes(d.k)) return ab('沒有這隻寵物'); const x = px(f, d.k); if (v) x.nm = v; else delete x.nm; return {}; }, () => { toast(v ? `🐾 ${PETS[d.k].n}改名叫「${v}」了！` : `🐾 改回「${PETS[d.k].n}」`); Music.voice(PETS[d.k].kind); }); },
   hEnter(d) { return run(() => hEnter(+d.id)); },
-  map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, goPost() { goPlace('post'); }, goHarbor() { goPlace('harbor'); }, boat: openBoat, boatBuy() { return run(boatBuy); }, boatUp(d) { return run(() => boatUp(d.k)); }, boatFuel(d) { return run(() => boatFuel(d.n)); }, boatGo(d) { return run(() => boatGo(d.k)); }, boatUnload() { return run(boatUnload); }, offo: openOffo, offoGive(d) { return run(() => offoGive(+d.i)); }, trip: openTrip, tripGo(d) { return run(() => tripGo(d.k)); }, tripSeed: openTripSeeds, tripSeedBuy(d) { return run(() => tripSeedBuy(d.id, +d.n)); }, tripSouv: openTripSouv, tripSouvBuy(d) { return run(() => tripSouvBuy(d.id)); }, tripCard() { openTripCard(); }, cardSel(d) { S.cardDraft = $('#pcMsg')?.value || S.cardDraft; S.cardTo = $('#pcTo')?.value || S.cardTo; S.cardSel = d.id; rerenderModal(); }, cardSend() { return run(cardSend); }, tripBook: openTripBook, postWrite() { openPostWrite(); }, postReply(d) { openPostWrite(d.uid); }, postPaper(d) { S.postDraft = $('#pwMsg')?.value || S.postDraft; S.postTo = $('#pwTo')?.value || S.postTo; S.postPaper = d.k; rerenderModal(); }, postSend() { return run(postSend); }, mailbox: openMailbox, readMail(d) { return run(() => readMail(d.id)); }, oldMail(d) { openOldMail(+d.i); }, goMuseum(d) { S.musF = +(d?.f || 0); SCENE_T.museum.y = musY(); goPlace('museum'); refreshFriends(); }, musF(d) { closeModal(); musGo(+d.f); }, musF0() { musGo(0); }, musF1() { musGo(1); }, musF2() { musGo(2); }, musF3() { musGo(3); }, musList() { openMuseum(); }, leaveP() { ACT.scene({s:'farm'}); },
+  map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, goPost() { goPlace('post'); }, goHarbor() { goPlace('harbor'); }, rest: openRest, restBuy() { return run(restBuy); }, restUp() { return run(restUp); }, restDeco(d) { return run(() => restDeco(d.c, d.id)); }, restDecoM: openRestDeco, restMenu: openRestMenu, restPick(d) { S.restPick = +d.i; rerenderModal(); }, restPickX() { S.restPick = null; rerenderModal(); }, restSet(d) { return run(() => restMenuSet(+d.i, d.r)); }, restCook(d) { return run(() => restCook(+d.i, +d.k, !!d.buy)); }, restPrice(d) { return run(() => restPrice(+d.i, +d.p)); }, restChef: openRestChef, restHire(d) { return run(() => restHire(d.k, +d.d)); }, restCash() { return run(restCash); }, restRev() { openRestRev(S.viewUid || S.uid); }, restRevOf(d) { openRestRev(d.uid); }, restRank: openRestRank, restVisit(d) { restVisit(d.uid); }, boat: openBoat, boatBuy() { return run(boatBuy); }, boatUp(d) { return run(() => boatUp(d.k)); }, boatFuel(d) { return run(() => boatFuel(d.n)); }, boatGo(d) { return run(() => boatGo(d.k)); }, boatUnload() { return run(boatUnload); }, offo: openOffo, offoGive(d) { return run(() => offoGive(+d.i)); }, trip: openTrip, tripGo(d) { return run(() => tripGo(d.k)); }, tripSeed: openTripSeeds, tripSeedBuy(d) { return run(() => tripSeedBuy(d.id, +d.n)); }, tripSouv: openTripSouv, tripSouvBuy(d) { return run(() => tripSouvBuy(d.id)); }, tripCard() { openTripCard(); }, cardSel(d) { S.cardDraft = $('#pcMsg')?.value || S.cardDraft; S.cardTo = $('#pcTo')?.value || S.cardTo; S.cardSel = d.id; rerenderModal(); }, cardSend() { return run(cardSend); }, tripBook: openTripBook, postWrite() { openPostWrite(); }, postReply(d) { openPostWrite(d.uid); }, postPaper(d) { S.postDraft = $('#pwMsg')?.value || S.postDraft; S.postTo = $('#pwTo')?.value || S.postTo; S.postPaper = d.k; rerenderModal(); }, postSend() { return run(postSend); }, mailbox: openMailbox, readMail(d) { return run(() => readMail(d.id)); }, oldMail(d) { openOldMail(+d.i); }, goMuseum(d) { S.musF = +(d?.f || 0); SCENE_T.museum.y = musY(); goPlace('museum'); refreshFriends(); }, musF(d) { closeModal(); musGo(+d.f); }, musF0() { musGo(0); }, musF1() { musGo(1); }, musF2() { musGo(2); }, musF3() { musGo(3); }, musList() { openMuseum(); }, leaveP() { ACT.scene({s:'farm'}); },
   fishGo: fishStart, fishCast, fishHook, fishQuit() { fishStop(); renderTools(); }, fishKeep(d) { return run(() => fishKeep(d.m)); }, aqShow: openAquarium, aqSell(d) { return run(() => aqSell(+d.i)); }, fishDex: openFishDex, fishCup: openFishCup,
   fcEnter(d) { return run(() => fcEnter(+d.i)); },
   petShow() { S.psv = null; openPetShow(); }, petDress(d) { openPetDress(d.k); }, paccBuy(d) { return run(() => paccBuy(d.k, d.id)); }, paccOn(d) { return run(() => paccOn(d.k, d.id)); }, paccOff(d) { return run(() => paccOff(d.k, d.s)); }, petBath(d) { return run(() => petBath(d.k)); },
