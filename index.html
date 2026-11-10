@@ -1108,13 +1108,14 @@ function buildHarbor(S3) {
   G.add(grp(M(gTap(), '#fafafa', [1.1, 6, 1.1], [0, 3.8, 0]), blk('#c62828', [1.2, .6, 1.2], [0, 2.6, 0]), blk('#c62828', [1, .6, 1], [0, 5, 0]), rod('#ffe082', [.7, .8, .7], [0, 7.2, 0]), cone('#c62828', [.9, .7, .9], [0, 8, 0])).translateX(41).translateZ(-24));
   // 加油站、外海訂單魚市場
   const fs = grp(blk('#fafafa', [4, 2.6, 3], [0, 1.3, 0]), blk('#ffb300', [4.6, .4, 3.6], [0, 2.8, 0]), rod('#ffb300', [.15, 2.6, .15], [3, 1.3, .8]), blk('#e53935', [.8, 1.4, .6], [3, .7, -.4]), blk('#212121', [.5, .3, .05], [3, 1.1, -.08]), rod('#424242', [.05, 1, .05], [3.4, 1, -.4], [0, 0, .6]));
-  fs.position.set(13, 0, 1); fs.traverse(o => o.userData.hit = {type:'hbBoat'}); G.add(fs); const ft = textPlane('⛽ 加油・漁船', '#ffffff', '#ef6c00', 3.6, .7, 90); ft.position.set(13, 3.6, 2.85); G.add(ft);
+  fs.position.set(17, 0, -1.5); fs.traverse(o => o.userData.hit = {type:'hbBoat'}); G.add(fs); const ft = textPlane('⛽ 加油・漁船', '#ffffff', '#ef6c00', 3, .6, 90); ft.position.set(17, 2.8, .35); G.add(ft);
   const mk = grp(blk('#e3f2fd', [6, 3, 4], [0, 1.5, 0]), ...gableRoof(6, 4, 3, .4, '#1565c0', '#e3f2fd', {t:.2}), blk('#5d4037', [1.6, 2, .08], [0, 1, 2.02]), ...[0, 1, 2].map(i => blk('#90caf9', [1.2, .4, .9], [-2 + i * 2, .2, 3])), ...[0, 1, 2].map(i => ball(['#ef5350', '#90a4ae', '#ffb74d'][i], [.35, .12, .15], [-2 + i * 2, .48, 3])));
-  mk.position.set(-13, 0, 0); mk.traverse(o => o.userData.hit = {type:'hbOrder'}); G.add(mk); const mt = textPlane('📋 外海訂單', '#ffffff', '#1565c0', 3.6, .7, 90); mt.position.set(-13, 4.8, 2.3); G.add(mt);
+  mk.position.set(-17, 0, -2.5); mk.traverse(o => o.userData.hit = {type:'hbOrder'}); G.add(mk); const mt = textPlane('📋 外海訂單', '#ffffff', '#1565c0', 2.8, .55, 90); mt.position.set(-17, 2.45, -.43); G.add(mt);
   for (let i = 0; i < 8; i++) G.add(blk(['#8d6e63', '#a1887f', '#1565c0'][i % 3], [.9, .7, .7], [-6 + (i % 4) * 1, .35 + Math.floor(i / 4) * .7, -5.4]));
   for (const [x, z] of [[5, -5.4], [6.2, -5.3]]) G.add(rod('#1565c0', [.4, 1, .4], [x, .5, z]));
   G.add(grp(...Array.from({length:6}, (_, i) => rod('#795548', [.04, 2, .04], [i * .6, 1, 0])), blk('#455a64', [3, 1.4, .03], [1.5, 1.2, 0])).translateX(-6).translateZ(6));
-  const sg = textPlane('⚓ 開心漁港', '#ffffff', '#0d47a1', 4.4, .9, 110); sg.position.set(-19, 3.6, -5.9); G.add(sg); G.add(rod('#6d4c41', [.12, 3.6, .12], [-21.1, 1.8, -6]), rod('#6d4c41', [.12, 3.6, .12], [-16.9, 1.8, -6]));
+  // 漁港大招牌立在防波堤上，在最上面、不會被房子擋住
+  const sg = textPlane('⚓ 開心漁港', '#ffffff', '#0d47a1', 8, 1.5, 110); sg.position.set(0, 3.9, -24); G.add(sg); G.add(rod('#eceff1', [.15, 3.8, .15], [-3.8, 1.9, -24.15]), rod('#eceff1', [.15, 3.8, .15], [3.8, 1.9, -24.15]), blk('#90a4ae', [10, 1, 2], [0, -.1, -24.3]));
   S3.add(G); W.hbG = G; W.hbBoats = new Map(); W.hbKeepG = new THREE.Group(); S3.add(W.hbKeepG);
   W.hbGulls = []; for (let i = 0; i < 5; i++) { const g = grp(blk('#fafafa', [.5, .14, .2], [0, 0, 0]), blk('#eceff1', [.12, .04, 1.2], [0, .05, 0], [0, 0, .25]), blk('#ffb300', [.12, .05, .05], [.3, 0, 0])); W.hbKeepG.add(g); W.hbGulls.push(g); }
   W.hbNpc = []; for (const [id, x, z, ry] of [['hai', -4, -7.4, Math.PI / 2], ['zhang', 8, -7.6, Math.PI], ['de', -9, 3.6, 0]]) { const m = vilModel(id); m.position.set(X + x, .3 * (z < -6), z); m.rotation.y = ry; W.hbKeepG.add(m); W.hbNpc.push({m, ph:x}); }
@@ -2801,7 +2802,7 @@ const itemIcon = id => icon(CROPS[id] ? 'crop' : SEA[id] ? 'sea' : PROC[id] ? 'p
 const W = {};
 const FARM_T = new THREE.Vector3(0, 0, .8), RANCH_T = new THREE.Vector3(24, 0, .8), FISH_T = new THREE.Vector3(-30, 0, .8), TOWN_T = new THREE.Vector3(76, 0, .8), GREEN_T = new THREE.Vector3(-52, 0, .8), TEMPLE_T = new THREE.Vector3(101, 0, -.6), STABLE_T = new THREE.Vector3(-80, 0, -1.2);
 const DOCK_T = new THREE.Vector3(-114, 0, -3.6); const HOME_T = new THREE.Vector3(0, -60, 0);
-const SCENE_T = {home:HOME_T, rest:new THREE.Vector3(-470, 0, -4.5), harbor:new THREE.Vector3(-300, 0, -6), post:new THREE.Vector3(-150, 0, -1), museum:new THREE.Vector3(160, 0, -1), market:new THREE.Vector3(128, 0, -.4), dock:DOCK_T, farm:FARM_T, ranch:RANCH_T, fish:FISH_T, factory:new THREE.Vector3(50, 0, .8), town:TOWN_T, green:GREEN_T, temple:TEMPLE_T, stable:STABLE_T};
+const SCENE_T = {home:HOME_T, rest:new THREE.Vector3(-470, 1.2, -6), harbor:new THREE.Vector3(-300, 0, -13), post:new THREE.Vector3(-150, 0, -1), museum:new THREE.Vector3(160, 0, -1), market:new THREE.Vector3(128, 0, -.4), dock:DOCK_T, farm:FARM_T, ranch:RANCH_T, fish:FISH_T, factory:new THREE.Vector3(50, 0, .8), town:TOWN_T, green:GREEN_T, temple:TEMPLE_T, stable:STABLE_T};
 const pondXZ = i => { const r = Math.floor(i / 4), c = i % 4; return [-30 + (c - 1.5) * 4.3, (r - 1) * 4 + .4]; };
 const plotXZ = i => { const r = Math.floor(i / 7), c = i % 7; return [(c - 3) * 2.6, (r - 1) * 2.75 - .3]; };
 const aniHome = i => { const r = Math.floor(i / 4), c = i % 4; return [24 + (c - 1.5) * 3.5, .3 + (r - 1.5) * 2.7]; };
@@ -2823,12 +2824,13 @@ function mkTree(x, z, s, kind) {
   t.position.set(x, 0, z); t.scale.setScalar(s); t.rotation.y = kind; return t;
 }
 function signTexture(title, sub) {
-  const c = document.createElement('canvas'); c.width = 512; c.height = 200; const x = c.getContext('2d');
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 400; const x = c.getContext('2d'); x.scale(2, 2);
   x.fillStyle = '#a0703f'; x.beginPath(); x.roundRect(6, 6, 500, 188, 28); x.fill(); x.lineWidth = 10; x.strokeStyle = '#6b3f1d'; x.stroke();
   x.strokeStyle = 'rgba(0,0,0,.08)'; x.lineWidth = 3; for (let y = 40; y < 190; y += 34) { x.beginPath(); x.moveTo(20, y); x.lineTo(492, y); x.stroke(); }
-  x.textAlign = 'center'; x.fillStyle = '#fff8e1'; x.font = '900 64px "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif'; x.fillText(title.slice(0, 9), 256, 98);
-  x.fillStyle = '#ffe082'; x.font = '700 38px "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif'; x.fillText(sub, 256, 158);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
+  // 字太長就自動縮小，不會超出木板
+  const fit = (txt, px, wt, y, col, maxW = 452) => { const F = s2 => `${wt} ${s2}px "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif`; let s2 = px; x.font = F(s2); while (s2 > 16 && x.measureText(txt).width > maxW) { s2 -= 2; x.font = F(s2); } x.fillStyle = col; x.fillText(txt, 256, y); };
+  x.textAlign = 'center'; x.textBaseline = 'alphabetic'; fit(title, 62, 900, 96, '#fff8e1'); fit(sub, 36, 700, 156, '#ffe082');
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
 }
 // 人字形屋頂：兩片屋頂往外側向下斜，中間是屋脊，兩端補上山牆三角形
 function gableRoof(w, d, H, a, col, wallCol, o = {}) {
@@ -2841,8 +2843,8 @@ function gableRoof(w, d, H, a, col, wallCol, o = {}) {
 }
 function tri(c, pts) { const sh = new THREE.Shape(); sh.moveTo(pts[0][0], pts[0][1]); pts.slice(1).forEach(p => sh.lineTo(p[0], p[1])); const m = new THREE.Mesh(geoOf('tri' + JSON.stringify(pts), () => new THREE.ShapeGeometry(sh)), new THREE.MeshLambertMaterial({color:c, side:THREE.DoubleSide, flatShading:true})); m.castShadow = m.receiveShadow = true; return m; }
 function makeSign(x, z) {
-  const g = grp(blk('#6b3f1d', [.16, 2.2, .16], [-1.6, 1.1, 0]), blk('#6b3f1d', [.16, 2.2, .16], [1.6, 1.1, 0]), blk('#8d5a2b', [3.6, 1.45, .12], [0, 1.85, -.02]));
-  const face = new THREE.Mesh(new THREE.PlaneGeometry(3.5, 1.37), new THREE.MeshBasicMaterial({map:signTexture('', ''), transparent:true})); face.position.set(0, 1.85, .05); g.add(face);
+  const g = grp(blk('#6b3f1d', [.16, 2.2, .16], [-1.55, 1.1, -.2]), blk('#6b3f1d', [.16, 2.2, .16], [1.55, 1.1, -.2]), blk('#8d5a2b', [3.6, 1.45, .12], [0, 1.85, -.08]));   // 柱子在木板後面，不會擋到字
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(3.5, 1.37), new THREE.MeshBasicMaterial({map:signTexture('', ''), transparent:true})); face.position.set(0, 1.85, .02); g.add(face);
   g.position.set(x, 0, z); g.userData.face = face; g.userData.txt = ''; return g;
 }
 function setSign(g, title, sub) { const k = title + '|' + sub; if (g.userData.txt === k) return; g.userData.txt = k; const m = g.userData.face.material; m.map?.dispose(); m.map = signTexture(title, sub); m.needsUpdate = true; }
@@ -4442,7 +4444,7 @@ function restDecoBuild(f) {
   const G = W.restDecoG; while (G.children.length) G.remove(G.children[0]); const R = restOf(f);
   if (!R) { const t = textPlane('🍜 空店面・招租中', '#5d4037', '#fff8e1', 5, .9, 100); t.position.set(0, 2.5, -6); G.add(t, blk('#bcaaa4', [16, 5, .3], [0, 2.5, -11.6]), blk('#d7ccc8', [16, .2, 11], [0, .1, -6])); W.restChef = null; W.restSeats = []; return; }
   const d = R.deco, c = id => RD[d[id]]?.[2], Lv = R.lv || 0;
-  G.add(blk(c('floor'), [16.4, .2, 11.4], [0, .1, -6]), blk(c('wall'), [16.4, 5.4, .3], [0, 2.7, -11.8]), blk(c('wall'), [.3, 5.4, 11.4], [-8.2, 2.7, -6]), blk(c('wall'), [.3, 5.4, 11.4], [8.2, 2.7, -6]), blk('#5d4037', [16.8, .3, .4], [0, 5.5, -11.8]));
+  G.add(blk(c('floor'), [16.4, .2, 11.4], [0, .1, -6]), blk(c('wall'), [16.4, 5.6, .3], [0, 2.8, -11.8]), blk(c('wall'), [.3, 5.4, 11.4], [-8.2, 2.7, -6]), blk(c('wall'), [.3, 5.4, 11.4], [8.2, 2.7, -6]), blk('#5d4037', [16.8, .3, .4], [0, 5.7, -11.8]));
   if (d.floor === 'f2') for (let i = 0; i < 24; i++) G.add(blk(i % 2 ? '#e0f2f1' : '#4db6ac', [1.3, .02, 1.3], [-7.4 + (i % 8) * 2, .21, -10.8 + Math.floor(i / 8) * 3.6]));
   if (d.floor === 'f5') G.add(blk('#ffd54f', [3, .03, 11], [0, .21, -6]));
   if (d.wall === 'w2') for (let r = 0; r < 8; r++) G.add(blk('#7f3020', [16.3, .05, .02], [0, .5 + r * .65, -11.64]));
@@ -4454,8 +4456,8 @@ function restDecoBuild(f) {
   const ct = textPlane(ch ? `${ch.em} ${ch.n}` : '🚫 沒有廚師', '#ffffff', ch ? '#2e7d32' : '#757575', 2.8, .5, 90); ct.position.set(-4.5, 3.4, -10.6); G.add(ct);
   // 招牌
   const sg = d.sign, sgC = {s0:['#5d4037', '#fff8e1'], s1:['#ffffff', '#4a148c'], s2:['#fff3e0', '#6d4c41'], s3:['#ffd54f', '#b71c1c']}[sg] || ['#5d4037', '#fff8e1'];
-  const st = textPlane(`${dn(f)}的餐廳`, sgC[0], sgC[1], 8.4, 1.1, 110); st.position.set(2.4, 4.5, -11.55); G.add(st);
-  if (sg === 's1') G.add(blk('#e040fb', [8.7, .08, .06], [2.4, 5.1, -11.5]), blk('#e040fb', [8.7, .08, .06], [2.4, 3.9, -11.5]));
+  const st = textPlane(`${dn(f)}的餐廳`, sgC[0], sgC[1], 9, 1.15, 110); st.position.set(0, 4.45, -11.55); G.add(st);
+  if (sg === 's1') G.add(blk('#e040fb', [9.3, .08, .06], [0, 5.08, -11.5]), blk('#e040fb', [9.3, .08, .06], [0, 3.82, -11.5]));
   // 桌椅
   const T = d.table, tc = c('table'); W.restSeats = [];
   REST_TABLES.slice(0, REST_LV[Lv].seats).forEach(([x, z]) => {
@@ -4469,11 +4471,11 @@ function restDecoBuild(f) {
     g.position.set(x, .2, z); G.add(g); const sy = T === 't3' ? .2 : .45; W.restSeats.push([x - (T === 't3' ? 1.4 : 1.2), z, sy, 0], [x + (T === 't3' ? 1.4 : 1.2), z, sy, Math.PI]);
   });
   // 燈
-  const lc = c('light'); for (const x of [-5, 0, 5]) { const L2 = d.light;
-    if (L2 === 'l1') G.add(rod('#212121', [.02, .8, .02], [x, 4.9, -5.5]), ball('#e53935', [.35, .45, .35], [x, 4.3, -5.5]));
-    else if (L2 === 'l5') G.add(rod('#bdbdbd', [.03, .8, .03], [x, 4.9, -5.5]), ...[0, 1, 2, 3, 4, 5].map(i => ball('#e1f5fe', U(.12), [x + Math.cos(i) * .45, 4.1 + (i % 2) * .15, -5.5 + Math.sin(i) * .45])), cone('#fff9c4', [.5, .5, .5], [x, 4.4, -5.5]));
-    else if (L2 === 'l4') G.add(...Array.from({length:8}, (_, i) => ball(['#ffeb3b', '#ff80ab', '#80d8ff'][i % 3], U(.08), [x - 2 + i * .55, 4.6 - Math.sin(i / 7 * Math.PI) * .5, -8])));
-    else G.add(rod('#212121', [.02, .9, .02], [x, 4.95, -5.5]), L2 === 'l0' ? ball(lc, U(.18), [x, 4.4, -5.5]) : cone(lc, [.5, .4, .5], [x, 4.4, -5.5])); }
+  const lc = c('light'); for (const x of [-5, 0, 5]) { const L2 = d.light, lg = new THREE.Group(); lg.position.y = -1.1; G.add(lg);   // 燈往下掛，不擋住後牆的招牌
+    if (L2 === 'l1') lg.add(rod('#212121', [.02, .8, .02], [x, 4.9, -5.5]), ball('#e53935', [.35, .45, .35], [x, 4.3, -5.5]));
+    else if (L2 === 'l5') lg.add(rod('#bdbdbd', [.03, .8, .03], [x, 4.9, -5.5]), ...[0, 1, 2, 3, 4, 5].map(i => ball('#e1f5fe', U(.12), [x + Math.cos(i) * .45, 4.1 + (i % 2) * .15, -5.5 + Math.sin(i) * .45])), cone('#fff9c4', [.5, .5, .5], [x, 4.4, -5.5]));
+    else if (L2 === 'l4') lg.add(...Array.from({length:8}, (_, i) => ball(['#ffeb3b', '#ff80ab', '#80d8ff'][i % 3], U(.08), [x - 2 + i * .55, 4.6 - Math.sin(i / 7 * Math.PI) * .5, -8])));
+    else lg.add(rod('#212121', [.02, .9, .02], [x, 4.95, -5.5]), L2 === 'l0' ? ball(lc, U(.18), [x, 4.4, -5.5]) : cone(lc, [.5, .4, .5], [x, 4.4, -5.5])); }
   // 植栽
   const pl = d.plant; if (pl !== 'p0') for (const [x, z] of [[-7.4, -1], [7.4, -1], [7.4, -10.8]]) {
     if (pl === 'p4') G.add(...[0, 1, 2].map(i => rod('#7cb342', [.08, 2.6 + i * .3, .08], [x - .2 + i * .2, 1.4, z])), M(gBucket(), '#795548', [.45, .4, .45], [x, .4, z]));
@@ -4490,7 +4492,7 @@ function restDecoBuild(f) {
   if (mu === 'm3') { G.add(blk('#111111', [2, 1, 1.4], [6.4, .9, -9.4]), blk('#fafafa', [1.9, .06, .4], [6.4, 1.03, -8.8]), rod('#111111', [.08, .9, .08], [5.6, .4, -8.9]), rod('#111111', [.08, .9, .08], [7.2, .4, -8.9])); const p = vilModel('li'); p.position.set(6.4, .2, -7.8); p.rotation.y = Math.PI; G.add(p); }
   // 菜單看板（門口）
   const mb = grp(blk('#5d4037', [.1, 1.6, .1], [-.5, .8, 0]), blk('#5d4037', [.1, 1.6, .1], [.5, .8, 0]), blk('#263238', [1.3, 1, .08], [0, 1.4, .05])); mb.position.set(-6.5, 0, .2); mb.rotation.y = .3; G.add(mb);
-  if (Lv >= 1) { const tc2 = ['#e53935', '#43a047', '#1e88e5', '#ffb300', '#8e24aa'][Lv % 5]; G.add(blk(tc2, [.4, .3, 11.6], [-8.2, 5.5, -6]), blk(tc2, [.4, .3, 11.6], [8.2, 5.5, -6]), blk(tc2, [16.8, .3, .45], [0, 5.8, -11.8])); }
+  if (Lv >= 1) { const tc2 = ['#e53935', '#43a047', '#1e88e5', '#ffb300', '#8e24aa'][Lv % 5]; G.add(blk(tc2, [.4, .3, 11.6], [-8.2, 5.5, -6]), blk(tc2, [.4, .3, 11.6], [8.2, 5.5, -6]), blk(tc2, [16.8, .3, .45], [0, 5.95, -11.8])); }
   if (Lv >= 3) for (const x of [-8.4, 8.4]) G.add(rod('#d4af37', [.2, 5.6, .2], [x, 2.8, -.3]));
 }
 function syncRest() {
@@ -4500,7 +4502,7 @@ function syncRest() {
   if (!on) return;
   if (!R) { ov('rsNone', isOwn() ? '🍜 點「開餐廳」開一間自己的餐廳！' : `${esc(dn(f))}還沒開餐廳`, v => v.set(REST_X, 4, -6), 'tag'); return; }
   const avg = restAvg(R);
-  ov('rsInfo', `<b>${REST_LV[R.lv || 0].em} ${esc(dn(f))}的${REST_LV[R.lv || 0].n}</b> ${restOpen(R) ? '🟢營業中' : '⚪休息中'}<br><small><span style="color:#ffb300">${avg ? starStr(avg) + ' ' + avg.toFixed(1) : '還沒有評價'}</span>・今天 ${R.day?.d === twDay() ? R.day.n : 0} 位客人・總共 ${R.st?.n || 0} 份</small>`, v => v.set(REST_X + 2.5, 6.6, -11.4), 'tag');
+  ov('rsInfo', `<b>${REST_LV[R.lv || 0].em} ${esc(dn(f))}的${REST_LV[R.lv || 0].n}</b> ${restOpen(R) ? '🟢營業中' : '⚪休息中'}<br><small><span style="color:#ffb300">${avg ? starStr(avg) + ' ' + avg.toFixed(1) : '還沒有評價'}</span>・今天 ${R.day?.d === twDay() ? R.day.n : 0} 位客人・總共 ${R.st?.n || 0} 份</small>`, v => v.set(REST_X + 6, 2.8, .3), 'tag');
   ov('rsMenu', `📋 今日菜單<br>${(R.menu || []).map(m => `${RECIPES[m.r].em}${RECIPES[m.r].n} ${m.n > 0 ? `💰${dishPrice(m.r, m.pm ?? 1)}` : '<s>賣完</s>'}`).join('<br>') || '還沒有菜'}`, v => v.set(REST_X - 6.5, 2.6, .3), 'tag');
   if (isOwn() && R.cash) ov('rsCash', `💰 收銀機 ${R.cash}`, v => v.set(REST_X - 1.6, 2.2, -10), 'tag');
 }
@@ -4519,7 +4521,7 @@ function restTick(t, dt) {
       const dx = p[0] - C.x, dz = p[1] - C.z, d = Math.hypot(dx, dz); if (d < .1) { C.path.shift(); continue; } const s = Math.min(d, dt * 2.4); C.x += dx / d * s; C.z += dz / d * s; C.m.position.set(C.x, .2 * (C.z < -.5), C.z); C.m.rotation.y = Math.atan2(-dz, dx); if (u.legL) { const sw = Math.sin(t * 9) * .6; u.legL.rotation.z = sw; u.legR.rotation.z = -sw; } continue; }
     C.wait -= dt;
     if (C.ph === 'sit' && C.wait <= 0) { C.ph = 'eat'; C.wait = 6 + Math.random() * 4; const menu = (R?.menu || []).filter(m => m.n > 0), mm = rnd(menu.length ? menu : R?.menu || []), tb = REST_TABLES[Math.floor(C.seat / 2)];
-      C.dish = textPlane(mm ? RECIPES[mm.r].em : '🍽️', '#000', 'rgba(0,0,0,0)', .7, .7, 80); C.dish.position.set(REST_X + tb[0] + (C.seat % 2 ? .35 : -.35), 1.5, tb[1]); W.restCustG.add(C.dish); }
+      C.dish = textPlane(mm ? RECIPES[mm.r].em : '🍽️', 'transparent', '#000', .7, .7, 80); C.dish.position.set(REST_X + tb[0] + (C.seat % 2 ? .35 : -.35), 1.5, tb[1]); W.restCustG.add(C.dish); }
     if (C.ph === 'eat') { if (u.armR) u.armR.rotation.z = -1.2 + Math.sin(t * 8) * .3; if (C.wait <= 0) { const avg = restAvg(R) || 3.5, s = Math.max(1, Math.min(5, Math.round(avg + (Math.random() - .5) * 1.6 - (CUST[C.ck].ex - 2.4) * .3)));
       fx3(C.m.position.x, 2.6, C.m.position.z, '⭐'.repeat(s), '#ffb300'); if (C.dish) W.restCustG.remove(C.dish); C.ph = 'out'; C.x = C.m.position.x; C.z = C.m.position.z; C.m.position.y = .2; if (u.armR) u.armR.rotation.z = 0;
       C.path = [[C.x, -1.2], [REST_X + (C.x < REST_X ? -1 : 1), 2.5], [REST_X + (C.x < REST_X ? -16 : 16), 4]]; } }
@@ -4669,11 +4671,14 @@ function mkClaimable(f) { const M = mkView(f), d = twDay(); const day = Object.k
 const mkBadge = f => mkClaimable(f) ? 1 : 0;
 // ----- 3D 夜市 -----
 function textPlane(text, bg, fg, w, h, fs = 64) {
-  const c = document.createElement('canvas'); c.width = 512; c.height = Math.round(512 * h / w); const x = c.getContext('2d');
-  x.fillStyle = bg; x.fillRect(0, 0, c.width, c.height); x.strokeStyle = '#fdd835'; x.lineWidth = 10; x.strokeRect(6, 6, c.width - 12, c.height - 12);
-  x.fillStyle = fg; x.font = `900 ${fs}px sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text, c.width / 2, c.height / 2 + 4);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-  return new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({map:t}));
+  const CW = 1024, c = document.createElement('canvas'); c.width = CW; c.height = Math.max(64, Math.round(CW * h / w)); const x = c.getContext('2d'), clear = bg === 'transparent';
+  if (!clear) { x.fillStyle = bg; x.fillRect(0, 0, c.width, c.height); x.strokeStyle = '#fdd835'; x.lineWidth = 16; x.strokeRect(8, 8, c.width - 16, c.height - 16); }
+  // 字的大小自動配合招牌：不會比招牌高、也不會超出左右
+  const F = n => `900 ${n}px "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif`; let n = Math.min(fs * 2, c.height * .68); x.font = F(n);
+  while (n > 12 && x.measureText(text).width > CW - 60) { n -= 4; x.font = F(n); }
+  x.fillStyle = fg; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text, CW / 2, c.height / 2 + n * .05);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({map:t, transparent:clear, depthWrite:!clear}));
 }
 const MK_STALLS = [['goldfish', -7.5, -5.2, '撈金魚', '#1565c0'], ['ring', -2.5, -5.2, '套圈圈', '#2e7d32'], ['balloon', 2.5, -5.2, '射氣球', '#c62828'], ['pinball', 7.5, -5.2, '彈珠台', '#6a1b9a'],
   ['food', -11.2, .6, '大雞排', '#ef6c00'], ['food', -11.2, 5, '珍珠奶茶', '#5d4037'], ['food', 11.2, .6, '烤香腸', '#d84315'], ['food', 11.2, 5, '臭豆腐', '#558b2f']];
@@ -5994,7 +5999,7 @@ function setCam(scene, instant) {
   if (instant || off.length() < 1) { off.set(0, portrait ? 24 : 12, portrait ? 28 : 16.2); }
   W.camAnim = {from:W.controls.target.clone(), to:tgt.clone(), t0:performance.now(), dur:instant ? 0 : 900, off};
   // 旅遊景點：鏡頭放低一點，看得到遠方的地標；離開時恢復
-  if (!instant && (TRIPS[scene] || scene === 'harbor' || scene === 'rest' || W.camTrip)) { Object.assign(W.camAnim, {off0:off.clone(), off1:scene === 'rest' ? new THREE.Vector3(0, portrait ? 15 : 9.5, portrait ? 19 : 13) : TRIPS[scene] || scene === 'harbor' ? new THREE.Vector3(0, portrait ? 15 : 8.5, portrait ? 31 : 19) : new THREE.Vector3(0, portrait ? 24 : 12, portrait ? 28 : 16.2)}); W.camTrip = !!TRIPS[scene] || scene === 'harbor' || scene === 'rest'; }
+  if (!instant && (TRIPS[scene] || scene === 'harbor' || scene === 'rest' || W.camTrip)) { Object.assign(W.camAnim, {off0:off.clone(), off1:scene === 'rest' ? new THREE.Vector3(0, portrait ? 15 : 8.5, portrait ? 19 : 15.5) : scene === 'harbor' ? new THREE.Vector3(0, portrait ? 20 : 15, portrait ? 30 : 23) : TRIPS[scene] || scene === 'harbor' ? new THREE.Vector3(0, portrait ? 15 : 8.5, portrait ? 31 : 19) : new THREE.Vector3(0, portrait ? 24 : 12, portrait ? 28 : 16.2)}); W.camTrip = !!TRIPS[scene] || scene === 'harbor' || scene === 'rest'; }
   if (instant) { W.controls.target.copy(tgt); W.camera.position.copy(tgt).add(off); W.controls.update(); W.camAnim = null; }
 }
 function pick(cx, cy) {
