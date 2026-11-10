@@ -63,6 +63,9 @@ button{font-family:inherit;cursor:pointer;border:none}
 .tfBox{width:min(88vw,420px);text-align:center}.tfBox svg{width:100%;max-height:66vh}.tfTop{font-size:22px;font-weight:900;color:#01579b;margin-bottom:4px}.tfTxt{font-weight:900;font-size:17px;color:#01579b;background:#fff;border-radius:999px;padding:8px 16px;display:inline-block;box-shadow:0 3px 0 #0277bd}
 .twmap{display:block;width:100%;max-width:260px;margin:4px auto 8px;background:#b3e5fc;border-radius:14px}
 .pcard{position:relative;width:100%;aspect-ratio:3/2;border-radius:10px;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25);overflow:hidden;color:#fff;margin-bottom:6px}.pcArt{font-size:42px;text-align:center;margin-top:12%;letter-spacing:4px;text-shadow:0 2px 4px rgba(0,0,0,.3)}.pcT{position:absolute;left:8px;bottom:6px;font-weight:900;font-size:13px;text-shadow:0 1px 3px rgba(0,0,0,.6)}.pcStamp{position:absolute;right:6px;top:6px;background:#fff;border:2px dashed #e53935;border-radius:4px;font-size:16px;padding:1px 3px}
+.hpbar{height:10px;background:#e0e0e0;border-radius:6px;overflow:hidden}.hpbar i{display:block;height:100%;border-radius:6px}
+.hbcatch{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px;margin:8px 0}.hbf{background:#e3f2fd;border-radius:10px;padding:4px;text-align:center;font-size:12px}.hbf img{width:56px;height:46px;object-fit:contain;display:block;margin:0 auto}.hbf b{display:block}.hbf.rare{background:linear-gradient(#fff8e1,#ffe082);box-shadow:0 0 0 2px #ffb300}
+.hbchest{background:#fff3e0;border:3px dashed #ff9800;border-radius:12px;padding:10px;text-align:center;margin:8px 0}.chestIco{font-size:46px;animation:chestPop 1s ease-out}@keyframes chestPop{0%{transform:scale(.3) rotate(-20deg)}60%{transform:scale(1.3) rotate(8deg)}100%{transform:scale(1)}}
 .pcpick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0}.pcpick button{border:3px solid transparent;border-radius:12px;padding:2px;background:none}.pcpick button.on{border-color:#ff9800}.pcpick .pcArt{font-size:28px}.pcpick .pcT{font-size:11px}
 #musCap{position:absolute;left:8px;right:84px;bottom:10px;z-index:2;pointer-events:none;font-size:12.5px;font-weight:700;color:#fff}#musCap>div{display:inline-block;background:rgba(62,39,35,.72);border-radius:10px;padding:3px 9px;margin-top:3px;max-width:100%}#musCap[hidden]{display:none}
 #stage.racing #ovl,#stage.racing #sceneTabs,#stage.racing #chatBtn,#stage.racing #wx,#stage.racing #visitBar,#stage.racing #hereBox,#stage.racing #hint{visibility:hidden}
@@ -953,6 +956,204 @@ for (const [id, n, cat, lv, min0, m] of SEA_LIST) {
   SEA[id] = {n, cat, lv, t:min * 60, cost, y, sell:Math.max(2, Math.ceil((cost * 1.8 + min * 0.9) / y)), exp:Math.max(2, Math.round(2 + min * 0.07 + lv)), m};
 }
 const MAXPOND = 11, START_POND = 2;
+
+/* ================= 🚢 深海漁船 + ⚓ 漁港（大家共用） ================= */
+const HB_X = -300, BOAT_PRICE = 15000, BOAT_LV = 10, FUEL_P = 20;
+const ENG = [{n:'小柴油引擎', sp:1, c:0}, {n:'渦輪柴油引擎', sp:1.2, c:8000}, {n:'雙引擎', sp:1.45, c:20000}, {n:'高速船外機', sp:1.75, c:45000}, {n:'遠洋巨型引擎', sp:2.1, c:90000}];
+const HOLD = [{n:'小貨艙', cap:6, c:0}, {n:'冷藏貨艙', cap:9, c:6000}, {n:'大冷凍艙', cap:12, c:15000}, {n:'雙層冷凍艙', cap:16, c:35000}, {n:'超大遠洋艙', cap:22, c:70000}];
+const TANK = e => 60 + e * 25;
+const ZONES = {
+  near:{n:'近海', em:'🌊', fuel:6, h:1, lv:10, eng:0, tier:[1], w:[1], chest:.1, d:'離港 20 公里，安全好上手'},
+  mid:{n:'外海', em:'🐬', fuel:14, h:2, lv:13, eng:0, tier:[1, 2], w:[.35, .65], chest:.2, d:'黑潮經過，鰹魚、金目鯛很多'},
+  deep:{n:'深海', em:'🦑', fuel:28, h:3.5, lv:16, eng:2, tier:[1, 2, 3], w:[.15, .4, .45], chest:.35, d:'千公尺深的海溝，有奇怪的深海生物（要雙引擎）'},
+  far:{n:'遠洋漁場', em:'🐋', fuel:50, h:6, lv:20, eng:3, tier:[2, 3, 4], w:[.25, .4, .35], chest:.55, d:'太平洋正中央，傳說中的大魚（要高速船外機）'},
+};
+const DEEP_LIST = [
+  ['ds_filefish','剝皮魚',1,45,'fish',{t:'fish',c:'#8d8f6a',c2:'#d9d3b0',len:.5,h:.3}],
+  ['ds_redbream','赤鯮',1,55,'fish',{t:'fish',c:'#ef5350',c2:'#ffcdd2',fin:'#e57373',len:.48,h:.28}],
+  ['ds_tsquid','透抽',1,60,'squid',{t:'squid',c:'#f3e5f5'}],
+  ['ds_bonito','正鰹',2,110,'fish',{t:'fish',c:'#1e3a5f',c2:'#cfd8dc',stripe:'#37474f',len:.7,h:.26}],
+  ['ds_alfonsino','金目鯛',2,160,'fish',{t:'fish',c:'#e53935',c2:'#ffab91',fin:'#c62828',len:.5,h:.3}],
+  ['ds_albacore','長鰭鮪',2,140,'fish',{t:'fish',c:'#283593',c2:'#e8eaf6',fin:'#9fa8da',len:.78,h:.28}],
+  ['ds_angler','鮟鱇魚',3,300,'fish',{t:'fish',c:'#4e342e',c2:'#8d6e63',len:.55,h:.42}],
+  ['ds_rosy','黑喉',3,380,'fish',{t:'fish',c:'#d84315',c2:'#ffccbc',len:.55,h:.24}],
+  ['ds_isopod','大王具足蟲',3,260,'shrimp',{t:'shrimp',c:'#b0bec5'}],
+  ['ds_sword','劍旗魚',4,800,'fish',{t:'fish',c:'#263238',c2:'#b0bec5',len:.95,h:.26,beak:true}],
+  ['ds_gsquid','大王烏賊',4,950,'squid',{t:'squid',c:'#b71c1c'}],
+  ['ds_frilled','皺鰓鯊',4,1100,'fish',{t:'eel',c:'#5d4037'}],
+  ['ds_pearl','黑珍珠',0,1500,'shell',{t:'clam',c:'#37474f',c2:'#9e9e9e'}],
+];
+const DEEP_IDS = DEEP_LIST.map(r => r[0]);
+// 深海魚加進海鮮表，但不列舉（魚塭商店、訂單、隨機獎勵都不會出現），只有漁船抓得到
+for (const [id, n, tier, sell, cat, m] of DEEP_LIST) Object.defineProperty(SEA, id, {value:{n, cat, lv:10, t:0, cost:0, y:1, sell, exp:Math.round(sell / 30) + 2, m, deep:tier || 5}, enumerable:false, writable:true, configurable:true});
+const boatOf = f => f?.boat?.own ? f.boat : null;
+const boatEnd = b => b?.go ? b.go.t0 + b.go.dur : 0;
+const boatState = b => !b ? 'none' : !b.go ? 'dock' : now() < boatEnd(b) ? 'sea' : 'back';
+function boatRoll(zk, b) {   // 出發前先決定漁獲（交易裡不能用亂數）
+  const Z = ZONES[zk], cap = HOLD[b.hold || 0].cap, n = Math.max(2, Math.round(cap * (.7 + Math.random() * .3))), cargo = {};
+  for (let i = 0; i < n; i++) { let r = Math.random(), tier = Z.tier[Z.tier.length - 1]; for (let j = 0; j < Z.tier.length; j++) { if (r < Z.w[j]) { tier = Z.tier[j]; break; } r -= Z.w[j]; }
+    const L = DEEP_LIST.filter(x => x[2] === tier), id = rnd(L)[0]; cargo[id] = (cargo[id] || 0) + 1; }
+  let chest = null;
+  if (Math.random() < Z.chest) { const lv = Object.keys(ZONES).indexOf(zk); chest = {c:500 + Math.floor(Math.random() * 1500) * (lv + 1), pearl:Math.random() < .15 + lv * .1 ? 1 : 0, fert:Math.random() < .5 ? 2 + lv : 0, gold:Math.random() < .08 * (lv + 1) ? 1 : 0}; }
+  return {cargo, chest};
+}
+async function boatBuy() {
+  const r = await txMe(f => { if (boatOf(f)) return ab('已經有漁船了'); if (levelOf(f.exp).L < BOAT_LV) return ab(`Lv.${BOAT_LV} 才能買漁船`); if (f.coins < BOAT_PRICE) return ab(`漁船要 ${BOAT_PRICE} 金幣`);
+    f.coins -= BOAT_PRICE; f.boat = {own:1, eng:0, hold:0, fuel:30, trips:0, col:['#1565c0', '#c62828', '#2e7d32', '#ef6c00', '#6a1b9a'][hashStr(S.uid) % 5]}; addTrade(f, '買漁船', -BOAT_PRICE); addLog(f, '🚢 買了一艘深海漁船'); return {}; });
+  if (r.abort) return toast(r.msg); Music.sfx('coin'); toast('🚢 恭喜！你有自己的漁船了，送你 30 公升燃料'); renderTop(); renderScene(); rerenderModal();
+}
+async function boatUp(k) {
+  const L = k === 'eng' ? ENG : HOLD, r = await txMe(f => { const b = boatOf(f); if (!b) return ab('先買漁船'); if (b.go) return ab('漁船出海中，回港才能改裝'); const nx = (b[k] || 0) + 1; if (!L[nx]) return ab('已經是最高級了'); if (f.coins < L[nx].c) return ab(`升級要 ${L[nx].c} 金幣`);
+    f.coins -= L[nx].c; b[k] = nx; addTrade(f, `漁船升級${L[nx].n}`, -L[nx].c); return {}; });
+  if (r.abort) return toast(r.msg); Music.sfx('ding'); toast(`🔧 換上了${L[boatOf(S.my)[k]].n}！`); renderTop(); renderScene(); rerenderModal();
+}
+async function boatFuel(n) {
+  const r = await txMe(f => { const b = boatOf(f); if (!b) return ab('先買漁船'); const room = TANK(b.eng || 0) - (b.fuel || 0), m = Math.min(room, n === 'max' ? room : +n); if (m <= 0) return ab('油箱已經滿了');
+    if (f.coins < m * FUEL_P) return ab(`加 ${m} 公升要 ${m * FUEL_P} 金幣`); f.coins -= m * FUEL_P; b.fuel = (b.fuel || 0) + m; addTrade(f, `漁船加油 ${m} 公升`, -m * FUEL_P); return {}; });
+  if (r.abort) return toast(r.msg); Music.sfx('pop'); toast('⛽ 加好油了！'); renderTop(); rerenderModal();
+}
+async function boatGo(zk) {
+  const Z = ZONES[zk], b0 = boatOf(S.my); if (!Z || !b0) return; const roll = boatRoll(zk, b0), dur = Math.round(Z.h * 3600000 / ENG[b0.eng || 0].sp / SPEED);
+  const r = await txMe(f => { const b = boatOf(f); if (!b) return ab('先買漁船'); if (b.go) return ab('漁船已經出海了'); if (levelOf(f.exp).L < Z.lv) return ab(`Lv.${Z.lv} 才能去${Z.n}`); if ((b.eng || 0) < Z.eng) return ab(`要先把引擎升級成「${ENG[Z.eng].n}」`);
+    if ((b.fuel || 0) < Z.fuel) return ab(`燃料不夠，要 ${Z.fuel} 公升（加油站可以加油）`); b.fuel -= Z.fuel; b.go = {z:zk, t0:now(), dur, cargo:roll.cargo, chest:roll.chest}; addLog(f, `🚢 漁船出海去${Z.n}`); return {}; });
+  if (r.abort) return toast(r.msg); closeModal(); Music.sfx('ding'); toast(`🚢 出航！漁船開往${Z.n}，大約 ${fmtDur(dur)} 後回港`);
+  W.hbLeave = {uid:S.uid, t0:performance.now()}; renderScene(); renderTop();
+}
+async function boatUnload() {
+  const b0 = boatOf(S.my); if (boatState(b0) !== 'back') return toast('漁船還沒回港');
+  const go = b0.go; let res = null;
+  const r = await txMe(f => { const b = boatOf(f); if (!b?.go || now() < boatEnd(b)) return ab('漁船還沒回港'); const g = b.go; let ex = 0;
+    for (const [id, n] of Object.entries(g.cargo || {})) { f.wh[id] = (f.wh[id] || 0) + n; dexAdd(f, id, n); ex += SEA[id].exp * n; }
+    const C = g.chest; if (C) { f.coins += C.c; if (C.pearl) { f.wh.ds_pearl = (f.wh.ds_pearl || 0) + C.pearl; dexAdd(f, 'ds_pearl', C.pearl); } if (C.fert) f.fert = (f.fert || 0) + C.fert; if (C.gold) f.gacha = (f.gacha || 0) + 1; }
+    const up = gainExp(f, ex); b.go = null; b.trips = (b.trips || 0) + 1; (b.log ??= []).push({z:g.z, t:now(), n:Object.values(g.cargo || {}).reduce((a, c) => a + c, 0), ch:!!C}); if (b.log.length > 10) b.log = b.log.slice(-10);
+    addLog(f, `🚢 漁船從${ZONES[g.z].n}回來了，卸下 ${Object.values(g.cargo || {}).reduce((a, c) => a + c, 0)} 條魚${C ? '和一個寶箱' : ''}`); res = {ex, up}; return {}; });
+  if (r.abort) return toast(r.msg); Music.sfx('coin'); renderTop(); renderScene(); if (res?.up) lvToast(res.up);
+  const C = go.chest;
+  S.modal = () => openModal('📦 卸貨囉！', `<div class="popbox">🚢 從 <b>${ZONES[go.z].em} ${ZONES[go.z].n}</b> 回來的漁獲，已經放進倉庫（+${res?.ex || 0} 經驗）</div><div class="hbcatch">${Object.entries(go.cargo || {}).map(([id, n]) => `<div class="hbf ${SEA[id].deep >= 4 ? 'rare' : ''}">${itemIcon(id)}<b>${SEA[id].n}</b><small>×${n}・${SEA[id].sell}💰</small></div>`).join('')}</div>
+    ${C ? `<div class="hbchest"><div class="chestIco">🧰</div><b>撈到一個寶箱！</b><br>💰 ${C.c}${C.pearl ? '　🖤 黑珍珠 ×1' : ''}${C.fert ? `　🧪 化肥 ×${C.fert}` : ''}${C.gold ? '　🎰 扭蛋券 ×1' : ''}</div>` : ''}
+    <div class="mgbtn" style="display:flex;gap:6px;justify-content:center"><button class="b o" data-act="offo">📋 去交外海訂單</button><button class="b" data-act="boat">🚢 再出海</button></div>`);
+  S.modal();
+}
+// ----- 外海訂單（每天換） -----
+function offoList(f) {
+  const d = twDay(); if (f.offo?.d === d) return f.offo.list;
+  let s = hashStr(d + S.uid); const R2 = () => ((s = Math.imul(s ^ s >>> 15, 2246822507) + 1013904223 >>> 0) % 10000) / 10000;
+  const best = Math.max(1, ...Object.values(ZONES).filter(Z => levelOf(f.exp).L >= Z.lv && (boatOf(f)?.eng || 0) >= Z.eng).map(Z => Math.max(...Z.tier)));
+  const list = [];
+  for (let i = 0; i < 3; i++) { const need = {}, k = 1 + Math.floor(R2() * 2); for (let j = 0; j < k; j++) { const pool = DEEP_LIST.filter(x => x[2] >= 1 && x[2] <= Math.max(1, best - (i === 0 ? 1 : 0))), it = pool[Math.floor(R2() * pool.length)]; need[it[0]] = (need[it[0]] || 0) + 1 + Math.floor(R2() * (it[2] >= 3 ? 2 : 4)); }
+    const val = Object.entries(need).reduce((a, [id, n]) => a + SEA[id].sell * n, 0); list.push({need, c:Math.round(val * (1.5 + R2() * .4) / 10) * 10, e:Math.round(val / 12) + 10, who:['日本料理店', '遠洋水產公司', '五星飯店', '海鮮餐廳', '外銷冷凍廠', '壽司師傅'][Math.floor(R2() * 6)], done:0}); }
+  return list;
+}
+function openOffo() {
+  S.modal = () => { const f = S.my, L = offoList(f);
+    openModal('📋 外海訂單', `<div class="popbox"><small>只收<b>深海漁船</b>抓回來的魚，價錢比直接賣好很多！每天早上換新的訂單。</small></div>` + L.map((o, i) => { const ok = Object.entries(o.need).every(([id, n]) => (f.wh[id] || 0) >= n);
+      return `<div class="item ${o.done ? 'dim' : ''}"><div class="pic" style="font-size:28px">${o.done ? '✅' : '📋'}</div><div class="info"><div class="t">${o.who}</div><div class="d">${Object.entries(o.need).map(([id, n]) => `${SEA[id].n} ${f.wh[id] || 0}/${n}`).join('、')}<br>獎勵 💰${o.c} · +${o.e} 經驗</div></div>${o.done ? '<button class="b g" disabled>交過了</button>' : `<button class="b o" data-act="offoGive" data-i="${i}" ${ok ? '' : 'disabled'}>交貨</button>`}</div>`; }).join(''));
+  };
+  S.modal();
+}
+async function offoGive(i) {
+  let up = 0; const r = await txMe(f => { const L = offoList(f), o = L[i]; if (!o || o.done) return ab('這張訂單交過了'); for (const [id, n] of Object.entries(o.need)) if ((f.wh[id] || 0) < n) return ab(`${SEA[id].n}不夠`);
+    for (const [id, n] of Object.entries(o.need)) f.wh[id] -= n; o.done = 1; f.offo = {d:twDay(), list:L}; f.coins += o.c; up = gainExp(f, o.e); addTrade(f, `外海訂單：${o.who}`, o.c); bump(f, 'order'); return {}; });
+  if (r.abort) return toast(r.msg); Music.sfx('coin'); toast('📋 交貨成功！'); if (up) lvToast(up); renderTop(); rerenderModal();
+}
+function openBoat() {
+  S.modal = () => {
+    const f = S.my, b = boatOf(f), L = levelOf(f.exp).L;
+    if (!b) return openModal('🚢 深海漁船', `<div class="popbox">🚢 <b>深海漁船</b><br><small>有了漁船就能出海捕撈<b>碼頭釣不到的深海魚</b>，還有機會撈到<b>寶箱</b>！出海要花燃料、要等好幾個小時；開得越遠花越多，魚也越稀有。抓回來的魚可以交「外海訂單」賺大錢。好友在⚓漁港都看得到你的船！</small></div>
+      <div class="hbcatch">${DEEP_LIST.slice(0, 12).map(x => `<div class="hbf ${x[2] >= 4 ? 'rare' : ''}">${itemIcon(x[0])}<b>${x[1]}</b></div>`).join('')}</div>
+      <button class="b o" style="width:100%;font-size:16px" data-act="boatBuy" ${L < BOAT_LV ? 'disabled' : ''}>${L < BOAT_LV ? `Lv.${BOAT_LV} 解鎖` : `買漁船 💰${BOAT_PRICE}`}</button>`);
+    const st = boatState(b), E = ENG[b.eng || 0], H = HOLD[b.hold || 0], tank = TANK(b.eng || 0);
+    let body = `<div class="popbox">🚢 <b>${esc(myName())}的漁船</b>　出海 ${b.trips || 0} 次<br>🔧 ${E.n}（速度 ×${E.sp}）　📦 ${H.n}（${H.cap} 條）<br>⛽ 燃料 <b>${b.fuel || 0}</b>/${tank} 公升 <div class="hpbar" style="margin-top:4px"><i style="width:${Math.round((b.fuel || 0) / tank * 100)}%;background:#ffb300"></i></div></div>`;
+    if (st === 'sea') { const Z = ZONES[b.go.z], k = (now() - b.go.t0) / b.go.dur;
+      body += `<div class="popbox" style="background:#e3f2fd">🌊 漁船正在 <b>${Z.em} ${Z.n}</b> 捕魚中…<div class="hpbar" style="margin:6px 0"><i style="width:${Math.round(k * 100)}%;background:#1e88e5"></i></div>還要 <b>${fmtDur(boatEnd(b) - now())}</b> 才會回港</div>`; }
+    else if (st === 'back') body += `<div class="popbox" style="background:#e8f5e9">⚓ 漁船從 <b>${ZONES[b.go.z].n}</b> 回來了！<button class="b o" style="width:100%;margin-top:6px;font-size:16px" data-act="boatUnload">📦 卸貨</button></div>`;
+    else body += `<div class="sec">🧭 要去哪裡捕魚？</div>` + Object.entries(ZONES).map(([k, Z]) => { const lock = L < Z.lv ? `Lv.${Z.lv}` : (b.eng || 0) < Z.eng ? `要${ENG[Z.eng].n}` : '';
+      return `<div class="item ${lock ? 'dim' : ''}"><div class="pic" style="font-size:30px">${lock ? '🔒' : Z.em}</div><div class="info"><div class="t">${Z.n} <small style="color:#0277bd">⛽${Z.fuel} 公升 · ⏱️${fmtDur(Z.h * 3600000 / E.sp / SPEED)}</small></div><div class="d">${Z.d}<br>${Z.tier.map(t => ['', '⭐', '⭐⭐', '⭐⭐⭐', '🌟傳說'][t]).join(' ')}　🧰 寶箱機率 ${Math.round(Z.chest * 100)}%</div></div>
+        ${lock ? `<button class="b g" disabled>${lock}</button>` : `<button class="b o" data-act="boatGo" data-k="${k}" ${(b.fuel || 0) < Z.fuel ? 'disabled' : ''}>出海</button>`}</div>`; }).join('');
+    body += `<div class="sec">⛽ 加油站（1 公升 💰${FUEL_P}）</div><div class="mgbtn" style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap"><button class="b" data-act="boatFuel" data-n="10">+10 公升</button><button class="b" data-act="boatFuel" data-n="30">+30 公升</button><button class="b o" data-act="boatFuel" data-n="max">加滿（💰${Math.max(0, tank - (b.fuel || 0)) * FUEL_P}）</button></div>`;
+    const nE = ENG[(b.eng || 0) + 1], nH = HOLD[(b.hold || 0) + 1];
+    body += `<div class="sec">🔧 改裝</div>
+      <div class="item"><div class="pic" style="font-size:28px">⚙️</div><div class="info"><div class="t">引擎：${E.n}</div><div class="d">${nE ? `下一級 ${nE.n}：速度 ×${nE.sp}，油箱 ${TANK((b.eng || 0) + 1)} 公升` : '已經是最強的引擎了'}</div></div>${nE ? `<button class="b o" data-act="boatUp" data-k="eng">升級 💰${nE.c}</button>` : ''}</div>
+      <div class="item"><div class="pic" style="font-size:28px">📦</div><div class="info"><div class="t">貨艙：${H.n}</div><div class="d">${nH ? `下一級 ${nH.n}：一次可以載 ${nH.cap} 條魚` : '已經是最大的貨艙了'}</div></div>${nH ? `<button class="b o" data-act="boatUp" data-k="hold">升級 💰${nH.c}</button>` : ''}</div>`;
+    body += `<div class="mgbtn" style="display:flex;gap:6px;justify-content:center"><button class="b" data-act="offo">📋 外海訂單</button>${S.place !== 'harbor' ? '<button class="b" data-act="goHarbor">⚓ 去漁港看船</button>' : ''}</div>`;
+    openModal('🚢 我的深海漁船', body);
+  };
+  S.modal();
+}
+// ----- 3D 漁港 -----
+function boatModel(b) {
+  const e = b.eng || 0, h = b.hold || 0, len = 4.4 + h * .5, wd = 1.7 + h * .1, c = b.col || '#1565c0', G = new THREE.Group();
+  G.add(blk(c, [wd, .9, len], [0, .45, 0]), blk('#fafafa', [wd + .04, .2, len + .04], [0, .85, 0]), blk('#212121', [wd + .02, .18, len + .02], [0, .1, 0]),
+    blk(c, [wd * .7, .9, 1.1], [0, .55, -len / 2 - .35], [0, Math.PI / 4, 0]), blk('#d7ccc8', [wd - .2, .06, len - .3], [0, .96, 0]));
+  const ch = 1.1 + e * .15; G.add(blk('#fafafa', [wd * .82, ch, 1.5 + e * .1], [0, 1 + ch / 2, .4]), blk('#81d4fa', [wd * .84, .35, .1], [0, 1.2 + ch * .7, -.33 - e * .05]), blk(c, [wd * .9, .15, 1.7 + e * .1], [0, 1.05 + ch, .4]));
+  G.add(rod('#9e9e9e', [.06, 2.2 + e * .3, .06], [0, 2.1 + ch + e * .15, .2]), blk('#fdd835', [.5, .3, .03], [.27, 3 + ch + e * .3, .2]));
+  for (let i = 0; i <= Math.min(e, 3); i++) G.add(rod(i % 2 ? '#212121' : '#c62828', [.18, .5, .18], [wd * .25 - i * .2, 1.25 + ch, .95 + i * .05]));
+  if (h >= 2) G.add(rod('#ffb300', [.08, 1.6, .08], [-.4, 1.8, len / 2 - .7]), blk('#ffb300', [.08, .08, 1.6], [-.4, 2.6, len / 2 - 1.3], [.4, 0, 0]));
+  for (let i = 0; i < h + 1; i++) G.add(blk('#90caf9', [.55, .35, .45], [(i % 2 ? .35 : -.35), 1.15, len / 2 - .5 - Math.floor(i / 2) * .55]));
+  G.add(ball('#e53935', U(.1), [wd / 2, 1.1, -len / 2 + .3]), ball('#43a047', U(.1), [-wd / 2, 1.1, -len / 2 + .3]));
+  G.userData.len = len; return G;
+}
+function buildHarbor(S3) {
+  const X = HB_X, G = new THREE.Group(); G.position.x = X;
+  const gr = new THREE.Mesh(geoOf('hbg', () => new THREE.PlaneGeometry(162, 70)), mat('#b0bec5')); gr.rotation.x = -Math.PI / 2; gr.position.set(0, -.03, 28); gr.receiveShadow = true; G.add(gr);
+  const flo = new THREE.Mesh(geoOf('hbf', () => new THREE.PlaneGeometry(170, 92)), mat('#0d47a1')); flo.rotation.x = -Math.PI / 2; flo.position.set(0, -1.6, -52); G.add(flo);
+  const sea = waveWater(170, 92, '#1e88e5', .88, 2.2); sea.position.set(0, -.1, -52); G.add(sea); W.hbSea = sea;
+  G.add(blk('#78909c', [162, 1.4, 1], [0, -.6, -6.6]), blk('#cfd8dc', [10, .05, 14], [0, .01, 3]));
+  G.add(blk('#8d6e63', [38, .3, 3], [0, .15, -8.6]), ...Array.from({length:10}, (_, i) => rod('#5d4037', [.18, 2, .18], [-18 + i * 4, -.8, -10])));
+  for (let i = 0; i <= 8; i++) G.add(blk('#8d6e63', [.7, .25, 6], [-16 + i * 4, .12, -13]), rod('#5d4037', [.14, 1.6, .14], [-16 + i * 4, -.5, -15.6]), rod('#eeeeee', [.12, .5, .12], [-16 + i * 4, .45, -10.3]));
+  // 防波堤＋燈塔
+  G.add(blk('#90a4ae', [30, 1.6, 3], [28, -.1, -24]), ...Array.from({length:12}, (_, i) => grp(cone('#b0bec5', [.6, 1, .6], [0, .3, 0]), cone('#b0bec5', [.6, 1, .6], [.5, .3, .4], [0, 0, 1.6]), cone('#b0bec5', [.6, 1, .6], [-.5, .3, .4], [0, 0, -1.6])).translateX(15 + i * 2.4).translateZ(-22.2)));
+  G.add(grp(M(gTap(), '#fafafa', [1.1, 6, 1.1], [0, 3.8, 0]), blk('#c62828', [1.2, .6, 1.2], [0, 2.6, 0]), blk('#c62828', [1, .6, 1], [0, 5, 0]), rod('#ffe082', [.7, .8, .7], [0, 7.2, 0]), cone('#c62828', [.9, .7, .9], [0, 8, 0])).translateX(41).translateZ(-24));
+  // 加油站、外海訂單魚市場
+  const fs = grp(blk('#fafafa', [4, 2.6, 3], [0, 1.3, 0]), blk('#ffb300', [4.6, .4, 3.6], [0, 2.8, 0]), rod('#ffb300', [.15, 2.6, .15], [3, 1.3, .8]), blk('#e53935', [.8, 1.4, .6], [3, .7, -.4]), blk('#212121', [.5, .3, .05], [3, 1.1, -.08]), rod('#424242', [.05, 1, .05], [3.4, 1, -.4], [0, 0, .6]));
+  fs.position.set(13, 0, 1); fs.traverse(o => o.userData.hit = {type:'hbBoat'}); G.add(fs); const ft = textPlane('⛽ 加油・漁船', '#ffffff', '#ef6c00', 3.6, .7, 90); ft.position.set(13, 3.6, 2.85); G.add(ft);
+  const mk = grp(blk('#e3f2fd', [6, 3, 4], [0, 1.5, 0]), ...gableRoof(6, 4, 3, .4, '#1565c0', '#e3f2fd', {t:.2}), blk('#5d4037', [1.6, 2, .08], [0, 1, 2.02]), ...[0, 1, 2].map(i => blk('#90caf9', [1.2, .4, .9], [-2 + i * 2, .2, 3])), ...[0, 1, 2].map(i => ball(['#ef5350', '#90a4ae', '#ffb74d'][i], [.35, .12, .15], [-2 + i * 2, .48, 3])));
+  mk.position.set(-13, 0, 0); mk.traverse(o => o.userData.hit = {type:'hbOrder'}); G.add(mk); const mt = textPlane('📋 外海訂單', '#ffffff', '#1565c0', 3.6, .7, 90); mt.position.set(-13, 4.8, 2.3); G.add(mt);
+  for (let i = 0; i < 8; i++) G.add(blk(['#8d6e63', '#a1887f', '#1565c0'][i % 3], [.9, .7, .7], [-6 + (i % 4) * 1, .35 + Math.floor(i / 4) * .7, -5.4]));
+  for (const [x, z] of [[5, -5.4], [6.2, -5.3]]) G.add(rod('#1565c0', [.4, 1, .4], [x, .5, z]));
+  G.add(grp(...Array.from({length:6}, (_, i) => rod('#795548', [.04, 2, .04], [i * .6, 1, 0])), blk('#455a64', [3, 1.4, .03], [1.5, 1.2, 0])).translateX(-6).translateZ(6));
+  const sg = textPlane('⚓ 開心漁港', '#ffffff', '#0d47a1', 4.4, .9, 110); sg.position.set(-19, 3.6, -5.9); G.add(sg); G.add(rod('#6d4c41', [.12, 3.6, .12], [-21.1, 1.8, -6]), rod('#6d4c41', [.12, 3.6, .12], [-16.9, 1.8, -6]));
+  S3.add(G); W.hbG = G; W.hbBoats = new Map(); W.hbKeepG = new THREE.Group(); S3.add(W.hbKeepG);
+  W.hbGulls = []; for (let i = 0; i < 5; i++) { const g = grp(blk('#fafafa', [.5, .14, .2], [0, 0, 0]), blk('#eceff1', [.12, .04, 1.2], [0, .05, 0], [0, 0, .25]), blk('#ffb300', [.12, .05, .05], [.3, 0, 0])); W.hbKeepG.add(g); W.hbGulls.push(g); }
+  W.hbNpc = []; for (const [id, x, z, ry] of [['hai', -4, -7.4, Math.PI / 2], ['zhang', 8, -7.6, Math.PI], ['de', -9, 3.6, 0]]) { const m = vilModel(id); m.position.set(X + x, .3 * (z < -6), z); m.rotation.y = ry; W.hbKeepG.add(m); W.hbNpc.push({m, ph:x}); }
+}
+const HB_SAY = ['今天黑潮好強！', '剛剛有人撈到寶箱喔', '劍旗魚要用延繩釣', '油價又漲了…', '深海的魚長得好奇怪', '金目鯛最好吃了', '出海要看天氣', '我的船要換大引擎了'];
+function harborList() {
+  const L = []; const me = boatOf(S.my); if (me) L.push({uid:S.uid, nm:myName(), b:me, me:1});
+  for (const x of S.friends || []) { const b = boatOf(x.farm); if (b) L.push({uid:x.uid, nm:dn(x.farm), b}); }
+  return L.slice(0, 9);
+}
+function syncHarbor() {
+  if (!W.hbG) return; const on = S.scene === 'harbor';
+  const L = on ? harborList() : [], seen = new Set();
+  L.forEach((B, i) => { const key = B.uid + ':' + (B.b.eng || 0) + ':' + (B.b.hold || 0) + ':' + B.b.col; let E = W.hbBoats.get(B.uid);
+    if (!E || E.key !== key) { if (E) W.hbKeepG.remove(E.m); E = {key, m:boatModel(B.b)}; E.m.traverse(o => o.userData.hit = {type:'hbBoatOf', uid:B.uid}); W.hbKeepG.add(E.m); W.hbBoats.set(B.uid, E); }
+    E.i = i; E.B = B; seen.add(B.uid); });
+  for (const [u, E] of W.hbBoats) if (!seen.has(u)) { W.hbKeepG.remove(E.m); W.hbBoats.delete(u); }
+  if (!on) return;
+  for (const [u, E] of W.hbBoats) { const st = boatState(E.B.b), Z = E.B.b.go ? ZONES[E.B.b.go.z] : null;
+    const tx = st === 'sea' ? `🌊 在${Z.n}捕魚・還要 ${fmtDur(boatEnd(E.B.b) - now())}` : st === 'back' ? (E.B.me ? '📦 回港了！點船卸貨' : '📦 滿載回港') : '⚓ 在港休息';
+    ov('hb' + u, `<b>${E.B.me ? '⭐ ' : ''}${esc(E.B.nm)}的漁船</b><br><small>${tx}</small>`, v => v.copy(E.m.position).setY(st === 'sea' ? 4.5 : 5.2), 'tag'); }
+  if (!harborList().length) ov('hbNone', '還沒有人有漁船，點「🚢 我的漁船」買一艘吧！', v => v.set(HB_X, 3, -12), 'tag');
+}
+function harborTick(t, dt) {
+  if (!W.hbG || S.scene !== 'harbor') return;
+  waveTick(W.hbSea, t, .16);
+  if (t - (W.hbSyncT || 0) > 2) { W.hbSyncT = t; syncHarbor(); }
+  W.hbGulls.forEach((g, i) => { const a = t * (.4 + i * .07) + i * 1.3, r = 8 + i * 2.5; g.position.set(HB_X + Math.cos(a) * r, 6 + i * .6 + Math.sin(t * 2 + i) * .3, -14 + Math.sin(a) * r * .6); g.rotation.y = -a; g.children[1].rotation.z = Math.sin(t * 8 + i) * .5; });
+  for (const N of W.hbNpc || []) { const u = N.m.userData; if (u.armR) u.armR.rotation.z = Math.sin(t * 1.3 + N.ph) * .3; }
+  if (t - (W.hbSayT || 0) > 4) { W.hbSayT = t; const N = rnd(W.hbNpc); fx3(N.m.position.x, 2.6, N.m.position.z, `💬 ${rnd(HB_SAY)}`, '#0d47a1'); }
+  const pn = performance.now();
+  for (const [u, E] of W.hbBoats) { const b = E.B.b, st = boatState(b), bx = HB_X + [0, -4, 4, -8, 8, -12, 12, -16, 16][E.i], bz = -13.2, m = E.m;
+    let x = bx, z = bz, ry = 0, y = .05 + Math.sin(t * 1.5 + E.i) * .08;
+    const lv = W.hbLeave?.uid === u ? (pn - W.hbLeave.t0) / 7000 : 2, back = st === 'sea' ? 0 : b.go ? Math.max(0, 1 - (now() - boatEnd(b)) / 7000) : 0;
+    if (st === 'sea' && lv < 1) { const k = lv * lv; z = bz - k * 30; x = bx + Math.max(0, lv - .4) * 30; ry = -Math.max(0, lv - .4) * 1.2; }
+    else if (st === 'sea') { const a = t * .05 + E.i * 1.7; x = HB_X + Math.sin(a) * 40; z = -46 - (E.i % 3) * 5; ry = Math.cos(a) > 0 ? -Math.PI / 2 : Math.PI / 2; y = Math.sin(t * 1.2 + E.i) * .15; m.scale.setScalar(.9); }
+    else if (back > 0) { z = bz - back * back * 30; ry = Math.PI; }
+    if (st !== 'sea') m.scale.setScalar(1.25);
+    m.position.set(x, y, z); m.rotation.set(Math.sin(t * 1.1 + E.i) * .03, ry, Math.sin(t * 1.3 + E.i) * .04);
+    if (st === 'sea' && lv >= 1 && Math.random() < dt * .6) fx3(x, 1.2, z + 1.2, '〰️', '#e3f2fd'); }
+}
 const pondPrice = n => 800 * (n - 2);
 const pondLv = n => n * 2;
 const PETS = {};
@@ -2597,7 +2798,7 @@ const itemIcon = id => icon(CROPS[id] ? 'crop' : SEA[id] ? 'sea' : PROC[id] ? 'p
 const W = {};
 const FARM_T = new THREE.Vector3(0, 0, .8), RANCH_T = new THREE.Vector3(24, 0, .8), FISH_T = new THREE.Vector3(-30, 0, .8), TOWN_T = new THREE.Vector3(76, 0, .8), GREEN_T = new THREE.Vector3(-52, 0, .8), TEMPLE_T = new THREE.Vector3(101, 0, -.6), STABLE_T = new THREE.Vector3(-80, 0, -1.2);
 const DOCK_T = new THREE.Vector3(-114, 0, -3.6); const HOME_T = new THREE.Vector3(0, -60, 0);
-const SCENE_T = {home:HOME_T, post:new THREE.Vector3(-150, 0, -1), museum:new THREE.Vector3(160, 0, -1), market:new THREE.Vector3(128, 0, -.4), dock:DOCK_T, farm:FARM_T, ranch:RANCH_T, fish:FISH_T, factory:new THREE.Vector3(50, 0, .8), town:TOWN_T, green:GREEN_T, temple:TEMPLE_T, stable:STABLE_T};
+const SCENE_T = {home:HOME_T, harbor:new THREE.Vector3(-300, 0, -6), post:new THREE.Vector3(-150, 0, -1), museum:new THREE.Vector3(160, 0, -1), market:new THREE.Vector3(128, 0, -.4), dock:DOCK_T, farm:FARM_T, ranch:RANCH_T, fish:FISH_T, factory:new THREE.Vector3(50, 0, .8), town:TOWN_T, green:GREEN_T, temple:TEMPLE_T, stable:STABLE_T};
 const pondXZ = i => { const r = Math.floor(i / 4), c = i % 4; return [-30 + (c - 1.5) * 4.3, (r - 1) * 4 + .4]; };
 const plotXZ = i => { const r = Math.floor(i / 7), c = i % 7; return [(c - 3) * 2.6, (r - 1) * 2.75 - .3]; };
 const aniHome = i => { const r = Math.floor(i / 4), c = i % 4; return [24 + (c - 1.5) * 3.5, .3 + (r - 1.5) * 2.7]; };
@@ -3585,7 +3786,7 @@ function startHorseRace(rid) {
 }
 
 /* ================= 🎣 釣魚碼頭（大家共用的地方） ================= */
-const PLACES = {dock:{n:'釣魚碼頭', em:'🎣'}, market:{n:'夜市', em:'🏮'}, museum:{n:'展覽館', em:'🏛️'}, post:{n:'開心郵局', em:'🏤'}};
+const PLACES = {dock:{n:'釣魚碼頭', em:'🎣'}, market:{n:'夜市', em:'🏮'}, museum:{n:'展覽館', em:'🏛️'}, post:{n:'開心郵局', em:'🏤'}, harbor:{n:'開心漁港', em:'⚓'}};
 const hereAt = () => S.place ? '@' + S.place : (S.viewUid || S.uid);
 const DOCK_X = -114, DOCK_BAIT = 10, AQ_MAX = 20;
 const DOCK_SPOTS = [[-119, -10.7, 1], [-116.6, -10.7, 1], [-114.2, -10.7, 1], [-111.8, -10.7, 1], [-109.4, -10.7, 1], [-115.5, -5.5, 2], [-112.5, -5.5, 0]];   // x, z, 面向（0 右、1 前、2 左）
@@ -3750,7 +3951,7 @@ function goPlace(pl) {
   if (!isOwn()) { S.unsubView && S.unsubView(); S.unsubView = null; S.viewUid = S.uid; S.view = S.my; }
   unZoom(); clearSanta(); S.place = pl; S.scene = pl; S.tool = 'hand'; S.myPos = null; S.pray = null; S.decoMode = null; S.thief = null; S.fishing = null;
   setCam(pl); renderAll(); beat(); watchHere();
-  setTimeout(() => { if (S.place !== pl) return; const t = now(), m = TRIPS[pl] ? rnd(TRIP_HI[pl]) : pl === 'dock' ? rnd(['大家好～今天魚況怎麼樣？🎣', '我來釣魚囉！', '嗨～有人釣到大魚了嗎？']) : pl === 'museum' ? rnd(['哇～這些巨大蔬果好壯觀！🏛️', '來參觀展覽囉！', '這顆也太大了吧！']) : rnd(['夜市好熱鬧！🏮', '來玩遊戲囉～', '嗨～大家晚安！']); S.spokeT = t;
+  setTimeout(() => { if (S.place !== pl) return; const t = now(), m = TRIPS[pl] ? rnd(TRIP_HI[pl]) : pl === 'harbor' ? rnd(['漁港好熱鬧 ⚓', '來看大家的漁船！', '今天要出海嗎？']) : pl === 'dock' ? rnd(['大家好～今天魚況怎麼樣？🎣', '我來釣魚囉！', '嗨～有人釣到大魚了嗎？']) : pl === 'museum' ? rnd(['哇～這些巨大蔬果好壯觀！🏛️', '來參觀展覽囉！', '這顆也太大了吧！']) : rnd(['夜市好熱鬧！🏮', '來玩遊戲囉～', '嗨～大家晚安！']); S.spokeT = t;
     B.setPresence(S.uid, {n:myName(), lv:levelOf(S.my.exp).L, g:myGender(), lk:S.my.look || null, vh:rideOf(S.my), at:hereAt(), t, off:false, say:{m, t, d:3500}, wave:t, waveTo:'', back:false, arr:true}); Music.babble(myGender(), m); }, 2100);
 }
 function leavePlace() { if (!S.place) return false; S.place = null; fishStop(true); $('#fishUI').hidden = true; if (typeof mkStop === 'function') mkStop(); return true; }
@@ -3945,6 +4146,7 @@ function openMap() {
     openModal('🗺️ 出門去哪裡？', `<div class="popbox"><small>這些地方是<b>大家共用</b>的，好友也在的話會看到彼此，一起玩更熱鬧！</small></div>
       <div class="item" data-act="goDock" style="cursor:pointer"><div class="pic" style="font-size:34px">🎣</div><div class="info"><div class="t">釣魚碼頭</div><div class="d">真的要拋竿、等浮標、慢慢收線！天氣、白天晚上會出現不同的魚，有超稀有大魚。週三釣魚大賽。</div></div></div>
       <div class="item" data-act="goMarket" style="cursor:pointer;${mo ? '' : 'opacity:.6'}"><div class="pic" style="font-size:34px">🏮</div><div class="info"><div class="t">夜市 ${mo ? '<span class="rare" style="background:#e53935">營業中</span>' : ''}</div><div class="d">每週一晚上 6 點～12 點開！撈金魚、套圈圈、射氣球、彈珠台，玩分數換獎品，還有「夜市高手」排行。</div></div></div>
+      <div class="item" data-act="goHarbor" style="cursor:pointer"><div class="pic" style="font-size:34px">⚓</div><div class="info"><div class="t">開心漁港（深海漁船）</div><div class="d">買漁船、加油、改裝引擎和貨艙，出海捕深海魚和寶箱！看得到每個好友的漁船</div></div></div>
       <div class="item" data-act="trip" style="cursor:pointer;background:#e1f5fe"><div class="pic" style="font-size:34px">✈️</div><div class="info"><div class="t">環島旅遊</div><div class="d">付旅費去台北101、九份、墾丁、日月潭、阿里山、澎湖、太魯閣、蘭嶼！買當地種子、紀念品，寄明信片給好友</div></div></div>
       <div class="item" data-act="goPost" style="cursor:pointer"><div class="pic" style="font-size:34px">🏤</div><div class="info"><div class="t">開心郵局</div><div class="d">寫信、寄倉庫的東西給好友，郵差會送到好友農場的信箱！</div></div></div>
       <div class="item" data-act="goMuseum" style="cursor:pointer"><div class="pic" style="font-size:34px">🏛️</div><div class="info"><div class="t">展覽館</div><div class="d">四層樓的冠軍展覽：1F 賽馬、2F 巨大蔬果、3F 寵物選美、4F 釣魚大賽，和好友一起來參觀！</div></div></div>
@@ -5168,7 +5370,7 @@ async function qianDraw(h) {
   if (lv <= 1) { Music.sfx('coin'); Music.sparkle(); } else if (lv >= 3) Music.sfx('bad'); renderAll();
 }
 // 點地面走過去
-const WALK_BOX = {farm:[-12, 12], ranch:[-12, 12], fish:[-12, 12], factory:[-12, 12], town:[-11, 11], green:[-8, 8], temple:[-10, 10], stable:[-13, 13], dock:[-15, 15], market:[-12, 12], museum:[-13, 13], post:[-12, 12]};
+const WALK_BOX = {farm:[-12, 12], ranch:[-12, 12], fish:[-12, 12], factory:[-12, 12], town:[-11, 11], green:[-8, 8], temple:[-10, 10], stable:[-13, 13], dock:[-15, 15], market:[-12, 12], museum:[-13, 13], post:[-12, 12], harbor:[-12, 12]};
 function walkTap(cx, cy) {
   if (!W.scene || W.race || S.decoMode || !S.my) return;
   const r = W.renderer.domElement.getBoundingClientRect(); W.ndc.set((cx - r.left) / r.width * 2 - 1, -(cy - r.top) / r.height * 2 + 1); W.ray.setFromCamera(W.ndc, W.camera);
@@ -5350,7 +5552,7 @@ const isMobileDev = () => matchMedia('(pointer:coarse)').matches || innerWidth <
 const perfMode = () => { try { const v = localStorage.hf_perf; if (['save', 'std', 'high'].includes(v)) return v; } catch {} return 'std'; };
 const PERF_N = {save:'🔋 省電', std:'⚖️ 標準', high:'✨ 高畫質'};
 function mergeStatic(S3) {
-  const keep = new Set([W.houseG, W.aqHit, W.mkHit, W.musRoot, ...(W.tripKeep || []), W.dockWater, W.dockSpkG, W.stableG, W.sky, W.sunBall, W.blades, W.trough, W.animalsG, W.petsG, W.peopleG, W.hoverRing, W.farmSign, W.ranchSign, W.fishSign, W.facSign, W.festSign, W.festG, W.stars, W.moon, W.rain, W.snow, W.pond,
+  const keep = new Set([W.houseG, W.aqHit, W.mkHit, W.musRoot, W.hbKeepG, W.hbSea, ...(W.tripKeep || []), W.dockWater, W.dockSpkG, W.stableG, W.sky, W.sunBall, W.blades, W.trough, W.animalsG, W.petsG, W.peopleG, W.hoverRing, W.farmSign, W.ranchSign, W.fishSign, W.facSign, W.festSign, W.festG, W.stars, W.moon, W.rain, W.snow, W.pond,
     ...W.ripples, ...W.ponds.map(p => p.g), ...W.plots.map(p => p.g), ...W.poops, ...W.birds.map(b => b.b), ...W.clouds, ...W.flies.map(f => f.b), ...W.machs.map(m => m.g), ...W.ffly.map(f => f.m), ...(W.hens || []).map(h => h.m)].filter(Boolean));
   S3.updateMatrixWorld(true);
   const list = [];
@@ -5490,7 +5692,7 @@ function buildWorld() {
   // 窗戶晚上會亮
   W.winMat = new THREE.MeshLambertMaterial({color:'#bbdefb', emissive:'#000000'});
   const glass = mat('#bbdefb'); S3.traverse(o => { if (o.isMesh && o.material === glass) o.material = W.winMat; });
-  buildScenery(S3); buildFactory(S3); buildTown(S3); buildGreen(S3); buildTemple(S3); buildStable(S3); buildDock(S3); buildAquarium(S3); buildMarket(S3); buildMuseum(S3); buildPost(S3); buildTrips(S3); buildEnv(S3);
+  buildScenery(S3); buildFactory(S3); buildTown(S3); buildGreen(S3); buildTemple(S3); buildStable(S3); buildDock(S3); buildAquarium(S3); buildMarket(S3); buildMuseum(S3); buildPost(S3); buildTrips(S3); buildHarbor(S3); buildEnv(S3);
   mergeStatic(S3); prepSeason(S3); buildWalkers(S3); buildMuseumPeople(S3); buildHome(S3);
   W.vilG = new THREE.Group(); W.decoG = new THREE.Group(); W.greenG = new THREE.Group(); W.templeG = new THREE.Group(); S3.add(W.vilG, W.decoG, W.greenG, W.templeG);
   W.stallG = stallModel(); W.stallGoods = new THREE.Group(); W.stallG.add(W.stallGoods); W.stallG.position.set(TOWN_T.x - 3.4, 0, -.6); W.stallG.traverse(o => o.userData.hit = {type:'stall'}); S3.add(W.stallG);
@@ -5532,7 +5734,7 @@ function setCam(scene, instant) {
   if (instant || off.length() < 1) { off.set(0, portrait ? 24 : 12, portrait ? 28 : 16.2); }
   W.camAnim = {from:W.controls.target.clone(), to:tgt.clone(), t0:performance.now(), dur:instant ? 0 : 900, off};
   // 旅遊景點：鏡頭放低一點，看得到遠方的地標；離開時恢復
-  if (!instant && (TRIPS[scene] || W.camTrip)) { Object.assign(W.camAnim, {off0:off.clone(), off1:TRIPS[scene] ? new THREE.Vector3(0, portrait ? 15 : 8.5, portrait ? 31 : 19) : new THREE.Vector3(0, portrait ? 24 : 12, portrait ? 28 : 16.2)}); W.camTrip = !!TRIPS[scene]; }
+  if (!instant && (TRIPS[scene] || scene === 'harbor' || W.camTrip)) { Object.assign(W.camAnim, {off0:off.clone(), off1:TRIPS[scene] || scene === 'harbor' ? new THREE.Vector3(0, portrait ? 15 : 8.5, portrait ? 31 : 19) : new THREE.Vector3(0, portrait ? 24 : 12, portrait ? 28 : 16.2)}); W.camTrip = !!TRIPS[scene] || scene === 'harbor'; }
   if (instant) { W.controls.target.copy(tgt); W.camera.position.copy(tgt).add(off); W.controls.update(); W.camAnim = null; }
 }
 function pick(cx, cy) {
@@ -5566,7 +5768,7 @@ function hoverAt(cx, cy) {
   else if (h.type === 'gplot') { const [x, z] = ghXZ(h.i); ring.position.set(x, .4, z); ring.scale.setScalar(1.4); }
   else if (h.type === 'gpump') { ring.position.set(PUMP_XZ[0], .4, PUMP_XZ[1]); ring.scale.setScalar(1.8); }
   else if (h.type === 'stall') { ring.position.set(TOWN_T.x - 3.4, .06, -.6); ring.scale.setScalar(1.6); }
-  else if (h.type === 'house' || h.type === 'tcab' || h.type === 'hitem' || h.type === 'mk' || h.type === 'mus' || h.type === 'helper' || h.type === 'mailbox' || h.type === 'postBox' || h.type === 'mailman' || h.type === 'tripSeed' || h.type === 'tripSouv' || h.type === 'tripBox') ring.visible = false;
+  else if (h.type === 'house' || h.type === 'tcab' || h.type === 'hitem' || h.type === 'mk' || h.type === 'mus' || h.type === 'helper' || h.type === 'mailbox' || h.type === 'postBox' || h.type === 'mailman' || h.type === 'tripSeed' || h.type === 'tripSouv' || h.type === 'tripBox' || h.type === 'hbBoat' || h.type === 'hbOrder' || h.type === 'hbBoatOf') ring.visible = false;
   else if (h.type === 'vil') { const P = W.vils?.find(x => x.id === h.id); if (P) { ring.position.set(P.m.position.x, .06, P.m.position.z); ring.scale.setScalar(.6); } }
   else if (h.type === 'deco') { const d = S.view?.deco?.at?.[h.i]; if (d) { ring.position.set(d.x, .06, d.z); ring.scale.setScalar(.6); } }
   else if (h.type === 'cell') { ring.position.set(h.c[0], .08, h.c[1]); ring.scale.setScalar(.55); }
@@ -5861,7 +6063,7 @@ function loop() {
     if (waving) { const T2 = P.waveTo && W.people.find(q => q.uid === P.waveTo); if (T2) { const a2 = Math.atan2(-(T2.m.position.z - P.m.position.z), T2.m.position.x - P.m.position.x), ac = -Math.PI / 2; let dd = a2 - ac; dd = Math.atan2(Math.sin(dd), Math.cos(dd)); P.m.rotation.y = ac + dd * .6; } else P.m.rotation.y = -Math.PI / 2; if (u.head) u.head.rotation.z = Math.sin(t * 5) * .15; if (wa < 1400) P.m.position.y = Math.abs(Math.sin(wa / 1400 * Math.PI * 2)) * .45; const pop = wa < 300 ? wa / 300 : wa > 3400 ? (3800 - wa) / 400 : 1; P.m.scale.setScalar(1.25 * (1 + .22 * pop)); if (!P.hiFx || now() - P.hiFx > 1300) { P.hiFx = now(); fx3(P.m.position.x, 3.3, P.m.position.z, rnd(['👋', '👋✨', '💕']), '#e91e63'); } }
     else if (P.m.scale.x !== 1.25) P.m.scale.setScalar(1.25);
   }
-  fishTick(t, dt); mkTick(t, dt); musTick(t, dt); postTick(t, dt); tripTick(t, dt); walkTick(t, dt); helperTick(t, dt); homeTick(t);
+  fishTick(t, dt); mkTick(t, dt); musTick(t, dt); postTick(t, dt); tripTick(t, dt); harborTick(t, dt); walkTick(t, dt); helperTick(t, dt); homeTick(t);
   { const py = S.scene === 'home' ? HOME_T.y : S.scene === 'museum' ? musY() : 0; for (const P of W.people || []) P.m.position.y = py; if (S.scene === 'home') { W.rain.visible = W.snow.visible = false; if (W.bub) W.bub.visible = false; } }
   if (W.hoverRing.visible) W.hoverRing.material.opacity = .55 + Math.sin(t * 6) * .3;
   W.renderer.render(W.scene, W.camera);
@@ -6013,6 +6215,7 @@ function renderTools() {
   else if (S.scene === 'home') { const hl = homeLv(S.view || S.my), flT = hl ? [['homeFloor','🪜', HFL_N[homeFl()].split(' ')[0] + '↕', 1]] : [];
     T = own ? (S.homeEdit ? [['homeDone','✅','完成', 1], ['homeDeco','🛋️','家具', 1], ...flT] : [['hand','✋','走走'], ...flT, ['homeDeco','🛋️','裝潢', 1], ['homeArrange','🔧','擺設', 1], ['homeUp', MANSION[Math.min(3, hl + 1)].em, hl >= 3 ? '城堡' : '升級', 1], ['trophies','🏆','獎盃櫃', 1], ['leaveHome','🚪','出門', 1]]) : [['hand','✋','參觀'], ...flT, ['trophies','🏆','獎盃櫃', 1], ['leaveHome','🚪','出門', 1]]; }
   else if (S.scene === 'market') T = [['hand','✋','逛逛'], ['mkGames','🎮','攤位遊戲', 1], ['mkShop','🎁','換獎品', 1], ['mkRank','🏆','夜市高手', 1], ['leaveP','🏠','回農場', 1]];
+  else if (S.scene === 'harbor') T = [['hand','✋','走走'], ['boat','🚢', boatState(boatOf(S.my)) === 'back' ? '卸貨！' : '我的漁船', 1], ['offo','📋','外海訂單', 1], ['leaveP','🏠','回農場', 1]];
   else if (TRIPS[S.scene]) T = [['hand','✋','走走'], ['tripSeed','🌱','當地種子', 1], ['tripSouv','🎁','紀念品', 1], ['tripCard','🖼️','明信片', 1], ['tripBook','📔','手冊', 1], ['leaveP','🏠','回家', 1]];
   else if (S.scene === 'post') T = [['hand','✋','走走'], ['postWrite','✉️','寫信', 1], ['mailbox','📬', `信箱${S.gifts.filter(isMail).length ? '×' + S.gifts.filter(isMail).length : ''}`, 1], ['leaveP','🏠','回農場', 1]];
   else if (S.scene === 'museum') T = [...MU_FL.map((x, F) => [`musF${F}`, x.em, `${F + 1}F${(S.musF || 0) === F ? '・在這' : ''}`, 1]), ['musList','📜','冠軍名單', 1], ['leaveP','🏠','回農場', 1]];
@@ -6042,7 +6245,7 @@ function renderScene() {
   if (f) {
     BUD = performance.now() + 10; BUILT = 0; W.syncPending = false;
     const order = {farm:[syncField, syncDeco, syncPets, syncRanch, syncFish, syncFactory, syncTown], ranch:[syncRanch, syncPets, syncField, syncDeco, syncFish, syncFactory, syncTown], fish:[syncFish, syncPets, syncField, syncDeco, syncRanch, syncFactory, syncTown], factory:[syncFactory, syncPets, syncField, syncDeco, syncRanch, syncFish, syncTown], green:[syncGreen, syncPets, syncField, syncDeco, syncRanch, syncFish, syncFactory, syncTown], town:[syncTown, syncStall, syncPets, syncField, syncDeco, syncRanch, syncFish, syncFactory]}[S.scene] || [syncField, syncDeco, syncRanch, syncFish, syncPets, syncFactory, syncTown];
-    for (const fn of order) fn(f, own); if (S.scene !== 'green') syncGreen(f, own); syncTemple(f, own); syncStable(f, own); syncAquarium(f, own); syncWalkers(); syncHelper(f); syncHouse(f); syncMailbox(f, own); syncHome(f); syncFest(); syncMuseum();
+    for (const fn of order) fn(f, own); if (S.scene !== 'green') syncGreen(f, own); syncTemple(f, own); syncStable(f, own); syncAquarium(f, own); syncWalkers(); syncHelper(f); syncHouse(f); syncMailbox(f, own); syncHarbor(); syncHome(f); syncFest(); syncMuseum();
     { const T = templeView(f); setSign(W.templeSign, `${dn(f)}的廟宇`, T.lv >= HALLS.length ? '三座殿都蓋好了 🙏' : `${HALLS[T.lv].n} 建造中 ${Math.floor(tpProg(T) * 100)}%`); }
     if (S.place === 'market') setSign(W.mkSign, '🏮 歡樂夜市', `${marketOpen() ? '營業中～12 點收攤' : '收攤囉'} · 現在 ${hereList().length} 人`);
     if (S.place === 'post') setSign(W.postSign, '🏤 開心郵局', `寫信、寄東西給好友 · 現在 ${hereList().length} 人`);
@@ -6125,6 +6328,9 @@ function tipFor(h) {
   if (h.type === 'mailbox') return `<b>📬 信箱</b><br>${isOwn() ? (S.gifts.some(isMail) ? '有新的信！點一下拆信' : '點一下看信') : ''}`;
   if (h.type === 'postBox') return '<b>📮 郵筒</b><br>點一下寫信給好友';
   if (h.type === 'tripSeed') return '<b>🌱 當地種子攤</b><br>這裡限定的種子';
+  if (h.type === 'hbBoat') return '<b>⛽ 加油站</b><br>漁船加油、改裝、出海';
+  if (h.type === 'hbOrder') return '<b>📋 外海訂單</b><br>深海魚賣好價錢';
+  if (h.type === 'hbBoatOf') return `<b>🚢 ${esc(W.hbBoats?.get(h.uid)?.B.nm || '')}的漁船</b>`;
   if (h.type === 'tripSouv') return '<b>🎁 紀念品店</b><br>買回家擺著展示';
   if (h.type === 'tripBox') return '<b>📮 郵筒</b><br>寄明信片給好友';
   if (h.type === 'helper') return `<b>👨‍🌾 幫手${HELPER_N}</b><br>正在幫忙澆水、除草、抓蟲`;
@@ -6171,6 +6377,9 @@ function clickHit(h) {
   if (h.type === 'mailbox') return isOwn() ? openMailbox() : toast(`📮 ${dn(S.view)}的信箱`);
   if (h.type === 'postBox') return openPostWrite();
   if (h.type === 'tripSeed') return openTripSeeds();
+  if (h.type === 'hbBoat') return openBoat();
+  if (h.type === 'hbOrder') return openOffo();
+  if (h.type === 'hbBoatOf') { if (h.uid === S.uid) return openBoat(); const E = W.hbBoats?.get(h.uid), b = E?.B.b, st = boatState(b); return toast(`🚢 ${E?.B.nm || ''}的漁船：${ENG[b?.eng || 0].n}、${HOLD[b?.hold || 0].n}、出海 ${b?.trips || 0} 次${st === 'sea' ? `，現在在${ZONES[b.go.z].n}捕魚` : ''}`); }
   if (h.type === 'tripSouv') return openTripSouv();
   if (h.type === 'tripBox') return openTripCard();
   if (h.type === 'mailman') return toast('📮 郵差：「您好，送信來囉！」');
@@ -6647,6 +6856,7 @@ async function refreshFriends() {
   try { const g = await B.listGifts(S.uid), old = new Set(S.gifts.map(x => x.id)), nw = g.filter(x => !old.has(x.id));
     if (S.giftsInit && nw.some(x => !isMail(x))) toast(`🎁 收到 ${nw.filter(x => !isMail(x)).length} 份禮物！到「消息」收下`);
     if (nw.some(isMail) && (S.giftsInit || g.some(isMail))) mailmanGo();
+    { const bs = boatState(boatOf(S.my)); if (bs === 'back' && S.boatNote !== S.my.boat.go?.t0) { S.boatNote = S.my.boat.go?.t0; toast('🚢 你的漁船滿載回港了！去⚓漁港卸貨'); renderTools(); } }
     S.gifts = g; S.giftsInit = true; } catch { S.gifts = []; }
   renderStrip(); renderTop(); rerenderModal();
 }
@@ -7729,7 +7939,7 @@ const ACT = {
   async hRename(d) { const v = ($('#hnm')?.value || '').trim(); if (!v || [...v].length > 8) return toast('名字要 1～8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { const h = horseOf(f).list.find(x => x.id === +d.id); if (!h) return ab('找不到這匹馬'); h.n = v; return {}; }, () => { toast(`🐎 改名成「${v}」了！`); Music.sfx('pop'); }); },
   async petRename(d) { const v = ($('#pnm_' + d.k)?.value || '').trim(); if ([...v].length > 8) return toast('名字最多 8 個字'); if (!nameOK(v)) return toast('名字不能有特殊符號'); await fast(f => { if (!f.pets.includes(d.k)) return ab('沒有這隻寵物'); const x = px(f, d.k); if (v) x.nm = v; else delete x.nm; return {}; }, () => { toast(v ? `🐾 ${PETS[d.k].n}改名叫「${v}」了！` : `🐾 改回「${PETS[d.k].n}」`); Music.voice(PETS[d.k].kind); }); },
   hEnter(d) { return run(() => hEnter(+d.id)); },
-  map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, goPost() { goPlace('post'); }, trip: openTrip, tripGo(d) { return run(() => tripGo(d.k)); }, tripSeed: openTripSeeds, tripSeedBuy(d) { return run(() => tripSeedBuy(d.id, +d.n)); }, tripSouv: openTripSouv, tripSouvBuy(d) { return run(() => tripSouvBuy(d.id)); }, tripCard() { openTripCard(); }, cardSel(d) { S.cardDraft = $('#pcMsg')?.value || S.cardDraft; S.cardTo = $('#pcTo')?.value || S.cardTo; S.cardSel = d.id; rerenderModal(); }, cardSend() { return run(cardSend); }, tripBook: openTripBook, postWrite() { openPostWrite(); }, postReply(d) { openPostWrite(d.uid); }, postPaper(d) { S.postDraft = $('#pwMsg')?.value || S.postDraft; S.postTo = $('#pwTo')?.value || S.postTo; S.postPaper = d.k; rerenderModal(); }, postSend() { return run(postSend); }, mailbox: openMailbox, readMail(d) { return run(() => readMail(d.id)); }, oldMail(d) { openOldMail(+d.i); }, goMuseum(d) { S.musF = +(d?.f || 0); SCENE_T.museum.y = musY(); goPlace('museum'); refreshFriends(); }, musF(d) { closeModal(); musGo(+d.f); }, musF0() { musGo(0); }, musF1() { musGo(1); }, musF2() { musGo(2); }, musF3() { musGo(3); }, musList() { openMuseum(); }, leaveP() { ACT.scene({s:'farm'}); },
+  map: openMap, mapGo(d) { closeModal(); ACT.scene(d); }, goDock() { goPlace('dock'); }, goMarket() { goPlace('market'); }, goPost() { goPlace('post'); }, goHarbor() { goPlace('harbor'); }, boat: openBoat, boatBuy() { return run(boatBuy); }, boatUp(d) { return run(() => boatUp(d.k)); }, boatFuel(d) { return run(() => boatFuel(d.n)); }, boatGo(d) { return run(() => boatGo(d.k)); }, boatUnload() { return run(boatUnload); }, offo: openOffo, offoGive(d) { return run(() => offoGive(+d.i)); }, trip: openTrip, tripGo(d) { return run(() => tripGo(d.k)); }, tripSeed: openTripSeeds, tripSeedBuy(d) { return run(() => tripSeedBuy(d.id, +d.n)); }, tripSouv: openTripSouv, tripSouvBuy(d) { return run(() => tripSouvBuy(d.id)); }, tripCard() { openTripCard(); }, cardSel(d) { S.cardDraft = $('#pcMsg')?.value || S.cardDraft; S.cardTo = $('#pcTo')?.value || S.cardTo; S.cardSel = d.id; rerenderModal(); }, cardSend() { return run(cardSend); }, tripBook: openTripBook, postWrite() { openPostWrite(); }, postReply(d) { openPostWrite(d.uid); }, postPaper(d) { S.postDraft = $('#pwMsg')?.value || S.postDraft; S.postTo = $('#pwTo')?.value || S.postTo; S.postPaper = d.k; rerenderModal(); }, postSend() { return run(postSend); }, mailbox: openMailbox, readMail(d) { return run(() => readMail(d.id)); }, oldMail(d) { openOldMail(+d.i); }, goMuseum(d) { S.musF = +(d?.f || 0); SCENE_T.museum.y = musY(); goPlace('museum'); refreshFriends(); }, musF(d) { closeModal(); musGo(+d.f); }, musF0() { musGo(0); }, musF1() { musGo(1); }, musF2() { musGo(2); }, musF3() { musGo(3); }, musList() { openMuseum(); }, leaveP() { ACT.scene({s:'farm'}); },
   fishGo: fishStart, fishCast, fishHook, fishQuit() { fishStop(); renderTools(); }, fishKeep(d) { return run(() => fishKeep(d.m)); }, aqShow: openAquarium, aqSell(d) { return run(() => aqSell(+d.i)); }, fishDex: openFishDex, fishCup: openFishCup,
   fcEnter(d) { return run(() => fcEnter(+d.i)); },
   petShow() { S.psv = null; openPetShow(); }, petDress(d) { openPetDress(d.k); }, paccBuy(d) { return run(() => paccBuy(d.k, d.id)); }, paccOn(d) { return run(() => paccOn(d.k, d.id)); }, paccOff(d) { return run(() => paccOff(d.k, d.s)); }, petBath(d) { return run(() => petBath(d.k)); },
